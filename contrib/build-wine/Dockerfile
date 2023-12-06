@@ -71,5 +71,8 @@ WORKDIR ${WORK_DIR}
 RUN chown --recursive ${USER} ${WORK_DIR}
 RUN chown ${USER} /opt
 USER ${USER}
-
+# Install required Python modules
+RUN python3 -m venv /opt/venv
+RUN /opt/venv/bin/pip install --upgrade pip
+RUN /opt/venv/bin/pip install scrypt
 RUN mkdir --parents "/opt/wine64/drive_c/electrum"
