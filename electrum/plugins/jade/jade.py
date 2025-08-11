@@ -1,21 +1,20 @@
-import os
 import base64
 import json
-from typing import Optional, TYPE_CHECKING
+import os
+from typing import TYPE_CHECKING
 
 from electrum import bip32, constants
 from electrum.crypto import sha256
 from electrum.i18n import _
 from electrum.keystore import Hardware_KeyStore
-from electrum.transaction import Transaction
-from electrum.wallet import Multisig_Wallet
-from electrum.util import UserFacingException
 from electrum.logging import get_logger
-from electrum.plugin import runs_in_hwd_thread, Device
 from electrum.network import Network
-
-from electrum.plugins.hw_wallet import HW_PluginBase, HardwareClientBase
+from electrum.plugin import Device, runs_in_hwd_thread
+from electrum.plugins.hw_wallet import HardwareClientBase, HW_PluginBase
 from electrum.plugins.hw_wallet.plugin import OutdatedHwFirmwareException
+from electrum.transaction import Transaction
+from electrum.util import UserFacingException
+from electrum.wallet import Multisig_Wallet
 
 if TYPE_CHECKING:
     from electrum.plugin import DeviceInfo
@@ -33,9 +32,10 @@ _logger = get_logger(__name__)
 
 try:
     # Do imports
-    from .jadepy.jade import JadeAPI
     from serial.tools import list_ports
-except ImportError as e:
+
+    from .jadepy.jade import JadeAPI
+except ImportError:
     _logger.exception("error importing Jade plugin deps")
 
 
@@ -87,7 +87,7 @@ def _register_multisig_wallet(wallet, keystore, address):
 # Helper to adapt Jade's http call/data to Network.send_http_on_proxy()
 def _http_request(params):
     # Use the first non-onion url
-    url = [url for url in params["urls"] if not url.endswith(".onion")][0]
+    url = next(url for url in params["urls"] if not url.endswith(".onion"))
     method = params["method"].lower()
     json_payload = params.get("data")
     json_response = Network.send_http_on_proxy(method, url, json=json_payload)
@@ -159,7 +159,7 @@ class Jade_Client(HardwareClientBase):
         verinfo = self.jade.get_version_info()
         return verinfo["JADE_STATE"] != "UNINIT"
 
-    def label(self) -> Optional[str]:
+    def label(self) -> str | None:
         return self.efusemac[-6:]
 
     def get_soft_device_id(self):
@@ -340,7 +340,7 @@ class Jade_KeyStore(Hardware_KeyStore):
             assert len(signatures) == len(tx.inputs())
 
             # Inject signatures into tx
-            for index, (txin, signature) in enumerate(zip(tx.inputs(), signatures)):
+            for index, (txin, signature) in enumerate(zip(tx.inputs(), signatures, strict=False)):
                 pubkey, path = self.find_my_pubkey_in_txinout(txin)
                 if pubkey is not None and signature is not None:
                     tx.add_signature_to_txin(
@@ -435,7 +435,7 @@ class JadePlugin(HW_PluginBase):
             except Exception as e:
                 # If we get any sort of error do not add the simulator
                 _logger.debug(
-                    "Failed to connect to Jade simulator at {}".format(self.SIMULATOR_PATH)
+                    f"Failed to connect to Jade simulator at {self.SIMULATOR_PATH}"
                 )
                 _logger.debug(e)
 

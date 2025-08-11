@@ -1,4 +1,5 @@
-from safetlib.client import proto, BaseClient, ProtocolMixin
+from safetlib.client import BaseClient, ProtocolMixin, proto
+
 from .clientbase import SafeTClientBase
 
 

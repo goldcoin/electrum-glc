@@ -1,21 +1,24 @@
-from typing import TYPE_CHECKING, Sequence
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
+import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
-import PyQt5.QtCore as QtCore
-from PyQt5.QtWidgets import QLabel, QLineEdit, QHBoxLayout, QGridLayout
+from PyQt5.QtWidgets import QHBoxLayout, QLabel
 
-from electrum.util import EventListener, ShortID
 from electrum.i18n import _
-from electrum.util import format_time
-from electrum.lnutil import format_short_channel_id, LOCAL, REMOTE, UpdateAddHtlc, Direction
-from electrum.lnchannel import htlcsum, Channel, AbstractChannel, HTLCWithStatus
-from electrum.lnaddr import LnAddr, lndecode
-from electrum.bitcoin import COIN
-from electrum.wallet import Abstract_Wallet
+from electrum.lnchannel import AbstractChannel, HTLCWithStatus
+from electrum.lnutil import LOCAL, REMOTE, Direction, UpdateAddHtlc
+from electrum.util import ShortID
 
-from .util import Buttons, CloseButton, ShowQRLineEdit, MessageBoxMixin, WWLabel
-from .util import QtEventListener, qt_event_listener
+from .util import (
+    Buttons,
+    CloseButton,
+    MessageBoxMixin,
+    QtEventListener,
+    ShowQRLineEdit,
+    qt_event_listener,
+)
 
 if TYPE_CHECKING:
     from .main_window import ElectrumWindow
@@ -255,14 +258,10 @@ class ChannelDetailsDialog(QtWidgets.QDialog, MessageBoxMixin, QtEventListener):
         form_layout_left.addRow(_("Can send") + ":", self.can_send_label)
         form_layout_right.addRow(_("Can receive") + ":", self.can_receive_label)
         local_reserve_label = SelectableLabel(
-            "{}".format(
-                self.format_sat(chan.config[LOCAL].reserve_sat),
-            )
+            f"{self.format_sat(chan.config[LOCAL].reserve_sat)}"
         )
         remote_reserve_label = SelectableLabel(
-            "{}".format(
-                self.format_sat(chan.config[REMOTE].reserve_sat),
-            )
+            f"{self.format_sat(chan.config[REMOTE].reserve_sat)}"
         )
         form_layout_left.addRow(_("Local reserve") + ":", local_reserve_label)
         form_layout_right.addRow(_("Remote reserve" + ":"), remote_reserve_label)
@@ -273,14 +272,10 @@ class ChannelDetailsDialog(QtWidgets.QDialog, MessageBoxMixin, QtEventListener):
         # self.max_htlc_value = SelectableLabel(self.format_sat(chan.config[REMOTE].max_htlc_value_in_flight_msat / 1000))
         # form_layout_left.addRow(_('Maximum value of in-flight HTLCs accepted by peer:'), self.max_htlc_value)
         local_dust_limit_label = SelectableLabel(
-            "{}".format(
-                self.format_sat(chan.config[LOCAL].dust_limit_sat),
-            )
+            f"{self.format_sat(chan.config[LOCAL].dust_limit_sat)}"
         )
         remote_dust_limit_label = SelectableLabel(
-            "{}".format(
-                self.format_sat(chan.config[REMOTE].dust_limit_sat),
-            )
+            f"{self.format_sat(chan.config[REMOTE].dust_limit_sat)}"
         )
         form_layout_left.addRow(_("Local dust limit") + ":", local_dust_limit_label)
         form_layout_right.addRow(_("Remote dust limit") + ":", remote_dust_limit_label)
@@ -304,7 +299,7 @@ class ChannelDetailsDialog(QtWidgets.QDialog, MessageBoxMixin, QtEventListener):
         w = QtWidgets.QTreeView(self)
         htlc_dict = chan.get_payments()
         htlc_list = []
-        for rhash, plist in htlc_dict.items():
+        for _rhash, plist in htlc_dict.items():
             for htlc_with_status in plist:
                 htlc_list.append(htlc_with_status)
         w.setModel(self.make_model(htlc_list))

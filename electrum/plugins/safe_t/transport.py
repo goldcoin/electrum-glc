@@ -1,6 +1,5 @@
 from electrum.logging import get_logger
 
-
 _logger = get_logger(__name__)
 
 
@@ -101,4 +100,4 @@ class SafeTTransport:
         transports = [t for t in self.all_transports() if match_prefix(path, t.PATH_PREFIX)]
         if transports:
             return transports[0].find_by_path(path)
-        raise Exception("Unknown path prefix '%s'" % path)
+        raise Exception(f"Unknown path prefix '{path}'")

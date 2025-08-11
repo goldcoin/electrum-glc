@@ -22,13 +22,10 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import os
-from typing import Optional
-
 import gettext
+import os
 
 from .logging import get_logger
-
 
 _logger = get_logger(__name__)
 LOCALE_DIR = os.path.join(os.path.dirname(__file__), "locale")
@@ -71,7 +68,7 @@ def _(msg: str, *, context=None) -> str:
     return language.gettext(msg)
 
 
-def set_language(x: Optional[str]) -> None:
+def set_language(x: str | None) -> None:
     _logger.info(f"setting language to {x!r}")
     global language
     if x:

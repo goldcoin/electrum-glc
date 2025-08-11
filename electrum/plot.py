@@ -6,11 +6,11 @@ from collections import defaultdict
 import matplotlib
 
 matplotlib.use("Qt5Agg")
-import matplotlib.pyplot as plt
 import matplotlib.dates as md
+import matplotlib.pyplot as plt
 
-from .i18n import _
 from .bitcoin import COIN
+from .i18n import _
 
 
 class NothingToPlotException(Exception):
@@ -52,12 +52,12 @@ def plot_history(history):
 
     r1 = None
     r2 = None
-    dates_values = list(zip(*sorted(hist_in.items())))
+    dates_values = list(zip(*sorted(hist_in.items()), strict=False))
     if dates_values and len(dates_values) == 2:
         dates, values = dates_values
         r1 = axarr[0].bar(dates, values, width, label="incoming")
         axarr[0].legend(loc="upper left")
-    dates_values = list(zip(*sorted(hist_out.items())))
+    dates_values = list(zip(*sorted(hist_out.items()), strict=False))
     if dates_values and len(dates_values) == 2:
         dates, values = dates_values
         r2 = axarr[1].bar(dates, values, width, color="r", label="outgoing")

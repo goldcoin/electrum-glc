@@ -1,22 +1,22 @@
 from decimal import Decimal
-from typing import Optional, TYPE_CHECKING
 from functools import partial
+from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject
+from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
 
-from electrum.logging import get_logger
 from electrum.i18n import _
-from electrum.transaction import PartialTxOutput, PartialTransaction, Transaction, TxOutpoint
-from electrum.util import NotEnoughFunds, profiler
-from electrum.wallet import CannotBumpFee, CannotDoubleSpendTx, CannotCPFP, BumpFeeStrategy
+from electrum.logging import get_logger
 from electrum.plugin import run_hook
+from electrum.transaction import PartialTransaction, PartialTxOutput, Transaction, TxOutpoint
+from electrum.util import NotEnoughFunds, profiler
+from electrum.wallet import BumpFeeStrategy, CannotBumpFee, CannotCPFP, CannotDoubleSpendTx
 
-from .qewallet import QEWallet
 from .qetypes import QEAmount
+from .qewallet import QEWallet
 from .util import QtEventListener, event_listener
 
 if TYPE_CHECKING:
-    from electrum.simple_config import SimpleConfig
+    pass
 
 
 class FeeSlider(QObject):
@@ -488,7 +488,7 @@ class TxMonMixin(QtEventListener):
     @event_listener
     def on_event_verified(self, wallet, txid, info):
         if wallet == self._wallet.wallet and txid == self._txid:
-            self._logger.debug("verified event for our txid %s" % txid)
+            self._logger.debug(f"verified event for our txid {txid}")
             self.tx_verified()
             self.txMined.emit()
 
@@ -854,7 +854,7 @@ class QETxCpfpFeeBumper(TxFeeSlider, TxMonMixin):
 
         self.update()
 
-    def get_child_fee_from_total_feerate(self, fee_per_kb: Optional[int]) -> Optional[int]:
+    def get_child_fee_from_total_feerate(self, fee_per_kb: int | None) -> int | None:
         if fee_per_kb is None:
             return None
         fee = fee_per_kb * self._total_size / 1000 - self._parent_fee

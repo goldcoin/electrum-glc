@@ -23,56 +23,50 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from collections.abc import Callable
 from decimal import Decimal
 from functools import partial
-from typing import TYPE_CHECKING, Optional, Union, Callable
+from typing import TYPE_CHECKING, Union
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
-
 from PyQt5.QtWidgets import (
-    QWidget,
-    QHBoxLayout,
-    QVBoxLayout,
-    QLabel,
     QGridLayout,
-    QPushButton,
-    QLineEdit,
-    QToolButton,
+    QHBoxLayout,
+    QLabel,
     QMenu,
+    QPushButton,
+    QToolButton,
+    QVBoxLayout,
 )
 
-from electrum.i18n import _
-from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates
-from electrum.util import quantize_feerate
-from electrum.plugin import run_hook
-from electrum.transaction import Transaction, PartialTransaction
-from electrum.wallet import InternalAddressCorruption
-from electrum.simple_config import SimpleConfig
 from electrum.bitcoin import DummyAddress
+from electrum.i18n import _
+from electrum.plugin import run_hook
+from electrum.simple_config import SimpleConfig
+from electrum.util import NoDynamicFeeEstimates, NotEnoughFunds, quantize_feerate
+from electrum.wallet import InternalAddressCorruption
 
+from .fee_slider import FeeComboBox, FeeSlider
 from .util import (
-    WindowModalDialog,
-    ColorScheme,
-    HelpLabel,
+    BlockingWaitingDialog,
     Buttons,
     CancelButton,
-    BlockingWaitingDialog,
-    PasswordLineEdit,
+    ColorScheme,
+    HelpLabel,
+    WindowModalDialog,
     WWLabel,
     read_QIcon,
 )
 
-from .fee_slider import FeeSlider, FeeComboBox
-
 if TYPE_CHECKING:
     from electrum.simple_config import ConfigVarWithConfig
+
     from .main_window import ElectrumWindow
 
-from .transaction_dialog import TxSizeLabel, TxFiatLabel, TxInOutWidget
-from .fee_slider import FeeSlider, FeeComboBox
-from .amountedit import FeerateEdit, BTCAmountEdit
+from .amountedit import BTCAmountEdit, FeerateEdit
 from .locktimeedit import LockTimeEdit
+from .transaction_dialog import TxFiatLabel, TxInOutWidget, TxSizeLabel
 
 
 class TxEditor(WindowModalDialog):
@@ -83,7 +77,7 @@ class TxEditor(WindowModalDialog):
         title="",
         window: "ElectrumWindow",
         make_tx,
-        output_value: Union[int, str] = None,
+        output_value: Union[int, str] | None = None,
         allow_preview=True,
     ):
 
@@ -331,7 +325,6 @@ class TxEditor(WindowModalDialog):
 
     def entry_changed(self):
         # blue color denotes auto-filled values
-        text = ""
         fee_color = ColorScheme.DEFAULT
         feerate_color = ColorScheme.DEFAULT
         if self.not_enough_funds:
@@ -637,7 +630,7 @@ class TxEditor(WindowModalDialog):
         # warn if we use multiple change outputs
         num_change = sum(int(o.is_change) for o in self.tx.outputs())
         if num_change > 1:
-            messages.append(_("This transaction has {} change outputs.".format(num_change)))
+            messages.append(_(f"This transaction has {num_change} change outputs."))
         # if num_change == 0:
         #    messages.append(_('Make sure you pay enough mining fees; you will not be able to bump the fee later.'))
 
@@ -741,7 +734,7 @@ class ConfirmTxDialog(TxEditor):
     def can_pay_assuming_zero_fees(self, confirmed_only) -> bool:
         # called in send_tab.py
         try:
-            tx = self.make_tx(0, confirmed_only=confirmed_only)
+            self.make_tx(0, confirmed_only=confirmed_only)
         except NotEnoughFunds:
             return False
         else:

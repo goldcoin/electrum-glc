@@ -1,10 +1,8 @@
-import shutil
-import tempfile
 import os
 
-from electrum import constants, blockchain
+from electrum import blockchain, constants
+from electrum.blockchain import Blockchain, InvalidHeader, deserialize_header, hash_header
 from electrum.simple_config import SimpleConfig
-from electrum.blockchain import Blockchain, deserialize_header, hash_header, InvalidHeader
 from electrum.util import bfh, make_dir
 
 from . import ElectrumTestCase
@@ -371,7 +369,7 @@ class TestBlockchain(ElectrumTestCase):
         self.assertEqual(11 * 80, os.stat(chain_l.path()).st_size)
         for b in (chain_u, chain_l):
             self.assertTrue(
-                all([b.can_connect(b.read_header(i), False) for i in range(b.height())])
+                all(b.can_connect(b.read_header(i), False) for i in range(b.height()))
             )
 
         self._append_header(chain_u, self.HEADERS["S"])
@@ -422,7 +420,7 @@ class TestBlockchain(ElectrumTestCase):
         self.assertEqual(7 * 80, os.stat(chain_u.path()).st_size)
         for b in (chain_u, chain_l, chain_z):
             self.assertTrue(
-                all([b.can_connect(b.read_header(i), False) for i in range(b.height())])
+                all(b.can_connect(b.read_header(i), False) for i in range(b.height()))
             )
 
         self.assertEqual(constants.net.GENESIS, chain_z.get_hash(0))
@@ -517,7 +515,7 @@ class TestBlockchain(ElectrumTestCase):
 
         for b in (chain_u, chain_l, chain_z):
             self.assertTrue(
-                all([b.can_connect(b.read_header(i), False) for i in range(b.height())])
+                all(b.can_connect(b.read_header(i), False) for i in range(b.height()))
             )
 
     def get_chains_that_contain_header_helper(self, header: dict):

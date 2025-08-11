@@ -23,27 +23,24 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import time
-from xmlrpc.client import ServerProxy
-from typing import TYPE_CHECKING, Union, List, Tuple, Dict
 import ssl
+import time
+from typing import TYPE_CHECKING, Union
+from xmlrpc.client import ServerProxy
 
+import certifi
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QPushButton
-import certifi
 
-from electrum import util, keystore, ecc, crypto
-from electrum import transaction
-from electrum.transaction import Transaction, PartialTransaction, tx_from_any, SerializationError
+from electrum import crypto, ecc, keystore, util
 from electrum.bip32 import BIP32Node
-from electrum.plugin import BasePlugin, hook
-from electrum.i18n import _
-from electrum.wallet import Multisig_Wallet, Abstract_Wallet
-from electrum.util import bfh
-from electrum.logging import Logger
-
-from electrum.gui.qt.transaction_dialog import show_transaction, TxDialog
+from electrum.gui.qt.transaction_dialog import TxDialog, show_transaction
 from electrum.gui.qt.util import WaitingDialog
+from electrum.i18n import _
+from electrum.logging import Logger
+from electrum.plugin import BasePlugin, hook
+from electrum.transaction import PartialTransaction, SerializationError, Transaction, tx_from_any
+from electrum.wallet import Abstract_Wallet, Multisig_Wallet
 
 if TYPE_CHECKING:
     from electrum.gui.qt import ElectrumGui
@@ -186,7 +183,7 @@ class CosignerWallet(Logger):
         if d.tx.is_complete() or d.wallet.can_sign(d.tx):
             d.cosigner_send_button.setVisible(False)
             return
-        for xpub, K, _hash in self.cosigner_list:
+        for xpub, _K, _hash in self.cosigner_list:
             if self.cosigner_can_sign(d.tx, xpub):
                 d.cosigner_send_button.setVisible(True)
                 break
@@ -240,7 +237,7 @@ class CosignerWallet(Logger):
 
     def on_receive(self, keyhash, message):
         self.logger.info(f"signal arrived for {keyhash}")
-        for key, _hash in self.keys:
+        for _key, _hash in self.keys:
             if _hash == keyhash:
                 break
         else:

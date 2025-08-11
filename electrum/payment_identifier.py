@@ -1,37 +1,41 @@
 import asyncio
+import re
 import time
 import urllib
-import re
+from collections.abc import Callable
 from decimal import Decimal, InvalidOperation
 from enum import IntEnum
-from typing import NamedTuple, Optional, Callable, List, TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, NamedTuple, Optional
 
-from . import bitcoin
+from . import bitcoin, paymentrequest
+from .bip21 import (
+    BITCOIN_BIP21_URI_SCHEME,
+    LIGHTNING_URI_SCHEME,
+    InvalidBitcoinURI,
+    parse_bip21_URI,
+)
+from .bitcoin import construct_script, opcodes
 from .contacts import AliasNotFoundException
 from .i18n import _
 from .invoices import Invoice
-from .logging import Logger
-from .util import parse_max_spend, format_satoshis_plain, InvoiceError
-from .util import get_asyncio_loop, log_exceptions
-from .transaction import PartialTxOutput
-from .lnurl import decode_lnurl, request_lnurl, callback_lnurl, LNURLError, lightning_address_to_url
-from .bitcoin import COIN, TOTAL_COIN_SUPPLY_LIMIT_IN_BTC, opcodes, construct_script
-from .lnaddr import lndecode, LnDecodeException, LnInvoiceException
+from .lnaddr import LnInvoiceException
+from .lnurl import LNURLError, callback_lnurl, decode_lnurl, lightning_address_to_url, request_lnurl
 from .lnutil import IncompatibleOrInsaneFeatures
-from .bip21 import (
-    parse_bip21_URI,
-    InvalidBitcoinURI,
-    LIGHTNING_URI_SCHEME,
-    BITCOIN_BIP21_URI_SCHEME,
+from .logging import Logger
+from .transaction import PartialTxOutput
+from .util import (
+    InvoiceError,
+    get_asyncio_loop,
+    log_exceptions,
+    parse_max_spend,
 )
-from . import paymentrequest
 
 if TYPE_CHECKING:
-    from .wallet import Abstract_Wallet
     from .transaction import Transaction
+    from .wallet import Abstract_Wallet
 
 
-def maybe_extract_lightning_payment_identifier(data: str) -> Optional[str]:
+def maybe_extract_lightning_payment_identifier(data: str) -> str | None:
     data = data.strip()  # whitespaces
     data = data.lower()
     if data.startswith(LIGHTNING_URI_SCHEME + ":ln"):
@@ -44,9 +48,7 @@ def maybe_extract_lightning_payment_identifier(data: str) -> Optional[str]:
 
 def is_uri(data: str) -> bool:
     data = data.lower()
-    if data.startswith(LIGHTNING_URI_SCHEME + ":") or data.startswith(
-        BITCOIN_BIP21_URI_SCHEME + ":"
-    ):
+    if data.startswith((LIGHTNING_URI_SCHEME + ":", BITCOIN_BIP21_URI_SCHEME + ":")):
         return True
     return False
 
@@ -96,12 +98,12 @@ class PaymentIdentifierType(IntEnum):
 
 
 class FieldsForGUI(NamedTuple):
-    recipient: Optional[str]
-    amount: Optional[int]
-    description: Optional[str]
-    validated: Optional[bool]
-    comment: Optional[int]
-    amount_range: Optional[Tuple[int, int]]
+    recipient: str | None
+    amount: int | None
+    description: str | None
+    validated: bool | None
+    comment: int | None
+    amount_range: tuple[int, int] | None
 
 
 class PaymentIdentifier(Logger):
@@ -327,7 +329,7 @@ class PaymentIdentifier(Logger):
         asyncio.run_coroutine_threadsafe(coro, get_asyncio_loop())
 
     @log_exceptions
-    async def _do_resolve(self, *, on_finished: Callable[["PaymentIdentifier"], None] = None):
+    async def _do_resolve(self, *, on_finished: Callable[["PaymentIdentifier"], None] | None = None):
         try:
             if self.emaillike or self.domainlike:
                 # TODO: parallel lookup?
@@ -359,9 +361,9 @@ class PaymentIdentifier(Logger):
                         self.lnurl = lnurl
                         self.lnurl_data = data
                         self.set_state(PaymentIdentifierState.LNURLP_FINALIZE)
-                    except LNURLError as e:
+                    except LNURLError:
                         self.set_state(PaymentIdentifierState.NOT_FOUND)
-                    except Exception as e:
+                    except Exception:
                         # NOTE: any other exception is swallowed here (e.g. DNS error)
                         # as the user may be typing and we have an incomplete emaillike
                         self.set_state(PaymentIdentifierState.NOT_FOUND)
@@ -395,8 +397,8 @@ class PaymentIdentifier(Logger):
         self,
         *,
         amount_sat: int = 0,
-        comment: str = None,
-        on_finished: Callable[["PaymentIdentifier"], None] = None,
+        comment: str | None = None,
+        on_finished: Callable[["PaymentIdentifier"], None] | None = None,
     ):
         assert self._state == PaymentIdentifierState.LNURLP_FINALIZE
         coro = self._do_finalize(amount_sat=amount_sat, comment=comment, on_finished=on_finished)
@@ -406,9 +408,9 @@ class PaymentIdentifier(Logger):
     async def _do_finalize(
         self,
         *,
-        amount_sat: int = None,
-        comment: str = None,
-        on_finished: Callable[["PaymentIdentifier"], None] = None,
+        amount_sat: int | None = None,
+        comment: str | None = None,
+        on_finished: Callable[["PaymentIdentifier"], None] | None = None,
     ):
         from .invoices import Invoice
 
@@ -458,7 +460,7 @@ class PaymentIdentifier(Logger):
         *,
         tx: "Transaction",
         refund_address: str,
-        on_finished: Callable[["PaymentIdentifier"], None] = None,
+        on_finished: Callable[["PaymentIdentifier"], None] | None = None,
     ):
         assert self._state == PaymentIdentifierState.MERCHANT_NOTIFY
         assert tx
@@ -472,7 +474,7 @@ class PaymentIdentifier(Logger):
         tx: "Transaction",
         refund_address: str,
         *,
-        on_finished: Callable[["PaymentIdentifier"], None] = None,
+        on_finished: Callable[["PaymentIdentifier"], None] | None = None,
     ):
         try:
             if not self.bip70_data:
@@ -527,7 +529,7 @@ class PaymentIdentifier(Logger):
                 else:
                     total += output.value
             except Exception as e:
-                errors = f"{errors}line #{i}: {str(e)}\n"
+                errors = f"{errors}line #{i}: {e!s}\n"
                 continue
         if is_multiline and errors:
             self.error = errors.strip() if errors else None
@@ -545,17 +547,17 @@ class PaymentIdentifier(Logger):
         amount = self.parse_amount(y)
         return PartialTxOutput(scriptpubkey=scriptpubkey, value=amount)
 
-    def parse_output(self, x: str) -> Tuple[bytes, bool]:
+    def parse_output(self, x: str) -> tuple[bytes, bool]:
         try:
             address = self.parse_address(x)
             return bytes.fromhex(bitcoin.address_to_script(address)), True
-        except Exception as e:
+        except Exception:
             pass
         try:
             m = re.match("^" + RE_SCRIPT_FN + "$", x)
             script = self.parse_script(str(m.group(1)))
             return bytes.fromhex(script), False
-        except Exception as e:
+        except Exception:
             pass
 
         return None, False
@@ -687,7 +689,7 @@ class PaymentIdentifier(Logger):
         amount = lnaddr.get_amount_sat()
         return pubkey, amount, description
 
-    async def resolve_openalias(self, key: str) -> Optional[dict]:
+    async def resolve_openalias(self, key: str) -> dict | None:
         # TODO: below check needed? we already matched RE_EMAIL/RE_DOMAIN
         # if not (('.' in key) and ('<' not in key) and (' ' not in key)):
         #     return None
@@ -700,10 +702,10 @@ class PaymentIdentifier(Logger):
             )  # TODO: don't use contacts as delegate to resolve openalias, separate.
             return data
         except AliasNotFoundException as e:
-            self.logger.info(f"OpenAlias not found: {repr(e)}")
+            self.logger.info(f"OpenAlias not found: {e!r}")
             return None
         except Exception as e:
-            self.logger.info(f"error resolving address/alias: {repr(e)}")
+            self.logger.info(f"error resolving address/alias: {e!r}")
             return None
 
     def has_expired(self):
@@ -718,8 +720,8 @@ class PaymentIdentifier(Logger):
 
 
 def invoice_from_payment_identifier(
-    pi: "PaymentIdentifier", wallet: "Abstract_Wallet", amount_sat: int, message: str = None
-) -> Optional[Invoice]:
+    pi: "PaymentIdentifier", wallet: "Abstract_Wallet", amount_sat: int, message: str | None = None
+) -> Invoice | None:
     assert pi.state in [PaymentIdentifierState.AVAILABLE, PaymentIdentifierState.MERCHANT_NOTIFY]
     if pi.is_lightning():
         invoice = pi.bolt11
@@ -740,7 +742,7 @@ def invoice_from_payment_identifier(
 # TODO: reflect bip70-only in function name, or implement other types as well.
 def payment_identifier_from_invoice(
     wallet: "Abstract_Wallet", invoice: Invoice
-) -> Optional[PaymentIdentifier]:
+) -> PaymentIdentifier | None:
     if not invoice:
         return
     pi = PaymentIdentifier(wallet, "")

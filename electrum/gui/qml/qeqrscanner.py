@@ -1,17 +1,15 @@
 import os
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject
+from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QGuiApplication
 
-from electrum.util import send_exception_to_crash_reporter, UserFacingException
-from electrum.simple_config import SimpleConfig
-from electrum.logging import get_logger
 from electrum.i18n import _
-
+from electrum.logging import get_logger
+from electrum.util import send_exception_to_crash_reporter
 
 if "ANDROID_DATA" in os.environ:
-    from jnius import autoclass, cast
     from android import activity
+    from jnius import autoclass
 
     jpythonActivity = autoclass("org.kivy.android.PythonActivity").mActivity
     jString = autoclass("java.lang.String")

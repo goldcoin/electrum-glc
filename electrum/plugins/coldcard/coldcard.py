@@ -3,22 +3,22 @@
 #
 #
 import os
+import struct
 import time
 from typing import TYPE_CHECKING, Optional
-import struct
 
 from electrum import bip32
 from electrum.bip32 import BIP32Node, InvalidMasterKeyVersionBytes
 from electrum.i18n import _
-from electrum.plugin import Device, hook, runs_in_hwd_thread
-from electrum.keystore import Hardware_KeyStore, KeyStoreWithMPK
-from electrum.transaction import PartialTransaction
-from electrum.wallet import Standard_Wallet, Multisig_Wallet, Abstract_Wallet
-from electrum.util import bfh, versiontuple, UserFacingException
+from electrum.keystore import Hardware_KeyStore
 from electrum.logging import get_logger
+from electrum.plugin import Device, runs_in_hwd_thread
+from electrum.transaction import PartialTransaction
+from electrum.util import UserFacingException, bfh
+from electrum.wallet import Multisig_Wallet, Standard_Wallet
 
-from ..hw_wallet import HW_PluginBase, HardwareClientBase
-from ..hw_wallet.plugin import LibraryFoundButUnusable, only_hook_if_libraries_available
+from ..hw_wallet import HardwareClientBase, HW_PluginBase
+from ..hw_wallet.plugin import LibraryFoundButUnusable
 
 if TYPE_CHECKING:
     from electrum.plugin import DeviceInfo
@@ -29,22 +29,26 @@ _logger = get_logger(__name__)
 
 try:
     import hid
-    from ckcc.protocol import CCProtocolPacker, CCProtocolUnpacker
-    from ckcc.protocol import CCProtoError, CCUserRefused, CCBusyError
+    from ckcc.client import CKCC_PID, CKCC_SIMULATOR_PATH, COINKITE_VID, ColdcardDevice
     from ckcc.constants import (
-        MAX_MSG_LEN,
-        MAX_BLK_LEN,
-        MSG_SIGNING_MAX_LENGTH,
-        MAX_TXN_LEN,
         AF_CLASSIC,
         AF_P2SH,
         AF_P2WPKH,
-        AF_P2WSH,
         AF_P2WPKH_P2SH,
+        AF_P2WSH,
         AF_P2WSH_P2SH,
+        MAX_BLK_LEN,
+        MAX_MSG_LEN,
+        MAX_TXN_LEN,
+        MSG_SIGNING_MAX_LENGTH,
     )
-
-    from ckcc.client import ColdcardDevice, COINKITE_VID, CKCC_PID, CKCC_SIMULATOR_PATH
+    from ckcc.protocol import (
+        CCBusyError,
+        CCProtocolPacker,
+        CCProtocolUnpacker,
+        CCProtoError,
+        CCUserRefused,
+    )
 
     requirements_ok = True
 
@@ -88,20 +92,17 @@ class CKCCClient(HardwareClientBase):
         # NOTE: MiTM test is delayed until we have a hint as to what XPUB we
         # should expect. It's also kinda slow.
 
-    def device_model_name(self) -> Optional[str]:
+    def device_model_name(self) -> str | None:
         return "Coldcard"
 
-    def get_soft_device_id(self) -> Optional[str]:
+    def get_soft_device_id(self) -> str | None:
         try:
             super().get_soft_device_id()
         except CCProtoError:
             return None
 
     def __repr__(self):
-        return "<CKCCClient: xfp=%s label=%r>" % (
-            xfp2str(self.dev.master_fingerprint),
-            self.label(),
-        )
+        return f"<CKCCClient: xfp={xfp2str(self.dev.master_fingerprint)} label={self.label()!r}>"
 
     @runs_in_hwd_thread
     def verify_connection(self, expected_xfp: int, expected_xpub: str):
@@ -124,7 +125,7 @@ class CKCCClient(HardwareClientBase):
                 f"stored in file: {expected_xpub}"
             )
             raise RuntimeError(
-                "Expecting %s but that's not what's connected?!" % xfp2str(expected_xfp)
+                f"Expecting {xfp2str(expected_xfp)} but that's not what's connected?!"
             )
 
         # check signature over session key
@@ -168,7 +169,7 @@ class CKCCClient(HardwareClientBase):
         master_xpub = self.dev.master_xpub
         if master_xpub is not None:
             try:
-                node = BIP32Node.from_xkey(master_xpub)
+                BIP32Node.from_xkey(master_xpub)
             except InvalidMasterKeyVersionBytes:
                 raise UserFacingException(
                     _(
@@ -191,7 +192,7 @@ class CKCCClient(HardwareClientBase):
     @runs_in_hwd_thread
     def get_xpub(self, bip32_path, xtype):
         assert xtype in ColdcardPlugin.SUPPORTED_XTYPES
-        _logger.info("Derive xtype = %r" % xtype)
+        _logger.info(f"Derive xtype = {xtype!r}")
         xpub = self.dev.send_recv(CCProtocolPacker.get_xpub(bip32_path), timeout=5000)
         # TODO handle timeout?
         # change type of xpub to the requested type
@@ -357,7 +358,7 @@ class Coldcard_KeyStore(Hardware_KeyStore):
         try:
             cl = self.get_client()
             try:
-                self.handler.show_message("Signing message (using %s)..." % path)
+                self.handler.show_message(f"Signing message (using {path})...")
 
                 cl.sign_message_start(path, msg)
 
@@ -462,7 +463,7 @@ class Coldcard_KeyStore(Hardware_KeyStore):
         try:
             try:
                 self.handler.show_message(_("Showing address ..."))
-                dev_addr = client.show_address(address_path, addr_fmt)
+                client.show_address(address_path, addr_fmt)
                 # we could double check address here
             finally:
                 self.handler.finished()
@@ -480,7 +481,7 @@ class Coldcard_KeyStore(Hardware_KeyStore):
         try:
             try:
                 self.handler.show_message(_("Showing address ..."))
-                dev_addr = client.show_p2sh_address(M, xfp_paths, script, addr_fmt=addr_fmt)
+                client.show_p2sh_address(M, xfp_paths, script, addr_fmt=addr_fmt)
                 # we could double check address here
             finally:
                 self.handler.finished()
@@ -563,7 +564,7 @@ class ColdcardPlugin(HW_PluginBase):
                 is_simulator=(device.product_key[1] == CKCC_SIMULATED_PID),
             )
             return rv
-        except Exception as e:
+        except Exception:
             self.logger.exception("late failure connecting to device?")
             return None
 
@@ -594,7 +595,7 @@ class ColdcardPlugin(HW_PluginBase):
 
         xpubs = []
         for xpub, ks in zip(
-            wallet.get_master_public_keys(), wallet.get_keystores()
+            wallet.get_master_public_keys(), wallet.get_keystores(), strict=False
         ):  # type: str, KeyStoreWithMPK
             fp_bytes, der_full = ks.get_fp_and_derivation_to_be_used_in_partial_tx(
                 der_suffix=[], only_der_suffix=False
@@ -642,7 +643,7 @@ class ColdcardPlugin(HW_PluginBase):
                     der_suffix, only_der_suffix=False
                 )
                 xfp_int = xfp_int_from_xfp_bytes(fp_bytes)
-                xfp_paths.append([xfp_int] + list(der_full))
+                xfp_paths.append([xfp_int, *list(der_full)])
 
             script = bfh(wallet.pubkeys_to_scriptcode(pubkey_hexes))
 

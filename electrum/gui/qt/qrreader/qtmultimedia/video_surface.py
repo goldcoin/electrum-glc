@@ -23,20 +23,18 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import List
 
+from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtGui import QImage
 from PyQt5.QtMultimedia import (
-    QVideoFrame,
     QAbstractVideoBuffer,
     QAbstractVideoSurface,
+    QVideoFrame,
     QVideoSurfaceFormat,
 )
-from PyQt5.QtGui import QImage
-from PyQt5.QtCore import QObject, pyqtSignal
 
 from electrum.i18n import _
 from electrum.logging import get_logger
-
 
 _logger = get_logger(__name__)
 
@@ -86,7 +84,7 @@ class QrReaderVideoSurface(QAbstractVideoSurface):
 
     def supportedPixelFormats(
         self, handle_type: QAbstractVideoBuffer.HandleType
-    ) -> List[QVideoFrame.PixelFormat]:
+    ) -> list[QVideoFrame.PixelFormat]:
         if handle_type == QAbstractVideoBuffer.NoHandle:
             # We support all pixel formats that can be understood by QImage directly
             return [

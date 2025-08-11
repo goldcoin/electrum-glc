@@ -26,37 +26,36 @@
 
 import threading
 from functools import partial
-from typing import TYPE_CHECKING, Union, Optional
+from typing import TYPE_CHECKING, Union
 
-from PyQt5.QtCore import QObject, pyqtSignal, Qt
-from PyQt5.QtWidgets import QVBoxLayout, QLineEdit, QHBoxLayout, QLabel
+from PyQt5.QtCore import QObject, Qt, pyqtSignal
+from PyQt5.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QVBoxLayout
 
-from electrum.gui.qt.password_dialog import PasswordLayout, PW_PASSPHRASE
+from electrum.gui.qt.main_window import StatusBarButton
+from electrum.gui.qt.password_dialog import PW_PASSPHRASE, PasswordLayout
 from electrum.gui.qt.util import (
-    read_QIcon,
-    WWLabel,
-    OkButton,
-    WindowModalDialog,
     Buttons,
     CancelButton,
-    TaskThread,
-    char_width_in_lineedit,
+    OkButton,
     PasswordLineEdit,
+    TaskThread,
+    WindowModalDialog,
+    WWLabel,
+    char_width_in_lineedit,
+    read_QIcon,
 )
-from electrum.gui.qt.main_window import StatusBarButton
-
 from electrum.i18n import _
 from electrum.logging import Logger
+from electrum.plugin import hook
 from electrum.util import UserCancelled, UserFacingException
-from electrum.plugin import hook, DeviceUnpairableError
 
-from .plugin import OutdatedHwFirmwareException, HW_PluginBase, HardwareHandlerBase
+from .plugin import HardwareHandlerBase, HW_PluginBase, OutdatedHwFirmwareException
 
 if TYPE_CHECKING:
-    from electrum.wallet import Abstract_Wallet
-    from electrum.keystore import Hardware_KeyStore
     from electrum.gui.qt import ElectrumWindow
     from electrum.gui.qt.wizard.wallet import QENewWalletWizard
+    from electrum.keystore import Hardware_KeyStore
+    from electrum.wallet import Abstract_Wallet
 
 
 # The trickiest thing about this handler was getting windows properly
@@ -215,7 +214,7 @@ class QtHandlerBase(HardwareHandlerBase, QObject, Logger):
         self.done.set()
 
 
-class QtPluginBase(object):
+class QtPluginBase:
 
     @hook
     def load_wallet(
@@ -295,7 +294,7 @@ class QtPluginBase(object):
         self: Union["QtPluginBase", HW_PluginBase],
         window: "ElectrumWindow",
         keystore: "Hardware_KeyStore",
-    ) -> Optional[str]:
+    ) -> str | None:
         """This dialog box should be usable even if the user has
         forgotten their PIN or it is in bootloader mode."""
         assert window.gui_thread != threading.current_thread(), "must not be called from GUI thread"
@@ -311,7 +310,7 @@ class QtPluginBase(object):
     def show_settings_dialog(self, window: "ElectrumWindow", keystore: "Hardware_KeyStore") -> None:
         # default implementation (if no dialog): just try to connect to device
         def connect():
-            device_id = self.choose_device(window, keystore)
+            self.choose_device(window, keystore)
 
         keystore.thread.add(connect)
 

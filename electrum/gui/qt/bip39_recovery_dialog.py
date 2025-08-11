@@ -6,16 +6,15 @@ import asyncio
 import concurrent.futures
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QLabel, QListWidget, QListWidgetItem
+from PyQt5.QtWidgets import QLabel, QListWidget, QListWidgetItem, QVBoxLayout, QWidget
 
-from electrum.i18n import _
-from electrum.network import Network
 from electrum.bip39_recovery import account_discovery
+from electrum.i18n import _
 from electrum.logging import get_logger
-from electrum.util import get_asyncio_loop, UserFacingException
+from electrum.network import Network
+from electrum.util import UserFacingException, get_asyncio_loop
 
-from .util import WindowModalDialog, MessageBoxMixin, TaskThread, Buttons, CancelButton, OkButton
-
+from .util import Buttons, CancelButton, OkButton, TaskThread, WindowModalDialog
 
 _logger = get_logger(__name__)
 
@@ -86,7 +85,7 @@ class Bip39RecoveryDialog(WindowModalDialog):
         if isinstance(e, UserFacingException):
             msg += f"\n{e}"
         else:
-            _logger.error(f"recovery error", exc_info=exc_info)
+            _logger.error("recovery error", exc_info=exc_info)
         self.content.addWidget(QLabel(msg))
 
     def clear_content(self):

@@ -21,33 +21,33 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import sys
 import html
-from typing import TYPE_CHECKING, Optional, Set
+import sys
+from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import QObject
 import PyQt5.QtCore as QtCore
+from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import (
-    QWidget,
+    QHBoxLayout,
     QLabel,
+    QMessageBox,
     QPushButton,
     QTextEdit,
-    QMessageBox,
-    QHBoxLayout,
     QVBoxLayout,
+    QWidget,
 )
 
-from electrum.i18n import _
+from electrum import constants
 from electrum.base_crash_reporter import (
     BaseCrashReporter,
-    EarlyExceptionsQueue,
     CrashReportResponse,
+    EarlyExceptionsQueue,
 )
+from electrum.i18n import _
 from electrum.logging import Logger
-from electrum import constants
 from electrum.network import Network
 
-from .util import MessageBoxMixin, read_QIcon, WaitingDialog, font_height
+from .util import MessageBoxMixin, WaitingDialog, font_height, read_QIcon
 
 if TYPE_CHECKING:
     from electrum.simple_config import SimpleConfig
@@ -143,7 +143,8 @@ class Exception_Window(BaseCrashReporter, QWidget, MessageBoxMixin, Logger):
             )
 
         proxy = self.network.proxy
-        task = lambda: BaseCrashReporter.send_report(self, self.network.asyncio_loop, proxy)
+        def task():
+            return BaseCrashReporter.send_report(self, self.network.asyncio_loop, proxy)
         msg = _("Sending crash report...")
         WaitingDialog(self, msg, task, on_success, on_failure)
 

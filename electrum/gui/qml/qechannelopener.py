@@ -1,21 +1,20 @@
 import threading
-from concurrent.futures import CancelledError
 from asyncio.exceptions import TimeoutError
-from typing import TYPE_CHECKING, Optional
+from concurrent.futures import CancelledError
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject
+from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
 
-from electrum.i18n import _
-from electrum.gui import messages
-from electrum.util import bfh
-from electrum.lnutil import extract_nodeid, ConnStringFormatError
 from electrum.bitcoin import DummyAddress
+from electrum.gui import messages
+from electrum.i18n import _
+from electrum.lnutil import ConnStringFormatError, extract_nodeid
 from electrum.lnworker import hardcoded_trampoline_nodes
 from electrum.logging import get_logger
+from electrum.util import bfh
 
 from .auth import AuthMixin, auth_protect
-from .qetxfinalizer import QETxFinalizer
 from .qetxdetails import QETxDetails
+from .qetxfinalizer import QETxFinalizer
 from .qetypes import QEAmount
 from .qewallet import QEWallet
 
@@ -68,7 +67,7 @@ class QEChannelOpener(QObject, AuthMixin):
     @connectStr.setter
     def connectStr(self, connect_str: str):
         if self._connect_str != connect_str:
-            self._logger.debug("connectStr set -> %s" % connect_str)
+            self._logger.debug(f"connectStr set -> {connect_str}")
             self._connect_str = connect_str
             self.connectStrChanged.emit()
             self.validate()
@@ -169,17 +168,19 @@ class QEChannelOpener(QObject, AuthMixin):
             return
 
         amount = "!" if self._amount.isMax else self._amount.satsInt
-        self._logger.debug("amount = %s" % str(amount))
+        self._logger.debug(f"amount = {amount!s}")
 
         coins = self._wallet.wallet.get_spendable_coins(None, nonlocal_only=True)
 
-        mktx = lambda amt: lnworker.mktx_for_open_channel(
-            coins=coins, funding_sat=amt, node_id=self._node_pubkey, fee_est=None
-        )
+        def mktx(amt):
+            return lnworker.mktx_for_open_channel(
+                    coins=coins, funding_sat=amt, node_id=self._node_pubkey, fee_est=None
+                )
 
-        acpt = lambda tx: self.do_open_channel(
-            tx, self._connect_str_resolved, self._wallet.password
-        )
+        def acpt(tx):
+            return self.do_open_channel(
+                    tx, self._connect_str_resolved, self._wallet.password
+                )
 
         self._finalizer = QETxFinalizer(self, make_tx=mktx, accept=acpt)
         self._finalizer.canRbf = False

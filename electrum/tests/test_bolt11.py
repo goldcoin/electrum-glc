@@ -1,30 +1,26 @@
-from hashlib import sha256
-from decimal import Decimal
-from binascii import unhexlify, hexlify
 import pprint
-import unittest
+from binascii import hexlify, unhexlify
+from decimal import Decimal
+from hashlib import sha256
 
+from electrum import constants, segwit_addr
 from electrum.lnaddr import (
-    shorten_amount,
-    unshorten_amount,
     LnAddr,
-    lnencode,
-    lndecode,
-    u5_to_bitarray,
     bitarray_to_u5,
+    lndecode,
+    lnencode,
+    shorten_amount,
+    u5_to_bitarray,
+    unshorten_amount,
 )
-from electrum.segwit_addr import bech32_encode, bech32_decode
-from electrum import segwit_addr
 from electrum.lnutil import (
-    UnknownEvenFeatureBits,
-    derive_payment_secret_from_payment_preimage,
-    LnFeatures,
     IncompatibleLightningFeatures,
+    LnFeatures,
+    derive_payment_secret_from_payment_preimage,
 )
-from electrum import constants
+from electrum.segwit_addr import bech32_decode, bech32_encode
 
 from . import ElectrumTestCase
-
 
 RHASH = unhexlify("0001020304050607080900010203040506070809000102030405060708090102")
 PAYMENT_SECRET = unhexlify("1111111111111111111111111111111111111111111111111111111111111111")
@@ -53,8 +49,8 @@ class TestBolt11(ElectrumTestCase):
     def compare(a, b):
 
         if len([t[1] for t in a.tags if t[0] == "h"]) == 1:
-            h1 = sha256([t[1] for t in a.tags if t[0] == "h"][0].encode("utf-8")).digest()
-            h2 = [t[1] for t in b.tags if t[0] == "h"][0]
+            h1 = sha256(next(t[1] for t in a.tags if t[0] == "h").encode("utf-8")).digest()
+            h2 = next(t[1] for t in b.tags if t[0] == "h")
             assert h1 == h2
 
         # Need to filter out these, since they are being modified during

@@ -1,15 +1,15 @@
-import os
 import csv
 import io
-from typing import Callable, Tuple, Any, Dict, List, Sequence, Union, Optional
+import os
 from collections import OrderedDict
+from typing import Any, Union
 
 from .lnutil import OnionFailureCodeMetaFlag
 
 
 class FailedToParseMsg(Exception):
-    msg_type_int: Optional[int] = None
-    msg_type_name: Optional[str] = None
+    msg_type_int: int | None = None
+    msg_type_name: str | None = None
 
 
 class UnknownMsgType(FailedToParseMsg):
@@ -83,7 +83,7 @@ def write_bigsize_int(i: int) -> bytes:
         return b"\xff" + int.to_bytes(i, length=8, byteorder="big", signed=False)
 
 
-def read_bigsize_int(fd: io.BytesIO) -> Optional[int]:
+def read_bigsize_int(fd: io.BytesIO) -> int | None:
     try:
         first = fd.read(1)[0]
     except IndexError:
@@ -229,7 +229,7 @@ def _write_field(
         assert count == 1, count
         if isinstance(value, int):
             value = int.to_bytes(value, length=type_len, byteorder="big", signed=False)
-        if not isinstance(value, (bytes, bytearray)):
+        if not isinstance(value, bytes | bytearray):
             raise Exception(f"can only write bytes into fd. got: {value!r}")
         while len(value) > 0 and value[0] == 0x00:
             value = value[1:]
@@ -241,7 +241,7 @@ def _write_field(
         assert count == 1, count
         if isinstance(value, int):
             value = write_bigsize_int(value)
-        if not isinstance(value, (bytes, bytearray)):
+        if not isinstance(value, bytes | bytearray):
             raise Exception(f"can only write bytes into fd. got: {value!r}")
         nbytes_written = fd.write(value)
         if nbytes_written != len(value):
@@ -266,7 +266,7 @@ def _write_field(
         total_len = count * type_len
         if isinstance(value, int) and (count == 1 or field_type == "byte"):
             value = int.to_bytes(value, length=total_len, byteorder="big", signed=False)
-    if not isinstance(value, (bytes, bytearray)):
+    if not isinstance(value, bytes | bytearray):
         raise Exception(f"can only write bytes into fd. got: {value!r}")
     if count != "..." and total_len != len(value):
         raise UnexpectedFieldSizeForEncoder(f"expected: {total_len}, got {len(value)}")
@@ -275,7 +275,7 @@ def _write_field(
         raise Exception(f"tried to write {len(value)} bytes, but only wrote {nbytes_written}!?")
 
 
-def _read_tlv_record(*, fd: io.BytesIO) -> Tuple[int, bytes]:
+def _read_tlv_record(*, fd: io.BytesIO) -> tuple[int, bytes]:
     if not fd:
         raise Exception()
     tlv_type = _read_field(fd=fd, field_type="bigsize", count=1)
@@ -310,7 +310,7 @@ def _resolve_field_count(
             field_count = int(field_count_str)
         except ValueError:
             field_count = vars_dict[field_count_str]
-            if isinstance(field_count, (bytes, bytearray)):
+            if isinstance(field_count, bytes | bytearray):
                 field_count = int.from_bytes(field_count, byteorder="big")
     assert isinstance(field_count, int)
     return field_count
@@ -459,7 +459,7 @@ class LNSerializer:
                         raise Exception(f"unexpected row in scheme: {row!r}")
                 _write_tlv_record(fd=fd, tlv_type=tlv_record_type, tlv_val=tlv_record_fd.getvalue())
 
-    def read_tlv_stream(self, *, fd: io.BytesIO, tlv_stream_name: str) -> Dict[str, Dict[str, Any]]:
+    def read_tlv_stream(self, *, fd: io.BytesIO, tlv_stream_name: str) -> dict[str, dict[str, Any]]:
         parsed = {}  # type: Dict[str, Dict[str, Any]]
         scheme_map = self.in_tlv_stream_get_tlv_record_scheme_from_type[tlv_stream_name]
         last_seen_tlv_record_type = -1  # type: int
@@ -551,7 +551,7 @@ class LNSerializer:
                     raise Exception(f"unexpected row in scheme: {row!r}")
             return fd.getvalue()
 
-    def decode_msg(self, data: bytes) -> Tuple[str, dict]:
+    def decode_msg(self, data: bytes) -> tuple[str, dict]:
         """
         Decode Lightning message by reading the first
         two bytes to determine message type.

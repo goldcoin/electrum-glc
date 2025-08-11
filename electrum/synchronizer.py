@@ -24,27 +24,25 @@
 # SOFTWARE.
 import asyncio
 import hashlib
-from typing import Dict, List, TYPE_CHECKING, Tuple, Set
-from collections import defaultdict
 import logging
+from collections import defaultdict
+from typing import TYPE_CHECKING
 
-from aiorpcx import run_in_thread, RPCError
+from aiorpcx import RPCError
 
-from . import util
-from .transaction import Transaction, PartialTransaction
-from .util import (
-    make_aiohttp_session,
-    NetworkJobOnDefaultServer,
-    random_shuffled_copy,
-    OldTaskGroup,
-)
 from .bitcoin import address_to_scripthash, is_address
-from .logging import Logger
 from .interface import GracefulDisconnect, NetworkTimeout
+from .transaction import PartialTransaction, Transaction
+from .util import (
+    NetworkJobOnDefaultServer,
+    OldTaskGroup,
+    make_aiohttp_session,
+    random_shuffled_copy,
+)
 
 if TYPE_CHECKING:
-    from .network import Network
     from .address_synchronizer import AddressSynchronizer
+    from .network import Network
 
 
 class SynchronizerFailure(Exception):
@@ -158,7 +156,7 @@ class Synchronizer(SynchronizerBase):
         self._init_done = False
         self.requested_tx = {}
         self.requested_histories = set()
-        self._stale_histories = dict()  # type: Dict[str, asyncio.Task]
+        self._stale_histories = {}  # type: Dict[str, asyncio.Task]
 
     def diagnostic_name(self):
         return self.adb.diagnostic_name()
@@ -195,7 +193,7 @@ class Synchronizer(SynchronizerBase):
             result = await self.interface.get_history_for_scripthash(h)
         self._requests_answered += 1
         self.logger.info(f"receiving history {addr} {len(result)}")
-        hist = list(map(lambda item: (item["tx_hash"], item["height"]), result))
+        hist = [(item["tx_hash"], item["height"]) for item in result]
         # tx_fees
         tx_fees = [(item["tx_hash"], item.get("fee")) for item in result]
         tx_fees = dict(filter(lambda x: x[1] is not None, tx_fees))
@@ -251,7 +249,7 @@ class Synchronizer(SynchronizerBase):
         try:
             async with self._network_request_semaphore:
                 raw_tx = await self.interface.get_transaction(tx_hash)
-        except RPCError as e:
+        except RPCError:
             # most likely, "No such mempool or blockchain transaction"
             if allow_server_not_finding_tx:
                 self.requested_tx.pop(tx_hash)
@@ -291,7 +289,7 @@ class Synchronizer(SynchronizerBase):
                 await self._add_address(addr)
             up_to_date = self.adb.is_up_to_date()
             # see if status changed
-            if up_to_date != prev_uptodate or up_to_date and self._processed_some_notifications:
+            if up_to_date != prev_uptodate or (up_to_date and self._processed_some_notifications):
                 self._processed_some_notifications = False
                 self.adb.up_to_date_changed()
             prev_uptodate = up_to_date

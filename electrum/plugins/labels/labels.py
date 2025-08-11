@@ -1,24 +1,21 @@
 import asyncio
+import base64
 import hashlib
 import json
-import sys
-import traceback
-from typing import Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
-import base64
-
-from electrum.plugin import BasePlugin, hook
-from electrum.crypto import aes_encrypt_with_iv, aes_decrypt_with_iv
+from electrum.crypto import aes_decrypt_with_iv, aes_encrypt_with_iv
 from electrum.i18n import _
-from electrum.util import log_exceptions, ignore_exceptions, make_aiohttp_session
 from electrum.network import Network
+from electrum.plugin import BasePlugin, hook
+from electrum.util import ignore_exceptions, log_exceptions, make_aiohttp_session
 
 if TYPE_CHECKING:
     from electrum.wallet import Abstract_Wallet
 
 
 class ErrorConnectingServer(Exception):
-    def __init__(self, reason: Union[str, Exception] = None):
+    def __init__(self, reason: Union[str, Exception] | None = None):
         self.reason = reason
 
     def __str__(self):
@@ -109,7 +106,7 @@ class LabelsPlugin(BasePlugin):
     async def push_thread(self, wallet: "Abstract_Wallet"):
         wallet_data = self.wallets.get(wallet, None)
         if not wallet_data:
-            raise Exception("Wallet {} not loaded".format(wallet))
+            raise Exception(f"Wallet {wallet} not loaded")
         wallet_id = wallet_data[2]
         bundle = {"labels": [], "walletId": wallet_id, "walletNonce": self.get_nonce(wallet)}
         for key, value in wallet.get_all_labels().items():
@@ -117,7 +114,7 @@ class LabelsPlugin(BasePlugin):
                 encoded_key = self.encode(wallet, key)
                 encoded_value = self.encode(wallet, value)
             except Exception:
-                self.logger.info(f"cannot encode {repr(key)} {repr(value)}")
+                self.logger.info(f"cannot encode {key!r} {value!r}")
                 continue
             bundle["labels"].append({"encryptedLabel": encoded_value, "externalId": encoded_key})
         await self.do_post("/labels", bundle)
@@ -125,7 +122,7 @@ class LabelsPlugin(BasePlugin):
     async def pull_thread(self, wallet: "Abstract_Wallet", force: bool):
         wallet_data = self.wallets.get(wallet, None)
         if not wallet_data:
-            raise Exception("Wallet {} not loaded".format(wallet))
+            raise Exception(f"Wallet {wallet} not loaded")
         wallet_id = wallet_data[2]
         nonce = 1 if force else self.get_nonce(wallet) - 1
         self.logger.info(f"asking for labels since nonce {nonce}")

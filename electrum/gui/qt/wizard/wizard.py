@@ -3,27 +3,27 @@ import threading
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal, pyqtSlot, QSize
+from PyQt5.QtCore import QSize, Qt, QTimer, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (
     QDialog,
-    QPushButton,
-    QWidget,
-    QLabel,
-    QVBoxLayout,
-    QScrollArea,
     QHBoxLayout,
+    QLabel,
     QLayout,
+    QPushButton,
+    QScrollArea,
     QStackedWidget,
+    QVBoxLayout,
+    QWidget,
 )
 
+from electrum.gui.qt.util import Buttons, MessageBoxMixin, WWLabel, icon_path
 from electrum.i18n import _
 from electrum.logging import get_logger
-from electrum.gui.qt.util import Buttons, icon_path, MessageBoxMixin, WWLabel
 
 if TYPE_CHECKING:
-    from electrum.simple_config import SimpleConfig
     from electrum.gui.qt import QElectrumApplication
+    from electrum.simple_config import SimpleConfig
     from electrum.wizard import WizardViewState
 
 
@@ -255,7 +255,7 @@ class WizardComponent(QWidget):
         parent: QWidget,
         wizard: QEAbstractWizard,
         *,
-        title: str = None,
+        title: str | None = None,
         layout: QLayout = None,
     ):
         super().__init__(parent)

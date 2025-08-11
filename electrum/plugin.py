@@ -22,42 +22,33 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import concurrent
+import importlib.util
 import os
 import pkgutil
-import importlib.util
-import time
-import threading
 import sys
+import threading
+import time
+from collections.abc import Callable, Iterable, Mapping, Sequence
+from functools import partial, wraps
 from typing import (
-    NamedTuple,
-    Any,
-    Union,
     TYPE_CHECKING,
+    Any,
+    NamedTuple,
     Optional,
-    Tuple,
-    Dict,
-    Iterable,
-    List,
-    Sequence,
-    Callable,
     TypeVar,
-    Mapping,
-    Set,
+    Union,
 )
-import concurrent
-from concurrent import futures
-from functools import wraps, partial
 
+from . import bip32, plugins
 from .i18n import _
-from .util import profiler, DaemonThread, UserCancelled, ThreadJob, UserFacingException
-from . import bip32
-from . import plugins
+from .logging import Logger, get_logger
 from .simple_config import SimpleConfig
-from .logging import get_logger, Logger
+from .util import DaemonThread, ThreadJob, UserCancelled, UserFacingException, profiler
 
 if TYPE_CHECKING:
-    from .plugins.hw_wallet import HW_PluginBase, HardwareClientBase, HardwareHandlerBase
     from .keystore import Hardware_KeyStore, KeyStore
+    from .plugins.hw_wallet import HardwareClientBase, HardwareHandlerBase, HW_PluginBase
     from .wallet import Abstract_Wallet
 
 
@@ -93,9 +84,9 @@ class Plugins(DaemonThread):
         Note that plugins not available for the current GUI are also included.
         """
         if cls._all_found_plugins is None:
-            cls._all_found_plugins = dict()
+            cls._all_found_plugins = {}
             iter_modules = list(pkgutil.iter_modules([cls.pkgpath]))
-            for loader, name, ispkg in iter_modules:
+            for loader, name, _ispkg in iter_modules:
                 # FIXME pyinstaller binaries are packaging each built-in plugin twice:
                 #       once as data and once as code. To honor the "no duplicates" rule below,
                 #       we exclude the ones packaged as *code*, here:
@@ -112,7 +103,7 @@ class Plugins(DaemonThread):
                     sys.modules[spec.name] = module
                     spec.loader.exec_module(module)
                 except Exception as e:
-                    raise Exception(f"Error pre-loading {full_name}: {repr(e)}") from e
+                    raise Exception(f"Error pre-loading {full_name}: {e!r}") from e
                 d = module.__dict__
                 if name in cls._all_found_plugins:
                     _logger.info(f"Found the following plugin modules: {iter_modules=}")
@@ -150,13 +141,13 @@ class Plugins(DaemonThread):
         full_name = f"electrum.plugins.{name}.{self.gui_name}"
         spec = importlib.util.find_spec(full_name)
         if spec is None:
-            raise RuntimeError("%s implementation for %s plugin not found" % (self.gui_name, name))
+            raise RuntimeError(f"{self.gui_name} implementation for {name} plugin not found")
         try:
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             plugin = module.Plugin(self, self.config, name)
         except Exception as e:
-            raise Exception(f"Error loading {name} plugin: {repr(e)}") from e
+            raise Exception(f"Error loading {name} plugin: {e!r}") from e
         self.add_jobs(plugin.thread_jobs())
         self.plugins[name] = plugin
         self.logger.info(f"loaded {name}")
@@ -199,11 +190,11 @@ class Plugins(DaemonThread):
         if not d:
             return False
         deps = d.get("requires", [])
-        for dep, s in deps:
+        for dep, _s in deps:
             try:
                 __import__(dep)
             except ImportError as e:
-                self.logger.warning(f"Plugin {name} unavailable: {repr(e)}")
+                self.logger.warning(f"Plugin {name} unavailable: {e!r}")
                 return False
         requires = d.get("requires_wallet_type", [])
         return not requires or wallet.wallet_type in requires
@@ -230,7 +221,7 @@ class Plugins(DaemonThread):
         return out
 
     def register_wallet_type(self, name, gui_good, wallet_type):
-        from .wallet import register_wallet_type, register_constructor
+        from .wallet import register_constructor, register_wallet_type
 
         self.logger.info(f"registering wallet type {(wallet_type, name)}")
 
@@ -368,19 +359,19 @@ class Device(NamedTuple):
 
 class DeviceInfo(NamedTuple):
     device: Device
-    label: Optional[str] = None
-    initialized: Optional[bool] = None
-    exception: Optional[Exception] = None
-    plugin_name: Optional[str] = None  # manufacturer, e.g. "trezor"
-    soft_device_id: Optional[str] = None  # if available, used to distinguish same-type hw devices
-    model_name: Optional[str] = None  # e.g. "Ledger Nano S"
+    label: str | None = None
+    initialized: bool | None = None
+    exception: Exception | None = None
+    plugin_name: str | None = None  # manufacturer, e.g. "trezor"
+    soft_device_id: str | None = None  # if available, used to distinguish same-type hw devices
+    model_name: str | None = None  # e.g. "Ledger Nano S"
 
 
 class HardwarePluginToScan(NamedTuple):
     name: str
     description: str
     plugin: Optional["HW_PluginBase"]
-    exception: Optional[Exception]
+    exception: Exception | None
 
 
 PLACEHOLDER_HW_CLIENT_LABELS = {None, "", " "}
@@ -404,7 +395,7 @@ _hwd_comms_executor = concurrent.futures.ThreadPoolExecutor(
 T = TypeVar("T")
 
 
-def run_in_hwd_thread(func: Callable[[], T]) -> T:
+def run_in_hwd_thread[T](func: Callable[[], T]) -> T:
     if threading.current_thread().name.startswith("hwd_comms_thread"):
         return func()
     else:
@@ -568,7 +559,7 @@ class DeviceMgr(ThreadJob):
         keystore: "Hardware_KeyStore",
         force_pair: bool,
         *,
-        devices: Sequence["Device"] = None,
+        devices: Sequence["Device"] | None = None,
         allow_user_interaction: bool = True,
     ) -> Optional["HardwareClientBase"]:
         self.logger.info("getting client for keystore")
@@ -684,9 +675,9 @@ class DeviceMgr(ThreadJob):
         *,
         handler: Optional["HardwareHandlerBase"],
         plugin: "HW_PluginBase",
-        devices: Sequence["Device"] = None,
+        devices: Sequence["Device"] | None = None,
         include_failing_clients: bool = False,
-    ) -> List["DeviceInfo"]:
+    ) -> list["DeviceInfo"]:
         """Returns a list of DeviceInfo objects: one for each connected device accepted by the plugin.
         Already paired devices are also included, as it is okay to reuse them.
         """
@@ -709,7 +700,7 @@ class DeviceMgr(ThreadJob):
                 model_name = client.device_model_name()
             except Exception as e:
                 self.logger.error(
-                    f"failed to create client for {plugin.name} at {device.path}: {repr(e)}"
+                    f"failed to create client for {plugin.name} at {device.path}: {e!r}"
                 )
                 if include_failing_clients:
                     infos.append(DeviceInfo(device=device, exception=e, plugin_name=plugin.name))
@@ -732,7 +723,7 @@ class DeviceMgr(ThreadJob):
         plugin: "HW_PluginBase",
         handler: "HardwareHandlerBase",
         keystore: "Hardware_KeyStore",
-        devices: Sequence["Device"] = None,
+        devices: Sequence["Device"] | None = None,
         *,
         allow_user_interaction: bool = True,
     ) -> "DeviceInfo":
@@ -751,7 +742,7 @@ class DeviceMgr(ThreadJob):
                 msg += f"label: {keystore.label}, "
             msg += f"bip32 root fingerprint: {keystore.get_root_fingerprint()!r}"
             msg += ").\n\n{}\n\n{}".format(
-                _("Verify the cable is connected and that " "no other application is using it."),
+                _("Verify the cable is connected and that no other application is using it."),
                 _("Try to connect again?"),
             )
             if not handler.yes_no_question(msg):
@@ -828,7 +819,7 @@ class DeviceMgr(ThreadJob):
         return info
 
     @runs_in_hwd_thread
-    def _scan_devices_with_hid(self) -> List["Device"]:
+    def _scan_devices_with_hid(self) -> list["Device"]:
         try:
             import hid
         except ImportError:
@@ -865,7 +856,7 @@ class DeviceMgr(ThreadJob):
                 new_devices = f()
             except BaseException as e:
                 self.logger.error(
-                    "custom device enum failed. func {}, error {}".format(str(f), repr(e))
+                    f"custom device enum failed. func {f!s}, error {e!r}"
                 )
             else:
                 devices.extend(new_devices)
@@ -891,12 +882,12 @@ class DeviceMgr(ThreadJob):
         return devices
 
     @classmethod
-    def version_info(cls) -> Mapping[str, Optional[str]]:
+    def version_info(cls) -> Mapping[str, str | None]:
         ret = {}
         # add libusb
         try:
             import usb1
-        except Exception as e:
+        except Exception:
             ret["libusb.version"] = None
         else:
             ret["libusb.version"] = ".".join(map(str, usb1.getVersion()[:4]))
@@ -909,7 +900,7 @@ class DeviceMgr(ThreadJob):
             import hid
 
             ret["hidapi.version"] = hid.__version__  # available starting with 0.12.0.post2
-        except Exception as e:
+        except Exception:
             from importlib.metadata import version
 
             try:
@@ -923,7 +914,7 @@ class DeviceMgr(ThreadJob):
         keystores: Sequence["KeyStore"],
         *,
         allow_user_interaction: bool = True,
-        devices: Sequence["Device"] = None,
+        devices: Sequence["Device"] | None = None,
     ) -> None:
         """Given a list of keystores, try to pair each with a connected hardware device.
 

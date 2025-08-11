@@ -24,26 +24,29 @@
 # SOFTWARE.
 
 import enum
-from typing import Sequence, TYPE_CHECKING
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QItemSelectionModel
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtWidgets import QAbstractItemView
-from PyQt5.QtWidgets import QMenu, QVBoxLayout, QTreeWidget, QTreeWidgetItem, QHeaderView
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QStandardItem, QStandardItemModel
+from PyQt5.QtWidgets import (
+    QAbstractItemView,
+    QHeaderView,
+    QMenu,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QVBoxLayout,
+)
 
 from electrum.i18n import _
-from electrum.util import format_time
-from electrum.invoices import Invoice, PR_UNPAID, PR_PAID, PR_INFLIGHT, PR_FAILED
+from electrum.invoices import PR_FAILED, PR_INFLIGHT, PR_UNPAID
 from electrum.lnutil import HtlcLog
+from electrum.util import format_time
 
-from .util import read_QIcon, pr_icons
-from .util import CloseButton, Buttons
-from .util import WindowModalDialog
-
-from .my_treeview import MyTreeView, MySortModel
+from .my_treeview import MySortModel, MyTreeView
+from .util import Buttons, CloseButton, WindowModalDialog, pr_icons, read_QIcon
 
 if TYPE_CHECKING:
-    from .main_window import ElectrumWindow
     from .send_tab import SendTab
 
 
@@ -167,10 +170,8 @@ class InvoiceList(MyTreeView):
             keys = [item.data(ROLE_REQUEST_ID) for item in items]
             invoices = [wallet.get_invoice(key) for key in keys]
             can_batch_pay = all(
-                [
-                    not i.is_lightning() and wallet.get_invoice_status(i) == PR_UNPAID
+                not i.is_lightning() and wallet.get_invoice_status(i) == PR_UNPAID
                     for i in invoices
-                ]
             )
             menu = QMenu(self)
             if can_batch_pay:

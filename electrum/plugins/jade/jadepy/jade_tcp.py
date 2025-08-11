@@ -1,6 +1,5 @@
-import socket
 import logging
-
+import socket
 
 logger = logging.getLogger("jade.tcp")
 
@@ -34,7 +33,7 @@ class JadeTCPImpl:
         assert self.isSupportedDevice(self.device)
         assert self.tcp_sock is None
 
-        logger.info("Connecting to {}".format(self.device))
+        logger.info(f"Connecting to {self.device}")
         self.tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         url = self.device[len(self.PROTOCOL_PREFIX) :].split(":")

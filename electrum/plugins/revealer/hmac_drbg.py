@@ -24,7 +24,7 @@ import hashlib
 import hmac
 
 
-class DRBG(object):
+class DRBG:
     def __init__(self, seed):
         self.key = b"\x00" * 64
         self.val = b"\x01" * 64

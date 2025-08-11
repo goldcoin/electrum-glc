@@ -2,24 +2,23 @@ import threading
 from functools import partial
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QMetaObject, Q_RETURN_ARG, pyqtSlot, pyqtSignal
-from PyQt5.QtWidgets import QLabel, QVBoxLayout, QLineEdit, QHBoxLayout
+from PyQt5.QtCore import Q_RETURN_ARG, QMetaObject, Qt, pyqtSlot
+from PyQt5.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QVBoxLayout
 
+from electrum.gui.qt.util import ButtonsTextEdit, OkButton, WindowModalDialog
+from electrum.gui.qt.wizard.wallet import (
+    WCHWUninitialized,
+    WCHWUnlock,
+    WCHWXPub,
+    WCScriptAndDerivation,
+)
 from electrum.i18n import _
 from electrum.plugin import hook
 from electrum.util import UserCancelled, UserFacingException
 
-from .bitbox02 import BitBox02Plugin
+from ..hw_wallet.plugin import OperationCancelled, only_hook_if_libraries_available
 from ..hw_wallet.qt import QtHandlerBase, QtPluginBase
-from ..hw_wallet.plugin import only_hook_if_libraries_available, OperationCancelled
-
-from electrum.gui.qt.wizard.wallet import (
-    WCScriptAndDerivation,
-    WCHWUnlock,
-    WCHWUninitialized,
-    WCHWXPub,
-)
-from electrum.gui.qt.util import WindowModalDialog, OkButton, ButtonsTextEdit
+from .bitbox02 import BitBox02Plugin
 
 if TYPE_CHECKING:
     from electrum.gui.qt.wizard.wallet import QENewWalletWizard
@@ -46,7 +45,7 @@ class Plugin(BitBox02Plugin, QtPluginBase):
                         partial(self.show_address, wallet, addrs[0], keystore=keystore)
                     )
 
-                device_name = "{} ({})".format(self.device, keystore.label)
+                device_name = f"{self.device} ({keystore.label})"
                 menu.addAction(_("Show on {}").format(device_name), show_address)
 
     @only_hook_if_libraries_available
@@ -60,7 +59,7 @@ class Plugin(BitBox02Plugin, QtPluginBase):
         def on_button_click():
             keystore.thread.add(partial(self.show_xpub, keystore=keystore))
 
-        device_name = "{} ({})".format(self.device, keystore.label)
+        device_name = f"{self.device} ({keystore.label})"
         mpk_text.addButton("eye1.png", on_button_click, _("Show on {}").format(device_name))
 
     @hook
@@ -83,7 +82,7 @@ class BitBox02_Handler(QtHandlerBase):
     MESSAGE_DIALOG_TITLE = _("BitBox02 Status")
 
     def __init__(self, win):
-        super(BitBox02_Handler, self).__init__(win, "BitBox02")
+        super().__init__(win, "BitBox02")
 
     def name_multisig_account(self):
         return QMetaObject.invokeMethod(

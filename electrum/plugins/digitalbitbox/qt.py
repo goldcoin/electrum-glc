@@ -4,17 +4,15 @@ from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import pyqtSignal
 
+from electrum.gui.qt.wizard.wallet import WCHWUnlock, WCHWXPub, WCScriptAndDerivation
 from electrum.i18n import _
 from electrum.plugin import hook
-from electrum.wallet import Standard_Wallet, Abstract_Wallet
-from electrum.util import UserCancelled, UserFacingException
-
+from electrum.plugins.hw_wallet.plugin import OperationCancelled, only_hook_if_libraries_available
 from electrum.plugins.hw_wallet.qt import QtHandlerBase, QtPluginBase
-from electrum.plugins.hw_wallet.plugin import only_hook_if_libraries_available, OperationCancelled
+from electrum.util import UserCancelled, UserFacingException
+from electrum.wallet import Abstract_Wallet, Standard_Wallet
 
-from electrum.gui.qt.wizard.wallet import WCScriptAndDerivation, WCHWXPub, WCHWUnlock
-
-from .digitalbitbox import DigitalBitboxPlugin, DeviceErased
+from .digitalbitbox import DeviceErased, DigitalBitboxPlugin
 
 if TYPE_CHECKING:
     from electrum.gui.qt.wizard.wallet import QENewWalletWizard
@@ -67,7 +65,7 @@ class Plugin(DigitalBitboxPlugin, QtPluginBase):
 
 class DigitalBitbox_Handler(QtHandlerBase):
     def __init__(self, win):
-        super(DigitalBitbox_Handler, self).__init__(win, "Digital Bitbox")
+        super().__init__(win, "Digital Bitbox")
 
 
 class WCDigitalBitboxScriptAndDerivation(WCScriptAndDerivation):

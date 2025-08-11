@@ -26,17 +26,17 @@
 import enum
 from typing import TYPE_CHECKING
 
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtCore import Qt, QPersistentModelIndex, QModelIndex
+from PyQt5.QtCore import QModelIndex, QPersistentModelIndex, Qt
+from PyQt5.QtGui import QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import QAbstractItemView, QMenu
 
-from electrum.i18n import _
 from electrum.bitcoin import is_address
-from electrum.util import block_explorer_URL
+from electrum.i18n import _
 from electrum.plugin import run_hook
+from electrum.util import block_explorer_URL
 
-from .util import webopen
 from .my_treeview import MyTreeView
+from .util import webopen
 
 if TYPE_CHECKING:
     from .main_window import ElectrumWindow

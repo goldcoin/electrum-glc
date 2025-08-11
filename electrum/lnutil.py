@@ -2,65 +2,52 @@
 # Distributed under the MIT software license, see the accompanying
 # file LICENCE or http://www.opensource.org/licenses/mit-license.php
 
-from enum import IntFlag, IntEnum
 import enum
 import json
-from collections import namedtuple, defaultdict
-from typing import (
-    NamedTuple,
-    List,
-    Tuple,
-    Mapping,
-    Optional,
-    TYPE_CHECKING,
-    Union,
-    Dict,
-    Set,
-    Sequence,
-)
 import re
 import sys
+from collections import defaultdict
+from collections.abc import Mapping, Sequence
+from enum import IntEnum, IntFlag
+from typing import (
+    TYPE_CHECKING,
+    NamedTuple,
+    Optional,
+    Union,
+)
 
 import attr
 from aiorpcx import NetAddress
 
-from .util import bfh, inv_dict, UserFacingException
-from .util import list_enabled_bits
-from .util import ShortID as ShortChannelID
-from .util import format_short_id as format_short_channel_id
-
-from .crypto import sha256, pw_decode_with_version_and_mac
-from .transaction import (
-    Transaction,
-    PartialTransaction,
-    PartialTxInput,
-    TxOutpoint,
-    PartialTxOutput,
-    opcodes,
-    TxOutput,
-)
-from .ecc import CURVE_ORDER, sig_string_from_der_sig, ECPubkey, string_to_number
-from . import ecc, bitcoin, crypto, transaction
-from . import descriptor
+from . import bitcoin, crypto, descriptor, ecc, segwit_addr, transaction
+from .bip32 import BIP32_PRIME, BIP32Node
 from .bitcoin import (
-    push_script,
-    redeem_script_to_address,
     address_to_script,
-    construct_witness,
     construct_script,
+    construct_witness,
+    redeem_script_to_address,
 )
-from . import segwit_addr
+from .crypto import pw_decode_with_version_and_mac, sha256
+from .ecc import CURVE_ORDER, ECPubkey, sig_string_from_der_sig, string_to_number
 from .i18n import _
 from .lnaddr import lndecode
-from .bip32 import BIP32Node, BIP32_PRIME
-from .transaction import BCDataStream, OPPushDataGeneric
 from .logging import get_logger
-
+from .transaction import (
+    BCDataStream,
+    OPPushDataGeneric,
+    PartialTransaction,
+    PartialTxInput,
+    PartialTxOutput,
+    Transaction,
+    TxOutpoint,
+    opcodes,
+)
+from .util import UserFacingException, bfh, list_enabled_bits
 
 if TYPE_CHECKING:
-    from .lnchannel import Channel, AbstractChannel
-    from .lnrouter import LNPaymentRoute
+    from .lnchannel import AbstractChannel, Channel
     from .lnonion import OnionRoutingFailure
+    from .lnrouter import LNPaymentRoute
     from .simple_config import SimpleConfig
 
 
@@ -77,17 +64,19 @@ LN_MAX_FUNDING_SAT_LEGACY = pow(2, 24) - 1
 DUST_LIMIT_MAX = 1000
 
 
-from .json_db import StoredObject, stored_in, stored_as
+from .json_db import StoredObject, stored_as, stored_in
 
 
-def channel_id_from_funding_tx(funding_txid: str, funding_index: int) -> Tuple[bytes, bytes]:
+def channel_id_from_funding_tx(funding_txid: str, funding_index: int) -> tuple[bytes, bytes]:
     funding_txid_bytes = bytes.fromhex(funding_txid)[::-1]
     i = int.from_bytes(funding_txid_bytes, "big") ^ funding_index
     return i.to_bytes(32, "big"), funding_txid_bytes
 
 
-hex_to_bytes = lambda v: v if isinstance(v, bytes) else bytes.fromhex(v) if v is not None else None
-json_to_keypair = lambda v: (
+def hex_to_bytes(v):
+    return v if isinstance(v, bytes) else bytes.fromhex(v) if v is not None else None
+def json_to_keypair(v):
+    return (
     v
     if isinstance(v, OnlyPubkeyKeypair)
     else Keypair(**v) if len(v) == 2 else OnlyPubkeyKeypair(**v)
@@ -98,7 +87,7 @@ def serialize_htlc_key(scid: bytes, htlc_id: int) -> str:
     return scid.hex() + ":%d" % htlc_id
 
 
-def deserialize_htlc_key(htlc_key: str) -> Tuple[bytes, int]:
+def deserialize_htlc_key(htlc_key: str) -> tuple[bytes, int]:
     scid, htlc_id = htlc_key.split(":")
     return bytes.fromhex(scid), int(htlc_id)
 
@@ -219,11 +208,11 @@ class ChannelConfig(StoredObject):
         )
         # now do tests that need access to both configs
         if is_local_initiator:
-            funder, fundee = LOCAL, REMOTE
-            funder_config, fundee_config = local_config, remote_config
+            funder, _fundee = LOCAL, REMOTE
+            funder_config, _fundee_config = local_config, remote_config
         else:
-            funder, fundee = REMOTE, LOCAL
-            funder_config, fundee_config = remote_config, local_config
+            funder, _fundee = REMOTE, LOCAL
+            funder_config, _fundee_config = remote_config, local_config
         # if channel_reserve_satoshis is less than dust_limit_satoshis within the open_channel message:
         #     MUST reject the channel.
         if remote_config.reserve_sat < local_config.dust_limit_sat:
@@ -279,7 +268,8 @@ class LocalConfig(ChannelConfig):
         channel_seed = kwargs["channel_seed"]
         static_remotekey = kwargs.pop("static_remotekey")
         node = BIP32Node.from_rootseed(channel_seed, xtype="standard")
-        keypair_generator = lambda family: generate_keypair(node, family)
+        def keypair_generator(family):
+            return generate_keypair(node, family)
         kwargs["per_commitment_secret_seed"] = keypair_generator(
             LnKeyFamily.REVOCATION_ROOT
         ).privkey
@@ -458,18 +448,18 @@ class Outpoint(StoredObject):
     output_index = attr.ib(type=int)
 
     def to_str(self):
-        return "{}:{}".format(self.txid, self.output_index)
+        return f"{self.txid}:{self.output_index}"
 
 
 class HtlcLog(NamedTuple):
     success: bool
     amount_msat: int  # amount for receiver (e.g. from invoice)
     route: Optional["LNPaymentRoute"] = None
-    preimage: Optional[bytes] = None
-    error_bytes: Optional[bytes] = None
+    preimage: bytes | None = None
+    error_bytes: bytes | None = None
     failure_msg: Optional["OnionRoutingFailure"] = None
-    sender_idx: Optional[int] = None
-    trampoline_fee_level: Optional[int] = None
+    sender_idx: int | None = None
+    trampoline_fee_level: int | None = None
 
     def formatted_tuple(self):
         route = self.route
@@ -593,21 +583,19 @@ class RevocationStore:
         index = self.storage["index"]
         new_element = ShachainElement(index=index, secret=hsh)
         bucket = count_trailing_zeros(index)
-        for i in range(0, bucket):
+        for i in range(bucket):
             this_bucket = self.buckets[i]
             e = shachain_derive(new_element, this_bucket.index)
             if e != this_bucket:
                 raise Exception(
-                    "hash is not derivable: {} {} {}".format(
-                        e.secret.hex(), this_bucket.secret.hex(), this_bucket.index
-                    )
+                    f"hash is not derivable: {e.secret.hex()} {this_bucket.secret.hex()} {this_bucket.index}"
                 )
         self.buckets[bucket] = new_element
         self.storage["index"] = index - 1
 
     def retrieve_secret(self, index: int) -> bytes:
         assert index <= self.START_INDEX, index
-        for i in range(0, 49):
+        for i in range(49):
             bucket = self.buckets.get(i)
             if bucket is None:
                 raise UnableToDeriveSecret()
@@ -753,7 +741,7 @@ def make_htlc_tx_witness(
 
 def make_htlc_tx_inputs(
     htlc_output_txid: str, htlc_output_index: int, amount_msat: int, witness_script: str
-) -> List[PartialTxInput]:
+) -> list[PartialTxInput]:
     assert type(htlc_output_txid) is str
     assert type(htlc_output_index) is int
     assert type(amount_msat) is int
@@ -769,7 +757,7 @@ def make_htlc_tx_inputs(
 
 
 def make_htlc_tx(
-    *, cltv_abs: int, inputs: List[PartialTxInput], output: PartialTxOutput
+    *, cltv_abs: int, inputs: list[PartialTxInput], output: PartialTxOutput
 ) -> PartialTransaction:
     assert type(cltv_abs) is int
     c_outputs = [output]
@@ -942,7 +930,7 @@ def make_htlc_output_witness_script(
     remote_htlc_pubkey: bytes,
     local_htlc_pubkey: bytes,
     payment_hash: bytes,
-    cltv_abs: Optional[int],
+    cltv_abs: int | None,
 ) -> bytes:
     if is_received_htlc:
         return make_received_htlc(
@@ -963,7 +951,7 @@ def make_htlc_output_witness_script(
 
 def get_ordered_channel_configs(
     chan: "AbstractChannel", for_us: bool
-) -> Tuple[Union[LocalConfig, RemoteConfig], Union[LocalConfig, RemoteConfig]]:
+) -> tuple[Union[LocalConfig, RemoteConfig], Union[LocalConfig, RemoteConfig]]:
     conf = chan.config[LOCAL] if for_us else chan.config[REMOTE]
     other_conf = chan.config[LOCAL] if not for_us else chan.config[REMOTE]
     return conf, other_conf
@@ -977,8 +965,8 @@ def possible_output_idxs_of_htlc_in_ctx(
     htlc_direction: "Direction",
     ctx: Transaction,
     htlc: "UpdateAddHtlc",
-) -> Set[int]:
-    amount_msat, cltv_abs, payment_hash = htlc.amount_msat, htlc.cltv_abs, htlc.payment_hash
+) -> set[int]:
+    _amount_msat, cltv_abs, payment_hash = htlc.amount_msat, htlc.cltv_abs, htlc.payment_hash
     for_us = subject == LOCAL
     conf, other_conf = get_ordered_channel_configs(chan=chan, for_us=for_us)
 
@@ -1004,7 +992,7 @@ def possible_output_idxs_of_htlc_in_ctx(
 
 def map_htlcs_to_ctx_output_idxs(
     *, chan: "Channel", ctx: Transaction, pcp: bytes, subject: "HTLCOwner", ctn: int
-) -> Dict[Tuple["Direction", "UpdateAddHtlc"], Tuple[int, int]]:
+) -> dict[tuple["Direction", "UpdateAddHtlc"], tuple[int, int]]:
     """Returns a dict from (htlc_dir, htlc) to (ctx_output_idx, htlc_relative_idx)"""
     htlc_to_ctx_output_idx_map = {}  # type: Dict[Tuple[Direction, UpdateAddHtlc], int]
     unclaimed_ctx_output_idxs = set(range(len(ctx.outputs())))
@@ -1012,7 +1000,7 @@ def map_htlcs_to_ctx_output_idxs(
     offered_htlcs.sort(key=lambda htlc: htlc.cltv_abs)
     received_htlcs = chan.included_htlcs(subject, RECEIVED, ctn=ctn)
     received_htlcs.sort(key=lambda htlc: htlc.cltv_abs)
-    for direction, htlcs in zip([SENT, RECEIVED], [offered_htlcs, received_htlcs]):
+    for direction, htlcs in zip([SENT, RECEIVED], [offered_htlcs, received_htlcs], strict=False):
         for htlc in htlcs:
             cands = sorted(
                 possible_output_idxs_of_htlc_in_ctx(
@@ -1051,8 +1039,8 @@ def make_htlc_tx_with_open_channel(
     commit: Transaction,
     ctx_output_idx: int,
     htlc: "UpdateAddHtlc",
-    name: str = None,
-) -> Tuple[bytes, PartialTransaction]:
+    name: str | None = None,
+) -> tuple[bytes, PartialTransaction]:
     amount_msat, cltv_abs, payment_hash = htlc.amount_msat, htlc.cltv_abs, htlc.payment_hash
     for_us = subject == LOCAL
     conf, other_conf = get_ordered_channel_configs(chan=chan, for_us=for_us)
@@ -1138,9 +1126,9 @@ def make_commitment_outputs(
     remote_amount_msat: int,
     local_script: str,
     remote_script: str,
-    htlcs: List[ScriptHtlc],
+    htlcs: list[ScriptHtlc],
     dust_limit_sat: int,
-) -> Tuple[List[PartialTxOutput], List[PartialTxOutput]]:
+) -> tuple[list[PartialTxOutput], list[PartialTxOutput]]:
     # BOLT-03: "Base commitment transaction fees are extracted from the funder's amount;
     #           if that amount is insufficient, the entire amount of the funder's output is used."
     #   -> if funder cannot afford feerate, their output might go negative, so take max(0, x) here:
@@ -1190,7 +1178,7 @@ def fee_for_htlc_output(*, feerate: int) -> int:
 
 def calc_fees_for_commitment_tx(
     *, num_htlcs: int, feerate: int, is_local_initiator: bool, round_to_sat: bool = True
-) -> Dict["HTLCOwner", int]:
+) -> dict["HTLCOwner", int]:
     # feerate is in sat/kw
     # returns fees in msats
     # note: BOLT-02 specifies that msat fees need to be rounded down to sat.
@@ -1224,7 +1212,7 @@ def make_commitment(
     remote_amount: int,
     dust_limit_sat: int,
     fees_per_participant: Mapping[HTLCOwner, int],
-    htlcs: List[ScriptHtlc],
+    htlcs: list[ScriptHtlc],
 ) -> PartialTransaction:
     c_input = make_funding_input(
         local_funding_pubkey, remote_funding_pubkey, funding_pos, funding_txid, funding_sat
@@ -1732,7 +1720,7 @@ def validate_features(features: int) -> LnFeatures:
             raise UnknownEvenFeatureBits(fbit)
     if not features.validate_transitive_dependencies():
         raise IncompatibleOrInsaneFeatures(
-            f"not all transitive dependencies are set. " f"features={features}"
+            f"not all transitive dependencies are set. features={features}"
         )
     return features
 
@@ -1771,7 +1759,7 @@ class LNPeerAddr:
         self._net_addr = net_addr
 
     def __str__(self):
-        return "{}@{}".format(self.pubkey.hex(), self.net_addr_str())
+        return f"{self.pubkey.hex()}@{self.net_addr_str()}"
 
     @classmethod
     def from_str(cls, s):
@@ -1809,7 +1797,7 @@ def get_compressed_pubkey_from_bech32(bech32_pubkey: str) -> bytes:
     if decoded_bech32.encoding != segwit_addr.Encoding.BECH32:
         raise ValueError("Bad bech32 encoding: must be using vanilla BECH32")
     if hrp != "ln":
-        raise Exception("unexpected hrp: {}".format(hrp))
+        raise Exception(f"unexpected hrp: {hrp}")
     data_8bits = segwit_addr.convertbits(data_5bits, 5, 8, False)
     # pad with zeroes
     COMPRESSED_PUBKEY_LENGTH = 33
@@ -1823,7 +1811,7 @@ def make_closing_tx(
     funding_txid: str,
     funding_pos: int,
     funding_sat: int,
-    outputs: List[PartialTxOutput],
+    outputs: list[PartialTxOutput],
 ) -> PartialTransaction:
     c_input = make_funding_input(
         local_funding_pubkey, remote_funding_pubkey, funding_pos, funding_txid, funding_sat
@@ -1833,7 +1821,7 @@ def make_closing_tx(
     return tx
 
 
-def split_host_port(host_port: str) -> Tuple[str, str]:  # port returned as string
+def split_host_port(host_port: str) -> tuple[str, str]:  # port returned as string
     ipv6 = re.compile(r"\[(?P<host>[:0-9a-f]+)\](?P<port>:\d+)?$")
     other = re.compile(r"(?P<host>[^:]+)(?P<port>:\d+)?$")
     m = ipv6.match(host_port)
@@ -1855,7 +1843,7 @@ def split_host_port(host_port: str) -> Tuple[str, str]:  # port returned as stri
     return host, port
 
 
-def extract_nodeid(connect_contents: str) -> Tuple[bytes, Optional[str]]:
+def extract_nodeid(connect_contents: str) -> tuple[bytes, str | None]:
     """Takes a connection-string-like str, and returns a tuple (node_id, rest),
     where rest is typically a host (with maybe port). Examples:
     - extract_nodeid(pubkey@host:port) == (pubkey, host:port)
@@ -1924,9 +1912,9 @@ class UpdateAddHtlc:
     htlc_id = attr.ib(type=int, kw_only=True, default=None)
 
     @stored_in("adds", tuple)
-    def from_tuple(amount_msat, payment_hash, cltv_abs, htlc_id, timestamp) -> "UpdateAddHtlc":
+    def from_tuple(self, payment_hash, cltv_abs, htlc_id, timestamp) -> "UpdateAddHtlc":
         return UpdateAddHtlc(
-            amount_msat=amount_msat,
+            amount_msat=self,
             payment_hash=payment_hash,
             cltv_abs=cltv_abs,
             htlc_id=htlc_id,

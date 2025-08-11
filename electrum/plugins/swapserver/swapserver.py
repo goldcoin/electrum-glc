@@ -32,8 +32,8 @@ from electrum.plugin import BasePlugin, hook
 from .server import SwapServer
 
 if TYPE_CHECKING:
-    from electrum.simple_config import SimpleConfig
     from electrum.daemon import Daemon
+    from electrum.simple_config import SimpleConfig
     from electrum.wallet import Abstract_Wallet
 
 
@@ -53,7 +53,6 @@ class SwapServerPlugin(BasePlugin):
             return
 
         self.server = SwapServer(self.config, wallet)
-        sm = wallet.lnworker.swap_manager
         for coro in [
             self.server.run(),
         ]:

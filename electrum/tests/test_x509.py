@@ -1,4 +1,3 @@
-import unittest
 
 from electrum.x509 import X509
 

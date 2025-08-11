@@ -7,31 +7,31 @@ from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
-    QLabel,
-    QVBoxLayout,
     QGridLayout,
     QHBoxLayout,
+    QLabel,
     QPushButton,
-    QWidget,
     QStackedWidget,
+    QVBoxLayout,
+    QWidget,
 )
 
 from electrum import keystore
-from electrum.plugin import run_hook
 from electrum.i18n import _
+from electrum.plugin import run_hook
 from electrum.wallet import Multisig_Wallet
 
 from .qrtextedit import ShowQRTextEdit
 from .util import (
-    read_QIcon,
-    WindowModalDialog,
-    ChoicesLayout,
     Buttons,
-    WWLabel,
+    ChoicesLayout,
     CloseButton,
     HelpButton,
-    font_height,
     ShowQRLineEdit,
+    WindowModalDialog,
+    WWLabel,
+    font_height,
+    read_QIcon,
 )
 
 if TYPE_CHECKING:
@@ -150,7 +150,8 @@ class WalletInfoDialog(WindowModalDialog):
 
                 labels = [label(idx, ks) for idx, ks in enumerate(wallet.get_keystores())]
 
-                on_click = lambda clayout: select_ks(clayout.selected_index())
+                def on_click(clayout):
+                    return select_ks(clayout.selected_index())
                 labels_clayout = ChoicesLayout(_("Select keystore"), labels, on_click)
                 vbox.addLayout(labels_clayout.layout())
 

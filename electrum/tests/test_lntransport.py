@@ -1,9 +1,8 @@
 import asyncio
 
-from electrum import util
 from electrum.ecc import ECPrivkey
-from electrum.lnutil import LNPeerAddr
 from electrum.lntransport import LNResponderTransport, LNTransport
+from electrum.lnutil import LNPeerAddr
 from electrum.util import OldTaskGroup
 
 from . import ElectrumTestCase

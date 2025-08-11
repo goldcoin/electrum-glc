@@ -1,27 +1,18 @@
-import shutil
-import tempfile
-import os
-import json
-from typing import Optional
-import asyncio
 import inspect
+import json
+import os
 
 import electrum
-from electrum.wallet_db import (
-    WalletDBUpgrader,
-    WalletDB,
-    WalletRequiresUpgrade,
-    WalletRequiresSplit,
-)
-from electrum.wallet import Wallet
-from electrum import constants
-from electrum import util
 from electrum.plugin import Plugins
-from electrum.simple_config import SimpleConfig
+from electrum.wallet import Wallet
+from electrum.wallet_db import (
+    WalletDB,
+    WalletRequiresSplit,
+    WalletRequiresUpgrade,
+)
 
 from . import as_testnet
 from .test_wallet import WalletTestCase
-
 
 WALLET_FILES_DIR = os.path.join(os.path.dirname(__file__), "test_storage_upgrade")
 
@@ -36,7 +27,7 @@ class TestStorageUpgrade(WalletTestCase):
         assert test_method_name.startswith("test_upgrade_from_")
         fname = test_method_name[len("test_upgrade_from_") :]
         test_vector_file = os.path.join(WALLET_FILES_DIR, fname)
-        with open(test_vector_file, "r") as f:
+        with open(test_vector_file) as f:
             wallet_str = f.read()
         return wallet_str
 
@@ -331,7 +322,7 @@ class TestStorageUpgrade(WalletTestCase):
         self.plugins.stopped_event.wait()
         super().tearDown()
 
-    async def _upgrade_storage(self, wallet_json, accounts=1) -> Optional[WalletDB]:
+    async def _upgrade_storage(self, wallet_json, accounts=1) -> WalletDB | None:
         if accounts == 1:
             # test manual upgrades
             try:

@@ -1,20 +1,21 @@
 import time
 from struct import pack
 
-from electrum import ecc
-from electrum.i18n import _
-from electrum.util import UserCancelled, UserFacingException
-from electrum.keystore import bip39_normalize_passphrase
-from electrum.bip32 import BIP32Node, convert_bip32_strpath_to_intpath as parse_path
-from electrum.logging import Logger
-from electrum.plugin import runs_in_hwd_thread
-from electrum.plugins.hw_wallet.plugin import OutdatedHwFirmwareException, HardwareClientBase
-
-from trezorlib.client import TrezorClient, PASSPHRASE_ON_DEVICE
-from trezorlib.exceptions import TrezorFailure, Cancelled, OutdatedFirmwareError
-from trezorlib.messages import WordRequestType, FailureType, RecoveryDeviceType, ButtonRequestType
 import trezorlib.btc
 import trezorlib.device
+from trezorlib.client import PASSPHRASE_ON_DEVICE, TrezorClient
+from trezorlib.exceptions import Cancelled, OutdatedFirmwareError, TrezorFailure
+from trezorlib.messages import ButtonRequestType, RecoveryDeviceType, WordRequestType
+
+from electrum import ecc
+from electrum.bip32 import BIP32Node
+from electrum.bip32 import convert_bip32_strpath_to_intpath as parse_path
+from electrum.i18n import _
+from electrum.keystore import bip39_normalize_passphrase
+from electrum.logging import Logger
+from electrum.plugin import runs_in_hwd_thread
+from electrum.plugins.hw_wallet.plugin import HardwareClientBase, OutdatedHwFirmwareException
+from electrum.util import UserCancelled
 
 MESSAGES = {
     ButtonRequestType.ConfirmOutput: _("Confirm the transaction output on your {} device"),
@@ -89,7 +90,7 @@ class TrezorClientBase(HardwareClientBase, Logger):
         return self.client.features
 
     def __str__(self):
-        return "%s/%s" % (self.label(), self.features.device_id)
+        return f"{self.label()}/{self.features.device_id}"
 
     def label(self):
         return self.features.label

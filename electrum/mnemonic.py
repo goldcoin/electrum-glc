@@ -22,19 +22,17 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import os
-import math
 import hashlib
-import unicodedata
+import math
 import string
-from typing import Sequence, Dict
+import unicodedata
+from collections.abc import Sequence
 from types import MappingProxyType
 
-from .util import resource_path, bfh, randrange
-from .crypto import hmac_oneshot
 from . import version
+from .crypto import hmac_oneshot
 from .logging import Logger
-
+from .util import bfh, randrange, resource_path
 
 # http://www.asahi-net.or.jp/~ax2s-kmtn/ref/unicode/e_asia.html
 CJK_INTERVALS = [
@@ -72,7 +70,7 @@ CJK_INTERVALS = [
 
 def is_CJK(c):
     n = ord(c)
-    for imin, imax, name in CJK_INTERVALS:
+    for imin, imax, _name in CJK_INTERVALS:
         if n >= imin and n <= imax:
             return True
     return False
@@ -136,7 +134,7 @@ class Wordlist(tuple):
     def from_file(cls, filename) -> "Wordlist":
         path = resource_path("wordlist", filename)
         if path not in _WORDLIST_CACHE:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 s = f.read().strip()
             s = unicodedata.normalize("NFKD", s)
             lines = s.split("\n")
@@ -174,7 +172,7 @@ class Mnemonic(Logger):
         self.logger.info(f"wordlist has {len(self.wordlist)} words")
 
     @classmethod
-    def mnemonic_to_seed(self, mnemonic, passphrase) -> bytes:
+    def mnemonic_to_seed(cls, mnemonic, passphrase) -> bytes:
         PBKDF2_ROUNDS = 2048
         mnemonic = normalize_text(mnemonic)
         passphrase = passphrase or ""

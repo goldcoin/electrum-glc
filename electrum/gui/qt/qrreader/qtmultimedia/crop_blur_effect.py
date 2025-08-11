@@ -23,9 +23,9 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from PyQt5.QtCore import QObject, QPoint, QRect, Qt
+from PyQt5.QtGui import QPainter, QRegion, QTransform
 from PyQt5.QtWidgets import QGraphicsBlurEffect, QGraphicsEffect
-from PyQt5.QtGui import QPainter, QTransform, QRegion
-from PyQt5.QtCore import QObject, QRect, QPoint, Qt
 
 
 class QrReaderCropBlurEffect(QGraphicsBlurEffect):

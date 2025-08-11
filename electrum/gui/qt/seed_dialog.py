@@ -28,39 +28,36 @@ from typing import TYPE_CHECKING
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (
-    QVBoxLayout,
     QCheckBox,
-    QHBoxLayout,
-    QLineEdit,
-    QLabel,
     QCompleter,
     QDialog,
-    QStyledItemDelegate,
-    QScrollArea,
-    QWidget,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
     QPushButton,
+    QStyledItemDelegate,
+    QVBoxLayout,
 )
 
+from electrum import old_mnemonic, slip39
 from electrum.i18n import _
 from electrum.mnemonic import Mnemonic, seed_type
-from electrum import old_mnemonic
-from electrum import slip39
 
+from .completion_text_edit import CompletionTextEdit
+from .qrtextedit import ScanQRTextEdit, ShowQRTextEdit
 from .util import (
     Buttons,
-    OkButton,
-    WWLabel,
     ButtonsTextEdit,
-    icon_path,
-    EnterButton,
-    CloseButton,
-    WindowModalDialog,
-    ColorScheme,
     ChoicesLayout,
+    CloseButton,
+    ColorScheme,
+    EnterButton,
+    OkButton,
+    WindowModalDialog,
+    WWLabel,
     font_height,
+    icon_path,
 )
-from .qrtextedit import ShowQRTextEdit, ScanQRTextEdit
-from .completion_text_edit import CompletionTextEdit
 
 if TYPE_CHECKING:
     from electrum.simple_config import SimpleConfig
@@ -88,7 +85,7 @@ def seed_warning_msg(seed):
         [
             "<p>",
             _("Please save these {0} words on paper (order is important). "),
-            _("This seed will allow you to recover your wallet in case " "of computer failure."),
+            _("This seed will allow you to recover your wallet in case of computer failure."),
             "</p>",
             "<b>" + _("WARNING") + ":</b>",
             "<ul>",
@@ -326,7 +323,7 @@ class SeedLayout(QVBoxLayout):
                 if is_wordlist
                 else "unknown wordlist"
             )
-            label = "BIP39" + " (%s)" % status
+            label = "BIP39" + f" ({status})"
         elif self.seed_type == "slip39":
             self.slip39_mnemonics[self.slip39_mnemonic_index] = s
             try:
@@ -446,7 +443,7 @@ class KeysLayout(QVBoxLayout):
         try:
             valid = self.is_valid(self.get_text())
         except Exception as e:
-            self.parent.next_button.setToolTip(f'{_("Error")}: {str(e)}')
+            self.parent.next_button.setToolTip(f'{_("Error")}: {e!s}')
         else:
             self.parent.next_button.setToolTip("")
         self.parent.next_button.setEnabled(valid)

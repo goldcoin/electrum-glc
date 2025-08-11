@@ -1,37 +1,38 @@
 from enum import IntEnum
-from typing import Optional, Dict, Any
+from typing import Any
 from urllib.parse import urlparse
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject, pyqtEnum, QTimer
+from PyQt6.QtCore import QObject, QTimer, pyqtEnum, pyqtProperty, pyqtSignal, pyqtSlot
 
+from electrum.bitcoin import COIN
 from electrum.i18n import _
-from electrum.logging import get_logger
 from electrum.invoices import (
-    Invoice,
-    PR_UNPAID,
+    LN_EXPIRY_NEVER,
+    PR_BROADCAST,
+    PR_BROADCASTING,
     PR_EXPIRED,
-    PR_UNKNOWN,
-    PR_PAID,
-    PR_INFLIGHT,
     PR_FAILED,
+    PR_INFLIGHT,
+    PR_PAID,
     PR_ROUTING,
     PR_UNCONFIRMED,
-    PR_BROADCASTING,
-    PR_BROADCAST,
-    LN_EXPIRY_NEVER,
+    PR_UNKNOWN,
+    PR_UNPAID,
+    Invoice,
 )
-from electrum.transaction import PartialTxOutput, TxOutput
 from electrum.lnutil import format_short_channel_id
-from electrum.bitcoin import COIN
-from electrum.paymentrequest import PaymentRequest
+from electrum.logging import get_logger
 from electrum.payment_identifier import (
     PaymentIdentifier,
     PaymentIdentifierState,
     PaymentIdentifierType,
 )
+from electrum.paymentrequest import PaymentRequest
+from electrum.transaction import PartialTxOutput, TxOutput
+
 from .qetypes import QEAmount
 from .qewallet import QEWallet
-from .util import status_update_timer_interval, QtEventListener, event_listener
+from .util import QtEventListener, event_listener, status_update_timer_interval
 
 
 class QEInvoice(QObject, QtEventListener):
@@ -162,7 +163,7 @@ class QEInvoice(QObject, QtEventListener):
 
     @amountOverride.setter
     def amountOverride(self, new_amount):
-        self._logger.debug(f"set new override amount {repr(new_amount)}")
+        self._logger.debug(f"set new override amount {new_amount!r}")
         self._amountOverride.copyFrom(new_amount)
         self.amountOverrideChanged.emit()
 
@@ -229,7 +230,7 @@ class QEInvoice(QObject, QtEventListener):
             if self._effectiveInvoice and self._effectiveInvoice.get_id() == key:
                 return
             invoice = self._wallet.wallet.get_invoice(key)
-            self._logger.debug(f"invoice from key {key}: {repr(invoice)}")
+            self._logger.debug(f"invoice from key {key}: {invoice!r}")
             self.set_effective_invoice(invoice)
             self.keyChanged.emit()
 
@@ -612,7 +613,7 @@ class QEInvoiceParser(QEInvoice):
                 else:
                     self._validateRecipient_bip21_onchain(self._pi.bip21)
 
-    def _validateRecipient_bip21_onchain(self, bip21: Dict[str, Any]) -> None:
+    def _validateRecipient_bip21_onchain(self, bip21: dict[str, Any]) -> None:
         if "address" not in bip21:
             self._logger.debug("Neither LN invoice nor address in bip21 uri")
             self.validationError.emit("unknown", _("Unknown invoice"))
@@ -654,7 +655,7 @@ class QEInvoiceParser(QEInvoice):
 
     def on_lnurl(self, lnurldata):
         self._logger.debug("on_lnurl")
-        self._logger.debug(f"{repr(lnurldata)}")
+        self._logger.debug(f"{lnurldata!r}")
 
         self._lnurlData = {
             "domain": urlparse(lnurldata.callback_url).netloc,
@@ -672,7 +673,7 @@ class QEInvoiceParser(QEInvoice):
     def lnurlGetInvoice(self, comment=None):
         assert self._lnurlData
         assert self._pi.need_finalize()
-        self._logger.debug(f"{repr(self._lnurlData)}")
+        self._logger.debug(f"{self._lnurlData!r}")
 
         amount = self.amountOverride.satsInt
 
@@ -698,7 +699,7 @@ class QEInvoiceParser(QEInvoice):
 
     def on_lnurl_invoice(self, orig_amount, invoice):
         self._logger.debug("on_lnurl_invoice")
-        self._logger.debug(f"{repr(invoice)}")
+        self._logger.debug(f"{invoice!r}")
 
         # assure no shenanigans with the bolt11 invoice we get back
         if orig_amount * 1000 != invoice.amount_msat:  # TODO msat precision can cause trouble here

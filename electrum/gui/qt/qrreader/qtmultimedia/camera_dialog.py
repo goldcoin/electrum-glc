@@ -23,37 +23,35 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import time
 import math
-import sys
 import os
-from typing import List, Optional
+import sys
+import time
 
-from PyQt5.QtMultimedia import QCameraInfo, QCamera, QCameraViewfinderSettings
+from PyQt5.QtCore import PYQT_VERSION, QRect, QSize, Qt, pyqtSignal
+from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtMultimedia import QCamera, QCameraInfo, QCameraViewfinderSettings
 from PyQt5.QtWidgets import (
-    QDialog,
-    QVBoxLayout,
-    QHBoxLayout,
     QCheckBox,
-    QPushButton,
+    QDialog,
+    QHBoxLayout,
     QLabel,
+    QPushButton,
+    QVBoxLayout,
     QWidget,
 )
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtCore import QSize, QRect, Qt, pyqtSignal, PYQT_VERSION
 
-from electrum.simple_config import SimpleConfig
+from electrum.gui.qt.util import FixedAspectRatioLayout, ImageGraphicsEffect, MessageBoxMixin
 from electrum.i18n import _
-from electrum.qrreader import get_qr_reader, QrCodeResult, MissingQrDetectionLib
 from electrum.logging import Logger
+from electrum.qrreader import QrCodeResult, get_qr_reader
+from electrum.simple_config import SimpleConfig
 
-from electrum.gui.qt.util import MessageBoxMixin, FixedAspectRatioLayout, ImageGraphicsEffect
-
-from .video_widget import QrReaderVideoWidget
-from .video_overlay import QrReaderVideoOverlay
-from .video_surface import QrReaderVideoSurface
 from .crop_blur_effect import QrReaderCropBlurEffect
 from .validator import AbstractQrReaderValidator, QrReaderValidatorCounted, QrReaderValidatorResult
+from .video_overlay import QrReaderVideoOverlay
+from .video_surface import QrReaderVideoSurface
+from .video_widget import QrReaderVideoWidget
 
 
 class CameraError(RuntimeError):
@@ -79,7 +77,7 @@ class QrReaderCameraDialog(Logger, MessageBoxMixin, QDialog):
 
     qr_finished = pyqtSignal(bool, str, object)
 
-    def __init__(self, parent: Optional[QWidget], *, config: SimpleConfig):
+    def __init__(self, parent: QWidget | None, *, config: SimpleConfig):
         """Note: make sure parent is a "top_level_window()" as per
         MessageBoxMixin API else bad things can happen on macOS."""
         QDialog.__init__(self, parent=parent)
@@ -88,7 +86,7 @@ class QrReaderCameraDialog(Logger, MessageBoxMixin, QDialog):
         self.validator: AbstractQrReaderValidator = None
         self.frame_id: int = 0
         self.qr_crop: QRect = None
-        self.qrreader_res: List[QrCodeResult] = []
+        self.qrreader_res: list[QrCodeResult] = []
         self.validator_res: QrReaderValidatorResult = None
         self.last_stats_time: float = 0.0
         self.frame_counter: int = 0
@@ -171,20 +169,20 @@ class QrReaderCameraDialog(Logger, MessageBoxMixin, QDialog):
     def _on_flip_x_changed(self, _state: int):
         self.config.QR_READER_FLIP_X = self.flip_x.isChecked()
 
-    def _get_resolution(self, resolutions: List[QSize], min_size: int) -> QSize:
+    def _get_resolution(self, resolutions: list[QSize], min_size: int) -> QSize:
         """
         Given a list of resolutions that the camera supports this function picks the
         lowest resolution that is at least min_size in both width and height.
         If no resolution is found, NoCameraResolutionsFound is raised.
         """
 
-        def res_list_to_str(res_list: List[QSize]) -> str:
-            return ", ".join(["{}x{}".format(r.width(), r.height()) for r in res_list])
+        def res_list_to_str(res_list: list[QSize]) -> str:
+            return ", ".join([f"{r.width()}x{r.height()}" for r in res_list])
 
         def check_res(res: QSize):
             return res.width() >= min_size and res.height() >= min_size
 
-        self.logger.info("searching for at least {0}x{0}".format(min_size))
+        self.logger.info(f"searching for at least {min_size}x{min_size}")
 
         # Query and display all resolutions the camera supports
         format_str = "camera resolutions: {}"
@@ -342,7 +340,7 @@ class QrReaderCameraDialog(Logger, MessageBoxMixin, QDialog):
             # camera/scan is quitting, abort.
             return
 
-        self.logger.info("camera status changed to {}".format(self._get_camera_status_name(status)))
+        self.logger.info(f"camera status changed to {self._get_camera_status_name(status)}")
 
         if status == QCamera.LoadedStatus:
             # Determine the optimal resolution and compute the crop rect
@@ -429,12 +427,7 @@ class QrReaderCameraDialog(Logger, MessageBoxMixin, QDialog):
 
         if frame.size() != self.resolution:
             self.logger.info(
-                "Getting video data at {}x{} instead of the requested {}x{}, switching resolution.".format(
-                    frame.size().width(),
-                    frame.size().height(),
-                    self.resolution.width(),
-                    self.resolution.height(),
-                )
+                f"Getting video data at {frame.size().width()}x{frame.size().height()} instead of the requested {self.resolution.width()}x{self.resolution.height()}, switching resolution."
             )
             self._set_resolution(frame.size())
 

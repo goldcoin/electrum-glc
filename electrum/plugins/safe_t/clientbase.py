@@ -1,20 +1,19 @@
 import time
 from struct import pack
-from typing import Optional
 
 from electrum import ecc
-from electrum.i18n import _
-from electrum.util import UserCancelled
-from electrum.keystore import bip39_normalize_passphrase
 from electrum.bip32 import BIP32Node, convert_bip32_strpath_to_intpath
+from electrum.i18n import _
+from electrum.keystore import bip39_normalize_passphrase
 from electrum.logging import Logger
 from electrum.plugin import runs_in_hwd_thread
 from electrum.plugins.hw_wallet.plugin import HardwareClientBase, HardwareHandlerBase
+from electrum.util import UserCancelled
 
 
-class GuiMixin(object):
+class GuiMixin:
     # Requires: self.proto, self.device
-    handler: Optional[HardwareHandlerBase]
+    handler: HardwareHandlerBase | None
 
     # ref: https://github.com/trezor/trezor-common/blob/44dfb07cfaafffada4b2ce0d15ba1d90d17cf35e/protob/types.proto#L89
     messages = {
@@ -23,7 +22,7 @@ class GuiMixin(object):
         5: _("Write down the seed word shown on your {}"),
         6: _("Confirm on your {} that you want to wipe it clean"),
         7: _("Confirm on your {} device the message to sign"),
-        8: _("Confirm the total amount spent and the transaction fee on your " "{} device"),
+        8: _("Confirm the total amount spent and the transaction fee on your {} device"),
         10: _("Confirm wallet address on your {} device"),
         14: _("Choose on your {} device where to enter your passphrase"),
         "default": _("Check your {} device to continue"),
@@ -100,7 +99,7 @@ class GuiMixin(object):
 
     def callback_WordRequest(self, msg):
         self.step += 1
-        msg = _("Step {}/24.  Enter seed word as explained on " "your {}:").format(
+        msg = _("Step {}/24.  Enter seed word as explained on your {}:").format(
             self.step, self.device
         )
         word = self.handler.get_word(msg)
@@ -123,11 +122,11 @@ class SafeTClientBase(HardwareClientBase, GuiMixin, Logger):
         Logger.__init__(self)
         self.used()
 
-    def device_model_name(self) -> Optional[str]:
+    def device_model_name(self) -> str | None:
         return "Safe-T"
 
     def __str__(self):
-        return "%s/%s" % (self.label(), self.features.device_id)
+        return f"{self.label()}/{self.features.device_id}"
 
     def label(self):
         return self.features.label
@@ -225,7 +224,7 @@ class SafeTClientBase(HardwareClientBase, GuiMixin, Logger):
         self.logger.info(f"clear session: {self}")
         self.prevent_timeouts()
         try:
-            super(SafeTClientBase, self).clear_session()
+            super().clear_session()
         except BaseException as e:
             # If the device was removed it has the same effect...
             self.logger.info(f"clear_session: ignoring error {e}")
@@ -233,7 +232,7 @@ class SafeTClientBase(HardwareClientBase, GuiMixin, Logger):
     @runs_in_hwd_thread
     def get_public_node(self, address_n, creating):
         self.creating_wallet = creating
-        return super(SafeTClientBase, self).get_public_node(address_n)
+        return super().get_public_node(address_n)
 
     @runs_in_hwd_thread
     def close(self):

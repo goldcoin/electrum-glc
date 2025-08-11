@@ -1,4 +1,4 @@
-from functools import wraps, partial
+from functools import partial, wraps
 
 from PyQt6.QtCore import pyqtSignal, pyqtSlot
 
@@ -12,12 +12,12 @@ def auth_protect(func=None, reject=None, method="pin", message=""):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         _logger = get_logger(__name__)
-        _logger.debug(f"{str(self)}.{func.__name__}")
+        _logger.debug(f"{self!s}.{func.__name__}")
         if hasattr(self, "__auth_fcall"):
             _logger.debug("object already has a pending authed function call")
             raise Exception("object already has a pending authed function call")
         setattr(self, "__auth_fcall", (func, args, kwargs, reject))
-        getattr(self, "authRequired").emit(method, message)
+        self.authRequired.emit(method, message)
 
     return wrapper
 
@@ -35,7 +35,7 @@ class AuthMixin:
             r = func(self, *args, **kwargs)
             return r
         except Exception as e:
-            self._auth_logger.error(f"Error executing wrapped fn(): {repr(e)}")
+            self._auth_logger.error(f"Error executing wrapped fn(): {e!r}")
             raise e
         finally:
             delattr(self, "__auth_fcall")
@@ -54,7 +54,7 @@ class AuthMixin:
                 else:
                     self._auth_logger.error(f'Reject method "{reject}" not defined')
         except Exception as e:
-            self._auth_logger.error(f'Error executing reject function "{reject}": {repr(e)}')
+            self._auth_logger.error(f'Error executing reject function "{reject}": {e!r}')
             raise e
         finally:
             delattr(self, "__auth_fcall")

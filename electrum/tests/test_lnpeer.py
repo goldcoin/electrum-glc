@@ -1,50 +1,48 @@
 import asyncio
-import shutil
 import copy
-import tempfile
-from decimal import Decimal
-import os
-from contextlib import contextmanager
-from collections import defaultdict
 import logging
-import concurrent
-from concurrent import futures
-import unittest
-from typing import Iterable, NamedTuple, Tuple, List, Dict
-
-from aiorpcx import timeout_after, TaskTimeout
+import os
+import shutil
+import tempfile
+from collections import defaultdict
+from collections.abc import Iterable
+from contextlib import contextmanager
+from decimal import Decimal
+from typing import NamedTuple
 
 import electrum
 import electrum.trampoline
-from electrum import bitcoin
-from electrum import util
-from electrum import constants
-from electrum.network import Network
-from electrum.ecc import ECPrivkey
-from electrum import simple_config, lnutil
-from electrum.lnaddr import lnencode, LnAddr, lndecode
+from electrum import bitcoin, lnmsg, lnutil, util
 from electrum.bitcoin import COIN, sha256
-from electrum.util import NetworkRetryManager, bfh, OldTaskGroup, EventListener, InvoiceError
-from electrum.lnpeer import Peer
-from electrum.lnutil import LNPeerAddr, Keypair, privkey_to_pubkey
-from electrum.lnutil import PaymentFailure, LnFeatures, HTLCOwner, PaymentFeeBudget
-from electrum.lnchannel import ChannelState, PeerState, Channel
-from electrum.lnrouter import LNPathFinder, PathEdge, LNPathInconsistent
 from electrum.channel_db import ChannelDB
-from electrum.lnworker import LNWallet, NoPathFound, SentHtlcInfo, PaySession
-from electrum.lnmsg import encode_msg, decode_msg
-from electrum import lnmsg
-from electrum.logging import console_stderr_handler, Logger
-from electrum.lnworker import PaymentInfo, RECEIVED
-from electrum.lnonion import OnionFailureCode, OnionRoutingFailure
-from electrum.lnutil import UpdateAddHtlc
-from electrum.lnutil import LOCAL, REMOTE
-from electrum.invoices import PR_PAID, PR_UNPAID
+from electrum.ecc import ECPrivkey
 from electrum.interface import GracefulDisconnect
+from electrum.invoices import PR_PAID, PR_UNPAID
+from electrum.lnaddr import LnAddr, lndecode, lnencode
+from electrum.lnchannel import Channel, ChannelState, PeerState
+from electrum.lnmsg import decode_msg, encode_msg
+from electrum.lnonion import OnionFailureCode, OnionRoutingFailure
+from electrum.lnpeer import Peer
+from electrum.lnrouter import LNPathFinder, LNPathInconsistent, PathEdge
+from electrum.lnutil import (
+    LOCAL,
+    REMOTE,
+    HTLCOwner,
+    Keypair,
+    LnFeatures,
+    LNPeerAddr,
+    PaymentFailure,
+    PaymentFeeBudget,
+    UpdateAddHtlc,
+    privkey_to_pubkey,
+)
+from electrum.lnworker import RECEIVED, LNWallet, NoPathFound, PaymentInfo, PaySession, SentHtlcInfo
+from electrum.logging import Logger, console_stderr_handler
 from electrum.simple_config import SimpleConfig
+from electrum.util import EventListener, InvoiceError, NetworkRetryManager, OldTaskGroup, bfh
 
-from .test_lnchannel import create_test_channels
 from . import ElectrumTestCase
+from .test_lnchannel import create_test_channels
 
 
 def keypair():
@@ -169,9 +167,9 @@ class MockLNWallet(Logger, EventListener, NetworkRetryManager[LNPeerAddr]):
         # used in tests
         self.enable_htlc_settle = True
         self.enable_htlc_forwarding = True
-        self.received_mpp_htlcs = dict()
-        self._paysessions = dict()
-        self.sent_htlcs_info = dict()
+        self.received_mpp_htlcs = {}
+        self._paysessions = {}
+        self.sent_htlcs_info = {}
         self.sent_buckets = defaultdict(set)
         self.active_forwardings = {}
         self.forwarding_failures = {}
@@ -432,9 +430,9 @@ _GRAPH_DEFINITIONS = {
 
 
 class Graph(NamedTuple):
-    workers: Dict[str, MockLNWallet]
-    peers: Dict[Tuple[str, str], Peer]
-    channels: Dict[Tuple[str, str], Channel]
+    workers: dict[str, MockLNWallet]
+    peers: dict[tuple[str, str], Peer]
+    channels: dict[tuple[str, str], Channel]
 
 
 class PaymentDone(Exception):
@@ -479,11 +477,11 @@ class TestPeer(ElectrumTestCase):
         *,
         amount_msat=100_000_000,
         include_routing_hints=False,
-        payment_preimage: bytes = None,
-        payment_hash: bytes = None,
+        payment_preimage: bytes | None = None,
+        payment_hash: bytes | None = None,
         invoice_features: LnFeatures = None,
-        min_final_cltv_delta: int = None,
-    ) -> Tuple[LnAddr, str]:
+        min_final_cltv_delta: int | None = None,
+    ) -> tuple[LnAddr, str]:
         amount_btc = amount_msat / Decimal(COIN * 1000)
         if payment_preimage is None and not payment_hash:
             payment_preimage = os.urandom(32)
@@ -497,7 +495,6 @@ class TestPeer(ElectrumTestCase):
             routing_hints = w2.calc_routing_hints_for_invoice(amount_msat)
         else:
             routing_hints = []
-            trampoline_hints = []
         if invoice_features is None:
             invoice_features = w2.features.for_invoice()
         if invoice_features.supports(LnFeatures.PAYMENT_SECRET_OPT):
@@ -509,12 +506,7 @@ class TestPeer(ElectrumTestCase):
         lnaddr1 = LnAddr(
             paymenthash=payment_hash,
             amount=amount_btc,
-            tags=[
-                ("c", min_final_cltv_delta),
-                ("d", "coffee"),
-                ("9", invoice_features),
-            ]
-            + routing_hints,
+            tags=[("c", min_final_cltv_delta), ("d", "coffee"), ("9", invoice_features), *routing_hints],
             payment_secret=payment_secret,
         )
         invoice = lnencode(lnaddr1, w2.node_keypair.privkey)
@@ -1026,7 +1018,7 @@ class TestPeerDirect(TestPeer):
 
         async def many_payments():
             async with OldTaskGroup() as group:
-                for i in range(num_payments):
+                for _i in range(num_payments):
                     lnaddr, pay_req = self.prepare_invoice(w2, amount_msat=payment_value_msat)
                     await group.spawn(single_payment(pay_req))
             gath.cancel()
@@ -1419,10 +1411,10 @@ class TestPeerDirect(TestPeer):
         # check if a tx (commitment transaction) was broadcasted:
         assert q1.qsize() == 1
 
-        with self.assertRaises(NoPathFound) as e:
+        with self.assertRaises(NoPathFound):
             await w1.create_routes_from_invoice(lnaddr.get_amount_msat(), decoded_invoice=lnaddr)
 
-        peer = w1.peers[route[0].node_id]
+        w1.peers[route[0].node_id]
 
         # AssertionError is ok since we shouldn't use old routes, and the
         # route finding should fail when channel is closed

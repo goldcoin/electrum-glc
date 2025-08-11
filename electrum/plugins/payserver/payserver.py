@@ -23,23 +23,22 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os
 import asyncio
+import os
 from collections import defaultdict
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from aiohttp import web
 
 from electrum import util
-from electrum.util import log_exceptions, ignore_exceptions
-from electrum.plugin import BasePlugin, hook
+from electrum.invoices import PR_EXPIRED, PR_PAID
 from electrum.logging import Logger
-from electrum.util import EventListener, event_listener
-from electrum.invoices import PR_PAID, PR_EXPIRED
+from electrum.plugin import BasePlugin, hook
+from electrum.util import EventListener, event_listener, ignore_exceptions, log_exceptions
 
 if TYPE_CHECKING:
-    from electrum.simple_config import SimpleConfig
     from electrum.daemon import Daemon
+    from electrum.simple_config import SimpleConfig
     from electrum.wallet import Abstract_Wallet
 
 
@@ -50,7 +49,7 @@ class PayServerPlugin(BasePlugin):
         self.config = config
         self.server = None
 
-    def view_url(self, key) -> Optional[str]:
+    def view_url(self, key) -> str | None:
         if not self.server:
             return None
         return self.server.base_url + self.server.root + "/pay?id=" + key
@@ -171,18 +170,18 @@ class PayServer(Logger, EventListener):
             await ws.close()
             return ws
         if info.get("status") == PR_PAID:
-            await ws.send_str(f"paid")
+            await ws.send_str("paid")
             await ws.close()
             return ws
         if info.get("status") == PR_EXPIRED:
-            await ws.send_str(f"expired")
+            await ws.send_str("expired")
             await ws.close()
             return ws
         while True:
             try:
                 await util.wait_for2(self.pending[key].wait(), 1)
                 break
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 # send data on the websocket, to keep it alive
                 await ws.send_str("waiting")
         await ws.send_str("paid")

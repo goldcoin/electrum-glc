@@ -25,13 +25,13 @@
 
 import enum
 
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QLabel
+from PyQt5.QtGui import QStandardItem, QStandardItemModel
+from PyQt5.QtWidgets import QDialog, QLabel, QPushButton, QVBoxLayout
 
 from electrum.i18n import _
-from .util import Buttons
+
 from .my_treeview import MyTreeView
+from .util import Buttons
 
 
 class WatcherList(MyTreeView):

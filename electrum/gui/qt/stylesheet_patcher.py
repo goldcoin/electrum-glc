@@ -6,7 +6,6 @@ import sys
 
 from PyQt5 import QtWidgets
 
-
 CUSTOM_PATCH_FOR_DARK_THEME = """
 /* PayToEdit text was being clipped */
 QAbstractScrollArea {

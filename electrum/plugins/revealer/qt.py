@@ -15,44 +15,41 @@ file LICENCE or http://www.opensource.org/licenses/mit-license.php
 
 import os
 import random
-import traceback
 from decimal import Decimal
 from functools import partial
-import sys
 
 import qrcode
-from PyQt5.QtPrintSupport import QPrinter
-from PyQt5.QtCore import Qt, QRectF, QRect, QSizeF, QUrl, QPoint, QSize
+from PyQt5.QtCore import QPoint, QRect, QRectF, QSize, QSizeF, Qt, QUrl
 from PyQt5.QtGui import (
-    QPixmap,
-    QImage,
     QBitmap,
-    QPainter,
-    QFontDatabase,
-    QPen,
-    QFont,
     QColor,
     QDesktopServices,
-    qRgba,
+    QFont,
+    QFontDatabase,
+    QImage,
+    QPainter,
     QPainterPath,
+    QPen,
+    QPixmap,
+    qRgba,
 )
-from PyQt5.QtWidgets import QGridLayout, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QLineEdit
+from PyQt5.QtPrintSupport import QPrinter
+from PyQt5.QtWidgets import QGridLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QVBoxLayout
 
-from electrum.plugin import hook
-from electrum.i18n import _
-from electrum.util import make_dir, InvalidPassword, UserCancelled
+from electrum.gui.qt.main_window import StatusBarButton
+from electrum.gui.qt.qrtextedit import ScanQRTextEdit
 from electrum.gui.qt.util import (
-    read_QIcon,
-    EnterButton,
-    WWLabel,
-    icon_path,
-    WindowModalDialog,
     Buttons,
     CloseButton,
+    EnterButton,
     OkButton,
+    WindowModalDialog,
+    icon_path,
+    read_QIcon,
 )
-from electrum.gui.qt.qrtextedit import ScanQRTextEdit
-from electrum.gui.qt.main_window import StatusBarButton
+from electrum.i18n import _
+from electrum.plugin import hook
+from electrum.util import InvalidPassword, UserCancelled, make_dir
 
 from .revealer import RevealerPlugin
 
@@ -331,7 +328,7 @@ class Plugin(RevealerPlugin):
         if self.versioned_seed.version == "0":
             link = "https://revealer.cc/revealer-warning-and-upgrade/"
             self.d.show_warning(
-                ("<b>{warning}: </b>{ver0}<br>" "{url}<br>" "{risk}").format(
+                ("<b>{warning}: </b>{ver0}<br>{url}<br>{risk}").format(
                     warning=_("Warning"),
                     ver0=_("Revealers starting with 0 are not secure due to a vulnerability."),
                     url=_("More info at: {}").format(f'<a href="{link}">{link}</a>'),
@@ -740,7 +737,7 @@ class Plugin(RevealerPlugin):
                 (total_distance_h) + (border_thick / 2),
                 (total_distance_h) + (border_thick / 2),
                 base_img.width() - ((total_distance_h) * 2) - ((border_thick) - 1),
-                (base_img.height() - ((total_distance_h)) * 2) - ((border_thick) - 1),
+                (base_img.height() - (total_distance_h) * 2) - ((border_thick) - 1),
             )
         )
         pen = QPen(Qt.black, border_thick)
@@ -755,7 +752,7 @@ class Plugin(RevealerPlugin):
                 (total_distance_h),
                 (total_distance_h),
                 base_img.width() - ((total_distance_h) * 2),
-                (base_img.height() - ((total_distance_h)) * 2),
+                (base_img.height() - (total_distance_h) * 2),
             )
         )
         pen = QPen(Qt.black, 1)
@@ -803,7 +800,7 @@ class Plugin(RevealerPlugin):
 
                 painter.drawImage(
                     ((total_distance_h)) + 11,
-                    ((total_distance_h)) + 11,
+                    (total_distance_h) + 11,
                     QImage(icon_path("electrumb.png")).scaledToWidth(
                         round(2.1 * total_distance_h), Qt.SmoothTransformation
                     ),
@@ -909,7 +906,7 @@ class Plugin(RevealerPlugin):
                     ),
                     int(
                         (base_img.height() - ((total_distance_h)))
-                        - ((border_thick * 8))
+                        - (border_thick * 8)
                         - (border_thick / 2)
                         - 2
                     ),
@@ -924,7 +921,7 @@ class Plugin(RevealerPlugin):
                     ),
                     int(
                         (base_img.height() - ((total_distance_h)))
-                        - ((border_thick * 8))
+                        - (border_thick * 8)
                         - (border_thick / 2)
                         - 2
                     ),
@@ -942,7 +939,7 @@ class Plugin(RevealerPlugin):
                     ),
                     int(
                         (base_img.height() - ((total_distance_h)))
-                        - ((border_thick * 8))
+                        - (border_thick * 8)
                         - (border_thick / 2)
                         - 2
                     ),
@@ -960,7 +957,7 @@ class Plugin(RevealerPlugin):
                 painter.drawLine(
                     int(
                         base_img.width()
-                        - ((total_distance_h))
+                        - (total_distance_h)
                         - (border_thick * 8) / 2
                         - (border_thick / 2)
                         - 2

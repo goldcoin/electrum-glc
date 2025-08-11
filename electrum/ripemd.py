@@ -72,7 +72,7 @@ class RIPEMD160:
         dig = self.digest()
         hex_digest = ""
         for d in dig:
-            hex_digest += "%02x" % d
+            hex_digest += f"{d:02x}"
         return hex_digest
 
     def copy(self):
@@ -153,14 +153,14 @@ def R(a, b, c, d, e, Fj, Kj, sj, rj, X):
 
 PADDING = [0x80] + [0] * 63
 
-import sys
 import struct
+import sys
 
 
 def RMD160Transform(state, block):  # uint32 state[5], uchar block[64]
     x = [0] * 16
     if sys.byteorder == "little":
-        x = struct.unpack("<16L", bytes([x for x in block[0:64]]))
+        x = struct.unpack("<16L", bytes(list(block[0:64])))
     else:
         raise Exception(f"unsupported {sys.byteorder=!r}")
     a = state[0]
@@ -360,7 +360,6 @@ def RMD160Transform(state, block):  # uint32 state[5], uchar block[64]
     state[4] = (state[0] + bb + c) % 0x100000000
     state[0] = t % 0x100000000
 
-    pass
 
 
 def RMD160Update(ctx, inp, inplen):

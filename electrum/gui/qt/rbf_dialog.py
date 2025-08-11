@@ -6,29 +6,23 @@ from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
-    QCheckBox,
-    QLabel,
-    QVBoxLayout,
-    QGridLayout,
-    QWidget,
-    QPushButton,
-    QHBoxLayout,
     QComboBox,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
 )
-
-from .amountedit import FeerateEdit
-from .fee_slider import FeeSlider, FeeComboBox
-from .util import ColorScheme, WindowModalDialog, Buttons, OkButton, WWLabel, CancelButton
 
 from electrum.i18n import _
 from electrum.transaction import PartialTransaction
-from electrum.wallet import CannotRBFTx, BumpFeeStrategy
+from electrum.wallet import BumpFeeStrategy, CannotRBFTx
+
+from .util import ColorScheme
 
 if TYPE_CHECKING:
     from .main_window import ElectrumWindow
 
 
-from .confirm_tx_dialog import ConfirmTxDialog, TxEditor, TxSizeLabel, HelpLabel
+from .confirm_tx_dialog import HelpLabel, TxEditor, TxSizeLabel
 
 
 class _BaseRBFDialog(TxEditor):
@@ -45,7 +39,7 @@ class _BaseRBFDialog(TxEditor):
 
         self.old_fee = self.old_tx.get_fee()
         self.old_tx_size = tx.estimated_size()
-        self.old_fee_rate = old_fee_rate = self.old_fee / self.old_tx_size  # sat/vbyte
+        self.old_fee_rate = self.old_fee / self.old_tx_size  # sat/vbyte
 
         TxEditor.__init__(self, window=main_window, title=title, make_tx=self.rbf_func)
 

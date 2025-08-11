@@ -2,37 +2,38 @@
 # Distributed under the MIT software license, see the accompanying
 # file LICENCE or http://www.opensource.org/licenses/mit-license.php
 
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from PyQt5.QtGui import QFont, QCursor
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtGui import QCursor, QFont
 from PyQt5.QtWidgets import (
-    QComboBox,
-    QLabel,
-    QVBoxLayout,
-    QGridLayout,
-    QLineEdit,
-    QTextEdit,
-    QHBoxLayout,
-    QPushButton,
-    QWidget,
-    QSizePolicy,
     QFrame,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QSizePolicy,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
 )
 
-from electrum.bitcoin import is_address
 from electrum.i18n import _
-from electrum.util import InvoiceError
 from electrum.invoices import pr_expiration_values
 from electrum.logging import Logger
+from electrum.util import InvoiceError
 
 from .amountedit import AmountEdit, BTCAmountEdit, SizedFreezableLineEdit
 from .qrcodewidget import QRCodeWidget
-from .util import read_QIcon, ColorScheme, HelpLabel, WWLabel, MessageBoxMixin, MONOSPACE_FONT
-from .util import ButtonsTextEdit, get_iconname_qrcode
+from .util import (
+    MONOSPACE_FONT,
+    MessageBoxMixin,
+    WWLabel,
+    get_iconname_qrcode,
+    read_QIcon,
+)
 
 if TYPE_CHECKING:
-    from . import ElectrumGui
     from .main_window import ElectrumWindow
 
 
@@ -369,7 +370,7 @@ class ReceiveTab(QWidget, MessageBoxMixin, Logger):
         # copy current tab to clipboard
         self.on_tab_changed()
 
-    def get_bitcoin_address_for_request(self, amount) -> Optional[str]:
+    def get_bitcoin_address_for_request(self, amount) -> str | None:
         addr = self.wallet.get_unused_address()
         if addr is None:
             if not self.wallet.is_deterministic():  # imported wallet

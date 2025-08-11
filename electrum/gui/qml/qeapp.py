@@ -1,65 +1,65 @@
-import re
-import queue
-import time
-import os
-import sys
 import html
+import os
+import queue
+import re
+import sys
 import threading
-from typing import TYPE_CHECKING, Set
+import time
+from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import (
-    pyqtSlot,
-    pyqtSignal,
-    pyqtProperty,
-    QObject,
-    QT_VERSION_STR,
     PYQT_VERSION_STR,
-    qInstallMessageHandler,
-    QTimer,
+    QT_VERSION_STR,
+    QObject,
     QSortFilterProxyModel,
+    QTimer,
+    pyqtProperty,
+    pyqtSignal,
+    pyqtSlot,
+    qInstallMessageHandler,
 )
-from PyQt6.QtGui import QGuiApplication, QFontDatabase, QScreen
-from PyQt6.QtQml import qmlRegisterType, qmlRegisterUncreatableType, QQmlApplicationEngine
+from PyQt6.QtGui import QFontDatabase, QGuiApplication
+from PyQt6.QtQml import QQmlApplicationEngine, qmlRegisterType
 
-from electrum import version, constants
+from electrum import constants, version
+from electrum.base_crash_reporter import BaseCrashReporter, EarlyExceptionsQueue
+from electrum.bip21 import BITCOIN_BIP21_URI_SCHEME, LIGHTNING_URI_SCHEME
 from electrum.i18n import _
 from electrum.logging import Logger, get_logger
-from electrum.bip21 import BITCOIN_BIP21_URI_SCHEME, LIGHTNING_URI_SCHEME
-from electrum.base_crash_reporter import BaseCrashReporter, EarlyExceptionsQueue
 from electrum.network import Network
 from electrum.plugin import run_hook
 
+from .qeaddressdetails import QEAddressDetails
+from .qebip39recovery import QEBip39RecoveryListModel
+from .qebitcoin import QEBitcoin
+from .qechanneldetails import QEChannelDetails
+from .qechannelopener import QEChannelOpener
 from .qeconfig import QEConfig
 from .qedaemon import QEDaemon
-from .qenetwork import QENetwork
-from .qewallet import QEWallet
-from .qeqr import QEQRParser, QEQRImageProvider, QEQRImageProviderHelper
-from .qeqrscanner import QEQRScanner
-from .qebitcoin import QEBitcoin
 from .qefx import QEFX
-from .qetxfinalizer import QETxFinalizer, QETxRbfFeeBumper, QETxCpfpFeeBumper, QETxCanceller
 from .qeinvoice import QEInvoice, QEInvoiceParser
-from .qerequestdetails import QERequestDetails
-from .qetypes import QEAmount
-from .qeaddressdetails import QEAddressDetails
-from .qetxdetails import QETxDetails
-from .qechannelopener import QEChannelOpener
 from .qelnpaymentdetails import QELnPaymentDetails
-from .qechanneldetails import QEChannelDetails
-from .qeswaphelper import QESwapHelper
-from .qewizard import QENewWalletWizard, QEServerConnectWizard
 from .qemodelfilter import QEFilterProxyModel
-from .qebip39recovery import QEBip39RecoveryListModel
+from .qenetwork import QENetwork
+from .qeqr import QEQRImageProvider, QEQRImageProviderHelper, QEQRParser
+from .qeqrscanner import QEQRScanner
+from .qerequestdetails import QERequestDetails
+from .qeswaphelper import QESwapHelper
+from .qetxdetails import QETxDetails
+from .qetxfinalizer import QETxCanceller, QETxCpfpFeeBumper, QETxFinalizer, QETxRbfFeeBumper
+from .qetypes import QEAmount
+from .qewallet import QEWallet
+from .qewizard import QENewWalletWizard, QEServerConnectWizard
 
 if TYPE_CHECKING:
-    from electrum.simple_config import SimpleConfig
-    from electrum.wallet import Abstract_Wallet
     from electrum.daemon import Daemon
     from electrum.plugin import Plugins
+    from electrum.simple_config import SimpleConfig
+    from electrum.wallet import Abstract_Wallet
 
 if "ANDROID_DATA" in os.environ:
-    from jnius import autoclass, cast
     from android import activity
+    from jnius import autoclass, cast
 
     jpythonActivity = autoclass("org.kivy.android.PythonActivity").mActivity
     jHfc = autoclass("android.view.HapticFeedbackConstants")
@@ -173,7 +173,7 @@ class QEAppController(BaseCrashReporter, QObject):
             self.on_new_intent(jpythonActivity.getIntent())
             activity.bind(on_new_intent=self.on_new_intent)
         except Exception as e:
-            self.logger.error(f"unable to bind intent: {repr(e)}")
+            self.logger.error(f"unable to bind intent: {e!r}")
 
     def on_new_intent(self, intent):
         if not self._app_started:
@@ -181,7 +181,7 @@ class QEAppController(BaseCrashReporter, QObject):
             return
 
         data = str(intent.getDataString())
-        self.logger.debug(f"received intent: {repr(data)}")
+        self.logger.debug(f"received intent: {data!r}")
         scheme = str(intent.getScheme()).lower()
         if scheme == BITCOIN_BIP21_URI_SCHEME or scheme == LIGHTNING_URI_SCHEME:
             self.uriReceived.emit(data)
@@ -225,7 +225,7 @@ class QEAppController(BaseCrashReporter, QObject):
     def plugin(self, plugin_name):
         self.logger.debug(f"now {self._plugins.count()} plugins loaded")
         plugin = self._plugins.get(plugin_name)
-        self.logger.debug(f"plugin with name {plugin_name} is {str(type(plugin))}")
+        self.logger.debug(f"plugin with name {plugin_name} is {type(plugin)!s}")
         if plugin and hasattr(plugin, "so"):
             return plugin.so
         else:
@@ -245,7 +245,7 @@ class QEAppController(BaseCrashReporter, QObject):
                 }
             )
 
-        self.logger.debug(f"{str(s)}")
+        self.logger.debug(f"{s!s}")
         return s
 
     @pyqtSlot(str, bool)

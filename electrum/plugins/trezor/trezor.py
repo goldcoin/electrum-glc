@@ -1,22 +1,20 @@
-from typing import NamedTuple, Any, Optional, TYPE_CHECKING, Sequence
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, NamedTuple, Optional
 
-from electrum.util import bfh, UserCancelled, UserFacingException
+from electrum import constants, descriptor
 from electrum.bip32 import BIP32Node
-from electrum import descriptor
-from electrum import constants
 from electrum.i18n import _
-from electrum.plugin import Device, runs_in_hwd_thread
-from electrum.transaction import Transaction, PartialTransaction, PartialTxInput, Sighash
 from electrum.keystore import Hardware_KeyStore
 from electrum.logging import get_logger
-
+from electrum.plugin import Device, runs_in_hwd_thread
 from electrum.plugins.hw_wallet import HW_PluginBase
 from electrum.plugins.hw_wallet.plugin import (
+    LibraryFoundButUnusable,
     is_any_tx_output_on_change_branch,
     trezor_validate_op_return_output_and_get_data,
-    LibraryFoundButUnusable,
-    OutdatedHwFirmwareException,
 )
+from electrum.transaction import PartialTransaction, PartialTxInput, Sighash, Transaction
+from electrum.util import UserFacingException, bfh
 
 if TYPE_CHECKING:
     from electrum.plugin import DeviceInfo
@@ -28,27 +26,25 @@ _logger = get_logger(__name__)
 try:
     import trezorlib
     import trezorlib.transport
+    from trezorlib.client import PASSPHRASE_ON_DEVICE
+    from trezorlib.messages import (
+        AmountUnit,
+        BackupType,
+        Capability,
+        HDNodePathType,
+        HDNodeType,
+        InputScriptType,
+        MultisigRedeemScriptType,
+        OutputScriptType,
+        RecoveryDeviceType,
+        TransactionType,
+        TxInputType,
+        TxOutputBinType,
+        TxOutputType,
+    )
     from trezorlib.transport.bridge import BridgeTransport, call_bridge
 
     from .clientbase import TrezorClientBase
-
-    from trezorlib.messages import (
-        Capability,
-        BackupType,
-        RecoveryDeviceType,
-        HDNodeType,
-        HDNodePathType,
-        InputScriptType,
-        OutputScriptType,
-        MultisigRedeemScriptType,
-        TxInputType,
-        TxOutputType,
-        TxOutputBinType,
-        TransactionType,
-        AmountUnit,
-    )
-
-    from trezorlib.client import PASSPHRASE_ON_DEVICE
 
     TREZORLIB = True
 except Exception as e:
@@ -182,7 +178,6 @@ class TrezorPlugin(HW_PluginBase):
         # Set lower timeout for UDP enumeration (used for emulator).
         # The default of 10 sec is very long, and I often hit it for some reason on Windows (no emu running),
         # blocking the whole enumeration.
-        from trezorlib.transport.udp import UdpTransport
 
         trezorlib.transport.udp.SOCKET_TIMEOUT = 1
         # If there is a bridge, prefer that.
@@ -301,7 +296,7 @@ class TrezorPlugin(HW_PluginBase):
             return InputScriptType.SPENDMULTISIG
         if electrum_txin_type in ("p2tr",):
             return InputScriptType.SPENDTAPROOT
-        raise ValueError("unexpected txin type: {}".format(electrum_txin_type))
+        raise ValueError(f"unexpected txin type: {electrum_txin_type}")
 
     def get_trezor_output_script_type(self, electrum_txin_type: str):
         if electrum_txin_type in ("p2wpkh", "p2wsh"):
@@ -314,7 +309,7 @@ class TrezorPlugin(HW_PluginBase):
             return OutputScriptType.PAYTOMULTISIG
         if electrum_txin_type in ("p2tr",):
             return OutputScriptType.PAYTOTAPROOT
-        raise ValueError("unexpected txin type: {}".format(electrum_txin_type))
+        raise ValueError(f"unexpected txin type: {electrum_txin_type}")
 
     def get_trezor_amount_unit(self):
         if self.config.decimal_point == 0:
@@ -483,7 +478,7 @@ class TrezorPlugin(HW_PluginBase):
 
         return outputs
 
-    def electrum_tx_to_txtype(self, tx: Optional[Transaction]):
+    def electrum_tx_to_txtype(self, tx: Transaction | None):
         t = TransactionType()
         if tx is None:
             # probably for segwit input and we don't need this prev txn

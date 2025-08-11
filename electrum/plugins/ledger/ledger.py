@@ -1,13 +1,13 @@
 # Some parts of this code are adapted from bitcoin-core/HWI:
 # https://github.com/bitcoin-core/HWI/blob/e731395bde13362950e9f13e01689c475545e4dc/hwilib/devices/ledger.py
 
-from abc import ABC, abstractmethod
 import base64
 import hashlib
-from typing import Dict, List, Optional, Sequence, Tuple, TYPE_CHECKING
+from abc import ABC, abstractmethod
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Optional
 
-from electrum import bip32, constants, ecc
-from electrum import descriptor
+from electrum import bip32, constants, descriptor, ecc
 from electrum.bip32 import BIP32Node, convert_bip32_intpath_to_strpath, normalize_bip32_derivation
 from electrum.bitcoin import (
     EncodeBase58Check,
@@ -21,15 +21,15 @@ from electrum.i18n import _
 from electrum.keystore import Hardware_KeyStore
 from electrum.logging import get_logger
 from electrum.plugin import Device, runs_in_hwd_thread
-from electrum.transaction import PartialTransaction, Transaction, PartialTxInput
-from electrum.util import bfh, UserFacingException, versiontuple
+from electrum.transaction import PartialTransaction, PartialTxInput, Transaction
+from electrum.util import UserFacingException, bfh, versiontuple
 from electrum.wallet import Standard_Wallet
 
 from ..hw_wallet import HardwareClientBase, HW_PluginBase
 from ..hw_wallet.plugin import (
+    LibraryFoundButUnusable,
     is_any_tx_output_on_change_branch,
     validate_op_return_output,
-    LibraryFoundButUnusable,
 )
 
 if TYPE_CHECKING:
@@ -40,8 +40,16 @@ _logger = get_logger(__name__)
 
 
 try:
+    # legacy imports
+    # note: we could replace "btchip" with "ledger_bitcoin.btchip" but the latter does not support HW.1
+    import hid
     import ledger_bitcoin
-    from ledger_bitcoin import WalletPolicy, MultisigWallet, AddressType, Chain
+    from btchip.bitcoinTransaction import bitcoinTransaction
+    from btchip.btchip import btchip
+    from btchip.btchipComm import HIDDongleHIDAPI
+    from btchip.btchipException import BTChipException
+    from btchip.btchipUtils import compress_public_key
+    from ledger_bitcoin import AddressType, Chain, MultisigWallet, WalletPolicy
     from ledger_bitcoin.exception.errors import (
         DenyError,
         NotSupportedError,
@@ -49,15 +57,6 @@ try:
     )
     from ledger_bitcoin.key import KeyOriginInfo
     from ledgercomm.interfaces.hid_device import HID
-
-    # legacy imports
-    # note: we could replace "btchip" with "ledger_bitcoin.btchip" but the latter does not support HW.1
-    import hid
-    from btchip.btchipComm import HIDDongleHIDAPI
-    from btchip.btchip import btchip
-    from btchip.btchipUtils import compress_public_key
-    from btchip.bitcoinTransaction import bitcoinTransaction
-    from btchip.btchipException import BTChipException
 
     LEDGER_BITCOIN = True
 except ImportError as e:
@@ -159,7 +158,7 @@ def test_pin_unlocked(func):
 
 
 # from HWI
-def is_witness(script: bytes) -> Tuple[bool, int, bytes]:
+def is_witness(script: bytes) -> tuple[bool, int, bytes]:
     """
     Determine whether a script is a segwit output script.
     If so, also returns the witness version and witness program.
@@ -184,7 +183,7 @@ def is_witness(script: bytes) -> Tuple[bool, int, bytes]:
 # from HWI
 # Only handles up to 15 of 15. Returns None if this script is not a
 # multisig script. Returns (m, pubkeys) otherwise.
-def parse_multisig(script: bytes) -> Optional[Tuple[int, Sequence[bytes]]]:
+def parse_multisig(script: bytes) -> tuple[int, Sequence[bytes]] | None:
     """
     Determine whether a script is a multisig script. If so, determine the parameters of that multisig.
 
@@ -373,7 +372,7 @@ class Ledger_Client(HardwareClientBase, ABC):
         message: str,
         password,
         *,
-        script_type: Optional[str] = None,
+        script_type: str | None = None,
     ) -> bytes:
         pass
 
@@ -383,7 +382,7 @@ class Ledger_Client_Legacy(Ledger_Client):
 
     is_legacy = True
 
-    def __init__(self, hidDevice: "HID", *, product_key: Tuple[int, int], plugin: HW_PluginBase):
+    def __init__(self, hidDevice: "HID", *, product_key: tuple[int, int], plugin: HW_PluginBase):
         Ledger_Client.__init__(self, plugin=plugin)
 
         # Hack, we close the old object and instantiate a new one
@@ -825,7 +824,7 @@ class Ledger_Client_Legacy(Ledger_Client):
         message: str,
         password,
         *,
-        script_type: Optional[str] = None,
+        script_type: str | None = None,
     ) -> bytes:
         message = message.encode("utf8")
         message_hash = hashlib.sha256(message).hexdigest().upper()
@@ -884,7 +883,7 @@ class Ledger_Client_Legacy_HW1(Ledger_Client_Legacy):
 
     MIN_SUPPORTED_HW1_FW_VERSION = "1.0.2"
 
-    def __init__(self, product_key: Tuple[int, int], plugin: HW_PluginBase, device: "Device"):
+    def __init__(self, product_key: tuple[int, int], plugin: HW_PluginBase, device: "Device"):
         # note: Ledger_Client_Legacy.__init__ is *not* called
         Ledger_Client.__init__(self, plugin=plugin)
         self._product_key = product_key
@@ -979,7 +978,7 @@ class Ledger_Client_New(Ledger_Client):
 
     is_legacy = False
 
-    def __init__(self, hidDevice: "HID", *, product_key: Tuple[int, int], plugin: HW_PluginBase):
+    def __init__(self, hidDevice: "HID", *, product_key: tuple[int, int], plugin: HW_PluginBase):
         Ledger_Client.__init__(self, plugin=plugin)
 
         transport = ledger_bitcoin.TransportClient("hid", hid=hidDevice)
@@ -990,8 +989,8 @@ class Ledger_Client_New(Ledger_Client):
 
         self.master_fingerprint = None
 
-        self._known_xpubs: Dict[str, str] = {}  # path ==> xpub
-        self._registered_policies: Dict[bytes, bytes] = {}  # wallet id => wallet hmac
+        self._known_xpubs: dict[str, str] = {}  # path ==> xpub
+        self._registered_policies: dict[bytes, bytes] = {}  # wallet id => wallet hmac
 
     def is_pairable(self):
         return True
@@ -1125,7 +1124,7 @@ class Ledger_Client_New(Ledger_Client):
             return False, None, None
         return True, response, response
 
-    def _register_policy_if_needed(self, wallet_policy: "WalletPolicy") -> Tuple[bytes, bytes]:
+    def _register_policy_if_needed(self, wallet_policy: "WalletPolicy") -> tuple[bytes, bytes]:
         # If the policy is not register, registers it and saves its hmac on success
         # Returns the pair of wallet id and wallet hmac
         if wallet_policy.id not in self._registered_policies:
@@ -1178,8 +1177,8 @@ class Ledger_Client_New(Ledger_Client):
             master_fp = self.client.get_master_fingerprint()
 
             # Figure out which wallets are signing
-            wallets: Dict[bytes, Tuple[AddressType, WalletPolicy, Optional[bytes]]] = {}
-            for input_num, (electrum_txin, psbt_in) in enumerate(zip(tx.inputs(), psbt.inputs)):
+            wallets: dict[bytes, tuple[AddressType, WalletPolicy, bytes | None]] = {}
+            for input_num, (electrum_txin, psbt_in) in enumerate(zip(tx.inputs(), psbt.inputs, strict=False)):
                 if electrum_txin.is_coinbase_input():
                     raise UserFacingException("Coinbase not supported")  # should never happen
 
@@ -1225,7 +1224,7 @@ class Ledger_Client_New(Ledger_Client):
                     k, ms_pubkeys = multisig
 
                     # Figure out the parent xpubs
-                    key_exprs: List[str] = []
+                    key_exprs: list[str] = []
                     ok = True
                     our_keys = 0
                     for pub in ms_pubkeys:
@@ -1259,7 +1258,7 @@ class Ledger_Client_New(Ledger_Client):
                         continue
 
                     # Electrum uses sortedmulti; we make sure that the array of key information is normalized in a consistent order
-                    key_exprs = list(sorted(key_exprs))
+                    key_exprs = sorted(key_exprs)
 
                     # Make and register the MultisigWallet
                     msw = MultisigWallet(
@@ -1368,7 +1367,7 @@ class Ledger_Client_New(Ledger_Client):
         message: str,
         password,
         *,
-        script_type: Optional[str] = None,
+        script_type: str | None = None,
     ) -> bytes:
         message = message.encode("utf8")
         message_hash = hashlib.sha256(message).hexdigest().upper()
@@ -1406,7 +1405,7 @@ class Ledger_KeyStore(Hardware_KeyStore):
         obj["cfg"] = self.cfg
         return obj
 
-    def get_client_dongle_object(self, *, client: Optional[Ledger_Client] = None) -> Ledger_Client:
+    def get_client_dongle_object(self, *, client: Ledger_Client | None = None) -> Ledger_Client:
         if client is None:
             client = self.get_client()
         return client
@@ -1491,7 +1490,7 @@ class LedgerPlugin(HW_PluginBase):
         return product_key[0] == 0x2581
 
     @classmethod
-    def _recognize_device(cls, product_key) -> Tuple[bool, Optional[str]]:
+    def _recognize_device(cls, product_key) -> tuple[bool, str | None]:
         """Returns (can_recognize, model_name) tuple."""
         # legacy product_keys
         if product_key in cls.DEVICE_IDS:
@@ -1531,7 +1530,7 @@ class LedgerPlugin(HW_PluginBase):
         return can_recognize
 
     @classmethod
-    def device_name_from_product_key(cls, product_key) -> Optional[str]:
+    def device_name_from_product_key(cls, product_key) -> str | None:
         return cls._recognize_device(product_key)[1]
 
     def create_device_from_hid_enumeration(self, d, *, product_key):
@@ -1541,7 +1540,7 @@ class LedgerPlugin(HW_PluginBase):
         return device
 
     @runs_in_hwd_thread
-    def create_client(self, device, handler) -> Optional[Ledger_Client]:
+    def create_client(self, device, handler) -> Ledger_Client | None:
         try:
             return Ledger_Client.construct_new(
                 device=device, product_key=device.product_key, plugin=self

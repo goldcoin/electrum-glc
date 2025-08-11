@@ -1,4 +1,4 @@
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject
+from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
 
 from electrum.logging import get_logger
 from electrum.util import bfh, format_time

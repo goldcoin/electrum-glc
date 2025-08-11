@@ -1,8 +1,8 @@
+import asyncio
 import os
 import queue
-import threading
-import asyncio
 import sqlite3
+import threading
 
 from .logging import Logger
 from .util import test_read_write_permissions

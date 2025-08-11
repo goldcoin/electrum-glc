@@ -1,13 +1,12 @@
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QLabel, QVBoxLayout, QGridLayout, QPushButton
+from PyQt5.QtWidgets import QGridLayout, QLabel, QPushButton, QVBoxLayout
 
 from electrum.i18n import _
 from electrum.lnchannel import Channel
 
-from .util import WindowModalDialog, Buttons, OkButton, CancelButton, WWLabel
 from .amountedit import BTCAmountEdit
+from .util import Buttons, CancelButton, OkButton, WindowModalDialog, WWLabel
 
 if TYPE_CHECKING:
     from .main_window import ElectrumWindow

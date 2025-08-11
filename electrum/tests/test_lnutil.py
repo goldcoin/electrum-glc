@@ -1,46 +1,42 @@
-import unittest
 import json
 
-from electrum import bitcoin
-from electrum import ecc
+from electrum import bitcoin, ecc
 from electrum.json_db import StoredDict
 from electrum.lnutil import (
+    ChannelType,
+    ConnStringFormatError,
+    ImportedChannelBackupStorage,
+    IncompatibleLightningFeatures,
+    LnFeatures,
     RevocationStore,
-    get_per_commitment_secret_from_seed,
-    make_offered_htlc,
-    make_received_htlc,
-    make_commitment,
-    make_htlc_tx_witness,
-    make_htlc_tx_output,
-    make_htlc_tx_inputs,
-    secret_to_pubkey,
+    ScriptHtlc,
+    UpdateAddHtlc,
+    calc_fees_for_commitment_tx,
     derive_blinded_pubkey,
     derive_privkey,
     derive_pubkey,
-    make_htlc_tx,
     extract_ctn_from_tx,
-    UnableToDeriveSecret,
-    get_compressed_pubkey_from_bech32,
-    split_host_port,
-    ConnStringFormatError,
-    ScriptHtlc,
     extract_nodeid,
-    calc_fees_for_commitment_tx,
-    UpdateAddHtlc,
-    LnFeatures,
+    get_compressed_pubkey_from_bech32,
+    get_per_commitment_secret_from_seed,
     ln_compare_features,
-    IncompatibleLightningFeatures,
-    ChannelType,
-    ImportedChannelBackupStorage,
+    make_commitment,
+    make_htlc_tx,
+    make_htlc_tx_inputs,
+    make_htlc_tx_output,
+    make_htlc_tx_witness,
+    make_offered_htlc,
+    make_received_htlc,
+    secret_to_pubkey,
+    split_host_port,
 )
-from electrum.util import bfh, MyEncoder
-from electrum.transaction import Transaction, PartialTransaction, Sighash
 from electrum.lnworker import LNWallet
-from electrum.wallet import restore_wallet_from_text, Standard_Wallet
 from electrum.simple_config import SimpleConfig
+from electrum.transaction import PartialTransaction, Sighash, Transaction
+from electrum.util import MyEncoder, bfh
+from electrum.wallet import restore_wallet_from_text
 
 from . import ElectrumTestCase, as_testnet
-
 
 funding_tx_id = "8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"
 funding_output_index = 0
@@ -86,49 +82,49 @@ class TestLNUtil(ElectrumTestCase):
                     {
                         "index": 281474976710655,
                         "secret": "7cc854b54e3e0dcdb010d7a3fee464a9687b"
-                        + "e6e8db3be6854c475621e007a5dc",
+                         "e6e8db3be6854c475621e007a5dc",
                         "successful": True,
                     },
                     {
                         "index": 281474976710654,
                         "secret": "c7518c8ae4660ed02894df8976fa1a3659c1"
-                        + "a8b4b5bec0c4b872abeba4cb8964",
+                         "a8b4b5bec0c4b872abeba4cb8964",
                         "successful": True,
                     },
                     {
                         "index": 281474976710653,
                         "secret": "2273e227a5b7449b6e70f1fb4652864038b1"
-                        + "cbf9cd7c043a7d6456b7fc275ad8",
+                         "cbf9cd7c043a7d6456b7fc275ad8",
                         "successful": True,
                     },
                     {
                         "index": 281474976710652,
                         "secret": "27cddaa5624534cb6cb9d7da077cf2b22ab2"
-                        + "1e9b506fd4998a51d54502e99116",
+                         "1e9b506fd4998a51d54502e99116",
                         "successful": True,
                     },
                     {
                         "index": 281474976710651,
                         "secret": "c65716add7aa98ba7acb236352d665cab173"
-                        + "45fe45b55fb879ff80e6bd0c41dd",
+                         "45fe45b55fb879ff80e6bd0c41dd",
                         "successful": True,
                     },
                     {
                         "index": 281474976710650,
                         "secret": "969660042a28f32d9be17344e09374b37996"
-                        + "2d03db1574df5a8a5a47e19ce3f2",
+                         "2d03db1574df5a8a5a47e19ce3f2",
                         "successful": True,
                     },
                     {
                         "index": 281474976710649,
                         "secret": "a5a64476122ca0925fb344bdc1854c1c0a59"
-                        + "fc614298e50a33e331980a220f32",
+                         "fc614298e50a33e331980a220f32",
                         "successful": True,
                     },
                     {
                         "index": 281474976710648,
                         "secret": "05cde6323d949933f7f7b78776bcc1ea6d9b"
-                        + "31447732e3802e1f7ac44b650e17",
+                         "31447732e3802e1f7ac44b650e17",
                         "successful": True,
                     },
                 ],
@@ -139,13 +135,13 @@ class TestLNUtil(ElectrumTestCase):
                     {
                         "index": 281474976710655,
                         "secret": "02a40c85b6f28da08dfdbe0926c53fab2d"
-                        + "e6d28c10301f8f7c4073d5e42e3148",
+                         "e6d28c10301f8f7c4073d5e42e3148",
                         "successful": True,
                     },
                     {
                         "index": 281474976710654,
                         "secret": "c7518c8ae4660ed02894df8976fa1a3659"
-                        + "c1a8b4b5bec0c4b872abeba4cb8964",
+                         "c1a8b4b5bec0c4b872abeba4cb8964",
                         "successful": False,
                     },
                 ],
@@ -156,25 +152,25 @@ class TestLNUtil(ElectrumTestCase):
                     {
                         "index": 281474976710655,
                         "secret": "02a40c85b6f28da08dfdbe0926c53fab2de6"
-                        + "d28c10301f8f7c4073d5e42e3148",
+                         "d28c10301f8f7c4073d5e42e3148",
                         "successful": True,
                     },
                     {
                         "index": 281474976710654,
                         "secret": "dddc3a8d14fddf2b68fa8c7fbad274827493"
-                        + "7479dd0f8930d5ebb4ab6bd866a3",
+                         "7479dd0f8930d5ebb4ab6bd866a3",
                         "successful": True,
                     },
                     {
                         "index": 281474976710653,
                         "secret": "2273e227a5b7449b6e70f1fb4652864038b1"
-                        + "cbf9cd7c043a7d6456b7fc275ad8",
+                         "cbf9cd7c043a7d6456b7fc275ad8",
                         "successful": True,
                     },
                     {
                         "index": 281474976710652,
                         "secret": "27cddaa5624534cb6cb9d7da077cf2b22a"
-                        + "b21e9b506fd4998a51d54502e99116",
+                         "b21e9b506fd4998a51d54502e99116",
                         "successful": False,
                     },
                 ],
@@ -185,25 +181,25 @@ class TestLNUtil(ElectrumTestCase):
                     {
                         "index": 281474976710655,
                         "secret": "7cc854b54e3e0dcdb010d7a3fee464a9687b"
-                        + "e6e8db3be6854c475621e007a5dc",
+                         "e6e8db3be6854c475621e007a5dc",
                         "successful": True,
                     },
                     {
                         "index": 281474976710654,
                         "secret": "c7518c8ae4660ed02894df8976fa1a3659c1"
-                        + "a8b4b5bec0c4b872abeba4cb8964",
+                         "a8b4b5bec0c4b872abeba4cb8964",
                         "successful": True,
                     },
                     {
                         "index": 281474976710653,
                         "secret": "c51a18b13e8527e579ec56365482c62f180b"
-                        + "7d5760b46e9477dae59e87ed423a",
+                         "7d5760b46e9477dae59e87ed423a",
                         "successful": True,
                     },
                     {
                         "index": 281474976710652,
                         "secret": "27cddaa5624534cb6cb9d7da077cf2b22ab2"
-                        + "1e9b506fd4998a51d54502e99116",
+                         "1e9b506fd4998a51d54502e99116",
                         "successful": False,
                     },
                 ],
@@ -214,49 +210,49 @@ class TestLNUtil(ElectrumTestCase):
                     {
                         "index": 281474976710655,
                         "secret": "02a40c85b6f28da08dfdbe0926c53fab2de6"
-                        + "d28c10301f8f7c4073d5e42e3148",
+                         "d28c10301f8f7c4073d5e42e3148",
                         "successful": True,
                     },
                     {
                         "index": 281474976710654,
                         "secret": "dddc3a8d14fddf2b68fa8c7fbad274827493"
-                        + "7479dd0f8930d5ebb4ab6bd866a3",
+                         "7479dd0f8930d5ebb4ab6bd866a3",
                         "successful": True,
                     },
                     {
                         "index": 281474976710653,
                         "secret": "c51a18b13e8527e579ec56365482c62f18"
-                        + "0b7d5760b46e9477dae59e87ed423a",
+                         "0b7d5760b46e9477dae59e87ed423a",
                         "successful": True,
                     },
                     {
                         "index": 281474976710652,
                         "secret": "ba65d7b0ef55a3ba300d4e87af29868f39"
-                        + "4f8f138d78a7011669c79b37b936f4",
+                         "4f8f138d78a7011669c79b37b936f4",
                         "successful": True,
                     },
                     {
                         "index": 281474976710651,
                         "secret": "c65716add7aa98ba7acb236352d665cab1"
-                        + "7345fe45b55fb879ff80e6bd0c41dd",
+                         "7345fe45b55fb879ff80e6bd0c41dd",
                         "successful": True,
                     },
                     {
                         "index": 281474976710650,
                         "secret": "969660042a28f32d9be17344e09374b379"
-                        + "962d03db1574df5a8a5a47e19ce3f2",
+                         "962d03db1574df5a8a5a47e19ce3f2",
                         "successful": True,
                     },
                     {
                         "index": 281474976710649,
                         "secret": "a5a64476122ca0925fb344bdc1854c1c0a"
-                        + "59fc614298e50a33e331980a220f32",
+                         "59fc614298e50a33e331980a220f32",
                         "successful": True,
                     },
                     {
                         "index": 281474976710649,
                         "secret": "05cde6323d949933f7f7b78776bcc1ea6d9b"
-                        + "31447732e3802e1f7ac44b650e17",
+                         "31447732e3802e1f7ac44b650e17",
                         "successful": False,
                     },
                 ],
@@ -267,37 +263,37 @@ class TestLNUtil(ElectrumTestCase):
                     {
                         "index": 281474976710655,
                         "secret": "7cc854b54e3e0dcdb010d7a3fee464a9687b"
-                        + "e6e8db3be6854c475621e007a5dc",
+                         "e6e8db3be6854c475621e007a5dc",
                         "successful": True,
                     },
                     {
                         "index": 281474976710654,
                         "secret": "c7518c8ae4660ed02894df8976fa1a3659c1a"
-                        + "8b4b5bec0c4b872abeba4cb8964",
+                         "8b4b5bec0c4b872abeba4cb8964",
                         "successful": True,
                     },
                     {
                         "index": 281474976710653,
                         "secret": "2273e227a5b7449b6e70f1fb4652864038b1"
-                        + "cbf9cd7c043a7d6456b7fc275ad8",
+                         "cbf9cd7c043a7d6456b7fc275ad8",
                         "successful": True,
                     },
                     {
                         "index": 281474976710652,
                         "secret": "27cddaa5624534cb6cb9d7da077cf2b22ab21"
-                        + "e9b506fd4998a51d54502e99116",
+                         "e9b506fd4998a51d54502e99116",
                         "successful": True,
                     },
                     {
                         "index": 281474976710651,
                         "secret": "631373ad5f9ef654bb3dade742d09504c567"
-                        + "edd24320d2fcd68e3cc47e2ff6a6",
+                         "edd24320d2fcd68e3cc47e2ff6a6",
                         "successful": True,
                     },
                     {
                         "index": 281474976710650,
                         "secret": "969660042a28f32d9be17344e09374b37996"
-                        + "2d03db1574df5a8a5a47e19ce3f2",
+                         "2d03db1574df5a8a5a47e19ce3f2",
                         "successful": False,
                     },
                 ],
@@ -308,49 +304,49 @@ class TestLNUtil(ElectrumTestCase):
                     {
                         "index": 281474976710655,
                         "secret": "7cc854b54e3e0dcdb010d7a3fee464a9687b"
-                        + "e6e8db3be6854c475621e007a5dc",
+                         "e6e8db3be6854c475621e007a5dc",
                         "successful": True,
                     },
                     {
                         "index": 281474976710654,
                         "secret": "c7518c8ae4660ed02894df8976fa1a3659c1a"
-                        + "8b4b5bec0c4b872abeba4cb8964",
+                         "8b4b5bec0c4b872abeba4cb8964",
                         "successful": True,
                     },
                     {
                         "index": 281474976710653,
                         "secret": "2273e227a5b7449b6e70f1fb4652864038b1"
-                        + "cbf9cd7c043a7d6456b7fc275ad8",
+                         "cbf9cd7c043a7d6456b7fc275ad8",
                         "successful": True,
                     },
                     {
                         "index": 281474976710652,
                         "secret": "27cddaa5624534cb6cb9d7da077cf2b22ab21"
-                        + "e9b506fd4998a51d54502e99116",
+                         "e9b506fd4998a51d54502e99116",
                         "successful": True,
                     },
                     {
                         "index": 281474976710651,
                         "secret": "631373ad5f9ef654bb3dade742d09504c567"
-                        + "edd24320d2fcd68e3cc47e2ff6a6",
+                         "edd24320d2fcd68e3cc47e2ff6a6",
                         "successful": True,
                     },
                     {
                         "index": 281474976710650,
                         "secret": "b7e76a83668bde38b373970155c868a65330"
-                        + "4308f9896692f904a23731224bb1",
+                         "4308f9896692f904a23731224bb1",
                         "successful": True,
                     },
                     {
                         "index": 281474976710649,
                         "secret": "a5a64476122ca0925fb344bdc1854c1c0a59f"
-                        + "c614298e50a33e331980a220f32",
+                         "c614298e50a33e331980a220f32",
                         "successful": True,
                     },
                     {
                         "index": 281474976710648,
                         "secret": "05cde6323d949933f7f7b78776bcc1ea6d9b"
-                        + "31447732e3802e1f7ac44b650e17",
+                         "31447732e3802e1f7ac44b650e17",
                         "successful": False,
                     },
                 ],
@@ -361,49 +357,49 @@ class TestLNUtil(ElectrumTestCase):
                     {
                         "index": 281474976710655,
                         "secret": "7cc854b54e3e0dcdb010d7a3fee464a9687b"
-                        + "e6e8db3be6854c475621e007a5dc",
+                         "e6e8db3be6854c475621e007a5dc",
                         "successful": True,
                     },
                     {
                         "index": 281474976710654,
                         "secret": "c7518c8ae4660ed02894df8976fa1a3659c1a"
-                        + "8b4b5bec0c4b872abeba4cb8964",
+                         "8b4b5bec0c4b872abeba4cb8964",
                         "successful": True,
                     },
                     {
                         "index": 281474976710653,
                         "secret": "2273e227a5b7449b6e70f1fb4652864038b1"
-                        + "cbf9cd7c043a7d6456b7fc275ad8",
+                         "cbf9cd7c043a7d6456b7fc275ad8",
                         "successful": True,
                     },
                     {
                         "index": 281474976710652,
                         "secret": "27cddaa5624534cb6cb9d7da077cf2b22ab21"
-                        + "e9b506fd4998a51d54502e99116",
+                         "e9b506fd4998a51d54502e99116",
                         "successful": True,
                     },
                     {
                         "index": 281474976710651,
                         "secret": "c65716add7aa98ba7acb236352d665cab173"
-                        + "45fe45b55fb879ff80e6bd0c41dd",
+                         "45fe45b55fb879ff80e6bd0c41dd",
                         "successful": True,
                     },
                     {
                         "index": 281474976710650,
                         "secret": "969660042a28f32d9be17344e09374b37996"
-                        + "2d03db1574df5a8a5a47e19ce3f2",
+                         "2d03db1574df5a8a5a47e19ce3f2",
                         "successful": True,
                     },
                     {
                         "index": 281474976710649,
                         "secret": "e7971de736e01da8ed58b94c2fc216cb1d"
-                        + "ca9e326f3a96e7194fe8ea8af6c0a3",
+                         "ca9e326f3a96e7194fe8ea8af6c0a3",
                         "successful": True,
                     },
                     {
                         "index": 281474976710648,
                         "secret": "05cde6323d949933f7f7b78776bcc1ea6d"
-                        + "9b31447732e3802e1f7ac44b650e17",
+                         "9b31447732e3802e1f7ac44b650e17",
                         "successful": False,
                     },
                 ],
@@ -414,49 +410,49 @@ class TestLNUtil(ElectrumTestCase):
                     {
                         "index": 281474976710655,
                         "secret": "7cc854b54e3e0dcdb010d7a3fee464a9687b"
-                        + "e6e8db3be6854c475621e007a5dc",
+                         "e6e8db3be6854c475621e007a5dc",
                         "successful": True,
                     },
                     {
                         "index": 281474976710654,
                         "secret": "c7518c8ae4660ed02894df8976fa1a3659c1a"
-                        + "8b4b5bec0c4b872abeba4cb8964",
+                         "8b4b5bec0c4b872abeba4cb8964",
                         "successful": True,
                     },
                     {
                         "index": 281474976710653,
                         "secret": "2273e227a5b7449b6e70f1fb4652864038b1"
-                        + "cbf9cd7c043a7d6456b7fc275ad8",
+                         "cbf9cd7c043a7d6456b7fc275ad8",
                         "successful": True,
                     },
                     {
                         "index": 281474976710652,
                         "secret": "27cddaa5624534cb6cb9d7da077cf2b22ab21"
-                        + "e9b506fd4998a51d54502e99116",
+                         "e9b506fd4998a51d54502e99116",
                         "successful": True,
                     },
                     {
                         "index": 281474976710651,
                         "secret": "c65716add7aa98ba7acb236352d665cab173"
-                        + "45fe45b55fb879ff80e6bd0c41dd",
+                         "45fe45b55fb879ff80e6bd0c41dd",
                         "successful": True,
                     },
                     {
                         "index": 281474976710650,
                         "secret": "969660042a28f32d9be17344e09374b37996"
-                        + "2d03db1574df5a8a5a47e19ce3f2",
+                         "2d03db1574df5a8a5a47e19ce3f2",
                         "successful": True,
                     },
                     {
                         "index": 281474976710649,
                         "secret": "a5a64476122ca0925fb344bdc1854c1c0a"
-                        + "59fc614298e50a33e331980a220f32",
+                         "59fc614298e50a33e331980a220f32",
                         "successful": True,
                     },
                     {
                         "index": 281474976710648,
                         "secret": "a7efbc61aac46d34f77778bac22c8a20c6"
-                        + "a46ca460addc49009bda875ec88fa4",
+                         "a46ca460addc49009bda875ec88fa4",
                         "successful": False,
                     },
                 ],
@@ -513,7 +509,7 @@ class TestLNUtil(ElectrumTestCase):
         # actual commitment transaction fee = 0
 
         per_commitment_secret = 0x1F1E1D1C1B1A191817161514131211100F0E0D0C0B0A09080706050403020100
-        per_commitment_point = secret_to_pubkey(per_commitment_secret)
+        secret_to_pubkey(per_commitment_secret)
 
         remote_htlcpubkey = remotepubkey
         local_htlcpubkey = localpubkey

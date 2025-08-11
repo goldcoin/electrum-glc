@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Electrum - lightweight Bitcoin client
 # Copyright (C) 2018 The Electrum developers
@@ -23,17 +22,17 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os
 import json
+import os
 
-from .util import inv_dict, all_subclasses
 from . import bitcoin
+from .util import all_subclasses, inv_dict
 
 
 def read_json(filename, default):
     path = os.path.join(os.path.dirname(__file__), filename)
     try:
-        with open(path, "r") as f:
+        with open(path) as f:
             r = json.loads(f.read())
     except Exception:
         r = default

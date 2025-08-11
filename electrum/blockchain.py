@@ -23,14 +23,14 @@
 import os
 import threading
 import time
-from typing import Optional, Dict, Mapping, Sequence, TYPE_CHECKING
+from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING, Optional
 
-from . import util
+from . import constants, util
 from .bitcoin import hash_encode, int_to_hex, rev_hex
 from .crypto import sha256d
-from . import constants
+from .logging import Logger, get_logger
 from .util import bfh, with_lock
-from .logging import get_logger, Logger
 
 if TYPE_CHECKING:
     from .simple_config import SimpleConfig
@@ -38,7 +38,8 @@ if TYPE_CHECKING:
 try:
     import scrypt
 
-    getPoWHash = lambda x: scrypt.hash(x, x, N=1024, r=1, p=1, buflen=32)
+    def getPoWHash(x):
+        return scrypt.hash(x, x, N=1024, r=1, p=1, buflen=32)
 except ImportError:
     util.print_msg("Warning: package scrypt not available; synchronization could be very slow")
     from .scrypt import scrypt_1024_1_1_80 as getPoWHash
@@ -76,10 +77,11 @@ def serialize_header(header_dict: dict) -> str:
 
 def deserialize_header(s: bytes, height: int) -> dict:
     if not s:
-        raise InvalidHeader("Invalid header: {}".format(s))
+        raise InvalidHeader(f"Invalid header: {s}")
     if len(s) != HEADER_SIZE:
-        raise InvalidHeader("Invalid header length: {}".format(len(s)))
-    hex_to_int = lambda s: int.from_bytes(s, byteorder="little")
+        raise InvalidHeader(f"Invalid header length: {len(s)}")
+    def hex_to_int(s):
+        return int.from_bytes(s, byteorder="little")
     h = {}
     h["version"] = hex_to_int(s[0:4])
     h["prev_block_hash"] = hash_encode(s[4:36])
@@ -216,7 +218,7 @@ class Blockchain(Logger):
         forkpoint: int,
         parent: Optional["Blockchain"],
         forkpoint_hash: str,
-        prev_hash: Optional[str],
+        prev_hash: str | None,
     ):
         assert isinstance(forkpoint_hash, str) and len(forkpoint_hash) == 64, forkpoint_hash
         assert (prev_hash is None) or (
@@ -238,7 +240,7 @@ class Blockchain(Logger):
     def checkpoints(self):
         return constants.net.CHECKPOINTS
 
-    def get_max_child(self) -> Optional[int]:
+    def get_max_child(self) -> int | None:
         children = self.get_direct_children()
         return max([x.forkpoint for x in children]) if children else None
 
@@ -334,17 +336,17 @@ class Blockchain(Logger):
 
     @classmethod
     def verify_header(
-        cls, header: dict, prev_hash: str, target: int, expected_header_hash: str = None
+        cls, header: dict, prev_hash: str, target: int, expected_header_hash: str | None = None
     ) -> None:
         _hash = hash_header(header)
         _powhash = pow_hash_header(header)
         if expected_header_hash and expected_header_hash != _hash:
             raise InvalidHeader(
-                "hash mismatches with expected: {} vs {}".format(expected_header_hash, _hash)
+                f"hash mismatches with expected: {expected_header_hash} vs {_hash}"
             )
         if prev_hash != header.get("prev_block_hash"):
             raise InvalidHeader(
-                "prev hash mismatch: %s vs %s" % (prev_hash, header.get("prev_block_hash"))
+                "prev hash mismatch: {} vs {}".format(prev_hash, header.get("prev_block_hash"))
             )
         if constants.net.TESTNET:
             return
@@ -487,7 +489,7 @@ class Blockchain(Logger):
             )
         else:
             raise FileNotFoundError(
-                "Cannot find headers file but headers_dir is there. Should be at {}".format(path)
+                f"Cannot find headers file but headers_dir is there. Should be at {path}"
             )
 
     @with_lock
@@ -515,7 +517,7 @@ class Blockchain(Logger):
         self.swap_with_parent()
 
     @with_lock
-    def read_header(self, height: int) -> Optional[dict]:
+    def read_header(self, height: int) -> dict | None:
         if height < 0:
             return
         if height < self.forkpoint:
@@ -530,13 +532,13 @@ class Blockchain(Logger):
             h = f.read(HEADER_SIZE)
             if len(h) < HEADER_SIZE:
                 raise Exception(
-                    "Expected to read a full header. This was only {} bytes".format(len(h))
+                    f"Expected to read a full header. This was only {len(h)} bytes"
                 )
         if h == bytes([0]) * HEADER_SIZE:
             return None
         return deserialize_header(h, height)
 
-    def header_at_tip(self) -> Optional[dict]:
+    def header_at_tip(self) -> dict | None:
         """Return latest header."""
         height = self.height()
         return self.read_header(height)
@@ -691,7 +693,7 @@ class Blockchain(Logger):
             return False
         try:
             self.verify_header(header, prev_hash, target)
-        except BaseException as e:
+        except BaseException:
             return False
         return True
 
@@ -703,7 +705,7 @@ class Blockchain(Logger):
             self.save_chunk(idx, data)
             return True
         except BaseException as e:
-            self.logger.info(f"verify_chunk idx {idx} failed: {repr(e)}")
+            self.logger.info(f"verify_chunk idx {idx} failed: {e!r}")
             return False
 
     def get_checkpoints(self):
@@ -717,7 +719,7 @@ class Blockchain(Logger):
         return cp
 
 
-def check_header(header: dict) -> Optional[Blockchain]:
+def check_header(header: dict) -> Blockchain | None:
     """Returns any Blockchain that contains header, or None."""
     if type(header) is not dict:
         return None
@@ -729,7 +731,7 @@ def check_header(header: dict) -> Optional[Blockchain]:
     return None
 
 
-def can_connect(header: dict) -> Optional[Blockchain]:
+def can_connect(header: dict) -> Blockchain | None:
     """Returns the Blockchain that has a tip that directly links up
     with header, or None.
     """

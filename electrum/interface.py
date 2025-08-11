@@ -22,52 +22,46 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import asyncio
+import functools
+import hashlib
+import itertools
+import logging
 import os
 import re
 import ssl
 import sys
 import traceback
-import asyncio
-import socket
-from typing import Tuple, Union, List, TYPE_CHECKING, Optional, Set, NamedTuple, Any, Sequence, Dict
 from collections import defaultdict
-from ipaddress import IPv4Network, IPv6Network, ip_address, IPv6Address, IPv4Address
-import itertools
-import logging
-import hashlib
-import functools
+from collections.abc import Sequence
+from ipaddress import IPv4Network, IPv6Address, IPv6Network, ip_address
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import aiorpcx
-from aiorpcx import RPCSession, Notification, NetAddress, NewlineFramer
-from aiorpcx.curio import timeout_after, TaskTimeout
+import certifi
+from aiorpcx import NetAddress, NewlineFramer, Notification, RPCSession
+from aiorpcx.curio import TaskTimeout
 from aiorpcx.jsonrpc import JSONRPC, CodeMessageError
 from aiorpcx.rawsocket import RSClient
-import certifi
 
-from .util import (
-    ignore_exceptions,
-    log_exceptions,
-    bfh,
-    MySocksProxy,
-    is_integer,
-    is_non_negative_integer,
-    is_hash256_str,
-    is_hex_str,
-    is_int_or_float,
-    is_non_negative_int_or_float,
-    OldTaskGroup,
-)
-from . import util
-from . import x509
-from . import pem
-from . import version
-from . import blockchain
-from .blockchain import Blockchain, HEADER_SIZE
-from . import bitcoin
-from . import constants
+from . import bitcoin, blockchain, constants, pem, util, version, x509
+from .blockchain import HEADER_SIZE, Blockchain
 from .i18n import _
 from .logging import Logger
 from .transaction import Transaction
+from .util import (
+    MySocksProxy,
+    OldTaskGroup,
+    bfh,
+    ignore_exceptions,
+    is_hash256_str,
+    is_hex_str,
+    is_int_or_float,
+    is_integer,
+    is_non_negative_int_or_float,
+    is_non_negative_integer,
+    log_exceptions,
+)
 
 if TYPE_CHECKING:
     from .network import Network
@@ -135,14 +129,14 @@ def assert_dict_contains_field(d: Any, *, field_name: str) -> Any:
 
 
 def assert_list_or_tuple(val: Any) -> None:
-    if not isinstance(val, (list, tuple)):
+    if not isinstance(val, list | tuple):
         raise RequestCorrupted(f"{val!r} should be a list or tuple")
 
 
 class NotificationSession(RPCSession):
 
     def __init__(self, *args, interface: "Interface", **kwargs):
-        super(NotificationSession, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.subscriptions = defaultdict(list)
         self.cache = {}
         self.default_timeout = NetworkTimeout.Generic.NORMAL
@@ -161,11 +155,11 @@ class NotificationSession(RPCSession):
                     for queue in self.subscriptions[key]:
                         await queue.put(request.args)
                 else:
-                    raise Exception(f"unexpected notification")
+                    raise Exception("unexpected notification")
             else:
-                raise Exception(f"unexpected request. not a notification")
+                raise Exception("unexpected request. not a notification")
         except Exception as e:
-            self.interface.logger.info(f"error handling request {request}. exc: {repr(e)}")
+            self.interface.logger.info(f"error handling request {request}. exc: {e!r}")
             await self.close()
 
     async def send_request(self, *args, timeout=None, **kwargs):
@@ -177,10 +171,10 @@ class NotificationSession(RPCSession):
             # note: RPCSession.send_request raises TaskTimeout in case of a timeout.
             # TaskTimeout is a subclass of CancelledError, which is *suppressed* in TaskGroups
             response = await util.wait_for2(super().send_request(*args, **kwargs), timeout)
-        except (TaskTimeout, asyncio.TimeoutError) as e:
+        except (TimeoutError, TaskTimeout) as e:
             raise RequestTimedOut(f"request timed out: {args} (id: {msg_id})") from e
         except CodeMessageError as e:
-            self.maybe_log(f"--> {repr(e)} (id: {msg_id})")
+            self.maybe_log(f"--> {e!r} (id: {msg_id})")
             raise
         else:
             self.maybe_log(f"--> {response} (id: {msg_id})")
@@ -190,7 +184,7 @@ class NotificationSession(RPCSession):
         self.sent_request_timeout = timeout
         self.max_send_delay = timeout
 
-    async def subscribe(self, method: str, params: List, queue: asyncio.Queue):
+    async def subscribe(self, method: str, params: list, queue: asyncio.Queue):
         # note: until the cache is written for the first time,
         # each 'subscribe' call might make a request on the network.
         key = self.get_hashable_key_for_rpc_call(method, params)
@@ -200,7 +194,7 @@ class NotificationSession(RPCSession):
         else:
             result = await self.send_request(method, params)
             self.cache[key] = result
-        await queue.put(params + [result])
+        await queue.put([*params, result])
 
     def unsubscribe(self, queue):
         """Unsubscribe a callback to free object references to enable GC."""
@@ -227,7 +221,7 @@ class NotificationSession(RPCSession):
         assert max_size > 500_000, f"{max_size=} (< 500_000) is too small"
         return NewlineFramer(max_size=max_size)
 
-    async def close(self, *, force_after: int = None):
+    async def close(self, *, force_after: int | None = None):
         """Closes the connection and waits for it to be closed.
         We try to flush buffered data to the wire, which can take some time.
         """
@@ -294,7 +288,7 @@ class _RSClient(RSClient):
 
 class ServerAddr:
 
-    def __init__(self, host: str, port: Union[int, str], *, protocol: str = None):
+    def __init__(self, host: str, port: Union[int, str], *, protocol: str | None = None):
         assert isinstance(host, str), repr(host)
         if protocol is None:
             protocol = "s"
@@ -356,7 +350,7 @@ class ServerAddr:
         return str(self)
 
     def __str__(self):
-        return "{}:{}".format(self.net_addr_str(), self.protocol)
+        return f"{self.net_addr_str()}:{self.protocol}"
 
     def to_json(self) -> str:
         return str(self)
@@ -397,7 +391,7 @@ class Interface(Logger):
 
     LOGGING_SHORTCUT = "i"
 
-    def __init__(self, *, network: "Network", server: ServerAddr, proxy: Optional[dict]):
+    def __init__(self, *, network: "Network", server: ServerAddr, proxy: dict | None):
         self.ready = network.asyncio_loop.create_future()
         self.got_disconnected = asyncio.Event()
         self.server = server
@@ -415,7 +409,7 @@ class Interface(Logger):
         #   note: we could maybe relax this further and bypass the proxy for all private
         #         addresses...? e.g. 192.168.x.x
         if util.is_localhost(server.host):
-            self.logger.info(f"looks like localhost: not using proxy for this server")
+            self.logger.info("looks like localhost: not using proxy for this server")
             proxy = None
         self.proxy = MySocksProxy.from_proxy_dict(proxy)
 
@@ -435,7 +429,7 @@ class Interface(Logger):
 
         async def spawn_task():
             task = await self.network.taskgroup.spawn(self.run())
-            task.set_name(f"interface::{str(server)}")
+            task.set_name(f"interface::{server!s}")
 
         asyncio.run_coroutine_threadsafe(spawn_task(), self.network.asyncio_loop)
 
@@ -488,7 +482,7 @@ class Interface(Logger):
     def _is_saved_ssl_cert_available(self):
         if not os.path.exists(self.cert_path):
             return False
-        with open(self.cert_path, "r") as f:
+        with open(self.cert_path) as f:
             contents = f.read()
         if contents == "":  # CA signed
             if self._get_expected_fingerprint():
@@ -547,10 +541,10 @@ class Interface(Logger):
             try:
                 return await func(self, *args, **kwargs)
             except GracefulDisconnect as e:
-                self.logger.log(e.log_level, f"disconnecting due to {repr(e)}")
+                self.logger.log(e.log_level, f"disconnecting due to {e!r}")
             except aiorpcx.jsonrpc.RPCError as e:
-                self.logger.warning(f"disconnecting due to {repr(e)}")
-                self.logger.debug(f"(disconnect) trace for {repr(e)}", exc_info=True)
+                self.logger.warning(f"disconnecting due to {e!r}")
+                self.logger.debug(f"(disconnect) trace for {e!r}", exc_info=True)
             finally:
                 self.got_disconnected.set()
                 await self.network.connection_down(self)
@@ -566,7 +560,7 @@ class Interface(Logger):
         try:
             ssl_context = await self._get_ssl_context()
         except (ErrorParsingSSLCert, ErrorGettingSSLCertFromServer) as e:
-            self.logger.info(f"disconnecting due to: {repr(e)}")
+            self.logger.info(f"disconnecting due to: {e!r}")
             return
         try:
             await self.open_session(ssl_context)
@@ -580,10 +574,10 @@ class Interface(Logger):
             ):
                 self.logger.warning(
                     f"Cannot connect to main server due to SSL error "
-                    f'(maybe cert changed compared to "{self.cert_path}"). Exc: {repr(e)}'
+                    f'(maybe cert changed compared to "{self.cert_path}"). Exc: {e!r}'
                 )
             else:
-                self.logger.info(f"disconnecting due to: {repr(e)}")
+                self.logger.info(f"disconnecting due to: {e!r}")
             return
 
     def _mark_ready(self) -> None:
@@ -647,7 +641,7 @@ class Interface(Logger):
             ssl_object = asyncio_transport.get_extra_info("ssl_object")  # type: ssl.SSLObject
             return ssl_object.getpeercert(binary_form=True)
 
-    def _get_expected_fingerprint(self) -> Optional[str]:
+    def _get_expected_fingerprint(self) -> str | None:
         if self.is_main_server():
             return self.network.config.NETWORK_SERVERFINGERPRINT
 
@@ -666,7 +660,7 @@ class Interface(Logger):
 
     async def get_block_header(self, height, assert_mode):
         if not is_non_negative_integer(height):
-            raise Exception(f"{repr(height)} is not a block height")
+            raise Exception(f"{height!r} is not a block height")
         self.logger.info(f"requesting block header {height} in mode {assert_mode}")
         # use lower timeout as we usually have network.bhi_lock here
         timeout = self.network.get_network_timeout_seconds(NetworkTimeout.Urgent)
@@ -675,7 +669,7 @@ class Interface(Logger):
 
     async def request_chunk(self, height: int, tip=None, *, can_return_early=False):
         if not is_non_negative_integer(height):
-            raise Exception(f"{repr(height)} is not a block height")
+            raise Exception(f"{height!r} is not a block height")
         index = height // 2016
         if can_return_early and index in self._requested_chunks:
             return
@@ -712,14 +706,15 @@ class Interface(Logger):
     def is_main_server(self) -> bool:
         return (
             self.network.interface == self
-            or self.network.interface is None
-            and self.network.default_server == self.server
+            or (self.network.interface is None
+            and self.network.default_server == self.server)
         )
 
     async def open_session(self, sslc, exit_early=False):
-        session_factory = lambda *args, iface=self, **kwargs: NotificationSession(
-            *args, **kwargs, interface=iface
-        )
+        def session_factory(*args, iface=self, **kwargs):
+            return NotificationSession(
+                    *args, **kwargs, interface=iface
+                )
         async with _RSClient(
             session_factory=session_factory,
             host=self.host,
@@ -807,7 +802,7 @@ class Interface(Logger):
             self.network.update_fee_estimates()
             await asyncio.sleep(60)
 
-    async def close(self, *, force_after: int = None):
+    async def close(self, *, force_after: int | None = None):
         """Closes the connection and waits for it to be closed.
         We try to flush buffered data to the wire, which can take some time.
         """
@@ -956,7 +951,7 @@ class Interface(Logger):
         mock = "mock" in bad_header and bad_header["mock"]["connect"](height)
         real = not mock and self.blockchain.can_connect(bad_header, check_height=False)
         if not real and not mock:
-            raise Exception("unexpected bad header during binary: {}".format(bad_header))
+            raise Exception(f"unexpected bad header during binary: {bad_header}")
         _assert_header_does_not_check_against_any_chain(bad_header)
 
         self.logger.info(f"binary search exited. good {good}, bad {bad}")
@@ -1033,7 +1028,7 @@ class Interface(Logger):
     def is_tor(self):
         return self.host.endswith(".onion")
 
-    def ip_addr(self) -> Optional[str]:
+    def ip_addr(self) -> str | None:
         session = self.session
         if not session:
             return None
@@ -1068,9 +1063,9 @@ class Interface(Logger):
 
     async def get_merkle_for_transaction(self, tx_hash: str, tx_height: int) -> dict:
         if not is_hash256_str(tx_hash):
-            raise Exception(f"{repr(tx_hash)} is not a txid")
+            raise Exception(f"{tx_hash!r} is not a txid")
         if not is_non_negative_integer(tx_height):
-            raise Exception(f"{repr(tx_height)} is not a block height")
+            raise Exception(f"{tx_height!r} is not a block height")
         # do request
         res = await self.session.send_request(
             "blockchain.transaction.get_merkle", [tx_hash, tx_height]
@@ -1089,7 +1084,7 @@ class Interface(Logger):
 
     async def get_transaction(self, tx_hash: str, *, timeout=None) -> str:
         if not is_hash256_str(tx_hash):
-            raise Exception(f"{repr(tx_hash)} is not a txid")
+            raise Exception(f"{tx_hash!r} is not a txid")
         raw = await self.session.send_request(
             "blockchain.transaction.get", [tx_hash], timeout=timeout
         )
@@ -1111,9 +1106,9 @@ class Interface(Logger):
             )
         return raw
 
-    async def get_history_for_scripthash(self, sh: str) -> List[dict]:
+    async def get_history_for_scripthash(self, sh: str) -> list[dict]:
         if not is_hash256_str(sh):
-            raise Exception(f"{repr(sh)} is not a scripthash")
+            raise Exception(f"{sh!r} is not a scripthash")
         # do request
         res = await self.session.send_request("blockchain.scripthash.get_history", [sh])
         # check response
@@ -1131,9 +1126,9 @@ class Interface(Logger):
             else:
                 # check monotonicity of heights
                 if height < prev_height:
-                    raise RequestCorrupted(f"heights of confirmed txs must be in increasing order")
+                    raise RequestCorrupted("heights of confirmed txs must be in increasing order")
                 prev_height = height
-        hashes = set(map(lambda item: item["tx_hash"], res))
+        hashes = {item["tx_hash"] for item in res}
         if len(hashes) != len(res):
             # Either server is sending garbage... or maybe if server is race-prone
             # a recently mined tx could be included in both last block and mempool?
@@ -1141,9 +1136,9 @@ class Interface(Logger):
             raise RequestCorrupted(f"server history has non-unique txids for sh={sh}")
         return res
 
-    async def listunspent_for_scripthash(self, sh: str) -> List[dict]:
+    async def listunspent_for_scripthash(self, sh: str) -> list[dict]:
         if not is_hash256_str(sh):
-            raise Exception(f"{repr(sh)} is not a scripthash")
+            raise Exception(f"{sh!r} is not a scripthash")
         # do request
         res = await self.session.send_request("blockchain.scripthash.listunspent", [sh])
         # check response
@@ -1161,7 +1156,7 @@ class Interface(Logger):
 
     async def get_balance_for_scripthash(self, sh: str) -> dict:
         if not is_hash256_str(sh):
-            raise Exception(f"{repr(sh)} is not a scripthash")
+            raise Exception(f"{sh!r} is not a scripthash")
         # do request
         res = await self.session.send_request("blockchain.scripthash.get_balance", [sh])
         # check response
@@ -1173,9 +1168,9 @@ class Interface(Logger):
 
     async def get_txid_from_txpos(self, tx_height: int, tx_pos: int, merkle: bool):
         if not is_non_negative_integer(tx_height):
-            raise Exception(f"{repr(tx_height)} is not a block height")
+            raise Exception(f"{tx_height!r} is not a block height")
         if not is_non_negative_integer(tx_pos):
-            raise Exception(f"{repr(tx_pos)} should be non-negative integer")
+            raise Exception(f"{tx_pos!r} should be non-negative integer")
         # do request
         res = await self.session.send_request(
             "blockchain.transaction.id_from_pos",
@@ -1193,7 +1188,7 @@ class Interface(Logger):
             assert_hash256_str(res)
         return res
 
-    async def get_fee_histogram(self) -> Sequence[Tuple[Union[float, int], int]]:
+    async def get_fee_histogram(self) -> Sequence[tuple[Union[float, int], int]]:
         # do request
         res = await self.session.send_request("mempool.get_fee_histogram")
         # check response
@@ -1203,7 +1198,7 @@ class Interface(Logger):
             assert_non_negative_int_or_float(fee)
             assert_non_negative_integer(s)
             if fee >= prev_fee:  # check monotonicity
-                raise RequestCorrupted(f"fees must be in decreasing order")
+                raise RequestCorrupted("fees must be in decreasing order")
             prev_fee = fee
         return res
 
@@ -1224,7 +1219,7 @@ class Interface(Logger):
         if not bitcoin.is_address(res):
             # note: do not hard-fail -- allow server to use future-type
             #       bitcoin address we do not recognize
-            self.logger.info(f"invalid donation address from server: {repr(res)}")
+            self.logger.info(f"invalid donation address from server: {res!r}")
             res = ""
         return res
 
@@ -1244,7 +1239,7 @@ class Interface(Logger):
         Returns -1 if the server could not provide an estimate.
         """
         if not is_non_negative_integer(num_blocks):
-            raise Exception(f"{repr(num_blocks)} is not a num_blocks")
+            raise Exception(f"{num_blocks!r} is not a num_blocks")
         # do request
         try:
             res = await self.session.send_request("blockchain.estimatefee", [num_blocks])
@@ -1293,8 +1288,8 @@ def check_cert(host, cert):
     except Exception:
         expired = True
 
-    m = "host: %s\n" % host
-    m += "has_expired: %s\n" % expired
+    m = f"host: {host}\n"
+    m += f"has_expired: {expired}\n"
     util.print_msg(m)
 
 

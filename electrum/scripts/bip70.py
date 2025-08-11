@@ -4,7 +4,6 @@
 
 import tlslite
 
-from electrum.transaction import Transaction
 from electrum import paymentrequest
 from electrum import paymentrequest_pb2 as pb2
 from electrum.bitcoin import address_to_script
@@ -17,14 +16,14 @@ memo = "blah"
 out_file = "payreq"
 
 
-with open(chain_file, "r") as f:
+with open(chain_file) as f:
     chain = tlslite.X509CertChain()
     chain.parsePemList(f.read())
 
 certificates = pb2.X509Certificates()
-certificates.certificate.extend(map(lambda x: str(x.bytes), chain.x509List))
+certificates.certificate.extend(str(x.bytes) for x in chain.x509List)
 
-with open(cert_file, "r") as f:
+with open(cert_file) as f:
     rsakey = tlslite.utils.python_rsakey.Python_RSAKey.parsePEM(f.read())
 
 script = address_to_script(address)
@@ -34,4 +33,4 @@ pr_string = paymentrequest.make_payment_request(amount, script, memo, rsakey)
 with open(out_file, "wb") as f:
     f.write(pr_string)
 
-print("Payment request was written to file '%s'" % out_file)
+print(f"Payment request was written to file '{out_file}'")

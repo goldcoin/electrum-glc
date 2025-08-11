@@ -1,17 +1,15 @@
-import unittest
-from unittest import mock
 from decimal import Decimal
+from unittest import mock
 
-from electrum.commands import Commands, eval_bool
-from electrum import storage, wallet
-from electrum.wallet import restore_wallet_from_text, Abstract_Wallet
+from electrum import wallet
 from electrum.address_synchronizer import TX_HEIGHT_UNCONFIRMED
+from electrum.commands import Commands, eval_bool
 from electrum.simple_config import SimpleConfig
 from electrum.transaction import Transaction, TxOutput, tx_from_any
-from electrum.util import UserFacingException, NotEnoughFunds
+from electrum.util import NotEnoughFunds, UserFacingException
+from electrum.wallet import restore_wallet_from_text
 
 from . import ElectrumTestCase
-from .test_wallet_vertical import WalletIntegrityHelper
 
 
 class TestCommands(ElectrumTestCase):
@@ -23,7 +21,7 @@ class TestCommands(ElectrumTestCase):
     def test_setconfig_non_auth_number(self):
         self.assertEqual(7777, Commands._setconfig_normalize_value("rpcport", "7777"))
         self.assertEqual(7777, Commands._setconfig_normalize_value("rpcport", "7777"))
-        self.assertAlmostEqual(Decimal(2.3), Commands._setconfig_normalize_value("somekey", "2.3"))
+        self.assertAlmostEqual(Decimal("2.3"), Commands._setconfig_normalize_value("somekey", "2.3"))
 
     def test_setconfig_non_auth_number_as_string(self):
         self.assertEqual("7777", Commands._setconfig_normalize_value("somekey", "'7777'"))
@@ -82,7 +80,7 @@ class TestCommands(ElectrumTestCase):
                 "p2wpkh",
             ),
         }
-        for xkey1, xtype1 in xpubs:
+        for xkey1, _xtype1 in xpubs:
             for xkey2, xtype2 in xpubs:
                 self.assertEqual(xkey2, await cmds.convert_xkey(xkey1, xtype2))
 
@@ -100,7 +98,7 @@ class TestCommands(ElectrumTestCase):
                 "p2wpkh",
             ),
         }
-        for xkey1, xtype1 in xprvs:
+        for xkey1, _xtype1 in xprvs:
             for xkey2, xtype2 in xprvs:
                 self.assertEqual(xkey2, await cmds.convert_xkey(xkey1, xtype2))
 
@@ -222,7 +220,7 @@ class TestCommandsTestnet(ElectrumTestCase):
                 "p2wpkh",
             ),
         }
-        for xkey1, xtype1 in xpubs:
+        for xkey1, _xtype1 in xpubs:
             for xkey2, xtype2 in xpubs:
                 self.assertEqual(xkey2, await cmds.convert_xkey(xkey1, xtype2))
 
@@ -240,7 +238,7 @@ class TestCommandsTestnet(ElectrumTestCase):
                 "p2wpkh",
             ),
         }
-        for xkey1, xtype1 in xprvs:
+        for xkey1, _xtype1 in xprvs:
             for xkey2, xtype2 in xprvs:
                 self.assertEqual(xkey2, await cmds.convert_xkey(xkey1, xtype2))
 
@@ -451,7 +449,6 @@ class TestCommandsTestnet(ElectrumTestCase):
             "01000000014576dacce264c24d81887642b726f5d64aa7825b21b350c7b75a57f337da6845010000006b483045022100a3f8b6155c71a98ad9986edd6161b20d24fad99b6463c23b463856c0ee54826d02200f606017fd987696ebbe5200daedde922eee264325a184d5bbda965ba5160821012102e5c473c051dae31043c335266d0ef89c1daab2f34d885cc7706b267f3269c609ffffffff0240420f00000000001600148a28bddb7f61864bdcf58b2ad13d5aeb3abc3c42a2ddb90e000000001976a914c384950342cb6f8df55175b48586838b03130fad88ac00000000"
         )
         funding_txid = funding_tx.txid()
-        funding_output_value = 1000000
         self.assertEqual(
             "add2535aedcbb5ba79cc2260868bb9e57f328738ca192937f2c92e0e94c19203", funding_txid
         )
@@ -480,7 +477,7 @@ class TestCommandsTestnet(ElectrumTestCase):
         funding_tx = Transaction(
             "02000000000102789e8aa8caa79d87241ff9df0e3fd757a07c85a30195d76e8efced1d57c56b670000000000fdffffff7ee2b6abd52b332f797718ae582f8d3b979b83b1799e0a3bfb2c90c6e070c29e0100000000fdffffff020820000000000000160014c0eb720c93a61615d2d66542d381be8943ca553950c3000000000000160014d7dbd0196a2cbd76420f14a19377096cf6cddb75024730440220485b491ad8d3ce3b4da034a851882da84a06ec9800edff0d3fd6aa42eeba3b440220359ea85d32a05932ac417125e133fa54e54e7e9cd20ebc54b883576b8603fd65012103860f1fbf8a482b9d35d7d4d04be8fb33d856a514117cd8b73e372d36895feec60247304402206c2ca56cc030853fa59b4b3cb293f69a3378ead0f10cb76f640f8c2888773461022079b7055d0f6af6952a48e5b97218015b0723462d667765c142b41bd35e3d9c0a01210359e303f57647094a668d69e8ff0bd46c356d00aa7da6dc533c438e71c057f0793e721f00"
         )
-        funding_txid = funding_tx.txid()
+        funding_tx.txid()
         wallet.adb.receive_tx_callback(funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         cmds = Commands(config=self.config)

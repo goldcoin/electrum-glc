@@ -9,13 +9,13 @@ import asyncio
 import os
 import time
 
-from electrum.logging import get_logger, configure_logging
-from electrum.simple_config import SimpleConfig
 from electrum import constants, util
 from electrum.daemon import Daemon
-from electrum.wallet import create_new_wallet
-from electrum.util import create_and_start_event_loop, log_exceptions, bfh
 from electrum.lnutil import LnFeatures
+from electrum.logging import configure_logging, get_logger
+from electrum.simple_config import SimpleConfig
+from electrum.util import create_and_start_event_loop, log_exceptions
+from electrum.wallet import create_new_wallet
 
 logger = get_logger(__name__)
 
@@ -92,7 +92,7 @@ async def worker(work_queue: asyncio.Queue, results_queue: asyncio.Queue, flag):
                     await results_queue.put(False)
             else:
                 await results_queue.put(None)
-        except Exception as e:
+        except Exception:
             await results_queue.put(None)
 
 
@@ -142,7 +142,7 @@ async def node_flag_stats(opt_flag: LnFeatures, presync: False):
 
         # analyze numbers
         print(
-            f"opt: {n_opt} ({100 * n_opt/len(nodes)}%) " f"req: {n_req} ({100 * n_req/len(nodes)}%)"
+            f"opt: {n_opt} ({100 * n_opt/len(nodes)}%) req: {n_req} ({100 * n_req/len(nodes)}%)"
         )
 
         # 2. compare announced and actual feature set

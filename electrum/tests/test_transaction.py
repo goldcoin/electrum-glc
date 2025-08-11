@@ -1,25 +1,24 @@
 from typing import NamedTuple, Union
 
-from electrum import transaction, bitcoin
+from electrum import bitcoin, descriptor, transaction
+from electrum.bitcoin import construct_script, construct_witness, deserialize_privkey, opcodes
+from electrum.ecc import ECPrivkey
 from electrum.transaction import (
-    convert_raw_tx_to_hex,
-    tx_from_any,
-    Transaction,
+    SCRIPTPUBKEY_TEMPLATE_ANYSEGWIT,
     PartialTransaction,
-    TxOutpoint,
     PartialTxInput,
     PartialTxOutput,
     Sighash,
+    Transaction,
+    TxOutpoint,
+    convert_raw_tx_to_hex,
     match_script_against_template,
-    SCRIPTPUBKEY_TEMPLATE_ANYSEGWIT,
+    tx_from_any,
 )
 from electrum.util import bfh
-from electrum.bitcoin import deserialize_privkey, opcodes, construct_script, construct_witness
-from electrum.ecc import ECPrivkey
-from electrum import descriptor
 
-from .test_bitcoin import disable_ecdsa_r_value_grinding
 from . import ElectrumTestCase
+from .test_bitcoin import disable_ecdsa_r_value_grinding
 
 signed_blob = "01000000012a5c9a94fcde98f5581cd00162c60a13936ceb75389ea65bf38633b424eb4031000000006c493046022100a82bbc57a0136751e5433f41cf000b3f1a99c6744775e76ec764fb78c54ee100022100f9e80b7de89de861dc6fb0c1429d5da72c2b6b2ee2406bc9bfb1beedd729d985012102e61d176da16edd1d258a200ad9759ef63adf8e14cd97f53227bae35cdb84d2f6ffffffff0140420f00000000001976a914230ac37834073a42146f11ef8414ae929feaafc388ac00000000"
 v2_blob = "0200000001191601a44a81e061502b7bfbc6eaa1cef6d1e6af5308ef96c9342f71dbf4b9b5000000006b483045022100a6d44d0a651790a477e75334adfb8aae94d6612d01187b2c02526e340a7fd6c8022028bdf7a64a54906b13b145cd5dab21a26bd4b85d6044e9b97bceab5be44c2a9201210253e8e0254b0c95776786e40984c1aa32a7d03efa6bdacdea5f421b774917d346feffffff026b20fa04000000001976a914024db2e87dd7cfd0e5f266c5f212e21a31d805a588aca0860100000000001976a91421919b94ae5cefcdf0271191459157cdb41c4cbf88aca6240700"
@@ -217,7 +216,8 @@ class TestTransaction(ElectrumTestCase):
 
     def test_get_address_from_output_script(self):
         # the inverse of this test is in test_bitcoin: test_address_to_script
-        addr_from_script = lambda script: transaction.get_address_from_output_script(bfh(script))
+        def addr_from_script(script):
+            return transaction.get_address_from_output_script(bfh(script))
 
         # bech32/bech32m native segwit
         # test vectors from BIP-0173/BIP-0350

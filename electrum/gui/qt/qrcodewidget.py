@@ -1,19 +1,15 @@
-from typing import Optional
 
+import PyQt5.QtGui as QtGui
 import qrcode
 import qrcode.exceptions
-
+from PyQt5.QtCore import QRect, Qt
 from PyQt5.QtGui import QColor, QPen
-import PyQt5.QtGui as QtGui
-from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtWidgets import (
     QApplication,
-    QVBoxLayout,
-    QTextEdit,
     QHBoxLayout,
     QPushButton,
+    QVBoxLayout,
     QWidget,
-    QFileDialog,
 )
 
 from electrum.i18n import _

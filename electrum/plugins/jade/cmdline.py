@@ -1,6 +1,7 @@
 from electrum.plugin import hook
-from .jade import JadePlugin
+
 from ..hw_wallet import CmdLineHandler
+from .jade import JadePlugin
 
 
 class Plugin(JadePlugin):

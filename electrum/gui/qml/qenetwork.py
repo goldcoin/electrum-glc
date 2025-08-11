@@ -1,18 +1,19 @@
 from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, QObject
+from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal
 
-from electrum.logging import get_logger
 from electrum import constants
 from electrum.interface import ServerAddr
+from electrum.logging import get_logger
 from electrum.simple_config import FEERATE_DEFAULT_RELAY
 
-from .util import QtEventListener, event_listener
 from .qeserverlistmodel import QEServerListModel
+from .util import QtEventListener, event_listener
 
 if TYPE_CHECKING:
-    from .qeconfig import QEConfig
     from electrum.network import Network
+
+    from .qeconfig import QEConfig
 
 
 class QENetwork(QObject, QtEventListener):
@@ -99,7 +100,7 @@ class QENetwork(QObject, QtEventListener):
             self.statusChanged.emit()
         network_status = self.network.get_status()
         if self._network_status != network_status:
-            self._logger.debug("network_status updated: %s" % network_status)
+            self._logger.debug(f"network_status updated: {network_status}")
             self._network_status = network_status
             self.statusChanged.emit()
         is_connected = self.network.is_connected()
@@ -108,7 +109,7 @@ class QENetwork(QObject, QtEventListener):
             self.statusChanged.emit()
         server_status = self.network.get_connection_status_for_GUI()
         if self._server_status != server_status:
-            self._logger.debug("server_status updated: %s" % server_status)
+            self._logger.debug(f"server_status updated: {server_status}")
             self._server_status = server_status
             self.statusChanged.emit()
         server_height = self.network.get_server_height()
@@ -133,7 +134,7 @@ class QENetwork(QObject, QtEventListener):
 
     @event_listener
     def on_event_fee_histogram(self, histogram):
-        self._logger.debug(f"fee histogram updated")
+        self._logger.debug("fee histogram updated")
         self.update_histogram(histogram)
 
     def update_histogram(self, histogram):

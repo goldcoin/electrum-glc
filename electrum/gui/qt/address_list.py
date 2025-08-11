@@ -27,20 +27,20 @@ import enum
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QPersistentModelIndex, QModelIndex
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont
-from PyQt5.QtWidgets import QAbstractItemView, QComboBox, QLabel, QMenu
+from PyQt5.QtCore import QModelIndex, QPersistentModelIndex, Qt
+from PyQt5.QtGui import QFont, QStandardItem, QStandardItemModel
+from PyQt5.QtWidgets import QAbstractItemView, QComboBox, QMenu
 
-from electrum.i18n import _
-from electrum.util import block_explorer_URL, profiler
-from electrum.plugin import run_hook
 from electrum.bitcoin import is_address
-from electrum.wallet import InternalAddressCorruption
+from electrum.i18n import _
+from electrum.plugin import run_hook
 from electrum.simple_config import SimpleConfig
+from electrum.util import block_explorer_URL, profiler
+from electrum.wallet import InternalAddressCorruption
 
-from .util import MONOSPACE_FONT, ColorScheme, webopen
-from .my_treeview import MyTreeView, MySortModel
 from ..messages import MSG_FREEZE_ADDRESS
+from .my_treeview import MySortModel, MyTreeView
+from .util import MONOSPACE_FONT, ColorScheme, webopen
 
 if TYPE_CHECKING:
     from .main_window import ElectrumWindow
@@ -194,7 +194,6 @@ class AddressList(MyTreeView):
         self.proxy.setDynamicSortFilter(False)  # temp. disable re-sorting after every change
         self.std_model.clear()
         self.refresh_headers()
-        fx = self.main_window.fx
         set_address = None
         num_shown = 0
         self.addresses_beyond_gap_limit = self.wallet.get_all_known_addresses_beyond_gap_limit()
@@ -380,7 +379,7 @@ class AddressList(MyTreeView):
         run_hook("receive_menu", menu, addrs, self.wallet)
         menu.exec_(self.viewport().mapToGlobal(position))
 
-    def place_text_on_clipboard(self, text: str, *, title: str = None) -> None:
+    def place_text_on_clipboard(self, text: str, *, title: str | None = None) -> None:
         if is_address(text):
             try:
                 self.wallet.check_address_for_corruption(text)

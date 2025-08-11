@@ -1,40 +1,32 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from PyQt5.QtWidgets import (
-    QLabel,
-    QVBoxLayout,
-    QGridLayout,
-    QPushButton,
     QComboBox,
-    QLineEdit,
-    QSpacerItem,
-    QWidget,
+    QGridLayout,
     QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QVBoxLayout,
 )
 
+from electrum import ecc
 from electrum.i18n import _
-from electrum.transaction import PartialTxOutput, PartialTransaction
 from electrum.lnutil import MIN_FUNDING_SAT
 from electrum.lnworker import hardcoded_trampoline_nodes
-from electrum import ecc
-from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates
+from electrum.util import NoDynamicFeeEstimates, NotEnoughFunds
 
-from electrum.gui import messages
-from . import util
-from .util import (
-    WindowModalDialog,
-    Buttons,
-    OkButton,
-    CancelButton,
-    EnterButton,
-    ColorScheme,
-    WWLabel,
-    read_QIcon,
-    IconLabel,
-    char_width_in_lineedit,
-)
 from .amountedit import BTCAmountEdit
 from .my_treeview import create_toolbar_with_menu
+from .util import (
+    Buttons,
+    CancelButton,
+    EnterButton,
+    OkButton,
+    WindowModalDialog,
+    WWLabel,
+    char_width_in_lineedit,
+)
 
 if TYPE_CHECKING:
     from .main_window import ElectrumWindow
@@ -45,8 +37,8 @@ class NewChannelDialog(WindowModalDialog):
     def __init__(
         self,
         window: "ElectrumWindow",
-        amount_sat: Optional[int] = None,
-        min_amount_sat: Optional[int] = None,
+        amount_sat: int | None = None,
+        min_amount_sat: int | None = None,
     ):
         WindowModalDialog.__init__(self, window, _("Open Channel"))
         self.window = window

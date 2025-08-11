@@ -1,14 +1,12 @@
 from functools import partial
-import traceback
-import sys
 from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout
 
-from electrum.plugin import hook
+from electrum.gui.qt.util import Buttons, EnterButton, OkButton, ThreadedButton, WindowModalDialog
 from electrum.i18n import _
-from electrum.gui.qt.util import ThreadedButton, Buttons, EnterButton, WindowModalDialog, OkButton
+from electrum.plugin import hook
 
 from .labels import LabelsPlugin
 
@@ -75,7 +73,7 @@ class Plugin(LabelsPlugin):
 
     def done_processing_error(self, dialog, exc_info):
         self.logger.error("Error synchronising labels", exc_info=exc_info)
-        dialog.show_error(_("Error synchronising labels") + f":\n{repr(exc_info[1])}")
+        dialog.show_error(_("Error synchronising labels") + f":\n{exc_info[1]!r}")
 
     @hook
     def init_qt(self, gui: "ElectrumGui"):

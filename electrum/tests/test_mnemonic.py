@@ -1,14 +1,10 @@
-from typing import NamedTuple, Optional
 import json
 import os
+from typing import NamedTuple
 
-from electrum import keystore
-from electrum import mnemonic
-from electrum import slip39
-from electrum import old_mnemonic
-from electrum.util import bfh
-from electrum.mnemonic import is_new_seed, is_old_seed, seed_type, is_matching_seed
-from electrum.version import SEED_PREFIX_SW, SEED_PREFIX
+from electrum import keystore, mnemonic, old_mnemonic, slip39
+from electrum.mnemonic import is_matching_seed, is_new_seed, is_old_seed, seed_type
+from electrum.version import SEED_PREFIX, SEED_PREFIX_SW
 
 from . import ElectrumTestCase
 from .test_wallet_vertical import UNICODE_HORROR, UNICODE_HORROR_HEX
@@ -17,11 +13,11 @@ from .test_wallet_vertical import UNICODE_HORROR, UNICODE_HORROR_HEX
 class SeedTestCase(NamedTuple):
     words: str
     bip32_seed: str
-    lang: Optional[str] = "en"
-    words_hex: Optional[str] = None
-    entropy: Optional[int] = None
-    passphrase: Optional[str] = None
-    passphrase_hex: Optional[str] = None
+    lang: str | None = "en"
+    words_hex: str | None = None
+    entropy: int | None = None
+    passphrase: str | None = None
+    passphrase_hex: str | None = None
     seed_version: str = SEED_PREFIX
 
 
@@ -253,15 +249,15 @@ class Test_slip39(ElectrumTestCase):
 
     def test_slip39_vectors(self):
         test_vector_file = os.path.join(os.path.dirname(__file__), "slip39-vectors.json")
-        with open(test_vector_file, "r") as f:
+        with open(test_vector_file) as f:
             vectors = json.load(f)
         for description, mnemonics, expected_secret in vectors:
             if expected_secret:
                 encrypted_seed = slip39.recover_ems(mnemonics)
                 assert bytes.fromhex(expected_secret) == encrypted_seed.decrypt(
                     "TREZOR"
-                ), 'Incorrect secret for test vector "{}".'.format(description)
+                ), f'Incorrect secret for test vector "{description}".'
             else:
                 with self.assertRaises(slip39.Slip39Error):
                     slip39.recover_ems(mnemonics)
-                    self.fail('Failed to raise exception for test vector "{}".'.format(description))
+                    self.fail(f'Failed to raise exception for test vector "{description}".')

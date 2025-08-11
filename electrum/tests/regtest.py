@@ -1,7 +1,6 @@
-import os
+import subprocess
 import sys
 import unittest
-import subprocess
 
 
 class TestLightning(unittest.TestCase):
@@ -9,7 +8,7 @@ class TestLightning(unittest.TestCase):
     @staticmethod
     def run_shell(args, timeout=30):
         process = subprocess.Popen(
-            ["electrum/tests/regtest/regtest.sh"] + args,
+            ["electrum/tests/regtest/regtest.sh", *args],
             stderr=subprocess.STDOUT,
             stdout=subprocess.PIPE,
             universal_newlines=True,
@@ -23,7 +22,7 @@ class TestLightning(unittest.TestCase):
 
     def setUp(self):
         test_name = self.id().split(".")[-1]
-        sys.stdout.write("***** %s ******\n" % test_name)
+        sys.stdout.write(f"***** {test_name} ******\n")
         # initialize and get funds
         for agent, config_options in self.agents.items():
             self.run_shell(["init", agent])

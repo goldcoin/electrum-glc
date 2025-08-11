@@ -20,67 +20,52 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import binascii
-import concurrent.futures
-import os, sys, re, json
-from collections import defaultdict, OrderedDict
-from typing import (
-    NamedTuple,
-    Union,
-    TYPE_CHECKING,
-    Tuple,
-    Optional,
-    Callable,
-    Any,
-    Sequence,
-    Dict,
-    Generic,
-    TypeVar,
-    List,
-    Iterable,
-    Set,
-    Awaitable,
-)
-from datetime import datetime, timezone
-import decimal
-from decimal import Decimal
-import traceback
-import urllib
-import threading
-import hmac
-import stat
-import locale
 import asyncio
-import urllib.request, urllib.parse, urllib.error
 import builtins
-import json
-import time
-from typing import NamedTuple, Optional
-import ssl
-import ipaddress
-from ipaddress import IPv4Address, IPv6Address
-import random
-import secrets
+import concurrent.futures
+import decimal
 import functools
-from functools import partial
-from abc import abstractmethod, ABC
+import hmac
+import ipaddress
+import json
+import os
+import random
+import re
+import secrets
 import socket
+import ssl
+import stat
+import sys
+import threading
+import time
+from abc import ABC, abstractmethod
+from collections import OrderedDict, defaultdict
+from collections.abc import Awaitable, Iterable, Sequence
+from datetime import UTC, datetime
+from decimal import Decimal
+from functools import partial
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    NamedTuple,
+    Optional,
+    TypeVar,
+    Union,
+)
 
-import attr
 import aiohttp
-from aiohttp_socks import ProxyConnector, ProxyType
 import aiorpcx
 import certifi
 import dns.resolver
+from aiohttp_socks import ProxyConnector, ProxyType
 
 from .i18n import _
-from .logging import get_logger, Logger
+from .logging import Logger, get_logger
 
 if TYPE_CHECKING:
-    from .network import Network
     from .interface import Interface
+    from .network import Network
     from .simple_config import SimpleConfig
-    from .paymentrequest import PaymentRequest
 
 
 _logger = get_logger(__name__)
@@ -90,7 +75,7 @@ def inv_dict(d):
     return {v: k for k, v in d.items()}
 
 
-def all_subclasses(cls) -> Set:
+def all_subclasses(cls) -> set:
     """Return all (transitive) subclasses of cls."""
     res = set(cls.__subclasses__())
     for sub in res.copy():
@@ -129,7 +114,7 @@ def base_unit_name_to_decimal_point(unit_name: str) -> int:
         raise UnknownBaseUnit(unit_name) from None
 
 
-def parse_max_spend(amt: Any) -> Optional[int]:
+def parse_max_spend(amt: Any) -> int | None:
     """Checks if given amount is "spend-max"-like.
     Returns None or the positive integer weight for "max". Never raises.
 
@@ -171,7 +156,7 @@ class BelowDustLimit(Exception):
 
 
 class InvalidPassword(Exception):
-    def __init__(self, message: Optional[str] = None):
+    def __init__(self, message: str | None = None):
         self.message = message
 
     def __str__(self):
@@ -238,7 +223,6 @@ class NetworkOfflineException(UserFacingException):
 class UserCancelled(Exception):
     """An exception that is suppressed from the user"""
 
-    pass
 
 
 def to_decimal(x: Union[str, float, int, Decimal]) -> Decimal:
@@ -253,11 +237,11 @@ def to_decimal(x: Union[str, float, int, Decimal]) -> Decimal:
 
 
 # note: this is not a NamedTuple as then its json encoding cannot be customized
-class Satoshis(object):
+class Satoshis:
     __slots__ = ("value",)
 
     def __new__(cls, value):
-        self = super(Satoshis, cls).__new__(cls)
+        self = super().__new__(cls)
         # note: 'value' sometimes has msat precision
         self.value = value
         return self
@@ -280,31 +264,31 @@ class Satoshis(object):
 
 
 # note: this is not a NamedTuple as then its json encoding cannot be customized
-class Fiat(object):
-    __slots__ = ("value", "ccy")
+class Fiat:
+    __slots__ = ("ccy", "value")
 
-    def __new__(cls, value: Optional[Decimal], ccy: str):
-        self = super(Fiat, cls).__new__(cls)
+    def __new__(cls, value: Decimal | None, ccy: str):
+        self = super().__new__(cls)
         self.ccy = ccy
-        if not isinstance(value, (Decimal, type(None))):
+        if not isinstance(value, Decimal | type(None)):
             raise TypeError(f"value should be Decimal or None, not {type(value)}")
         self.value = value
         return self
 
     def __repr__(self):
-        return "Fiat(%s)" % self.__str__()
+        return f"Fiat({self.__str__()})"
 
     def __str__(self):
         if self.value is None or self.value.is_nan():
             return _("No Data")
         else:
-            return "{:.2f}".format(self.value)
+            return f"{self.value:.2f}"
 
     def to_ui_string(self):
         if self.value is None or self.value.is_nan():
             return _("No Data")
         else:
-            return "{:.2f}".format(self.value) + " " + self.ccy
+            return f"{self.value:.2f}" + " " + self.ccy
 
     def __eq__(self, other):
         if not isinstance(other, Fiat):
@@ -351,7 +335,7 @@ class MyEncoder(json.JSONEncoder):
             return obj.hex()
         if hasattr(obj, "to_json") and callable(obj.to_json):
             return obj.to_json()
-        return super(MyEncoder, self).default(obj)
+        return super().default(obj)
 
 
 class ThreadJob(Logger):
@@ -364,7 +348,6 @@ class ThreadJob(Logger):
 
     def run(self):
         """Called periodically from the thread"""
-        pass
 
 
 class DebugMem(ThreadJob):
@@ -425,7 +408,7 @@ class DaemonThread(threading.Thread, Logger):
             for job in self.jobs:
                 try:
                     job.run()
-                except Exception as e:
+                except Exception:
                     self.logger.exception("")
 
     def remove_jobs(self, jobs):
@@ -552,7 +535,7 @@ def ensure_sparse_file(filename):
     # On Windows, need to explicitly mark file.
     if os.name == "nt":
         try:
-            os.system('fsutil sparse setflag "{}" 1'.format(filename))
+            os.system(f'fsutil sparse setflag "{filename}" 1')
         except Exception as e:
             _logger.info(f"error marking file {filename} as sparse: {e}")
 
@@ -568,8 +551,8 @@ def assert_datadir_available(config_path):
     else:
         raise FileNotFoundError(
             "Electrum datadir does not exist. Was it deleted while running?"
-            + "\n"
-            + "Should be at {}".format(path)
+             "\n"
+             f"Should be at {path}"
         )
 
 
@@ -579,7 +562,7 @@ def assert_file_in_datadir_available(path, config_path):
     else:
         assert_datadir_available(config_path)
         raise FileNotFoundError(
-            "Cannot find file but datadir is there." + "\n" + "Should be at {}".format(path)
+            "Cannot find file but datadir is there." + "\n" + f"Should be at {path}"
         )
 
 
@@ -617,8 +600,8 @@ def is_android_debug_apk() -> bool:
 def get_android_package_name() -> str:
     is_android = "ANDROID_DATA" in os.environ
     assert is_android
-    from jnius import autoclass
     from android.config import ACTIVITY_CLASS_NAME
+    from jnius import autoclass
 
     activity = autoclass(ACTIVITY_CLASS_NAME).mActivity
     pkgname = str(activity.getPackageName())
@@ -631,7 +614,7 @@ def assert_bytes(*args):
     """
     try:
         for x in args:
-            assert isinstance(x, (bytes, bytearray))
+            assert isinstance(x, bytes | bytearray)
     except Exception:
         print("assert bytes failed", list(map(type, args)))
         raise
@@ -646,7 +629,7 @@ def assert_str(*args):
 
 
 def to_string(x, enc) -> str:
-    if isinstance(x, (bytes, bytearray)):
+    if isinstance(x, bytes | bytearray):
         return x.decode(enc)
     if isinstance(x, str):
         return x
@@ -737,7 +720,7 @@ def is_non_negative_integer(val: Any) -> bool:
 
 
 def is_int_or_float(val: Any) -> bool:
-    return isinstance(val, (int, float))
+    return isinstance(val, int | float)
 
 
 def is_non_negative_int_or_float(val: Any) -> bool:
@@ -749,7 +732,7 @@ def is_non_negative_int_or_float(val: Any) -> bool:
 def chunks(items, size: int):
     """Break up items, an iterable, into chunks of length size."""
     if size < 1:
-        raise ValueError(f"size must be positive, not {repr(size)}")
+        raise ValueError(f"size must be positive, not {size!r}")
     for i in range(0, len(items), size):
         yield items[i : i + size]
 
@@ -763,9 +746,9 @@ def format_satoshis_plain(
     point and has no thousands separator"""
     if parse_max_spend(x):
         return f"max({x})"
-    assert isinstance(x, (int, float, Decimal)), f"{x!r} should be a number"
+    assert isinstance(x, int | float | Decimal), f"{x!r} should be a number"
     scale_factor = pow(10, decimal_point)
-    return "{:.8f}".format(Decimal(x) / scale_factor).rstrip("0").rstrip(".")
+    return f"{Decimal(x) / scale_factor:.8f}".rstrip("0").rstrip(".")
 
 
 # Check that Decimal precision is sufficient.
@@ -796,7 +779,7 @@ def format_satoshis(
         return "unknown"
     if parse_max_spend(x):
         return f"max({x})"
-    assert isinstance(x, (int, float, Decimal)), f"{x!r} should be a number"
+    assert isinstance(x, int | float | Decimal), f"{x!r} should be a number"
     # lose redundant precision
     x = Decimal(x).quantize(Decimal(10) ** (-precision))
     # format string
@@ -819,7 +802,7 @@ def format_satoshis(
         sign = integer_part[0] if integer_part[0] in ("+", "-") else ""
         if sign == "-":
             integer_part = integer_part[1:]
-        integer_part = "{:,}".format(int(integer_part)).replace(",", THOUSANDS_SEP)
+        integer_part = f"{int(integer_part):,}".replace(",", THOUSANDS_SEP)
         integer_part = sign + integer_part
         fract_part = THOUSANDS_SEP.join(fract_part[i : i + 3] for i in range(0, len(fract_part), 3))
     result = integer_part + DECIMAL_POINT + fract_part
@@ -858,13 +841,13 @@ def quantize_feerate(fee) -> Union[None, Decimal, int]:
 
 def timestamp_to_datetime(
     timestamp: Union[int, float, None], *, utc: bool = False
-) -> Optional[datetime]:
+) -> datetime | None:
     if timestamp is None:
         return None
     return datetime.fromtimestamp(timestamp)
     tz = None
     if utc:
-        tz = timezone.utc
+        tz = UTC
     return datetime.fromtimestamp(timestamp, tz=tz)
 
 
@@ -876,7 +859,7 @@ def format_time(timestamp: Union[int, float, None]) -> str:
 def age(
     from_date: Union[int, float, None],  # POSIX timestamp
     *,
-    since_date: datetime = None,
+    since_date: datetime | None = None,
     target_tz=None,
     include_seconds: bool = False,
 ) -> str:
@@ -890,8 +873,8 @@ def age(
 
     distance_in_time = from_date - since_date
     is_in_past = from_date < since_date
-    distance_in_seconds = int(round(abs(distance_in_time.days * 86400 + distance_in_time.seconds)))
-    distance_in_minutes = int(round(distance_in_seconds / 60))
+    distance_in_seconds = round(abs(distance_in_time.days * 86400 + distance_in_time.seconds))
+    distance_in_minutes = round(distance_in_seconds / 60)
 
     if distance_in_minutes == 0:
         if include_seconds:
@@ -1006,7 +989,7 @@ def block_explorer_info():
     return mainnet_block_explorers
 
 
-def block_explorer(config: "SimpleConfig") -> Optional[str]:
+def block_explorer(config: "SimpleConfig") -> str | None:
     """Returns name of selected block explorer,
     or None if a custom one (not among hardcoded ones) is configured.
     """
@@ -1020,12 +1003,12 @@ def block_explorer(config: "SimpleConfig") -> Optional[str]:
     return be_key
 
 
-def block_explorer_tuple(config: "SimpleConfig") -> Optional[Tuple[str, dict]]:
+def block_explorer_tuple(config: "SimpleConfig") -> tuple[str, dict] | None:
     custom_be = config.BLOCK_EXPLORER_CUSTOM
     if custom_be:
         if isinstance(custom_be, str):
             return custom_be, _block_explorer_default_api_loc
-        if isinstance(custom_be, (tuple, list)) and len(custom_be) == 2:
+        if isinstance(custom_be, tuple | list) and len(custom_be) == 2:
             return tuple(custom_be)
         _logger.warning(
             f"not using {config.cv.BLOCK_EXPLORER_CUSTOM.key()!r} from config. "
@@ -1037,7 +1020,7 @@ def block_explorer_tuple(config: "SimpleConfig") -> Optional[Tuple[str, dict]]:
         return block_explorer_info().get(block_explorer(config))
 
 
-def block_explorer_URL(config: "SimpleConfig", kind: str, item: str) -> Optional[str]:
+def block_explorer_URL(config: "SimpleConfig", kind: str, item: str) -> str | None:
     be_tuple = block_explorer_tuple(config)
     if not be_tuple:
         return
@@ -1114,7 +1097,7 @@ def versiontuple(v):
 
 def read_json_file(path):
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = json.loads(f.read())
     # backwards compatibility for JSONDecodeError
     except ValueError:
@@ -1130,7 +1113,7 @@ def write_json_file(path, data):
     try:
         with open(path, "w+", encoding="utf-8") as f:
             json.dump(data, f, indent=4, sort_keys=True, cls=MyEncoder)
-    except (IOError, os.error) as e:
+    except OSError as e:
         _logger.exception("")
         raise FileExportFailed(e)
 
@@ -1176,15 +1159,15 @@ def log_exceptions(func):
         self = args[0] if len(args) > 0 else None
         try:
             return await func(*args, **kwargs)
-        except asyncio.CancelledError as e:
+        except asyncio.CancelledError:
             raise
         except BaseException as e:
             mylogger = self.logger if hasattr(self, "logger") else _logger
             try:
-                mylogger.exception(f"Exception in {func.__name__}: {repr(e)}")
+                mylogger.exception(f"Exception in {func.__name__}: {e!r}")
             except BaseException as e2:
                 print(
-                    f"logging exception raised: {repr(e2)}... orig exc: {repr(e)} in {func.__name__}"
+                    f"logging exception raised: {e2!r}... orig exc: {e!r} in {func.__name__}"
                 )
             raise
 
@@ -1199,7 +1182,7 @@ def ignore_exceptions(func):
     async def wrapper(*args, **kwargs):
         try:
             return await func(*args, **kwargs)
-        except Exception as e:
+        except Exception:
             pass
 
     return wrapper
@@ -1217,15 +1200,15 @@ def with_lock(func):
 
 class TxMinedInfo(NamedTuple):
     height: int  # height of block that mined tx
-    conf: Optional[int] = (
+    conf: int | None = (
         None  # number of confirmations, SPV verified. >=0, or None (None means unknown)
     )
-    timestamp: Optional[int] = None  # timestamp of block that mined tx
-    txpos: Optional[int] = None  # position of tx in serialized block
-    header_hash: Optional[str] = None  # hash of block that mined tx
-    wanted_height: Optional[int] = None  # in case of timelock, min abs block height
+    timestamp: int | None = None  # timestamp of block that mined tx
+    txpos: int | None = None  # position of tx in serialized block
+    header_hash: str | None = None  # hash of block that mined tx
+    wanted_height: int | None = None  # in case of timelock, min abs block height
 
-    def short_id(self) -> Optional[str]:
+    def short_id(self) -> str | None:
         if self.txpos is not None and self.txpos >= 0:
             assert self.height > 0
             return f"{self.height}x{self.txpos}"
@@ -1233,7 +1216,7 @@ class TxMinedInfo(NamedTuple):
 
     def is_local_like(self) -> bool:
         """Returns whether the tx is local-like (LOCAL/FUTURE)."""
-        from .address_synchronizer import TX_HEIGHT_UNCONFIRMED, TX_HEIGHT_UNCONF_PARENT
+        from .address_synchronizer import TX_HEIGHT_UNCONF_PARENT, TX_HEIGHT_UNCONFIRMED
 
         if self.height > 0:
             return False
@@ -1278,7 +1261,7 @@ class ShortID(bytes):
         if isinstance(data, str):
             assert len(data) == 16
             return ShortID.fromhex(data)
-        if isinstance(data, (bytes, bytearray)):
+        if isinstance(data, bytes | bytearray):
             assert len(data) == 8
             return ShortID(data)
 
@@ -1295,7 +1278,7 @@ class ShortID(bytes):
         return int.from_bytes(self[6:8], byteorder="big")
 
 
-def format_short_id(short_channel_id: Optional[bytes]):
+def format_short_id(short_channel_id: bytes | None):
     if not short_channel_id:
         return _("Not yet available")
     return (
@@ -1307,14 +1290,14 @@ def format_short_id(short_channel_id: Optional[bytes]):
     )
 
 
-def make_aiohttp_session(proxy: Optional[dict], headers=None, timeout=None):
+def make_aiohttp_session(proxy: dict | None, headers=None, timeout=None):
     if headers is None:
         headers = {"User-Agent": "Electrum"}
     if timeout is None:
         # The default timeout is high intentionally.
         # DNS on some systems can be really slow, see e.g. #5337
         timeout = aiohttp.ClientTimeout(total=45)
-    elif isinstance(timeout, (int, float)):
+    elif isinstance(timeout, int | float):
         timeout = aiohttp.ClientTimeout(total=timeout)
     ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH, cafile=ca_path)
 
@@ -1436,11 +1419,7 @@ async def wait_for2(fut: Awaitable, timeout: Union[int, float, None]):
     due to bugs: https://bugs.python.org/issue42130 and https://github.com/python/cpython/issues/86296 ,
     which are only fixed in python 3.12+.
     """
-    if sys.version_info[:3] >= (3, 12):
-        return await asyncio.wait_for(fut, timeout)
-    else:
-        async with async_timeout(timeout):
-            return await asyncio.ensure_future(fut, loop=get_running_loop())
+    return await asyncio.wait_for(fut, timeout)
 
 
 if hasattr(asyncio, "timeout"):  # python 3.11+
@@ -1452,7 +1431,7 @@ else:
             try:
                 await super().__aexit__(exc_type, exc_value, traceback)
             except (aiorpcx.TaskTimeout, aiorpcx.UncaughtTimeoutError):
-                raise asyncio.TimeoutError from None
+                raise TimeoutError from None
             except aiorpcx.TimeoutCancellationError:
                 raise asyncio.CancelledError from None
 
@@ -1491,7 +1470,7 @@ class NetworkJobOnDefaultServer(Logger, ABC):
         self.reset_request_counters()
 
     async def _start(self, interface: "Interface"):
-        self.logger.debug(f"starting. interface.server={repr(str(interface.server))}")
+        self.logger.debug(f"starting. interface.server={str(interface.server)!r}")
         self.interface = interface
 
         taskgroup = self.taskgroup
@@ -1539,7 +1518,7 @@ class NetworkJobOnDefaultServer(Logger, ABC):
         self._requests_sent = 0
         self._requests_answered = 0
 
-    def num_requests_sent_and_answered(self) -> Tuple[int, int]:
+    def num_requests_sent_and_answered(self) -> tuple[int, int]:
         return self._requests_sent, self._requests_answered
 
     @property
@@ -1549,7 +1528,7 @@ class NetworkJobOnDefaultServer(Logger, ABC):
         return s
 
 
-def detect_tor_socks_proxy() -> Optional[Tuple[str, int]]:
+def detect_tor_socks_proxy() -> tuple[str, int] | None:
     # Probable ports for Tor to listen at
     candidates = [
         ("127.0.0.1", 9050),
@@ -1572,7 +1551,7 @@ def is_tor_socks_port(host: str, port: int) -> bool:
             s.send(b"\x05\x01\x00\x05\xf0\x00\x03\x070.0.0.0\x00\x00")
             if s.recv(1024) == b"\x05\x00\x05\x00\x00\x01\x00\x00\x00\x00\x00\x00":
                 return True
-    except socket.error:
+    except OSError:
         pass
     return False
 
@@ -1593,7 +1572,7 @@ def get_asyncio_loop() -> asyncio.AbstractEventLoop:
 
 
 def create_and_start_event_loop() -> (
-    Tuple[asyncio.AbstractEventLoop, asyncio.Future, threading.Thread]
+    tuple[asyncio.AbstractEventLoop, asyncio.Future, threading.Thread]
 ):
     global _asyncio_event_loop
     if _asyncio_event_loop is not None:
@@ -1623,7 +1602,7 @@ def create_and_start_event_loop() -> (
     def on_exception(loop, context):
         """Suppress spurious messages it appears we cannot control."""
         SUPPRESS_MESSAGE_REGEX = re.compile(
-            "SSL handshake|Fatal read error on|" "SSL error in data received"
+            "SSL handshake|Fatal read error on|SSL error in data received"
         )
         message = context.get("message")
         if message and SUPPRESS_MESSAGE_REGEX.match(message):
@@ -1670,7 +1649,7 @@ class OrderedDictWithIndex(OrderedDict):
 
     def _recalc_index(self):
         self._key_to_pos = {key: pos for (pos, key) in enumerate(self.keys())}
-        self._pos_to_key = {pos: key for (pos, key) in enumerate(self.keys())}
+        self._pos_to_key = dict(enumerate(self.keys()))
 
     def pos_from_key(self, key):
         return self._key_to_pos[key]
@@ -1880,7 +1859,7 @@ class EventListener:
             register_callback(method, [name])
 
     def unregister_callbacks(self):
-        for name, method in self._list_callbacks():
+        for _name, method in self._list_callbacks():
             # _logger.debug(f'unregistering callback {method}')
             unregister_callback(method)
 
@@ -1898,7 +1877,7 @@ _NetAddrType = TypeVar("_NetAddrType")
 # - reasonable __hash__() implementation (e.g. based on host/port of remote endpoint)
 
 
-class NetworkRetryManager(Generic[_NetAddrType]):
+class NetworkRetryManager[NetAddrType]:
     """Truncated Exponential Backoff for network connections."""
 
     def __init__(
@@ -1906,8 +1885,8 @@ class NetworkRetryManager(Generic[_NetAddrType]):
         *,
         max_retry_delay_normal: float,
         init_retry_delay_normal: float,
-        max_retry_delay_urgent: float = None,
-        init_retry_delay_urgent: float = None,
+        max_retry_delay_urgent: float | None = None,
+        init_retry_delay_urgent: float | None = None,
     ):
         self._last_tried_addr = (
             {}
@@ -1923,18 +1902,18 @@ class NetworkRetryManager(Generic[_NetAddrType]):
         self._max_retry_delay_urgent = max_retry_delay_urgent
         self._init_retry_delay_urgent = init_retry_delay_urgent
 
-    def _trying_addr_now(self, addr: _NetAddrType) -> None:
+    def _trying_addr_now(self, addr: NetAddrType) -> None:
         last_time, num_attempts = self._last_tried_addr.get(addr, (0, 0))
         # we add up to 1 second of noise to the time, so that clients are less likely
         # to get synchronised and bombard the remote in connection waves:
         cur_time = time.time() + random.random()
         self._last_tried_addr[addr] = cur_time, num_attempts + 1
 
-    def _on_connection_successfully_established(self, addr: _NetAddrType) -> None:
+    def _on_connection_successfully_established(self, addr: NetAddrType) -> None:
         self._last_tried_addr[addr] = time.time(), 0
 
     def _can_retry_addr(
-        self, addr: _NetAddrType, *, now: float = None, urgent: bool = False
+        self, addr: NetAddrType, *, now: float | None = None, urgent: bool = False
     ) -> bool:
         if now is None:
             now = time.time()
@@ -1977,7 +1956,7 @@ class MySocksProxy(aiorpcx.SOCKSProxy):
         return reader, writer
 
     @classmethod
-    def from_proxy_dict(cls, proxy: dict = None) -> Optional["MySocksProxy"]:
+    def from_proxy_dict(cls, proxy: dict | None = None) -> Optional["MySocksProxy"]:
         if not proxy:
             return None
         username, pw = proxy.get("user"), proxy.get("password")
@@ -2032,7 +2011,7 @@ class JsonRPCClient:
 T = TypeVar("T")
 
 
-def random_shuffled_copy(x: Iterable[T]) -> List[T]:
+def random_shuffled_copy[T](x: Iterable[T]) -> list[T]:
     """Returns a shuffled copy of the input."""
     x_copy = list(x)  # copy
     random.shuffle(x_copy)  # shuffle in-place
@@ -2042,7 +2021,7 @@ def random_shuffled_copy(x: Iterable[T]) -> List[T]:
 def test_read_write_permissions(path) -> None:
     # note: There might already be a file at 'path'.
     #       Make sure we do NOT overwrite/corrupt that!
-    temp_path = "%s.tmptest.%s" % (path, os.getpid())
+    temp_path = f"{path}.tmptest.{os.getpid()}"
     echo = "fs r/w test"
     try:
         # test READ permissions for actual path
@@ -2052,13 +2031,13 @@ def test_read_write_permissions(path) -> None:
         # test R/W sanity for "similar" path
         with open(temp_path, "w", encoding="utf-8") as f:
             f.write(echo)
-        with open(temp_path, "r", encoding="utf-8") as f:
+        with open(temp_path, encoding="utf-8") as f:
             echo2 = f.read()
         os.remove(temp_path)
     except Exception as e:
-        raise IOError(e) from e
+        raise OSError(e) from e
     if echo != echo2:
-        raise IOError("echo sanity-check failed")
+        raise OSError("echo sanity-check failed")
 
 
 class nullcontext:
@@ -2091,7 +2070,7 @@ class classproperty(property):
         return self.fget(owner_cls)
 
 
-def get_running_loop() -> Optional[asyncio.AbstractEventLoop]:
+def get_running_loop() -> asyncio.AbstractEventLoop | None:
     """Returns the asyncio event loop that is *running in this thread*, if any."""
     try:
         return asyncio.get_running_loop()

@@ -1,7 +1,14 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import pyqtSlot, QSortFilterProxyModel, pyqtSignal, pyqtProperty
-from PyQt6.QtCore import Qt, QAbstractListModel, QModelIndex
+from PyQt6.QtCore import (
+    QAbstractListModel,
+    QModelIndex,
+    QSortFilterProxyModel,
+    Qt,
+    pyqtProperty,
+    pyqtSignal,
+    pyqtSlot,
+)
 
 from electrum.logging import get_logger
 from electrum.util import Satoshis
@@ -9,8 +16,8 @@ from electrum.util import Satoshis
 from .qetypes import QEAmount
 
 if TYPE_CHECKING:
-    from electrum.wallet import Abstract_Wallet
     from electrum.transaction import PartialTxInput
+    from electrum.wallet import Abstract_Wallet
 
 
 class QEAddressCoinFilterProxyModel(QSortFilterProxyModel):
@@ -142,8 +149,8 @@ class QEAddressCoinListModel(QAbstractListModel):
         "txid",
     )
     _ROLE_KEYS = range(Qt.ItemDataRole.UserRole, Qt.ItemDataRole.UserRole + len(_ROLE_NAMES))
-    _ROLE_MAP = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES]))
-    _ROLE_RMAP = dict(zip(_ROLE_NAMES, _ROLE_KEYS))
+    _ROLE_MAP = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES], strict=False))
+    _ROLE_RMAP = dict(zip(_ROLE_NAMES, _ROLE_KEYS, strict=False))
 
     def __init__(self, wallet: "Abstract_Wallet", parent=None):
         super().__init__(parent)
@@ -167,7 +174,7 @@ class QEAddressCoinListModel(QAbstractListModel):
             value = address[self._ROLE_NAMES[role_index]]
         except KeyError:
             return None
-        if isinstance(value, (bool, list, int, str, QEAmount)) or value is None:
+        if isinstance(value, bool | list | int | str | QEAmount) or value is None:
             return value
         if isinstance(value, Satoshis):
             return value.value
@@ -234,7 +241,7 @@ class QEAddressCoinListModel(QAbstractListModel):
 
             utxos = self.wallet.get_utxos([address])
             utxos.sort(key=lambda x: x.block_height)
-            for i, coin in enumerate(utxos):
+            for _i, coin in enumerate(utxos):
                 self._items.append(self.coin_to_model(atype, coin))
 
         self.clear()
@@ -303,7 +310,7 @@ class QEAddressCoinListModel(QAbstractListModel):
         return self._filterModel
 
     @pyqtSlot(bool, list)
-    def setFrozenForItems(self, freeze: bool, items: List[str]):
+    def setFrozenForItems(self, freeze: bool, items: list[str]):
         self._logger.debug(f"set frozen to {freeze} for {items!r}")
         coins = list(filter(lambda x: ":" in x, items))
         if len(coins):

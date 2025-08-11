@@ -1,23 +1,20 @@
 import copy
 from typing import TYPE_CHECKING
 
+from btchip.btchip import BTChipException
 from PyQt5.QtWidgets import (
+    QComboBox,
     QDialog,
-    QLineEdit,
+    QHBoxLayout,
+    QLabel,
     QTextEdit,
     QVBoxLayout,
-    QLabel,
     QWidget,
-    QHBoxLayout,
-    QComboBox,
 )
 
-from btchip.btchip import BTChipException
-
+from electrum import bitcoin, constants
 from electrum.gui.qt.util import PasswordLineEdit
-
 from electrum.i18n import _
-from electrum import constants, bitcoin
 from electrum.logging import get_logger
 
 if TYPE_CHECKING:
@@ -194,6 +191,6 @@ class LedgerAuthDialog(QDialog):
         try:
             mode = self.dongle.exchange(bytearray(apdu))
             return mode
-        except BTChipException as e:
+        except BTChipException:
             _logger.debug("Device getMode Failed")
         return 0x11

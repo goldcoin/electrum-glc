@@ -1,7 +1,7 @@
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject
+from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
 
-from electrum.logging import get_logger
 from electrum.i18n import _
+from electrum.logging import get_logger
 
 # container for satoshi amounts that can be passed around more
 # easily between python, QML-property and QML-javascript contexts
@@ -118,7 +118,7 @@ class QEAmount(QObject):
     def __str__(self):
         s = _("Amount")
         if self._is_max:
-            return "%s(MAX)" % s
+            return f"{s}(MAX)"
         return "%s(sats=%d, msats=%d)" % (s, self._amount_sat, self._amount_msat)
 
     def __repr__(self):

@@ -22,18 +22,18 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import threading
 import copy
 import json
+import threading
 from typing import TYPE_CHECKING
+
 import jsonpatch
 
-from . import util
-from .util import WalletFileException, profiler
 from .logging import Logger
+from .util import WalletFileException, profiler
 
 if TYPE_CHECKING:
-    from .storage import WalletStorage
+    pass
 
 
 def modifier(func):
@@ -103,7 +103,7 @@ def key_path(path, key):
             assert isinstance(x, str)
             return x
 
-    return "/" + "/".join([to_str(x) for x in path + [to_str(key)]])
+    return "/" + "/".join([to_str(x) for x in [*path, to_str(key)]])
 
 
 class StoredObject:
@@ -158,7 +158,7 @@ class StoredDict(dict):
         if isinstance(v, StoredDict):
             # assert v.db is None
             v.db = self.db
-            v.path = self.path + [key]
+            v.path = [*self.path, key]
             for k, vv in v.items():
                 v.__setitem__(k, vv, patch=False)
         # recursively convert dict to StoredDict.
@@ -167,17 +167,17 @@ class StoredDict(dict):
             if self.db:
                 v = self.db._convert_dict(self.path, key, v)
             if not self.db or self.db._should_convert_to_stored_dict(key):
-                v = StoredDict(v, self.db, self.path + [key])
+                v = StoredDict(v, self.db, [*self.path, key])
         # convert_value is called depth-first
         if isinstance(v, dict) or isinstance(v, str) or isinstance(v, int):
             if self.db:
                 v = self.db._convert_value(self.path, key, v)
         # set parent of StoredObject
         if isinstance(v, StoredObject):
-            v.set_db(self.db, self.path + [key])
+            v.set_db(self.db, [*self.path, key])
         # convert lists
         if isinstance(v, list):
-            v = StoredList(v, self.db, self.path + [key])
+            v = StoredList(v, self.db, [*self.path, key])
         # set item
         dict.__setitem__(self, key, v)
         if self.db and patch:
@@ -276,8 +276,8 @@ class JsonDB(Logger):
             import ast
 
             d = ast.literal_eval(s)
-            labels = d.get("labels", {})
-        except Exception as e:
+            d.get("labels", {})
+        except Exception:
             return
         data = {}
         for key, value in d.items():
@@ -330,7 +330,7 @@ class JsonDB(Logger):
             json.dumps(key, cls=self.encoder)
             json.dumps(value, cls=self.encoder)
         except Exception:
-            self.logger.info(f"json error: cannot save {repr(key)} ({repr(value)})")
+            self.logger.info(f"json error: cannot save {key!r} ({value!r})")
             return False
         if value is not None:
             if self.data.get(key) != value:
@@ -374,11 +374,11 @@ class JsonDB(Logger):
         if key in registered_dicts:
             constructor, _type = registered_dicts[key]
             if _type == dict:
-                v = dict((k, constructor(**x)) for k, x in v.items())
+                v = {k: constructor(**x) for k, x in v.items()}
             elif _type == tuple:
-                v = dict((k, constructor(*x)) for k, x in v.items())
+                v = {k: constructor(*x) for k, x in v.items()}
             else:
-                v = dict((k, constructor(x)) for k, x in v.items())
+                v = {k: constructor(x) for k, x in v.items()}
         if key in registered_dict_keys:
             convert_key = registered_dict_keys[key]
         elif path and path[-1] in registered_parent_keys:
@@ -386,7 +386,7 @@ class JsonDB(Logger):
         else:
             convert_key = None
         if convert_key:
-            v = dict((convert_key(k), x) for k, x in v.items())
+            v = {convert_key(k): x for k, x in v.items()}
         return v
 
     def _convert_value(self, path, key, v):

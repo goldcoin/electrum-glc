@@ -25,20 +25,19 @@
 
 from typing import TYPE_CHECKING
 
-from PyQt5.QtWidgets import QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QLabel, QVBoxLayout
 
 from electrum.i18n import _
 
-from .util import (
-    WindowModalDialog,
-    ButtonsLineEdit,
-    ShowQRLineEdit,
-    ColorScheme,
-    Buttons,
-    CloseButton,
-)
 from .history_list import HistoryList, HistoryModel
 from .qrtextedit import ShowQRTextEdit
+from .util import (
+    Buttons,
+    ButtonsLineEdit,
+    CloseButton,
+    ShowQRLineEdit,
+    WindowModalDialog,
+)
 
 if TYPE_CHECKING:
     from .main_window import ElectrumWindow
@@ -79,7 +78,7 @@ class AddressDialog(WindowModalDialog):
 
         try:
             pubkeys = self.wallet.get_public_keys(address)
-        except BaseException as e:
+        except BaseException:
             pubkeys = None
         if pubkeys:
             vbox.addWidget(QLabel(_("Public keys") + ":"))

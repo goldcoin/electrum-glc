@@ -3,22 +3,29 @@ import os
 import threading
 from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import Qt, QAbstractListModel, QModelIndex
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject
-
-from electrum.i18n import _
-from electrum.logging import get_logger
-from electrum.util import (
-    WalletFileException,
-    standardize_path,
-    InvalidPassword,
-    send_exception_to_crash_reporter,
+from PyQt6.QtCore import (
+    QAbstractListModel,
+    QModelIndex,
+    QObject,
+    Qt,
+    pyqtProperty,
+    pyqtSignal,
+    pyqtSlot,
 )
-from electrum.plugin import run_hook
-from electrum.lnchannel import ChannelState
+
 from electrum.bitcoin import is_address
 from electrum.ecc import verify_message_with_address
+from electrum.i18n import _
+from electrum.lnchannel import ChannelState
+from electrum.logging import get_logger
+from electrum.plugin import run_hook
 from electrum.storage import StorageReadWriteError
+from electrum.util import (
+    InvalidPassword,
+    WalletFileException,
+    send_exception_to_crash_reporter,
+    standardize_path,
+)
 
 from .auth import AuthMixin, auth_protect
 from .qefx import QEFX
@@ -41,7 +48,7 @@ class QEWalletListModel(QAbstractListModel):
     # define listmodel rolemap
     _ROLE_NAMES = ("name", "path", "active")
     _ROLE_KEYS = range(Qt.ItemDataRole.UserRole, Qt.ItemDataRole.UserRole + len(_ROLE_NAMES))
-    _ROLE_MAP = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES]))
+    _ROLE_MAP = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES], strict=False))
 
     def __init__(self, daemon, parent=None):
         QAbstractListModel.__init__(self, parent)
@@ -80,7 +87,7 @@ class QEWalletListModel(QAbstractListModel):
                 if i.is_file() and not i.name.startswith("."):
                     available.append(i.path)
         for path in sorted(available):
-            wallet = self.daemon.get_wallet(path)
+            self.daemon.get_wallet(path)
             self.add_wallet(wallet_path=path)
 
     def add_wallet(self, wallet_path):
@@ -109,7 +116,7 @@ class QEWalletListModel(QAbstractListModel):
 
     @pyqtSlot(str, result=bool)
     def wallet_name_exists(self, name):
-        for wallet_name, wallet_path in self._wallets:
+        for wallet_name, _wallet_path in self._wallets:
             if name == wallet_name:
                 return True
         return False
@@ -117,7 +124,7 @@ class QEWalletListModel(QAbstractListModel):
     @pyqtSlot(str)
     def updateWallet(self, path):
         i = 0
-        for wallet_name, wallet_path in self._wallets:
+        for _wallet_name, wallet_path in self._wallets:
             if wallet_path == path:
                 mi = self.createIndex(i, i)
                 self.dataChanged.emit(mi, mi, self._ROLE_KEYS)
@@ -263,10 +270,8 @@ class QEDaemon(AuthMixin, QObject):
         if wallet.wallet.lnworker:
             lnchannels = wallet.wallet.lnworker.get_channel_objects()
             if any(
-                [
-                    channel.get_state() != ChannelState.REDEEMED and not channel.is_backup()
+                channel.get_state() != ChannelState.REDEEMED and not channel.is_backup()
                     for channel in lnchannels.values()
-                ]
             ):
                 self.walletDeleteError.emit(
                     "unclosed_channels", _("There are still channels that are not fully closed")
@@ -292,7 +297,7 @@ class QEDaemon(AuthMixin, QObject):
     @auth_protect(message=_("Really delete this wallet?"))
     def delete_wallet(self, wallet):
         path = standardize_path(wallet.wallet.storage.path)
-        self._logger.debug("deleting wallet with path %s" % path)
+        self._logger.debug(f"deleting wallet with path {path}")
         self._current_wallet = None
         # TODO walletLoaded signal is confusing
         self.walletLoaded.emit(None, None)
@@ -387,7 +392,7 @@ class QEDaemon(AuthMixin, QObject):
             # This can throw on invalid base64
             sig = base64.b64decode(str(signature.strip()))
             verified = verify_message_with_address(address, sig, message)
-        except Exception as e:
+        except Exception:
             verified = False
         return verified
 

@@ -22,28 +22,23 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import os
-import threading
-import stat
-import hashlib
 import base64
+import hashlib
+import os
+import stat
 import zlib
 from enum import IntEnum
-from typing import Optional
 
 from . import ecc
+from .logging import Logger
 from .util import (
-    profiler,
     InvalidPassword,
     WalletFileException,
     bfh,
+    os_chmod,
     standardize_path,
     test_read_write_permissions,
-    os_chmod,
 )
-
-from .wallet_db import WalletDB
-from .logging import Logger
 
 
 def get_derivation_used_for_hw_device_encryption():
@@ -76,7 +71,7 @@ class WalletStorage(Logger):
         self.decrypted = ""
         try:
             test_read_write_permissions(self.path)
-        except IOError as e:
+        except OSError as e:
             raise StorageReadWriteError(e) from e
         if self.file_exists():
             with open(self.path, "rb") as f:
@@ -95,7 +90,7 @@ class WalletStorage(Logger):
 
     def write(self, data: str) -> None:
         s = self.encrypt_before_writing(data)
-        temp_path = "%s.tmp.%s" % (self.path, os.getpid())
+        temp_path = f"{self.path}.tmp.{os.getpid()}"
         with open(temp_path, "wb") as f:
             f.write(s.encode("utf-8"))
             self.pos = f.seek(0, os.SEEK_END)
@@ -187,7 +182,7 @@ class WalletStorage(Logger):
         elif v == StorageEncryptionVersion.XPUB_PASSWORD:
             return b"BIE2"
         else:
-            raise WalletFileException("no encryption magic for version: %s" % v)
+            raise WalletFileException(f"no encryption magic for version: {v}")
 
     def decrypt(self, password) -> None:
         """Raises an InvalidPassword exception on invalid password"""
@@ -215,7 +210,7 @@ class WalletStorage(Logger):
             s = s.decode("utf8")
         return s
 
-    def check_password(self, password: Optional[str]) -> None:
+    def check_password(self, password: str | None) -> None:
         """Raises an InvalidPassword exception on invalid password"""
         if not self.is_encrypted():
             if password is not None:

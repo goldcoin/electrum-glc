@@ -2,25 +2,26 @@
 # BitBox02 Electrum plugin code.
 #
 
-import hid
-from typing import TYPE_CHECKING, Dict, Tuple, Optional, List, Any, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
+import hid
+
+import electrum.bitcoin as bitcoin
+import electrum.ecc as ecc
 from electrum import bip32, constants
+from electrum.bitcoin import OnchainOutputType
 from electrum.i18n import _
 from electrum.keystore import Hardware_KeyStore
-from electrum.transaction import PartialTransaction, Sighash
-from electrum.wallet import Multisig_Wallet, Deterministic_Wallet
-from electrum.util import UserFacingException
 from electrum.logging import get_logger
 from electrum.plugin import Device, DeviceInfo, runs_in_hwd_thread
 from electrum.simple_config import SimpleConfig
 from electrum.storage import get_derivation_used_for_hw_device_encryption
-from electrum.bitcoin import OnchainOutputType
+from electrum.transaction import PartialTransaction, Sighash
+from electrum.util import UserFacingException
+from electrum.wallet import Deterministic_Wallet, Multisig_Wallet
 
-import electrum.bitcoin as bitcoin
-import electrum.ecc as ecc
-
-from ..hw_wallet import HW_PluginBase, HardwareClientBase, HardwareHandlerBase
+from ..hw_wallet import HardwareClientBase, HardwareHandlerBase, HW_PluginBase
 
 if TYPE_CHECKING:
     from electrum.wizard import NewWalletWizard
@@ -29,14 +30,13 @@ _logger = get_logger(__name__)
 
 
 try:
-    from bitbox02 import bitbox02
-    from bitbox02 import util
+    from bitbox02 import bitbox02, util
     from bitbox02.communication import (
-        devices,
         HARDENED,
-        u2fhid,
-        bitbox_api_protocol,
         FirmwareVersionOutdatedException,
+        bitbox_api_protocol,
+        devices,
+        u2fhid,
     )
 
     requirements_ok = True
@@ -83,7 +83,7 @@ class BitBox02Client(HardwareClientBase):
         if self.bitbox_hid_info is None:
             raise Exception("No BitBox02 detected")
 
-    def device_model_name(self) -> Optional[str]:
+    def device_model_name(self) -> str | None:
         return "BitBox02"
 
     def is_initialized(self) -> bool:
@@ -102,7 +102,7 @@ class BitBox02Client(HardwareClientBase):
         return True
 
     @runs_in_hwd_thread
-    def get_soft_device_id(self) -> Optional[str]:
+    def get_soft_device_id(self) -> str | None:
         if self.handler is None:
             # Can't do the pairing without the handler. This happens at wallet creation time, when
             # listing the devices.
@@ -143,7 +143,7 @@ class BitBox02Client(HardwareClientBase):
                     bitbox02_config["remote_static_noise_keys"] = [pubkey.hex()]
                 self.config.set_key("bitbox02", bitbox02_config)
 
-        def get_noise_privkey() -> Optional[bytes]:
+        def get_noise_privkey() -> bytes | None:
             bitbox02_config = self.config.get("bitbox02")
             privkey = bitbox02_config.get("noise_privkey")
             if privkey is not None:
@@ -177,7 +177,7 @@ class BitBox02Client(HardwareClientBase):
             def add_device_static_pubkey(self, pubkey: bytes) -> None:
                 return set_remote_static_pubkey(pubkey)
 
-            def get_app_static_privkey(self) -> Optional[bytes]:
+            def get_app_static_privkey(self) -> bytes | None:
                 return get_noise_privkey()
 
             def set_app_static_privkey(self, privkey: bytes) -> None:
@@ -259,7 +259,7 @@ class BitBox02Client(HardwareClientBase):
                 out_type = bitbox02.btc.BTCPubRequest.CAPITAL_VPUB
         # The other legacy types are not supported
         else:
-            raise Exception("invalid xtype:{}".format(xtype))
+            raise Exception(f"invalid xtype:{xtype}")
 
         return self.bitbox02_device.btc_xpub(
             keypath=xpub_keypath, xpub_type=out_type, coin=coin_network, display=display
@@ -275,7 +275,7 @@ class BitBox02Client(HardwareClientBase):
             self.pairing_dialog()
         # We add the fingerprint to the label, as if there are two devices with the same label, the
         # device manager can mistake one for another and fail.
-        return "%s (%s)" % (
+        return "{} ({})".format(
             self.bitbox02_device.device_info()["name"],
             self.bitbox02_device.root_fingerprint().hex(),
         )
@@ -298,7 +298,7 @@ class BitBox02Client(HardwareClientBase):
     def btc_multisig_config(
         self,
         coin,
-        bip32_path: List[int],
+        bip32_path: list[int],
         wallet: Multisig_Wallet,
         xtype: str,
     ):
@@ -379,7 +379,7 @@ class BitBox02Client(HardwareClientBase):
                 raise Exception("Can only use p2wsh-p2sh or p2wsh with multisig wallets")
         else:
             raise Exception(
-                "invalid address xtype: {} is not supported by the BitBox02".format(address_type)
+                f"invalid address xtype: {address_type} is not supported by the BitBox02"
             )
 
         return self.bitbox02_device.btc_address(
@@ -424,8 +424,8 @@ class BitBox02Client(HardwareClientBase):
             if prev_tx is None:
                 raise UserFacingException(_("Missing previous tx."))
 
-            prev_inputs: List[bitbox02.BTCPrevTxInputType] = []
-            prev_outputs: List[bitbox02.BTCPrevTxOutputType] = []
+            prev_inputs: list[bitbox02.BTCPrevTxInputType] = []
+            prev_outputs: list[bitbox02.BTCPrevTxOutputType] = []
             for prev_txin in prev_tx.inputs():
                 prev_inputs.append(
                     {
@@ -482,9 +482,7 @@ class BitBox02Client(HardwareClientBase):
                 raise Exception("Can only use p2wsh-p2sh or p2wsh with multisig wallets")
         else:
             raise UserFacingException(
-                "invalid input script type: {} is not supported by the BitBox02".format(
-                    tx_script_type
-                )
+                f"invalid input script type: {tx_script_type} is not supported by the BitBox02"
             )
 
         # Build BTCOutputType list
@@ -515,9 +513,7 @@ class BitBox02Client(HardwareClientBase):
                     output_type = bitbox02.btc.P2TR
                 else:
                     raise UserFacingException(
-                        "Received unsupported output type during transaction signing: {} is not supported by the BitBox02".format(
-                            addrtype
-                        )
+                        f"Received unsupported output type during transaction signing: {addrtype} is not supported by the BitBox02"
                     )
                 outputs.append(
                     bitbox02.BTCOutputExternal(
@@ -569,9 +565,7 @@ class BitBox02Client(HardwareClientBase):
             }[script_type]
         except KeyError:
             raise UserFacingException(
-                "The BitBox02 does not support signing messages for this address type: {}".format(
-                    script_type
-                )
+                f"The BitBox02 does not support signing messages for this address type: {script_type}"
             )
 
         _, _, signature = self.bitbox02_device.btc_sign_msg(
@@ -642,13 +636,13 @@ class BitBox02_KeyStore(Hardware_KeyStore):
             return
 
     @runs_in_hwd_thread
-    def show_address(self, sequence: Tuple[int, int], txin_type: str, wallet: Deterministic_Wallet):
+    def show_address(self, sequence: tuple[int, int], txin_type: str, wallet: Deterministic_Wallet):
         client = self.get_client()
-        address_path = "{}/{}/{}".format(self.get_derivation_prefix(), sequence[0], sequence[1])
+        address_path = f"{self.get_derivation_prefix()}/{sequence[0]}/{sequence[1]}"
         try:
             try:
                 self.handler.show_message(_("Showing address ..."))
-                dev_addr = client.show_address(address_path, txin_type, wallet)
+                client.show_address(address_path, txin_type, wallet)
             finally:
                 self.handler.finished()
         except Exception as e:

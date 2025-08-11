@@ -22,25 +22,21 @@
 # Many of these unit tests are heavily based on unit tests in lnd
 # (around commit 42de4400bff5105352d0552155f73589166d162b).
 
-import unittest
-import os
 import binascii
-from pprint import pformat
 import logging
+import os
+import unittest
+from pprint import pformat
 
-from electrum import bitcoin
-from electrum import lnpeer
-from electrum import lnchannel
-from electrum import lnutil
 from electrum import bip32 as bip32_utils
-from electrum.lnutil import SENT, LOCAL, REMOTE, RECEIVED, UpdateAddHtlc
-from electrum.logging import console_stderr_handler
-from electrum.lnchannel import ChannelState
-from electrum.json_db import StoredDict
+from electrum import bitcoin, lnchannel, lnpeer, lnutil
 from electrum.coinchooser import PRNG
+from electrum.json_db import StoredDict
+from electrum.lnchannel import ChannelState
+from electrum.lnutil import LOCAL, RECEIVED, REMOTE, SENT, UpdateAddHtlc
+from electrum.logging import console_stderr_handler
 
 from . import ElectrumTestCase
-
 
 one_bitcoin_in_msat = bitcoin.COIN * 1000
 
@@ -341,8 +337,8 @@ class TestChannel(ElectrumTestCase):
             list(self.alice_channel.hm.htlcs_by_direction(REMOTE, RECEIVED, 1).values()), []
         )
 
-        before = self.bob_channel.balance_minus_outgoing_htlcs(REMOTE)
-        beforeLocal = self.bob_channel.balance_minus_outgoing_htlcs(LOCAL)
+        self.bob_channel.balance_minus_outgoing_htlcs(REMOTE)
+        self.bob_channel.balance_minus_outgoing_htlcs(LOCAL)
 
         self.bobHtlcIndex = self.bob_channel.receive_htlc(self.htlc_dict).htlc_id
 
@@ -554,13 +550,12 @@ class TestChannel(ElectrumTestCase):
         self.assertEqual(
             len(alice_ctx.outputs()),
             3,
-            "alice should have three commitment outputs, instead have %s"
-            % len(alice_ctx.outputs()),
+            f"alice should have three commitment outputs, instead have {len(alice_ctx.outputs())}",
         )
         self.assertEqual(
             len(bob_ctx.outputs()),
             3,
-            "bob should have three commitment outputs, instead have %s" % len(bob_ctx.outputs()),
+            f"bob should have three commitment outputs, instead have {len(bob_ctx.outputs())}",
         )
         self.assertOutputExistsByValue(alice_ctx, htlc.amount_msat // 1000)
         self.assertOutputExistsByValue(bob_ctx, htlc.amount_msat // 1000)

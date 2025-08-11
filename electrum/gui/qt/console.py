@@ -1,13 +1,11 @@
 # source: http://stackoverflow.com/questions/2758159/how-to-embed-a-python-interpreter-in-a-pyqt-widget
 
-import sys
 import os
 import re
+import sys
 import traceback
 
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from electrum import util
 from electrum.i18n import _
@@ -135,7 +133,7 @@ class Console(QtWidgets.QPlainTextEdit):
         doc = self.document()
         curr_line = doc.findBlockByLineNumber(doc.lineCount() - 1).text()
         self.moveCursor(QtGui.QTextCursor.End)
-        for i in range(len(curr_line) - len(sys.ps1)):
+        for _i in range(len(curr_line) - len(sys.ps1)):
             self.moveCursor(QtGui.QTextCursor.Left, QtGui.QTextCursor.KeepAnchor)
 
         self.textCursor().removeSelectedText()
@@ -149,7 +147,7 @@ class Console(QtWidgets.QPlainTextEdit):
         c = self.textCursor()
         c.setPosition(self.completions_pos)
 
-        completions = map(lambda x: x.split(".")[-1], completions)
+        completions = (x.split(".")[-1] for x in completions)
         t = "\n" + " ".join(completions)
         if len(t) > 500:
             t = t[:500] + "..."
@@ -165,7 +163,7 @@ class Console(QtWidgets.QPlainTextEdit):
         c = self.textCursor()
         c.setPosition(self.completions_pos)
         l = self.completions_end - self.completions_pos
-        for x in range(l):
+        for _x in range(l):
             c.deleteChar()
 
         self.moveCursor(QtGui.QTextCursor.End)
@@ -217,7 +215,7 @@ class Console(QtWidgets.QPlainTextEdit):
 
     def setCursorPosition(self, position):
         self.moveCursor(QtGui.QTextCursor.StartOfLine)
-        for i in range(len(sys.ps1) + position):
+        for _i in range(len(sys.ps1) + position):
             self.moveCursor(QtGui.QTextCursor.Right)
 
     def run_command(self):
@@ -251,9 +249,7 @@ class Console(QtWidgets.QPlainTextEdit):
 
         if type(self.namespace.get(command)) == type(lambda: None):
             self.appendPlainText(
-                "'{}' is a function. Type '{}()' to use it in the Python console.".format(
-                    command, command
-                )
+                f"'{command}' is a function. Type '{command}()' to use it in the Python console."
             )
             return
 
@@ -316,7 +312,7 @@ class Console(QtWidgets.QPlainTextEdit):
             if not self.textCursor().selectedText():
                 self.keyboard_interrupt()
 
-        super(Console, self).keyPressEvent(event)
+        super().keyPressEvent(event)
 
     def completions(self):
         cmd = self.getCommand()

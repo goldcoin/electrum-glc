@@ -1,13 +1,12 @@
 from typing import TYPE_CHECKING
 
+from electrum.gui.qml.qewallet import QEWallet
 from electrum.i18n import _
 from electrum.plugin import hook
 from electrum.util import UserFacingException
 
-from electrum.gui.qml.qewallet import QEWallet
 from .common_qt import TrustedcoinPluginQObject
-
-from .trustedcoin import TrustedCoinPlugin, TrustedCoinException
+from .trustedcoin import TrustedCoinException, TrustedCoinPlugin
 
 if TYPE_CHECKING:
     from electrum.gui.qml import ElectrumQmlApplication
@@ -24,7 +23,7 @@ class Plugin(TrustedCoinPlugin):
     def load_wallet(self, wallet: "Abstract_Wallet"):
         if not isinstance(wallet, self.wallet_class):
             return
-        self.logger.debug(f'plugin enabled for wallet "{str(wallet)}"')
+        self.logger.debug(f'plugin enabled for wallet "{wallet!s}"')
         if wallet.can_sign_without_server():
             self.so._canSignWithoutServer = True
             self.so.canSignWithoutServerChanged.emit()
@@ -42,7 +41,7 @@ class Plugin(TrustedCoinPlugin):
 
     @hook
     def init_qml(self, app: "ElectrumQmlApplication"):
-        self.logger.debug(f"init_qml hook called, gui={str(type(app))}")
+        self.logger.debug(f"init_qml hook called, gui={type(app)!s}")
         self._app = app
         wizard = self._app.daemon.newWalletWizard
         # important: TrustedcoinPluginQObject needs to be parented, as keeping a ref
@@ -102,11 +101,11 @@ class Plugin(TrustedCoinPlugin):
             self.on_failure(_("No auth code"))
             return
 
-        self.logger.debug(f"on_otp {otp} for tx {repr(self.tx)}")
+        self.logger.debug(f"on_otp {otp} for tx {self.tx!r}")
 
         try:
             self.wallet.on_otp(self.tx, otp)
-        except UserFacingException as e:
+        except UserFacingException:
             self.on_failure(_("Invalid one-time password."))
         except TrustedCoinException as e:
             if e.status_code == 400:  # invalid OTP

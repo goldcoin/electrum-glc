@@ -21,21 +21,19 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import re
-from typing import Optional, Tuple, Dict, Any, TYPE_CHECKING
+import threading
+from typing import TYPE_CHECKING, Any
 
 import dns
-import threading
 from dns.exception import DNSException
 
-from . import bitcoin
-from . import dnssec
-from .util import read_json_file, write_json_file, to_string
+from . import bitcoin, dnssec
 from .logging import Logger, get_logger
-from .util import trigger_callback
+from .util import read_json_file, to_string, trigger_callback, write_json_file
 
 if TYPE_CHECKING:
-    from .wallet_db import WalletDB
     from .simple_config import SimpleConfig
+    from .wallet_db import WalletDB
 
 
 _logger = get_logger(__name__)
@@ -96,7 +94,7 @@ class Contacts(dict, Logger):
         raise AliasNotFoundException("Invalid Bitcoin address or alias", k)
 
     @classmethod
-    def resolve_openalias(cls, url: str) -> Dict[str, Any]:
+    def resolve_openalias(cls, url: str) -> dict[str, Any]:
         out = cls._resolve_openalias(url)
         if out:
             address, name, validated = out
@@ -125,13 +123,13 @@ class Contacts(dict, Logger):
             t.start()
 
     @classmethod
-    def _resolve_openalias(cls, url: str) -> Optional[Tuple[str, str, bool]]:
+    def _resolve_openalias(cls, url: str) -> tuple[str, str, bool] | None:
         # support email-style addresses, per the OA standard
         url = url.replace("@", ".")
         try:
             records, validated = dnssec.query(url, dns.rdatatype.TXT)
         except DNSException as e:
-            _logger.info(f"Error resolving openalias: {repr(e)}")
+            _logger.info(f"Error resolving openalias: {e!r}")
             return None
         prefix = "btc"
         for record in records:

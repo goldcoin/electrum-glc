@@ -2,53 +2,53 @@
 # Distributed under the MIT software license, see the accompanying
 # file LICENCE or http://www.opensource.org/licenses/mit-license.php
 
+from collections.abc import Callable, Sequence
 from decimal import Decimal
-from typing import Optional, TYPE_CHECKING, Sequence, List, Callable
-from PyQt5.QtCore import pyqtSignal, QPoint, QSize, Qt
+from typing import TYPE_CHECKING
+
+from PyQt5.QtCore import QPoint, QSize, Qt, pyqtSignal
+from PyQt5.QtGui import QColor, QMovie
 from PyQt5.QtWidgets import (
-    QLabel,
-    QVBoxLayout,
+    QApplication,
     QGridLayout,
     QHBoxLayout,
-    QWidget,
-    QToolTip,
+    QLabel,
     QPushButton,
-    QApplication,
+    QToolTip,
+    QVBoxLayout,
+    QWidget,
 )
-from PyQt5.QtGui import QMovie, QColor
 
-from electrum.i18n import _
-from electrum.logging import Logger
 from electrum.bitcoin import DummyAddress
-from electrum.plugin import run_hook
-from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates, parse_max_spend
-from electrum.invoices import PR_PAID, Invoice, PR_BROADCASTING, PR_BROADCAST
-from electrum.transaction import Transaction, PartialTxInput, PartialTxOutput
-from electrum.network import TxBroadcastError, BestEffortRequestFailed
+from electrum.i18n import _
+from electrum.invoices import PR_BROADCAST, PR_BROADCASTING, PR_PAID, Invoice
+from electrum.logging import Logger
+from electrum.network import BestEffortRequestFailed, TxBroadcastError
 from electrum.payment_identifier import (
-    PaymentIdentifierState,
-    PaymentIdentifierType,
     PaymentIdentifier,
+    PaymentIdentifierType,
     invoice_from_payment_identifier,
     payment_identifier_from_invoice,
 )
+from electrum.plugin import run_hook
+from electrum.transaction import PartialTxInput, PartialTxOutput, Transaction
+from electrum.util import NoDynamicFeeEstimates, NotEnoughFunds, parse_max_spend
 
 from .amountedit import AmountEdit, BTCAmountEdit, SizedFreezableLineEdit
-from .paytoedit import InvalidPaymentIdentifier
-from .util import (
-    WaitingDialog,
-    HelpLabel,
-    MessageBoxMixin,
-    EnterButton,
-    char_width_in_lineedit,
-    get_iconname_camera,
-    get_iconname_qrcode,
-    read_QIcon,
-    ColorScheme,
-    icon_path,
-)
 from .confirm_tx_dialog import ConfirmTxDialog
 from .invoice_list import InvoiceList
+from .paytoedit import InvalidPaymentIdentifier
+from .util import (
+    ColorScheme,
+    EnterButton,
+    HelpLabel,
+    MessageBoxMixin,
+    WaitingDialog,
+    char_width_in_lineedit,
+    get_iconname_camera,
+    icon_path,
+    read_QIcon,
+)
 
 if TYPE_CHECKING:
     from .main_window import ElectrumWindow
@@ -285,14 +285,14 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
         self.logger.debug("do_paste")
         try:
             self.payto_e.try_payment_identifier(self.app.clipboard().text())
-        except InvalidPaymentIdentifier as e:
+        except InvalidPaymentIdentifier:
             self.show_error(_("Invalid payment identifier on clipboard"))
 
     def set_payment_identifier(self, text):
         self.logger.debug("set_payment_identifier")
         try:
             self.payto_e.try_payment_identifier(text)
-        except InvalidPaymentIdentifier as e:
+        except InvalidPaymentIdentifier:
             self.show_error(_("Invalid payment identifier"))
 
     def spend_max(self):
@@ -316,17 +316,18 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
         outputs = pi.get_onchain_outputs("!")
         if not outputs:
             return
-        make_tx = lambda fee_est, *, confirmed_only=False: self.wallet.make_unsigned_transaction(
-            coins=self.window.get_coins(), outputs=outputs, fee=fee_est, is_sweep=False
-        )
+        def make_tx(fee_est, *, confirmed_only=False):
+            return self.wallet.make_unsigned_transaction(
+                    coins=self.window.get_coins(), outputs=outputs, fee=fee_est, is_sweep=False
+                )
         try:
             try:
                 tx = make_tx(None)
-            except (NotEnoughFunds, NoDynamicFeeEstimates) as e:
+            except (NotEnoughFunds, NoDynamicFeeEstimates):
                 # Check if we had enough funds excluding fees,
                 # if so, still provide opportunity to set lower fees.
                 tx = make_tx(0)
-        except NotEnoughFunds as e:
+        except NotEnoughFunds:
             self.max_button.setChecked(False)
             text = self.get_text_not_enough_funds_mentioning_frozen()
             self.show_error(text)
@@ -358,12 +359,12 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
     # as this method is called from other places as well).
     def pay_onchain_dialog(
         self,
-        outputs: List[PartialTxOutput],
+        outputs: list[PartialTxOutput],
         *,
         nonlocal_only=False,
         external_keypairs=None,
-        get_coins: Callable[..., Sequence[PartialTxInput]] = None,
-        invoice: Optional[Invoice] = None,
+        get_coins: Callable[..., Sequence[PartialTxInput]] | None = None,
+        invoice: Invoice | None = None,
     ) -> None:
         # trustedcoin requires this
         if run_hook("abort_send", self):
@@ -377,12 +378,13 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
         # we call get_coins inside make_tx, so that inputs can be changed dynamically
         if get_coins is None:
             get_coins = self.window.get_coins
-        make_tx = lambda fee_est, *, confirmed_only=False: self.wallet.make_unsigned_transaction(
-            coins=get_coins(nonlocal_only=nonlocal_only, confirmed_only=confirmed_only),
-            outputs=outputs,
-            fee=fee_est,
-            is_sweep=is_sweep,
-        )
+        def make_tx(fee_est, *, confirmed_only=False):
+            return self.wallet.make_unsigned_transaction(
+                    coins=get_coins(nonlocal_only=nonlocal_only, confirmed_only=confirmed_only),
+                    outputs=outputs,
+                    fee=fee_est,
+                    is_sweep=is_sweep,
+                )
         output_values = [x.value for x in outputs]
         is_max = any(parse_max_spend(outval) for outval in output_values)
         output_value = "!" if is_max else sum(output_values)
@@ -428,7 +430,7 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
             text += " ({} {})".format(frozen_str, _("are frozen"))
         return text
 
-    def get_frozen_balance_str(self) -> Optional[str]:
+    def get_frozen_balance_str(self) -> str | None:
         frozen_bal = sum(self.wallet.get_frozen_balance())
         if not frozen_bal:
             return None
@@ -462,7 +464,7 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
         self.show_message(error)
         self.do_clear()
 
-    def set_field_validated(self, w, *, validated: Optional[bool] = None):
+    def set_field_validated(self, w, *, validated: bool | None = None):
         if validated is not None:
             w.setStyleSheet(
                 ColorScheme.GREEN.as_stylesheet(True)
@@ -473,10 +475,10 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
     def lock_fields(
         self,
         *,
-        lock_recipient: Optional[bool] = None,
-        lock_amount: Optional[bool] = None,
-        lock_max: Optional[bool] = None,
-        lock_description: Optional[bool] = None,
+        lock_recipient: bool | None = None,
+        lock_amount: bool | None = None,
+        lock_max: bool | None = None,
+        lock_description: bool | None = None,
     ) -> None:
         self.logger.debug(
             f"locking fields, r={lock_recipient}, a={lock_amount}, m={lock_max}, d={lock_description}"
@@ -610,7 +612,7 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
     def get_message(self):
         return self.message_e.text()
 
-    def read_invoice(self) -> Optional[Invoice]:
+    def read_invoice(self) -> Invoice | None:
         if self.check_payto_line_and_show_errors():
             return
 
@@ -704,11 +706,11 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
         else:
             self.pay_onchain_dialog(invoice.outputs, invoice=invoice)
 
-    def read_amount(self) -> List[PartialTxOutput]:
+    def read_amount(self) -> list[PartialTxOutput]:
         amount = "!" if self.max_button.isChecked() else self.get_amount()
         return amount
 
-    def check_onchain_outputs_and_show_errors(self, outputs: List[PartialTxOutput]) -> bool:
+    def check_onchain_outputs_and_show_errors(self, outputs: list[PartialTxOutput]) -> bool:
         """Returns whether there are errors with outputs.
         Also shows error dialog to user if so.
         """

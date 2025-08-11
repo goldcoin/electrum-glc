@@ -2,12 +2,12 @@
 
 # A simple script that connects to a server and displays block headers
 
-import time
 import asyncio
+import time
 
 from electrum.network import Network
-from electrum.util import print_msg, json_encode, create_and_start_event_loop, log_exceptions
 from electrum.simple_config import SimpleConfig
+from electrum.util import create_and_start_event_loop, json_encode, log_exceptions, print_msg
 
 config = SimpleConfig()
 

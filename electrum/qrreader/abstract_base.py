@@ -24,11 +24,10 @@
 # SOFTWARE.
 
 import ctypes
-from typing import List, Tuple
 from abc import ABC, abstractmethod
 
-QrCodePoint = Tuple[int, int]
-QrCodePointList = List[QrCodePoint]
+QrCodePoint = tuple[int, int]
+QrCodePointList = list[QrCodePoint]
 
 
 class QrCodeResult:
@@ -42,7 +41,7 @@ class QrCodeResult:
         self.points: QrCodePointList = points
 
     def __str__(self) -> str:
-        return "data: {} center: {} points: {}".format(self.data, self.center, self.points)
+        return f"data: {self.data} center: {self.center} points: {self.points}"
 
     def __hash__(self):
         return hash(self.data)
@@ -77,7 +76,7 @@ class AbstractQrCodeReader(ABC):
         width: int,
         height: int,
         frame_id: int = -1,
-    ) -> List[QrCodeResult]:
+    ) -> list[QrCodeResult]:
         """
         Reads a QR code from an image buffer in Y800 / GREY format.
         Returns a list of detected QR codes which includes their data and positions.

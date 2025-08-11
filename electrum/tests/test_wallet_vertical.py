@@ -1,37 +1,28 @@
-import unittest
-from unittest import mock
-import shutil
-import tempfile
-from typing import Sequence
-import asyncio
 import copy
+import tempfile
+from collections.abc import Sequence
+from unittest import mock
 
-from electrum import storage, bitcoin, keystore, bip32, slip39, wallet
-from electrum import Transaction
-from electrum import SimpleConfig
-from electrum import util
-from electrum.address_synchronizer import TX_HEIGHT_UNCONFIRMED, TX_HEIGHT_UNCONF_PARENT
-from electrum.wallet import (
-    sweep,
-    Multisig_Wallet,
-    Standard_Wallet,
-    Imported_Wallet,
-    restore_wallet_from_text,
-    Abstract_Wallet,
-    CannotBumpFee,
-    BumpFeeStrategy,
-    TransactionPotentiallyDangerousException,
-    TransactionDangerousException,
-)
-from electrum.util import bfh, NotEnoughFunds, UnrelatedTransactionException, UserFacingException
-from electrum.transaction import Transaction, PartialTxOutput, tx_from_any
+from electrum import SimpleConfig, Transaction, bip32, bitcoin, keystore, slip39, storage, wallet
+from electrum.address_synchronizer import TX_HEIGHT_UNCONFIRMED
 from electrum.mnemonic import seed_type
 from electrum.network import Network
-
 from electrum.plugins.trustedcoin import trustedcoin
+from electrum.transaction import PartialTxOutput, Transaction, tx_from_any
+from electrum.util import NotEnoughFunds, UnrelatedTransactionException, UserFacingException, bfh
+from electrum.wallet import (
+    BumpFeeStrategy,
+    CannotBumpFee,
+    Imported_Wallet,
+    Multisig_Wallet,
+    Standard_Wallet,
+    TransactionDangerousException,
+    TransactionPotentiallyDangerousException,
+    restore_wallet_from_text,
+    sweep,
+)
 
 from . import ElectrumTestCase
-
 
 UNICODE_HORROR_HEX = "e282bf20f09f988020f09f98882020202020e3818620e38191e3819fe381be20e3828fe3828b2077cda2cda2cd9d68cda16fcda2cda120ccb8cda26bccb5cd9f6eccb4cd98c7ab77ccb8cc9b73cd9820cc80cc8177cd98cda2e1b8a9ccb561d289cca1cda27420cca7cc9568cc816fccb572cd8fccb5726f7273cca120ccb6cda1cda06cc4afccb665cd9fcd9f20ccb6cd9d696ecda220cd8f74cc9568ccb7cca1cd9f6520cd9fcd9f64cc9b61cd9c72cc95cda16bcca2cca820cda168ccb465cd8f61ccb7cca2cca17274cc81cd8f20ccb4ccb7cda0c3b2ccb5ccb666ccb82075cca7cd986ec3adcc9bcd9c63cda2cd8f6fccb7cd8f64ccb8cda265cca1cd9d3fcd9e"
 UNICODE_HORROR = bfh(UNICODE_HORROR_HEX).decode("utf-8")
@@ -1710,7 +1701,7 @@ class TestWalletSending(ElectrumTestCase):
         # bump tx
         tx = wallet.bump_fee(tx=tx_from_any(orig_rbf_tx.serialize()), new_fee_rate=200)
         self.assertTrue(
-            not any([txin for txin in tx.inputs() if txin.prevout.txid.hex() == orig_rbf_txid])
+            not any(txin for txin in tx.inputs() if txin.prevout.txid.hex() == orig_rbf_txid)
         )
         tx.locktime = 1898260
         tx.version = 2
@@ -2654,14 +2645,14 @@ class TestWalletSending(ElectrumTestCase):
         funding_tx = Transaction(
             "020000000001021798e10f8b7220c57ea0d605316a52453ca9b3eed99996b5b7bdf4699548bb520000000000fdffffff277d82678d238ca45dd3490ac9fbb49272f0980b093b9197ff70ec8eb082cfb00100000000fdffffff028c360100000000001600147a9bfd90821be827275023849dd91ee80d494957a08601000000000016001476efaaa243327bf3a2c0f5380cb3914099448cec024730440220354b2a74f5ac039cca3618f7ff98229d243b89ac40550c8b027894f2c5cb88ff022064cb5ab1539b4c5367c2e01a8362e0aa12c2732bc8d08c3fce6eab9e56b7fe19012103e0a1499cb3d8047492c60466722c435dfbcffae8da9b83e758fbd203d12728f502473044022073cef8b0cfb093aed5b8eaacbb58c2fa6a69405a8e266cd65e76b726c9151d7602204d5820b23ab96acc57c272aac96d94740a20a6b89c016aa5aed7c06d1e6b9100012102f09e50a265c6a0dcf7c87153ea73d7b12a0fbe9d7d0bbec5db626b2402c1e85c02fa2400"
         )
-        funding_txid = funding_tx.txid()
+        funding_tx.txid()
         wallet.adb.receive_tx_callback(funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # to_self_payment tx1
         toself_tx = Transaction(
             "02000000000101ce05b8ae96fe8d2875fd1efcb591b6fb5c5d924bf05d75d880a0e44498fe14b80100000000fdffffff02204e0000000000001600142266c890fad71396f106319368107d5b2a1146feb837010000000000160014b113a47f3718da3fd161339a6681c150fef2cfe3024730440220197bfea1bc5c86c35d68029422342de97c1e5d9adc12e48d99ae359940211a660220770ddb228ae75698f827e2fddc574f0c8eb2a3e109678a2a2b6bc9cbb9593b1c012102b07ca318381fcef5998f34ee4197e96c17aa19867cbe99c544d321807db95ed2f1f92400"
         )
-        toself_txid = toself_tx.txid()
+        toself_tx.txid()
         wallet.adb.receive_tx_callback(toself_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create outgoing tx2
@@ -2698,7 +2689,7 @@ class TestWalletSending(ElectrumTestCase):
         funding_tx = Transaction(
             "02000000000101013548c9019890e27ce9e58766de05f18ea40ede70751fb6cd7a3a1715ece0a30100000000fdffffff0220a1070000000000160014542266519a44eb9b903761d40c6fe1055d33fa05485a080000000000160014bc69f7d82c403a9f35dfb6d1a4531d6b19cab0e3024730440220346b200f21c3024e1d51fb4ecddbdbd68bd24ae7b9dfd501519f6dcbeb7c052402200617e3ce7b0eb308e30caf23894fb0388b68fb1c15dd0681dd13ae5e735f148101210360d0c9ef15b8b6a16912d341ad218a4e4e4e07e9347f4a2dbc7ca8d974f8bc9ec1ad2600"
         )
-        funding_txid = funding_tx.txid()
+        funding_tx.txid()
         wallet.adb.receive_tx_callback(funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         dest_addr = "tb1qtzhwpufqr5dwztdaysfqnwlf9m29uwdkq8zm9w"
@@ -3328,8 +3319,8 @@ class TestWalletSending(ElectrumTestCase):
         # check that wallet_frost does not mistakenly think tx is related to it in any way
         tx.add_info_from_wallet(wallet_frost)
         self.assertFalse(wallet_frost.can_sign(tx))
-        self.assertFalse(any([wallet_frost.is_mine(txin.address) for txin in tx.inputs()]))
-        self.assertFalse(any([wallet_frost.is_mine(txout.address) for txout in tx.outputs()]))
+        self.assertFalse(any(wallet_frost.is_mine(txin.address) for txin in tx.inputs()))
+        self.assertFalse(any(wallet_frost.is_mine(txout.address) for txout in tx.outputs()))
 
     @mock.patch.object(wallet.Abstract_Wallet, "save_db")
     async def test_dscancel(self, mock_save_db):
@@ -5531,7 +5522,7 @@ class TestWalletCreationChecks(ElectrumTestCase):
     async def test_duplicate_masterkeys_in_multisig(self, mock_save_db):
         # ks1 (seed) and ks2 have same xpub
         with self.assertRaises(Exception) as ctx1:
-            w1 = WalletIntegrityHelper.create_multisig_wallet(
+            WalletIntegrityHelper.create_multisig_wallet(
                 [
                     keystore.from_seed(
                         "bitter grass shiver impose acquire brush forget axis eager alone wine silver",
@@ -5552,7 +5543,7 @@ class TestWalletCreationChecks(ElectrumTestCase):
         self.assertIn("duplicate xpubs in multisig", ctx1.exception.args[0])
         # ks2 and ks3 have same xpub
         with self.assertRaises(Exception) as ctx2:
-            w2 = WalletIntegrityHelper.create_multisig_wallet(
+            WalletIntegrityHelper.create_multisig_wallet(
                 [
                     keystore.from_seed(
                         "bitter grass shiver impose acquire brush forget axis eager alone wine silver",
@@ -5572,7 +5563,7 @@ class TestWalletCreationChecks(ElectrumTestCase):
             )
         self.assertIn("duplicate xpubs in multisig", ctx2.exception.args[0])
         # all xpubs different. should not raise.
-        w3 = WalletIntegrityHelper.create_multisig_wallet(
+        WalletIntegrityHelper.create_multisig_wallet(
             [
                 keystore.from_seed(
                     "bitter grass shiver impose acquire brush forget axis eager alone wine silver",
@@ -5595,7 +5586,7 @@ class TestWalletCreationChecks(ElectrumTestCase):
     async def test_heterogeneous_xpub_types_in_multisig(self, mock_save_db):
         # tpub + vpub
         with self.assertRaises(Exception) as ctx1:
-            w1 = WalletIntegrityHelper.create_multisig_wallet(
+            WalletIntegrityHelper.create_multisig_wallet(
                 [
                     keystore.from_xpub(
                         "tpubD6NzVbkrYhZ4XYdbWCGSusTDQRAX4UnuqcikJAkqMYxBkvnGfUBvXBE84eyQS6e4To3Pz1xwLrEuxGgQayn4dqVXwNM7dWh4U4DgHai2scz"
@@ -5613,7 +5604,7 @@ class TestWalletCreationChecks(ElectrumTestCase):
         )
         # tpub + "segwit" seed
         with self.assertRaises(Exception) as ctx2:
-            w1 = WalletIntegrityHelper.create_multisig_wallet(
+            WalletIntegrityHelper.create_multisig_wallet(
                 [
                     keystore.from_xpub(
                         "tpubD6NzVbkrYhZ4XYdbWCGSusTDQRAX4UnuqcikJAkqMYxBkvnGfUBvXBE84eyQS6e4To3Pz1xwLrEuxGgQayn4dqVXwNM7dWh4U4DgHai2scz"
@@ -5633,7 +5624,7 @@ class TestWalletCreationChecks(ElectrumTestCase):
         )
         # "standard" seed + "segwit" seed
         with self.assertRaises(Exception) as ctx3:
-            w1 = WalletIntegrityHelper.create_multisig_wallet(
+            WalletIntegrityHelper.create_multisig_wallet(
                 [
                     keystore.from_seed(
                         "cycle rocket west magnet parrot shuffle foot correct salt library feed song",
@@ -5655,7 +5646,7 @@ class TestWalletCreationChecks(ElectrumTestCase):
         )
         # "old" seed + "standard" seed
         with self.assertRaises(Exception) as ctx4:
-            w1 = WalletIntegrityHelper.create_multisig_wallet(
+            WalletIntegrityHelper.create_multisig_wallet(
                 [
                     keystore.from_seed(
                         "cycle rocket west magnet parrot shuffle foot correct salt library feed song",
@@ -5698,7 +5689,7 @@ class TestWalletHistory_SimpleRandomOrder(ElectrumTestCase):
         "e453e7346693b507561691b5ea73f8eba60bfc8998056226df55b2fac88ba306": "010000000125af87b0c2ebb9539d644e97e6159ccb8e1aa80fe986d01f60d2f3f37f207ae8010000008b483045022100baed0747099f7b28a5624005d50adf1069120356ac68c471a56c511a5bf6972b022046fbf8ec6950a307c3c18ca32ad2955c559b0d9bbd9ec25b64f4806f78cadf770141041ea9afa5231dc4d65a2667789ebf6806829b6cf88bfe443228f95263730b7b70fb8b00b2b33777e168bcc7ad8e0afa5c7828842794ce3814c901e24193700f6cfdffffff02a0860100000000001976a914ade907333744c953140355ff60d341cedf7609fd88ac68830a00000000001976a9145d48feae4c97677e4ca7dcd73b0d9fd1399c962b88acc9cc1300",
         "e87a207ff3f3d2601fd086e90fa81a8ecb9c15e6974e649d53b9ebc2b087af25": "01000000010db780fff7dfcef6dba9268ecf4f6df45a1a86b86cad6f59738a0ce29b145c47010000008a47304402202887ec6ec200e4e2b4178112633011cbdbc999e66d398b1ff3998e23f7c5541802204964bd07c0f18c48b7b9c00fbe34c7bc035efc479e21a4fa196027743f06095f0141044f1714ed25332bb2f74be169784577d0838aa66f2374f5d8cbbf216063626822d536411d13cbfcef1ff3cc1d58499578bc4a3c4a0be2e5184b2dd7963ef67713fdffffff02a0860100000000001600145bbdf3ba178f517d4812d286a40c436a9088076e6a0b0c00000000001976a9143fc16bef782f6856ff6638b1b99e4d3f863581d388acfbcb1300",
     }
-    txid_list = sorted(list(transactions))
+    txid_list = sorted(transactions)
 
     def setUp(self):
         super().setUp()

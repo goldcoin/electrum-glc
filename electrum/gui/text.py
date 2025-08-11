@@ -1,36 +1,35 @@
-import tty
-import sys
 import curses
 import datetime
-import locale
-from decimal import Decimal
 import getpass
-import logging
+import locale
+import sys
+import tty
+from decimal import Decimal
+from typing import TYPE_CHECKING
+
 import pyperclip
-from typing import TYPE_CHECKING, Optional
 
 import electrum
-from electrum.gui import BaseElectrumGui
 from electrum.bip21 import parse_bip21_URI
-from electrum.util import format_satoshis, format_time
-from electrum.util import EventListener, event_listener
-from electrum.bitcoin import is_address, address_to_script, COIN
-from electrum.transaction import PartialTxOutput
-from electrum.wallet import Wallet, Abstract_Wallet
-from electrum.wallet_db import WalletDB
-from electrum.storage import WalletStorage
-from electrum.network import NetworkParameters, TxBroadcastError, BestEffortRequestFailed
+from electrum.bitcoin import COIN, address_to_script, is_address
+from electrum.gui import BaseElectrumGui
 from electrum.interface import ServerAddr
 from electrum.invoices import Invoice
-from electrum.invoices import PR_DEFAULT_EXPIRATION_WHEN_CREATING
+from electrum.network import BestEffortRequestFailed, NetworkParameters, TxBroadcastError
+from electrum.storage import WalletStorage
+from electrum.transaction import PartialTxOutput
+from electrum.util import EventListener, event_listener, format_time
+from electrum.wallet import Wallet
+from electrum.wallet_db import WalletDB
 
 if TYPE_CHECKING:
     from electrum.daemon import Daemon
-    from electrum.simple_config import SimpleConfig
     from electrum.plugin import Plugins
+    from electrum.simple_config import SimpleConfig
 
 
-_ = lambda x: x  # i18n
+def _(x):
+    return x  # i18n
 
 
 def parse_bip21(text):
@@ -183,8 +182,8 @@ class ElectrumGui(BaseElectrumGui, EventListener):
 
     def update_history(self):
         width = [20, 40, 14, 14]
-        delta = (self.maxx - sum(width) - 4) / 3
-        domain = self.wallet.get_addresses()
+        (self.maxx - sum(width) - 4) / 3
+        self.wallet.get_addresses()
         self.history = []
         self.txid = []
         balance_sat = 0
@@ -314,7 +313,6 @@ class ElectrumGui(BaseElectrumGui, EventListener):
             amount = req.get_amount_sat()
             message = req.get_message()
             amount_str = self.config.format_amount(amount) if amount else ""
-            labels = []
             messages.append(fmt % (date, message, amount_str, status_str))
             invoices.append(key)
         self.invoices = invoices
@@ -334,14 +332,13 @@ class ElectrumGui(BaseElectrumGui, EventListener):
             amount = req.get_amount_sat()
             message = req.get_message()
             amount_str = self.config.format_amount(amount) if amount else ""
-            labels = []
             messages.append(fmt % (date, message, amount_str, status_str))
             requests.append(key)
         self.requests = requests
         self.print_list(y, x, messages, headers=headers, offset_pos=offset_pos)
 
     def print_contacts(self):
-        messages = list(map(lambda x: "%20s   %45s " % (x[0], x[1][1]), self.contacts.items()))
+        messages = ["%20s   %45s " % (x[0], x[1][1]) for x in self.contacts.items()]
         self.print_list(2, 1, messages, "%19s  %15s " % ("Key", "Value"))
 
     def print_addresses(self):
@@ -525,7 +522,7 @@ class ElectrumGui(BaseElectrumGui, EventListener):
     def run_history_tab(self, c):
         # Get txid from cursor position
         if c == 10:
-            out = self.run_popup("", ["Transaction ID:", self.txid[self.pos]])
+            self.run_popup("", ["Transaction ID:", self.txid[self.pos]])
 
     def edit_str(self, target, c, is_num=False):
         if target is None:
@@ -574,13 +571,12 @@ class ElectrumGui(BaseElectrumGui, EventListener):
 
     def run_channels_tab(self, c):
         if c == 10:
-            out = self.run_popup(
+            self.run_popup(
                 "Channel Details", ["Short channel ID:", self.channel_ids[self.pos]]
             )
 
     def run_banner_tab(self, c):
         self.show_message(repr(c))
-        pass
 
     def main(self):
         self.daemon.start_network()
@@ -774,12 +770,12 @@ class ElectrumGui(BaseElectrumGui, EventListener):
             w.addstr(2 + i, 2, line)
         w.refresh()
         if getchar:
-            c = self.getch()
+            self.getch()
 
     def run_popup(self, title, items):
         return self.run_dialog(
             title,
-            list(map(lambda x: {"type": "button", "label": x}, items)),
+            [{"type": "button", "label": x} for x in items],
             interval=1,
             y_pos=self.pos + 3,
         )

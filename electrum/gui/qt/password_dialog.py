@@ -23,18 +23,17 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import re
 import math
-from functools import partial
+import re
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QLineEdit, QLabel, QGridLayout, QVBoxLayout, QCheckBox
+from PyQt5.QtWidgets import QCheckBox, QGridLayout, QLabel, QVBoxLayout
 
 from electrum.i18n import _
 from electrum.plugin import run_hook
 
-from .util import icon_path, WindowModalDialog, OkButton, CancelButton, Buttons, PasswordLineEdit
+from .util import Buttons, CancelButton, OkButton, PasswordLineEdit, WindowModalDialog, icon_path
 
 
 def check_password_strength(password):
@@ -53,7 +52,7 @@ def check_password_strength(password):
     return password_strength[min(3, int(score))]
 
 
-PW_NEW, PW_CHANGE, PW_PASSPHRASE = range(0, 3)
+PW_NEW, PW_CHANGE, PW_PASSPHRASE = range(3)
 
 MSG_ENTER_PASSWORD = (
     _("Choose a password to encrypt your wallet keys.")
@@ -62,7 +61,7 @@ MSG_ENTER_PASSWORD = (
 )
 
 
-class PasswordLayout(object):
+class PasswordLayout:
 
     titles = [_("Enter Password"), _("Change Password"), _("Enter Passphrase")]
 
@@ -186,7 +185,7 @@ class PasswordLayout(object):
             field.clear()
 
 
-class PasswordLayoutForHW(object):
+class PasswordLayoutForHW:
 
     def __init__(self, msg, wallet=None):
         self.wallet = wallet

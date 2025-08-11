@@ -6,24 +6,23 @@ lnrater.py contains Lightning Network node rating functionality.
 """
 
 import asyncio
+import time
 from collections import defaultdict
 from pprint import pformat
 from random import choices
-from statistics import mean, median, stdev
-from typing import TYPE_CHECKING, Dict, NamedTuple, Tuple, List, Optional
-import sys
-import time
+from statistics import mean, median
+from typing import TYPE_CHECKING, NamedTuple
 
-from .logging import Logger
-from .util import profiler, get_running_loop
 from .lnrouter import fee_for_edge_msat
-from .lnutil import LnFeatures, ln_compare_features, IncompatibleLightningFeatures
+from .lnutil import IncompatibleLightningFeatures, LnFeatures, ln_compare_features
+from .logging import Logger
+from .util import get_running_loop, profiler
 
 if TYPE_CHECKING:
-    from .network import Network
-    from .channel_db import Policy, NodeInfo
+    from .channel_db import NodeInfo, Policy
     from .lnchannel import ShortChannelID
     from .lnworker import LNWallet
+    from .network import Network
 
 
 MONTH_IN_BLOCKS = 6 * 24 * 30
@@ -61,9 +60,9 @@ class NodeStats(NamedTuple):
     mean_fee_rate: float
 
 
-def weighted_sum(numbers: List[float], weights: List[float]) -> float:
+def weighted_sum(numbers: list[float], weights: list[float]) -> float:
     running_sum = 0.0
-    for n, w in zip(numbers, weights):
+    for n, w in zip(numbers, weights, strict=False):
         running_sum += n * w
     return running_sum / sum(weights)
 
@@ -79,9 +78,9 @@ class LNRater(Logger):
         self.lnworker = lnworker
         self.network = network
 
-        self._node_stats: Dict[bytes, NodeStats] = {}  # node_id -> NodeStats
-        self._node_ratings: Dict[bytes, float] = {}  # node_id -> float
-        self._policies_by_nodes: Dict[bytes, List[Tuple[ShortChannelID, Policy]]] = defaultdict(
+        self._node_stats: dict[bytes, NodeStats] = {}  # node_id -> NodeStats
+        self._node_ratings: dict[bytes, float] = {}  # node_id -> float
+        self._policies_by_nodes: dict[bytes, list[tuple[ShortChannelID, Policy]]] = defaultdict(
             list
         )  # node_id -> (short_channel_id, policy)
         self._last_analyzed = 0  # timestamp
@@ -116,8 +115,8 @@ class LNRater(Logger):
             # graph should have changed significantly during the sync progress
             # or last analysis was a long time ago
             if (
-                30 <= progress_percent
-                and progress_percent - self._last_progress_percent >= 10
+                (30 <= progress_percent
+                and progress_percent - self._last_progress_percent >= 10)
                 or self._last_analyzed + RATER_UPDATE_TIME_SEC < now
             ):
                 await self._analyze_graph()
@@ -144,7 +143,7 @@ class LNRater(Logger):
     def _collect_purged_stats(self):
         """Traverses through the graph and sorts out nodes."""
         current_height = self.network.get_local_height()
-        node_infos = self.network.channel_db.get_node_infos()
+        self.network.channel_db.get_node_infos()
 
         for n, channel_policies in self._policies_by_nodes.items():
             try:
@@ -201,15 +200,15 @@ class LNRater(Logger):
                     mean_fee_rate=mean_fees_rate,
                 )
 
-            except Exception as e:
+            except Exception:
                 self.logger.exception(
-                    "Could not use channel policies for " "calculating statistics."
+                    "Could not use channel policies for calculating statistics."
                 )
                 self.logger.debug(pformat(channel_policies))
                 continue
 
         self.logger.info(
-            f"node statistics done, calculated statistics" f"for {len(self._node_stats)} nodes"
+            f"node statistics done, calculated statisticsfor {len(self._node_stats)} nodes"
         )
 
     def _rate_nodes(self):
@@ -246,11 +245,11 @@ class LNRater(Logger):
 
             self._node_ratings[n] = weighted_sum(heuristics, heuristics_weights)
 
-    def suggest_node_channel_open(self) -> Tuple[bytes, NodeStats]:
+    def suggest_node_channel_open(self) -> tuple[bytes, NodeStats]:
         node_keys = list(self._node_stats.keys())
         node_ratings = list(self._node_ratings.values())
         channel_peers = self.lnworker.channel_peers()
-        node_info: Optional["NodeInfo"] = None
+        node_info: NodeInfo | None = None
 
         while True:
             # randomly pick nodes weighted by node_rating
@@ -260,7 +259,7 @@ class LNRater(Logger):
             peer_features = LnFeatures(node_info.features)
             try:
                 ln_compare_features(self.lnworker.features, peer_features)
-            except IncompatibleLightningFeatures as e:
+            except IncompatibleLightningFeatures:
                 self.logger.info("suggested node is incompatible")
                 continue
 
@@ -280,7 +279,7 @@ class LNRater(Logger):
 
         return pk, self._node_stats[pk]
 
-    def suggest_peer(self) -> Optional[bytes]:
+    def suggest_peer(self) -> bytes | None:
         """Suggests a LN node to open a channel with.
         Returns a node ID (pubkey).
         """

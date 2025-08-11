@@ -1,18 +1,17 @@
 import asyncio
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject
+from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
 
-from electrum import mnemonic
-from electrum import keystore
-from electrum.i18n import _
+from electrum import keystore, mnemonic
 from electrum.bip32 import is_bip32_derivation, xpub_type
+from electrum.bitcoin import is_address
+from electrum.i18n import _
 from electrum.logging import get_logger
-from electrum.slip39 import decode_mnemonic, Slip39Error
-from electrum.util import get_asyncio_loop
-from electrum.transaction import tx_from_any
 from electrum.mnemonic import Mnemonic, is_any_2fa_seed_type
 from electrum.old_mnemonic import wordlist as old_wordlist
-from electrum.bitcoin import is_address
+from electrum.slip39 import Slip39Error, decode_mnemonic
+from electrum.transaction import tx_from_any
+from electrum.util import get_asyncio_loop
 
 
 class QEBitcoin(QObject):
@@ -78,7 +77,7 @@ class QEBitcoin(QObject):
                 if is_wordlist
                 else "unknown wordlist"
             )
-            self.validationMessage = "BIP39 (%s)" % status
+            self.validationMessage = f"BIP39 ({status})"
 
             if is_checksum:
                 seed_type = "bip39"
@@ -95,7 +94,7 @@ class QEBitcoin(QObject):
                     share.group_count,
                 )
             except Slip39Error as e:
-                self.validationMessage = "SLIP39: %s" % str(e)
+                self.validationMessage = f"SLIP39: {e!s}"
             seed_valid = False  # for now
         else:
             raise Exception(f"unknown seed variant {seed_variant}")
@@ -127,7 +126,7 @@ class QEBitcoin(QObject):
             if isinstance(k, keystore.Xpub):  # has bip32 xpub
                 t1 = xpub_type(k.xpub)
                 if t1 not in ["standard", "p2wpkh", "p2wpkh-p2sh"]:  # disallow Ypub/Zpub
-                    self.validationMessage = "%s: %s" % (_("Wrong key type"), t1)
+                    self.validationMessage = "{}: {}".format(_("Wrong key type"), t1)
                     return False
             elif isinstance(k, keystore.Old_KeyStore):
                 pass
@@ -136,14 +135,14 @@ class QEBitcoin(QObject):
                 return False
         elif wallet_type == "multisig":
             if not isinstance(k, keystore.Xpub):  # old mpk?
-                self.validationMessage = "%s: %s" % (_("Wrong key type"), "not bip32")
+                self.validationMessage = "{}: {}".format(_("Wrong key type"), "not bip32")
                 return False
             t1 = xpub_type(k.xpub)
             if t1 not in ["standard", "p2wsh", "p2wsh-p2sh"]:  # disallow ypub/zpub
-                self.validationMessage = "%s: %s" % (_("Wrong key type"), t1)
+                self.validationMessage = "{}: {}".format(_("Wrong key type"), t1)
                 return False
         else:
-            self.validationMessage = "%s: %s" % (_("Unsupported wallet type"), wallet_type)
+            self.validationMessage = "{}: {}".format(_("Unsupported wallet type"), wallet_type)
             self._logger.error(f"Unsupported wallet type: {wallet_type}")
             return False
         # looks okay

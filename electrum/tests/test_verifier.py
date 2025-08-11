@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 from electrum.bitcoin import hash_encode
 from electrum.transaction import Transaction
@@ -6,7 +5,6 @@ from electrum.util import bfh
 from electrum.verifier import SPV, InnerNodeOfSpvProofIsValidTx
 
 from . import ElectrumTestCase
-
 
 MERKLE_BRANCH = [
     "f2994fd4546086b21b4916b76cf901afb5c4db1c3ecbfc91d6f4cae1186dfe12",
@@ -37,7 +35,7 @@ class VerifierTestCase(ElectrumTestCase):
         """Raise if inner node of merkle branch is valid tx. ('odd' fake leaf position)"""
         # first 32 bytes of T encoded as hash
         fake_branch_node = hash_encode(bfh(VALID_64_BYTE_TX[:64]))
-        fake_mbranch = [fake_branch_node] + MERKLE_BRANCH
+        fake_mbranch = [fake_branch_node, *MERKLE_BRANCH]
         # last 32 bytes of T encoded as hash
         f_tx_hash = hash_encode(bfh(VALID_64_BYTE_TX[64:]))
         with self.assertRaises(InnerNodeOfSpvProofIsValidTx):
@@ -47,7 +45,7 @@ class VerifierTestCase(ElectrumTestCase):
         """Raise if inner node of merkle branch is valid tx. ('even' fake leaf position)"""
         # last 32 bytes of T encoded as hash
         fake_branch_node = hash_encode(bfh(VALID_64_BYTE_TX[64:]))
-        fake_mbranch = [fake_branch_node] + MERKLE_BRANCH
+        fake_mbranch = [fake_branch_node, *MERKLE_BRANCH]
         # first 32 bytes of T encoded as hash
         f_tx_hash = hash_encode(bfh(VALID_64_BYTE_TX[:64]))
         with self.assertRaises(InnerNodeOfSpvProofIsValidTx):

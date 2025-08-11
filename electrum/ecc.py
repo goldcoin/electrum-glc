@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Electrum - lightweight Bitcoin client
 # Copyright (C) 2018 The Electrum developers
@@ -24,28 +23,22 @@
 # SOFTWARE.
 
 import base64
-import hashlib
 import functools
-from typing import Union, Tuple, Optional
+import hashlib
 from ctypes import (
     byref,
-    c_byte,
-    c_int,
-    c_uint,
     c_char_p,
     c_size_t,
-    c_void_p,
-    create_string_buffer,
-    CFUNCTYPE,
-    POINTER,
     cast,
+    create_string_buffer,
 )
+from typing import Union
 
-from .util import bfh, assert_bytes, to_bytes, InvalidPassword, profiler, randrange
-from .crypto import sha256d, aes_encrypt_with_iv, aes_decrypt_with_iv, hmac_oneshot
 from . import constants
+from .crypto import aes_decrypt_with_iv, aes_encrypt_with_iv, hmac_oneshot, sha256d
+from .ecc_fast import SECP256K1_EC_UNCOMPRESSED, _libsecp256k1
 from .logging import get_logger
-from .ecc_fast import _libsecp256k1, SECP256K1_EC_UNCOMPRESSED
+from .util import InvalidPassword, assert_bytes, bfh, randrange, to_bytes
 
 _logger = get_logger(__name__)
 
@@ -89,7 +82,7 @@ def der_sig_from_r_and_s(r: int, s: int) -> bytes:
     return bytes(der_sig)[:der_sig_size]
 
 
-def get_r_and_s_from_der_sig(der_sig: bytes) -> Tuple[int, int]:
+def get_r_and_s_from_der_sig(der_sig: bytes) -> tuple[int, int]:
     assert isinstance(der_sig, bytes)
     sig = create_string_buffer(64)
     ret = _libsecp256k1.secp256k1_ecdsa_signature_parse_der(
@@ -107,7 +100,7 @@ def get_r_and_s_from_der_sig(der_sig: bytes) -> Tuple[int, int]:
     return r, s
 
 
-def get_r_and_s_from_sig_string(sig_string: bytes) -> Tuple[int, int]:
+def get_r_and_s_from_sig_string(sig_string: bytes) -> tuple[int, int]:
     if not (isinstance(sig_string, bytes) and len(sig_string) == 64):
         raise Exception("sig_string must be bytes, and 64 bytes exactly")
     sig = create_string_buffer(64)
@@ -140,7 +133,7 @@ def sig_string_from_r_and_s(r: int, s: int) -> bytes:
     return bytes(compact_signature)
 
 
-def _x_and_y_from_pubkey_bytes(pubkey: bytes) -> Tuple[int, int]:
+def _x_and_y_from_pubkey_bytes(pubkey: bytes) -> tuple[int, int]:
     assert isinstance(pubkey, bytes), f"pubkey must be bytes, not {type(pubkey)}"
     pubkey_ptr = create_string_buffer(64)
     ret = _libsecp256k1.secp256k1_ec_pubkey_parse(
@@ -170,11 +163,11 @@ class InvalidECPointException(Exception):
 
 
 @functools.total_ordering
-class ECPubkey(object):
+class ECPubkey:
 
-    def __init__(self, b: Optional[bytes]):
+    def __init__(self, b: bytes | None):
         if b is not None:
-            assert isinstance(b, (bytes, bytearray)), f"pubkey must be bytes-like, not {type(b)}"
+            assert isinstance(b, bytes | bytearray), f"pubkey must be bytes-like, not {type(b)}"
             if isinstance(b, bytearray):
                 b = bytes(b)
             self._x, self._y = _x_and_y_from_pubkey_bytes(b)
@@ -189,7 +182,7 @@ class ECPubkey(object):
                 f"wrong encoding used for signature? len={len(sig_string)} (should be 64)"
             )
         if not (0 <= recid <= 3):
-            raise ValueError("recid is {}, but should be 0 <= recid <= 3".format(recid))
+            raise ValueError(f"recid is {recid}, but should be 0 <= recid <= 3")
         sig65 = create_string_buffer(65)
         ret = _libsecp256k1.secp256k1_ecdsa_recoverable_signature_parse_compact(
             _libsecp256k1.ctx, sig65, sig_string, recid
@@ -205,7 +198,7 @@ class ECPubkey(object):
     @classmethod
     def from_signature65(
         cls, sig: bytes, msg_hash: bytes
-    ) -> Tuple["ECPubkey", bool, Optional[str]]:
+    ) -> tuple["ECPubkey", bool, str | None]:
         if len(sig) != 65:
             raise Exception(f"wrong encoding used for signature? len={len(sig)} (should be 65)")
         nV = sig[0]
@@ -258,7 +251,7 @@ class ECPubkey(object):
     def get_public_key_hex(self, compressed=True) -> str:
         return self.get_public_key_bytes(compressed).hex()
 
-    def point(self) -> Tuple[Optional[int], Optional[int]]:
+    def point(self) -> tuple[int | None, int | None]:
         x = self.x()
         y = self.y()
         assert (x is None) == (
@@ -266,10 +259,10 @@ class ECPubkey(object):
         ), f"either both x and y, or neither should be None. {(x, y)=}"
         return x, y
 
-    def x(self) -> Optional[int]:
+    def x(self) -> int | None:
         return self._x
 
-    def y(self) -> Optional[int]:
+    def y(self) -> int | None:
         return self._y
 
     def _to_libsecp256k1_pubkey_ptr(self):
@@ -297,12 +290,12 @@ class ECPubkey(object):
 
     def __repr__(self):
         if self.is_at_infinity():
-            return f"<ECPubkey infinity>"
+            return "<ECPubkey infinity>"
         return f"<ECPubkey {self.get_public_key_hex()}>"
 
     def __mul__(self, other: int):
         if not isinstance(other, int):
-            raise TypeError("multiplication not defined for ECPubkey and {}".format(type(other)))
+            raise TypeError(f"multiplication not defined for ECPubkey and {type(other)}")
 
         other %= CURVE_ORDER
         if self.is_at_infinity() or other == 0:
@@ -321,7 +314,7 @@ class ECPubkey(object):
 
     def __add__(self, other):
         if not isinstance(other, ECPubkey):
-            raise TypeError("addition not defined for ECPubkey and {}".format(type(other)))
+            raise TypeError(f"addition not defined for ECPubkey and {type(other)}")
         if self.is_at_infinity():
             return other
         if other.is_at_infinity():
@@ -354,7 +347,7 @@ class ECPubkey(object):
 
     def __lt__(self, other):
         if not isinstance(other, ECPubkey):
-            raise TypeError("comparison not defined for ECPubkey and {}".format(type(other)))
+            raise TypeError(f"comparison not defined for ECPubkey and {type(other)}")
         p1 = ((self.x() or 0), (self.y() or 0))
         p2 = ((other.x() or 0), (other.y() or 0))
         return p1 < p2
@@ -457,7 +450,7 @@ def verify_message_with_address(address: str, sig65: bytes, message: bytes, *, n
     h = sha256d(msg_magic(message))
     try:
         public_key, compressed, txin_type_guess = ECPubkey.from_signature65(sig65, h)
-    except Exception as e:
+    except Exception:
         return False
     # check public key using the address
     pubkey_hex = public_key.get_public_key_hex(compressed)
@@ -484,7 +477,7 @@ class ECPrivkey(ECPubkey):
         assert_bytes(privkey_bytes)
         if len(privkey_bytes) != 32:
             raise Exception(
-                "unexpected size for secret. should be 32 bytes, not {}".format(len(privkey_bytes))
+                f"unexpected size for secret. should be 32 bytes, not {len(privkey_bytes)}"
             )
         secret = string_to_number(privkey_bytes)
         if not is_secret_within_curve_range(secret):

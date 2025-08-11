@@ -1,7 +1,6 @@
-import random
 import math
-from typing import List, Tuple, Dict, NamedTuple
-from collections import defaultdict
+import random
+from typing import NamedTuple
 
 from .lnutil import NoPathFound
 
@@ -16,10 +15,10 @@ MAX_PARTS = 5  # maximum number of parts for splitting
 
 
 # maps a channel (channel_id, node_id) to the funds it has available
-ChannelsFundsInfo = Dict[Tuple[bytes, bytes], int]
+ChannelsFundsInfo = dict[tuple[bytes, bytes], int]
 
 
-class SplitConfig(dict, Dict[Tuple[bytes, bytes], List[int]]):
+class SplitConfig(dict, dict[tuple[bytes, bytes], list[int]]):
     """maps a channel (channel_id, node_id) to a list of amounts"""
 
     def number_parts(self) -> int:
@@ -38,7 +37,7 @@ class SplitConfig(dict, Dict[Tuple[bytes, bytes], List[int]]):
     def is_any_amount_smaller_than_min_part_size(self) -> bool:
         smaller = False
         for amounts in self.values():
-            if any([amount < MIN_PART_SIZE_MSAT for amount in amounts]):
+            if any(amount < MIN_PART_SIZE_MSAT for amount in amounts):
                 smaller |= True
         return smaller
 
@@ -48,7 +47,7 @@ class SplitConfigRating(NamedTuple):
     rating: float
 
 
-def split_amount_normal(total_amount: int, num_parts: int) -> List[int]:
+def split_amount_normal(total_amount: int, num_parts: int) -> list[int]:
     """Splits an amount into about `num_parts` parts, where the parts are split
     randomly (normally distributed around amount/num_parts with certain spread)."""
     parts = []
@@ -63,7 +62,7 @@ def split_amount_normal(total_amount: int, num_parts: int) -> List[int]:
     return parts
 
 
-def remove_duplicates(configs: List[SplitConfig]) -> List[SplitConfig]:
+def remove_duplicates(configs: list[SplitConfig]) -> list[SplitConfig]:
     unique_configs = set()
     for config in configs:
         # sort keys and values
@@ -77,15 +76,15 @@ def remove_duplicates(configs: List[SplitConfig]) -> List[SplitConfig]:
     return unique_configs
 
 
-def remove_multiple_nodes(configs: List[SplitConfig]) -> List[SplitConfig]:
+def remove_multiple_nodes(configs: list[SplitConfig]) -> list[SplitConfig]:
     return [config for config in configs if config.number_nonzero_nodes() == 1]
 
 
-def remove_single_part_configs(configs: List[SplitConfig]) -> List[SplitConfig]:
+def remove_single_part_configs(configs: list[SplitConfig]) -> list[SplitConfig]:
     return [config for config in configs if config.number_parts() != 1]
 
 
-def remove_single_channel_splits(configs: List[SplitConfig]) -> List[SplitConfig]:
+def remove_single_channel_splits(configs: list[SplitConfig]) -> list[SplitConfig]:
     filtered = []
     for config in configs:
         for v in config.values():
@@ -125,7 +124,7 @@ def suggest_splits(
     exclude_single_part_payments=False,
     exclude_multinode_payments=False,
     exclude_single_channel_splits=False,
-) -> List[SplitConfigRating]:
+) -> list[SplitConfigRating]:
     """Breaks amount_msat into smaller pieces and distributes them over the
     channels according to the funds they can send.
 

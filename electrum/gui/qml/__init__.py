@@ -25,28 +25,28 @@ except Exception as e:
     ) from e
 
 from PyQt6.QtCore import (
-    Qt,
+    PYQT_VERSION_STR,
+    QT_VERSION_STR,
     QCoreApplication,
     QLocale,
-    QTranslator,
+    Qt,
     QTimer,
-    QT_VERSION_STR,
-    PYQT_VERSION_STR,
+    QTranslator,
 )
 from PyQt6.QtGui import QGuiApplication
 
 sys._GUI_QT_VERSION = 6  # used by gui/common_qt
 
+from electrum.gui import BaseElectrumGui
 from electrum.i18n import _
+from electrum.logging import Logger
 from electrum.plugin import run_hook
 from electrum.util import profiler
-from electrum.logging import Logger
-from electrum.gui import BaseElectrumGui
 
 if TYPE_CHECKING:
     from electrum.daemon import Daemon
-    from electrum.simple_config import SimpleConfig
     from electrum.plugin import Plugins
+    from electrum.simple_config import SimpleConfig
 
 from .qeapp import ElectrumQmlApplication, Exception_Hook
 
@@ -77,7 +77,7 @@ class ElectrumGui(BaseElectrumGui, Logger):
         QLocale.setDefault(QLocale("en_GB"))
 
         self.logger.info(f"Qml GUI starting up... Qt={QT_VERSION_STR}, PyQt={PYQT_VERSION_STR}")
-        self.logger.info("CWD=%s" % os.getcwd())
+        self.logger.info(f"CWD={os.getcwd()}")
         # Uncomment this call to verify objects are being properly
         # GC-ed when windows are closed
         # network.add_jobs([DebugMem([Abstract_Wallet, SPV, Synchronizer,

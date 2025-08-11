@@ -1,60 +1,58 @@
-from functools import partial
 import threading
+from functools import partial
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QEventLoop, pyqtSignal
+from PyQt5.QtCore import QEventLoop, Qt, pyqtSignal
 from PyQt5.QtWidgets import (
-    QVBoxLayout,
-    QLabel,
-    QGridLayout,
-    QPushButton,
-    QHBoxLayout,
     QButtonGroup,
-    QGroupBox,
-    QDialog,
-    QLineEdit,
-    QRadioButton,
     QCheckBox,
-    QWidget,
+    QDialog,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
     QMessageBox,
+    QPushButton,
+    QRadioButton,
     QSlider,
     QTabWidget,
-)
-
-from electrum.i18n import _
-from electrum.logging import Logger
-from electrum.plugin import hook
-from electrum.keystore import ScriptTypeNotSupported
-
-from electrum.plugins.hw_wallet.qt import QtHandlerBase, QtPluginBase
-from electrum.plugins.hw_wallet.plugin import (
-    only_hook_if_libraries_available,
-    OutdatedHwFirmwareException,
+    QVBoxLayout,
+    QWidget,
 )
 
 from electrum.gui.qt.util import (
-    WindowModalDialog,
-    WWLabel,
     Buttons,
     CancelButton,
-    OkButton,
-    CloseButton,
-    PasswordLineEdit,
-    getOpenFileName,
     ChoiceWidget,
+    CloseButton,
+    OkButton,
+    PasswordLineEdit,
+    WindowModalDialog,
+    WWLabel,
+    getOpenFileName,
 )
-from electrum.gui.qt.wizard.wallet import WCScriptAndDerivation, WCHWUnlock, WCHWXPub
+from electrum.gui.qt.wizard.wallet import WCHWUnlock, WCHWXPub, WCScriptAndDerivation
 from electrum.gui.qt.wizard.wizard import WizardComponent
+from electrum.i18n import _
+from electrum.keystore import ScriptTypeNotSupported
+from electrum.logging import Logger
+from electrum.plugin import hook
+from electrum.plugins.hw_wallet.plugin import (
+    OutdatedHwFirmwareException,
+    only_hook_if_libraries_available,
+)
+from electrum.plugins.hw_wallet.qt import QtHandlerBase, QtPluginBase
 
 from .trezor import (
-    TrezorPlugin,
+    PASSPHRASE_ON_DEVICE,
     TIM_NEW,
     TIM_RECOVER,
-    TrezorInitSettings,
-    PASSPHRASE_ON_DEVICE,
-    Capability,
     BackupType,
+    Capability,
     RecoveryDeviceType,
+    TrezorInitSettings,
+    TrezorPlugin,
 )
 
 if TYPE_CHECKING:
@@ -98,7 +96,7 @@ SEEDLESS_MODE_WARNING = _(
 class MatrixDialog(WindowModalDialog):
 
     def __init__(self, parent):
-        super(MatrixDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle(_("Trezor Matrix Recovery"))
         self.num = 9
         self.loop = QEventLoop()
@@ -164,7 +162,7 @@ class QtHandler(QtHandlerBase):
     close_matrix_dialog_signal = pyqtSignal()
 
     def __init__(self, win, pin_matrix_widget_class, device):
-        super(QtHandler, self).__init__(win, device)
+        super().__init__(win, device)
         self.pin_signal.connect(self.pin_dialog)
         self.matrix_signal.connect(self.matrix_recovery_dialog)
         self.close_matrix_dialog_signal.connect(self._close_matrix_dialog)
@@ -296,7 +294,7 @@ class QtPlugin(QtPluginBase):
                 def show_address(keystore=keystore):
                     keystore.thread.add(partial(self.show_address, wallet, addrs[0], keystore))
 
-                device_name = "{} ({})".format(self.device, keystore.label)
+                device_name = f"{self.device} ({keystore.label})"
                 menu.addAction(_("Show on {}").format(device_name), show_address)
 
     def show_settings_dialog(self, window, keystore):
@@ -474,7 +472,7 @@ class InitSettingsLayout(QVBoxLayout):
         if method == TIM_NEW:
             self.cb_no_backup = QCheckBox(_("Enable seedless mode"))
             self.cb_no_backup.setChecked(False)
-            if model == "1" and fw_version >= (1, 7, 1) or model == "T" and fw_version >= (2, 0, 9):
+            if (model == "1" and fw_version >= (1, 7, 1)) or (model == "T" and fw_version >= (2, 0, 9)):
                 self.cb_no_backup.setToolTip(SEEDLESS_MODE_WARNING)
             else:
                 self.cb_no_backup.setEnabled(False)
@@ -503,7 +501,7 @@ class Plugin(TrezorPlugin, QtPlugin):
         return QtHandler(window, self.pin_matrix_widget_class(), self.device)
 
     @classmethod
-    def pin_matrix_widget_class(self):
+    def pin_matrix_widget_class(cls):
         from trezorlib.qt.pinmatrix import PinMatrixWidget
 
         return PinMatrixWidget
@@ -533,7 +531,7 @@ class SettingsDialog(WindowModalDialog):
 
     def __init__(self, window, plugin, keystore, device_id):
         title = _("{} Settings").format(plugin.device)
-        super(SettingsDialog, self).__init__(window, title)
+        super().__init__(window, title)
         self.setMaximumWidth(540)
 
         devmgr = plugin.device_manager()
@@ -718,7 +716,7 @@ class SettingsDialog(WindowModalDialog):
         # Settings tab - Label
         label_msg = QLabel(
             _(
-                "Name this {}.  If you have multiple devices " "their labels help distinguish them."
+                "Name this {}.  If you have multiple devices their labels help distinguish them."
             ).format(plugin.device)
         )
         label_msg.setWordWrap(True)
@@ -843,7 +841,7 @@ class SettingsDialog(WindowModalDialog):
         wipe_device_button = QPushButton(_("Wipe Device"))
         wipe_device_button.clicked.connect(wipe_device)
         wipe_device_msg = QLabel(
-            _("Wipe the device, removing all data from it.  The firmware " "is left unchanged.")
+            _("Wipe the device, removing all data from it.  The firmware is left unchanged.")
         )
         wipe_device_msg.setWordWrap(True)
         wipe_device_warning = QLabel(

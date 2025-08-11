@@ -1,13 +1,13 @@
-from typing import Optional, TYPE_CHECKING, Sequence
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Optional
 
-from electrum.util import UserFacingException
+from electrum import constants, descriptor
 from electrum.bip32 import BIP32Node
-from electrum import descriptor
-from electrum import constants
 from electrum.i18n import _
-from electrum.transaction import Transaction, PartialTransaction, PartialTxInput, Sighash
 from electrum.keystore import Hardware_KeyStore
 from electrum.plugin import Device, runs_in_hwd_thread
+from electrum.transaction import PartialTransaction, PartialTxInput, Sighash, Transaction
+from electrum.util import UserFacingException
 
 from ..hw_wallet import HW_PluginBase
 from ..hw_wallet.plugin import (
@@ -17,13 +17,15 @@ from ..hw_wallet.plugin import (
 
 if TYPE_CHECKING:
     import usb1
-    from .client import KeepKeyClient
+
     from electrum.plugin import DeviceInfo
     from electrum.wizard import NewWalletWizard
 
+    from .client import KeepKeyClient
+
 
 # TREZOR initialization methods
-TIM_NEW, TIM_RECOVER, TIM_MNEMONIC, TIM_PRIVKEY = range(0, 4)
+TIM_NEW, TIM_RECOVER, TIM_MNEMONIC, TIM_PRIVKEY = range(4)
 
 
 class KeepKey_KeyStore(Hardware_KeyStore):
@@ -79,11 +81,12 @@ class KeepKeyPlugin(HW_PluginBase):
         HW_PluginBase.__init__(self, parent, config, name)
 
         try:
-            from . import client
             import keepkeylib
             import keepkeylib.ckd_public
             import keepkeylib.transport_hid
             import keepkeylib.transport_webusb
+
+            from . import client
 
             self.client_class = client.KeepKeyClient
             self.ckd_public = keepkeylib.ckd_public
@@ -120,7 +123,7 @@ class KeepKeyPlugin(HW_PluginBase):
 
     @staticmethod
     def _dev_to_str(dev: "usb1.USBDevice") -> str:
-        return ":".join(str(x) for x in ["%03i" % (dev.getBusNumber(),)] + dev.getPortNumberList())
+        return ":".join(str(x) for x in ["%03i" % (dev.getBusNumber(),), *dev.getPortNumberList()])
 
     @runs_in_hwd_thread
     def hid_transport(self, pair):
@@ -260,7 +263,7 @@ class KeepKeyPlugin(HW_PluginBase):
             return self.types.SPENDADDRESS
         if electrum_txin_type in ("p2sh",):
             return self.types.SPENDMULTISIG
-        raise ValueError("unexpected txin type: {}".format(electrum_txin_type))
+        raise ValueError(f"unexpected txin type: {electrum_txin_type}")
 
     def get_keepkey_output_script_type(self, electrum_txin_type: str):
         if electrum_txin_type in ("p2wpkh", "p2wsh"):
@@ -271,7 +274,7 @@ class KeepKeyPlugin(HW_PluginBase):
             return self.types.PAYTOADDRESS
         if electrum_txin_type in ("p2sh",):
             return self.types.PAYTOMULTISIG
-        raise ValueError("unexpected txin type: {}".format(electrum_txin_type))
+        raise ValueError(f"unexpected txin type: {electrum_txin_type}")
 
     @runs_in_hwd_thread
     def sign_transaction(self, keystore, tx: PartialTransaction, prev_tx):
@@ -419,7 +422,7 @@ class KeepKeyPlugin(HW_PluginBase):
 
         return outputs
 
-    def electrum_tx_to_txtype(self, tx: Optional[Transaction]):
+    def electrum_tx_to_txtype(self, tx: Transaction | None):
         t = self.types.TransactionType()
         if tx is None:
             # probably for segwit input and we don't need this prev txn

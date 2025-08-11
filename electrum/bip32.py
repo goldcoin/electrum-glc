@@ -5,15 +5,14 @@
 import binascii
 import hashlib
 import struct
-from typing import List, Tuple, NamedTuple, Union, Iterable, Sequence, Optional
+from collections.abc import Iterable, Sequence
+from typing import NamedTuple, Union
 
-from .util import bfh, BitcoinException
-from . import constants
-from . import ecc
+from . import constants, ecc
+from .bitcoin import DecodeBase58Check, EncodeBase58Check, int_to_hex, rev_hex
 from .crypto import hash_160, hmac_oneshot
-from .bitcoin import rev_hex, int_to_hex, EncodeBase58Check, DecodeBase58Check
 from .logging import get_logger
-
+from .util import BitcoinException, bfh
 
 _logger = get_logger(__name__)
 BIP32_PRIME = 0x80000000
@@ -42,7 +41,7 @@ def protect_against_invalid_ecpoint(func):
 @protect_against_invalid_ecpoint
 def CKD_priv(
     parent_privkey: bytes, parent_chaincode: bytes, child_index: int
-) -> Tuple[bytes, bytes]:
+) -> tuple[bytes, bytes]:
     """Child private key derivation function (from master private key)
     If n is hardened (i.e. the 32nd bit is set), the resulting private key's
     corresponding public key can NOT be determined without the master private key.
@@ -62,7 +61,7 @@ def CKD_priv(
 
 def _CKD_priv(
     parent_privkey: bytes, parent_chaincode: bytes, child_index: bytes, is_hardened_child: bool
-) -> Tuple[bytes, bytes]:
+) -> tuple[bytes, bytes]:
     try:
         keypair = ecc.ECPrivkey(parent_privkey)
     except ecc.InvalidECPointException as e:
@@ -83,7 +82,7 @@ def _CKD_priv(
 
 
 @protect_against_invalid_ecpoint
-def CKD_pub(parent_pubkey: bytes, parent_chaincode: bytes, child_index: int) -> Tuple[bytes, bytes]:
+def CKD_pub(parent_pubkey: bytes, parent_chaincode: bytes, child_index: int) -> tuple[bytes, bytes]:
     """Child public key derivation function (from public key only)
     This function allows us to find the nth public key, as long as n is
     not hardened. If n is hardened, we need the master private key to find it.
@@ -103,7 +102,7 @@ def CKD_pub(parent_pubkey: bytes, parent_chaincode: bytes, child_index: int) -> 
 # i.e.: 'child_index' does not need to fit into 32 bits here! (c.f. trustedcoin billing)
 def _CKD_pub(
     parent_pubkey: bytes, parent_chaincode: bytes, child_index: bytes
-) -> Tuple[bytes, bytes]:
+) -> tuple[bytes, bytes]:
     I = hmac_oneshot(parent_chaincode, parent_pubkey + child_index, hashlib.sha512)
     pubkey = ecc.ECPrivkey(I[0:32]) + ecc.ECPubkey(parent_pubkey)
     if pubkey.is_at_infinity():
@@ -149,7 +148,7 @@ class BIP32Node(NamedTuple):
             net = constants.net
         xkey = DecodeBase58Check(xkey)
         if len(xkey) != 78:
-            raise BitcoinException("Invalid length for extended key: {}".format(len(xkey)))
+            raise BitcoinException(f"Invalid length for extended key: {len(xkey)}")
         depth = xkey[4]
         fingerprint = xkey[5:9]
         child_number = xkey[9:13]
@@ -335,7 +334,7 @@ def xpub_from_xprv(xprv):
     return BIP32Node.from_xkey(xprv).to_xpub()
 
 
-def convert_bip32_strpath_to_intpath(n: str) -> List[int]:
+def convert_bip32_strpath_to_intpath(n: str) -> list[int]:
     """Convert bip32 path str to list of uint32 integers with prime flags
     m/0/-1/1' -> [0, 0x80000001, 0x80000001]
 
@@ -356,21 +355,19 @@ def convert_bip32_strpath_to_intpath(n: str) -> List[int]:
             # makes concatenating paths easier
             continue
         prime = 0
-        if x.endswith("'") or x.endswith(
-            "h"
-        ):  # note: some implementations also accept "H", "p", "P"
+        if x.endswith(("'", "h")):  # note: some implementations also accept "H", "p", "P"
             x = x[:-1]
             prime = BIP32_PRIME
         if x.startswith("-"):
             if prime:
                 raise ValueError(
-                    f"bip32 path child index is signalling hardened level in multiple ways"
+                    "bip32 path child index is signalling hardened level in multiple ways"
                 )
             prime = BIP32_PRIME
         try:
             x_int = int(x)
         except ValueError as e:
-            raise ValueError(f"failed to parse bip32 path: {(str(e))}") from None
+            raise ValueError(f"failed to parse bip32 path: {e!s}") from None
         child_index = abs(x_int) | prime
         if child_index > UINT32_MAX:
             raise ValueError(f"bip32 path child index too large: {child_index} > {UINT32_MAX}")
@@ -411,8 +408,8 @@ def is_bip32_derivation(s: str) -> bool:
 
 
 def normalize_bip32_derivation(
-    s: Optional[str], *, hardened_char=BIP32_HARDENED_CHAR
-) -> Optional[str]:
+    s: str | None, *, hardened_char=BIP32_HARDENED_CHAR
+) -> str | None:
     if s is None:
         return None
     if not is_bip32_derivation(s):
@@ -433,7 +430,7 @@ def is_all_public_derivation(path: Union[str, Iterable[int]]) -> bool:
     return True
 
 
-def root_fp_and_der_prefix_from_xkey(xkey: str) -> Tuple[Optional[str], Optional[str]]:
+def root_fp_and_der_prefix_from_xkey(xkey: str) -> tuple[str | None, str | None]:
     """Returns the root bip32 fingerprint and the derivation path from the
     root to the given xkey, if they can be determined. Otherwise (None, None).
     """
@@ -452,7 +449,7 @@ def root_fp_and_der_prefix_from_xkey(xkey: str) -> Tuple[Optional[str], Optional
 
 
 def is_xkey_consistent_with_key_origin_info(
-    xkey: str, *, derivation_prefix: str = None, root_fingerprint: str = None
+    xkey: str, *, derivation_prefix: str | None = None, root_fingerprint: str | None = None
 ) -> bool:
     bip32node = BIP32Node.from_xkey(xkey)
     int_path = None
@@ -545,7 +542,7 @@ class KeyOriginInfo:
         """
         return convert_bip32_intpath_to_strpath(self.path)
 
-    def get_full_int_list(self) -> List[int]:
+    def get_full_int_list(self) -> list[int]:
         """
         Return a list of ints representing this KeyOriginInfo.
         The first int is the fingerprint, followed by the path

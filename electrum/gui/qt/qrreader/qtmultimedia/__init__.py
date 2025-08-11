@@ -23,21 +23,21 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Mapping
+from collections.abc import Mapping
 
 from .camera_dialog import (
-    QrReaderCameraDialog,
     CameraError,
-    NoCamerasFound,
     NoCameraResolutionsFound,
+    NoCamerasFound,
+    QrReaderCameraDialog,
 )
 from .validator import (
-    QrReaderValidatorResult,
     AbstractQrReaderValidator,
-    QrReaderValidatorCounting,
     QrReaderValidatorColorizing,
-    QrReaderValidatorStrong,
     QrReaderValidatorCounted,
+    QrReaderValidatorCounting,
+    QrReaderValidatorResult,
+    QrReaderValidatorStrong,
 )
 
 

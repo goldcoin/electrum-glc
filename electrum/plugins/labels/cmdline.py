@@ -1,5 +1,6 @@
-from .labels import LabelsPlugin
 from electrum.plugin import hook
+
+from .labels import LabelsPlugin
 
 
 class Plugin(LabelsPlugin):

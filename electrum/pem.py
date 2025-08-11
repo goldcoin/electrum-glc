@@ -37,7 +37,7 @@ def a2b_base64(s):
     try:
         b = bytearray(binascii.a2b_base64(s))
     except Exception as e:
-        raise SyntaxError("base64 error: %s" % e)
+        raise SyntaxError(f"base64 error: {e}")
     return b
 
 
@@ -60,15 +60,15 @@ def dePem(s, name):
     The first such PEM block in the input will be found, and its
     payload will be base64 decoded and returned.
     """
-    prefix = "-----BEGIN %s-----" % name
-    postfix = "-----END %s-----" % name
+    prefix = f"-----BEGIN {name}-----"
+    postfix = f"-----END {name}-----"
     start = s.find(prefix)
     if start == -1:
         raise SyntaxError("Missing PEM prefix")
     end = s.find(postfix, start + len(prefix))
     if end == -1:
         raise SyntaxError("Missing PEM postfix")
-    s = s[start + len("-----BEGIN %s-----" % name) : end]
+    s = s[start + len(f"-----BEGIN {name}-----") : end]
     retBytes = a2b_base64(s)  # May raise SyntaxError
     return retBytes
 
@@ -97,8 +97,8 @@ def dePemList(s, name):
     of bytearrays, which may have zero elements if not PEM blocks are found.
     """
     bList = []
-    prefix = "-----BEGIN %s-----" % name
-    postfix = "-----END %s-----" % name
+    prefix = f"-----BEGIN {name}-----"
+    postfix = f"-----END {name}-----"
     while 1:
         start = s.find(prefix)
         if start == -1:
@@ -130,15 +130,15 @@ def pem(b, name):
         s2 += s1[:64] + b"\n"
         s1 = s1[64:]
     s = (
-        ("-----BEGIN %s-----\n" % name).encode("ascii")
+        (f"-----BEGIN {name}-----\n").encode("ascii")
         + s2
-        + ("-----END %s-----\n" % name).encode("ascii")
+        + (f"-----END {name}-----\n").encode("ascii")
     )
     return s
 
 
 def pemSniff(inStr, name):
-    searchStr = "-----BEGIN %s-----" % name
+    searchStr = f"-----BEGIN {name}-----"
     return searchStr in inStr
 
 
@@ -194,9 +194,4 @@ def _parseASN1PrivateKey(s):
     dP = s.next_node(q)
     dQ = s.next_node(dP)
     qInv = s.next_node(dQ)
-    return list(
-        map(
-            lambda x: bytesToNumber(s.get_value_of_type(x, "INTEGER")),
-            [n, e, d, p, q, dP, dQ, qInv],
-        )
-    )
+    return [bytesToNumber(s.get_value_of_type(x, "INTEGER")) for x in [n, e, d, p, q, dP, dQ, qInv]]

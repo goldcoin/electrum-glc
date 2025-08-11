@@ -1,30 +1,29 @@
 import copy
 import os
+from typing import TYPE_CHECKING, Any, NamedTuple
 
-from typing import List, NamedTuple, Any, Dict, Optional, Tuple, TYPE_CHECKING
-
+from electrum import bitcoin, keystore, mnemonic
+from electrum.bip32 import normalize_bip32_derivation, xpub_type
 from electrum.i18n import _
 from electrum.interface import ServerAddr
 from electrum.keystore import hardware_keystore
 from electrum.logging import get_logger
+from electrum.mnemonic import is_any_2fa_seed_type
 from electrum.plugin import run_hook
 from electrum.slip39 import EncryptedSeed
-from electrum.storage import WalletStorage, StorageEncryptionVersion
+from electrum.storage import StorageEncryptionVersion, WalletStorage
 from electrum.wallet_db import WalletDB
-from electrum.bip32 import normalize_bip32_derivation, xpub_type
-from electrum import keystore, mnemonic, bitcoin
-from electrum.mnemonic import is_any_2fa_seed_type
 
 if TYPE_CHECKING:
     from electrum.daemon import Daemon
-    from electrum.plugin import Plugins
     from electrum.keystore import Hardware_KeyStore
+    from electrum.plugin import Plugins
 
 
 class WizardViewState(NamedTuple):
-    view: Optional[str]
-    wizard_data: Dict[str, Any]
-    params: Dict[str, Any]
+    view: str | None
+    wizard_data: dict[str, Any]
+    params: dict[str, Any]
 
 
 class AbstractWizard:
@@ -158,10 +157,10 @@ class AbstractWizard:
         i = 0
         for item in self._stack:
             ssi = self.sanitize_stack_item(item.wizard_data)
-            logstr += f"\n{i}: {hex(id(item.wizard_data))} - {repr(ssi)}"
+            logstr += f"\n{i}: {hex(id(item.wizard_data))} - {ssi!r}"
             i += 1
         sci = self.sanitize_stack_item(self._current.wizard_data)
-        logstr += f"\nc: {hex(id(self._current.wizard_data))} - {repr(sci)}"
+        logstr += f"\nc: {hex(id(self._current.wizard_data))} - {sci!r}"
         self._logger.debug(logstr)
 
     def sanitize_stack_item(self, _stack_item) -> dict:
@@ -274,7 +273,7 @@ class NewWalletWizard(AbstractWizard):
         self._daemon = daemon
         self.plugins = plugins
 
-    def start(self, initial_data: dict = None) -> WizardViewState:
+    def start(self, initial_data: dict | None = None) -> WizardViewState:
         if initial_data is None:
             initial_data = {}
         self.reset()
@@ -447,7 +446,7 @@ class NewWalletWizard(AbstractWizard):
                     script = data["script_type"] if data["script_type"] != "p2pkh" else "standard"
                 return keystore.from_bip43_rootseed(root_seed, derivation, xtype=script)
             else:
-                raise Exception("Unsupported seed variant %s" % data["seed_variant"])
+                raise Exception("Unsupported seed variant {}".format(data["seed_variant"]))
         elif data["keystore_type"] == "masterkey" and "master_key" in data:
             return keystore.from_master_key(data["master_key"])
         elif data["keystore_type"] == "hardware":
@@ -467,7 +466,7 @@ class NewWalletWizard(AbstractWizard):
             cosigner_is_hardware = True
         return cosigner_is_hardware
 
-    def check_multisig_constraints(self, wizard_data: dict) -> Tuple[bool, str]:
+    def check_multisig_constraints(self, wizard_data: dict) -> tuple[bool, str]:
         if not self.is_multisig(wizard_data):
             return True, ""
 
@@ -517,7 +516,7 @@ class NewWalletWizard(AbstractWizard):
                 if is_wordlist
                 else "unknown wordlist"
             )
-            validation_message = "BIP39 (%s)" % status
+            validation_message = f"BIP39 ({status})"
 
             if is_checksum:
                 seed_type = "bip39"
@@ -587,7 +586,7 @@ class NewWalletWizard(AbstractWizard):
                     data["seed"], data["seed_extra_words"], data["wallet_type"] == "multisig"
                 )
             elif data["seed_type"] in ["bip39", "slip39"]:
-                self._logger.debug("creating keystore from %s seed" % data["seed_type"])
+                self._logger.debug("creating keystore from {} seed".format(data["seed_type"]))
                 if data["seed_type"] == "bip39":
                     root_seed = keystore.bip39_to_seed(data["seed"], data["seed_extra_words"])
                 else:
@@ -602,17 +601,17 @@ class NewWalletWizard(AbstractWizard):
                 self._logger.debug("creating keystore from 2fa seed")
                 k = keystore.from_xprv(data["x1"]["xprv"])
             else:
-                raise Exception("unsupported/unknown seed_type %s" % data["seed_type"])
+                raise Exception("unsupported/unknown seed_type {}".format(data["seed_type"]))
         elif data["keystore_type"] == "masterkey":
             k = keystore.from_master_key(data["master_key"])
             if isinstance(k, keystore.Xpub):  # has xpub
                 t1 = xpub_type(k.xpub)
                 if data["wallet_type"] == "multisig":
                     if t1 not in ["standard", "p2wsh", "p2wsh-p2sh"]:
-                        raise Exception("wrong key type %s" % t1)
+                        raise Exception(f"wrong key type {t1}")
                 else:
                     if t1 not in ["standard", "p2wpkh", "p2wpkh-p2sh"]:
-                        raise Exception("wrong key type %s" % t1)
+                        raise Exception(f"wrong key type {t1}")
             elif isinstance(k, keystore.Old_KeyStore):
                 pass
             else:
@@ -623,14 +622,14 @@ class NewWalletWizard(AbstractWizard):
                 t1 = xpub_type(k.xpub)
                 if data["wallet_type"] == "multisig":
                     if t1 not in ["standard", "p2wsh", "p2wsh-p2sh"]:
-                        raise Exception("wrong key type %s" % t1)
+                        raise Exception(f"wrong key type {t1}")
                 else:
                     if t1 not in ["standard", "p2wpkh", "p2wpkh-p2sh"]:
-                        raise Exception("wrong key type %s" % t1)
+                        raise Exception(f"wrong key type {t1}")
             else:
                 raise Exception(f"unexpected keystore type: {type(k)}")
         else:
-            raise Exception("unsupported/unknown keystore_type %s" % data["keystore_type"])
+            raise Exception("unsupported/unknown keystore_type {}".format(data["keystore_type"]))
 
         if data["encrypt"]:
             if k and k.may_have_password():
@@ -752,7 +751,7 @@ class ServerConnectWizard(AbstractWizard):
         try:
             server = ServerAddr.from_str_with_inference(wizard_data["server"])
             if not server:
-                raise Exception("failed to parse server %s" % wizard_data["server"])
+                raise Exception("failed to parse server {}".format(wizard_data["server"]))
         except Exception:
             return
         net_params = net_params._replace(server=server, auto_connect=wizard_data["autoconnect"])
@@ -765,7 +764,7 @@ class ServerConnectWizard(AbstractWizard):
         if self._daemon.config.cv.NETWORK_AUTO_CONNECT.is_modifiable():
             self._daemon.config.NETWORK_AUTO_CONNECT = wizard_data["autoconnect"]
 
-    def start(self, initial_data: dict = None) -> WizardViewState:
+    def start(self, initial_data: dict | None = None) -> WizardViewState:
         if initial_data is None:
             initial_data = {}
         self.reset()

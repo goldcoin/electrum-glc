@@ -25,7 +25,6 @@
 
 from .mnemonic import Wordlist
 
-
 # list of words from http://en.wiktionary.org/wiki/Wiktionary:Frequency_lists/Contemporary_poetry
 
 _words = (
@@ -1688,7 +1687,7 @@ def mn_decode(wlist):
         w2 = (wordlist.index(word2)) % n
         w3 = (wordlist.index(word3)) % n
         x = w1 + n * ((w2 - w1) % n) + n * n * ((w3 - w2) % n)
-        out += "%08x" % x
+        out += f"{x:08x}"
     return out
 
 

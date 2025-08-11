@@ -25,13 +25,11 @@
 import hashlib
 import sys
 import time
-from typing import Optional, List, TYPE_CHECKING
-import asyncio
 import urllib.parse
+from typing import TYPE_CHECKING
 
-import certifi
 import aiohttp
-
+import certifi
 
 try:
     from . import paymentrequest_pb2 as pb2
@@ -40,15 +38,14 @@ except ImportError:
         "Error: could not find paymentrequest_pb2.py. Create it with 'contrib/generate_payreqpb2.sh'"
     )
 
-from . import bitcoin, constants, ecc, util, transaction, x509, rsakey
-from .util import bfh, make_aiohttp_session, error_text_bytes_to_safe_str, get_running_loop
-from .invoices import Invoice, get_id_from_onchain_outputs
-from .crypto import sha256
+from . import bitcoin, constants, ecc, rsakey, transaction, util, x509
 from .bitcoin import address_to_script
-from .transaction import PartialTxOutput
-from .network import Network
-from .logging import get_logger, Logger
 from .contacts import Contacts
+from .invoices import Invoice, get_id_from_onchain_outputs
+from .logging import get_logger
+from .network import Network
+from .transaction import PartialTxOutput
+from .util import bfh, error_text_bytes_to_safe_str, get_running_loop, make_aiohttp_session
 
 if TYPE_CHECKING:
     from .simple_config import SimpleConfig
@@ -97,7 +94,7 @@ async def get_payment_request(url: str) -> "PaymentRequest":
                         data = resp_content
                     data_len = len(data) if data is not None else None
                     _logger.info(f"fetched payment request {url} {data_len}")
-        except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+        except (TimeoutError, aiohttp.ClientError) as e:
             error = f"Error while contacting payment URL: {url}.\nerror type: {type(e)}"
             if isinstance(e, aiohttp.ClientResponseError):
                 error += f"\nGot HTTP status code {e.status}."
@@ -107,7 +104,7 @@ async def get_payment_request(url: str) -> "PaymentRequest":
                     error_oneline = " -- ".join(error.split("\n"))
                     _logger.info(
                         f"{error_oneline} -- [DO NOT TRUST THIS MESSAGE] "
-                        f"{repr(e)} text: {error_text_received}"
+                        f"{e!r} text: {error_text_received}"
                     )
             data = None
     else:
@@ -257,7 +254,7 @@ class PaymentRequest:
             self.error = "unknown algo"
             return False
 
-    def has_expired(self) -> Optional[bool]:
+    def has_expired(self) -> bool | None:
         if not hasattr(self, "details"):
             return None
         return self.details.expires and self.details.expires < int(time.time())
@@ -269,7 +266,7 @@ class PaymentRequest:
         return self.details.expires
 
     def get_amount(self):
-        return sum(map(lambda x: x.value, self.outputs))
+        return sum(x.value for x in self.outputs)
 
     def get_address(self):
         o = self.outputs[0]
@@ -286,7 +283,7 @@ class PaymentRequest:
     def get_memo(self):
         return self.memo
 
-    def get_name_for_export(self) -> Optional[str]:
+    def get_name_for_export(self) -> str | None:
         if not hasattr(self, "details"):
             return None
         return get_id_from_onchain_outputs(self.outputs, timestamp=self.get_time())
@@ -333,7 +330,7 @@ class PaymentRequest:
                     error_oneline = " -- ".join(error.split("\n"))
                     _logger.info(
                         f"{error_oneline} -- [DO NOT TRUST THIS MESSAGE] "
-                        f"{repr(e)} text: {error_text_received}"
+                        f"{e!r} text: {error_text_received}"
                     )
             return False, error
 
@@ -421,7 +418,7 @@ def verify_cert_chain(chain):
             hashBytes = bytearray(hashlib.sha512(data).digest())
             verify = pubkey.verify(sig, x509.PREFIX_RSA_SHA512 + hashBytes)
         else:
-            raise Exception("Algorithm not supported: {}".format(algo))
+            raise Exception(f"Algorithm not supported: {algo}")
         if not verify:
             raise Exception("Certificate not Signed by Provided CA Certificate Chain")
 
@@ -433,16 +430,16 @@ def check_ssl_config(config: "SimpleConfig"):
 
     key_path = config.SSL_KEYFILE_PATH
     cert_path = config.SSL_CERTFILE_PATH
-    with open(key_path, "r", encoding="utf-8") as f:
+    with open(key_path, encoding="utf-8") as f:
         params = pem.parse_private_key(f.read())
-    with open(cert_path, "r", encoding="utf-8") as f:
+    with open(cert_path, encoding="utf-8") as f:
         s = f.read()
     bList = pem.dePemList(s, "CERTIFICATE")
     # verify chain
     x, ca = verify_cert_chain(bList)
     # verify that privkey and pubkey match
-    privkey = rsakey.RSAKey(*params)
-    pubkey = rsakey.RSAKey(x.modulus, x.exponent)
+    rsakey.RSAKey(*params)
+    rsakey.RSAKey(x.modulus, x.exponent)
     assert x.modulus == params[0]
     assert x.exponent == params[1]
     # return requestor
@@ -455,10 +452,10 @@ def check_ssl_config(config: "SimpleConfig"):
 def sign_request_with_x509(pr, key_path, cert_path):
     from . import pem
 
-    with open(key_path, "r", encoding="utf-8") as f:
+    with open(key_path, encoding="utf-8") as f:
         params = pem.parse_private_key(f.read())
         privkey = rsakey.RSAKey(*params)
-    with open(cert_path, "r", encoding="utf-8") as f:
+    with open(cert_path, encoding="utf-8") as f:
         s = f.read()
         bList = pem.dePemList(s, "CERTIFICATE")
     certificates = pb2.X509Certificates()

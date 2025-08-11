@@ -22,18 +22,17 @@
 # Note: this module is safe to import on all platforms.
 
 import sys
-from typing import Callable, Optional, TYPE_CHECKING, Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
+from typing import TYPE_CHECKING, Optional
 
-from PyQt5.QtWidgets import QMessageBox, QWidget
 from PyQt5.QtGui import QImage
-
-from electrum.i18n import _
-from electrum.util import UserFacingException
-from electrum.logging import get_logger
-from electrum.qrreader import get_qr_reader, QrCodeResult, MissingQrDetectionLib
+from PyQt5.QtWidgets import QMessageBox, QWidget
 
 from electrum.gui.qt.util import MessageBoxMixin, custom_message_box
-
+from electrum.i18n import _
+from electrum.logging import get_logger
+from electrum.qrreader import MissingQrDetectionLib, QrCodeResult, get_qr_reader
+from electrum.util import UserFacingException
 
 if TYPE_CHECKING:
     from electrum.simple_config import SimpleConfig
@@ -44,9 +43,9 @@ _logger = get_logger(__name__)
 
 def scan_qrcode(
     *,
-    parent: Optional[QWidget],
+    parent: QWidget | None,
     config: "SimpleConfig",
-    callback: Callable[[bool, str, Optional[str]], None],
+    callback: Callable[[bool, str, str | None], None],
 ) -> None:
     """Scans QR code using camera."""
     assert parent is None or isinstance(
@@ -77,7 +76,7 @@ def find_system_cameras() -> Mapping[str, str]:
     if sys.platform == "darwin" or sys.platform in ("windows", "win32"):
         try:
             from .qtmultimedia import find_system_cameras
-        except ImportError as e:
+        except ImportError:
             return {}
         else:
             return find_system_cameras()
@@ -92,9 +91,9 @@ def find_system_cameras() -> Mapping[str, str]:
 
 def _scan_qrcode_using_zbar(
     *,
-    parent: Optional[QWidget],
+    parent: QWidget | None,
     config: "SimpleConfig",
-    callback: Callable[[bool, str, Optional[str]], None],
+    callback: Callable[[bool, str, str | None], None],
 ) -> None:
     from electrum import qrscanner
 
@@ -120,12 +119,12 @@ _qr_dialog = None
 
 def _scan_qrcode_using_qtmultimedia(
     *,
-    parent: Optional[QWidget],
+    parent: QWidget | None,
     config: "SimpleConfig",
-    callback: Callable[[bool, str, Optional[str]], None],
+    callback: Callable[[bool, str, str | None], None],
 ) -> None:
     try:
-        from .qtmultimedia import QrReaderCameraDialog, CameraError
+        from .qtmultimedia import CameraError, QrReaderCameraDialog
     except ImportError as e:
         icon = QMessageBox.Warning
         title = _("QR Reader Error")

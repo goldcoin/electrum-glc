@@ -1,17 +1,17 @@
 import threading
 from enum import IntEnum
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject, pyqtEnum
+from PyQt6.QtCore import QObject, pyqtEnum, pyqtProperty, pyqtSignal, pyqtSlot
 
-from electrum.i18n import _
 from electrum.gui import messages
-from electrum.logging import get_logger
-from electrum.lnutil import LOCAL, REMOTE
+from electrum.i18n import _
 from electrum.lnchannel import ChanCloseOption, ChannelState
+from electrum.lnutil import LOCAL, REMOTE
+from electrum.logging import get_logger
 
 from .auth import AuthMixin, auth_protect
-from .qewallet import QEWallet
 from .qetypes import QEAmount
+from .qewallet import QEWallet
 from .util import QtEventListener, event_listener
 
 

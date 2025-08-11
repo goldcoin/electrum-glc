@@ -3,18 +3,17 @@ from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import pyqtSignal
 
-from electrum.i18n import _
-from electrum.plugin import hook
-from electrum.wallet import Standard_Wallet
-
-from electrum.plugins.hw_wallet.qt import QtHandlerBase, QtPluginBase
-from electrum.plugins.hw_wallet import plugin
 from electrum.gui.qt.wizard.wallet import (
-    WCScriptAndDerivation,
+    WCHWUninitialized,
     WCHWUnlock,
     WCHWXPub,
-    WCHWUninitialized,
+    WCScriptAndDerivation,
 )
+from electrum.i18n import _
+from electrum.plugin import hook
+from electrum.plugins.hw_wallet import plugin
+from electrum.plugins.hw_wallet.qt import QtHandlerBase, QtPluginBase
+from electrum.wallet import Standard_Wallet
 
 from .jade import JadePlugin
 
@@ -65,4 +64,4 @@ class Jade_Handler(QtHandlerBase):
     MESSAGE_DIALOG_TITLE = _("Jade Status")
 
     def __init__(self, win):
-        super(Jade_Handler, self).__init__(win, "Jade")
+        super().__init__(win, "Jade")

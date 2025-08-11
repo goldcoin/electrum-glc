@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 
 import os
-import asyncio
 
-from electrum.simple_config import SimpleConfig
 from electrum import constants
-from electrum.daemon import Daemon
-from electrum.storage import WalletStorage
-from electrum.wallet import Wallet, create_new_wallet
-from electrum.wallet_db import WalletDB
 from electrum.commands import Commands
-from electrum.util import create_and_start_event_loop, log_exceptions
-
+from electrum.daemon import Daemon
+from electrum.simple_config import SimpleConfig
+from electrum.util import create_and_start_event_loop
+from electrum.wallet import create_new_wallet
 
 loop, stopping_fut, loop_thread = create_and_start_event_loop()
 

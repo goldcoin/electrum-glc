@@ -1,77 +1,76 @@
 import os
 import sys
 import threading
-
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QTimer, QRect, pyqtSignal
-from PyQt5.QtGui import QPen, QPainter, QPalette
+from PyQt5.QtCore import QRect, Qt, QTimer, pyqtSignal
+from PyQt5.QtGui import QPainter, QPalette, QPen
 from PyQt5.QtWidgets import (
-    QVBoxLayout,
+    QApplication,
+    QDialog,
+    QFileDialog,
+    QGridLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
-    QWidget,
-    QFileDialog,
     QSlider,
-    QGridLayout,
-    QDialog,
-    QApplication,
+    QVBoxLayout,
+    QWidget,
 )
 
-from electrum.bip32 import is_bip32_derivation, BIP32Node, normalize_bip32_derivation, xpub_type
+from electrum import WalletStorage, keystore, mnemonic
+from electrum.bip32 import BIP32Node, is_bip32_derivation, normalize_bip32_derivation, xpub_type
 from electrum.daemon import Daemon
+from electrum.gui.qt.bip39_recovery_dialog import Bip39RecoveryDialog
+from electrum.gui.qt.password_dialog import (
+    MSG_ENTER_PASSWORD,
+    PW_NEW,
+    PasswordLayout,
+    PasswordLayoutForHW,
+)
+from electrum.gui.qt.seed_dialog import MSG_PASSPHRASE_WARN_ISSUE4566, KeysLayout, SeedLayout
+from electrum.gui.qt.util import (
+    Buttons,
+    CancelButton,
+    ChoicesLayout,
+    ChoiceWidget,
+    InfoButton,
+    MessageBoxMixin,
+    OkButton,
+    PasswordLineEdit,
+    WindowModalDialog,
+    WWLabel,
+    char_width_in_lineedit,
+    font_height,
+)
 from electrum.i18n import _
 from electrum.keystore import (
-    bip44_derivation,
-    bip39_to_seed,
-    purpose48_derivation,
     ScriptTypeNotSupported,
+    bip39_to_seed,
+    bip44_derivation,
+    purpose48_derivation,
 )
-from electrum.plugin import run_hook, HardwarePluginLibraryUnavailable
+from electrum.logging import Logger, get_logger
+from electrum.plugin import HardwarePluginLibraryUnavailable, run_hook
 from electrum.storage import StorageReadWriteError
 from electrum.util import (
+    InvalidPassword,
+    UserFacingException,
     WalletFileException,
     get_new_wallet_name,
-    UserFacingException,
-    InvalidPassword,
 )
 from electrum.wallet import wallet_types
-from .wizard import QEAbstractWizard, WizardComponent
-from electrum.logging import get_logger, Logger
-from electrum import WalletStorage, mnemonic, keystore
 from electrum.wallet_db import WalletDB
 from electrum.wizard import NewWalletWizard
 
-from electrum.gui.qt.bip39_recovery_dialog import Bip39RecoveryDialog
-from electrum.gui.qt.password_dialog import (
-    PasswordLayout,
-    PW_NEW,
-    MSG_ENTER_PASSWORD,
-    PasswordLayoutForHW,
-)
-from electrum.gui.qt.seed_dialog import SeedLayout, MSG_PASSPHRASE_WARN_ISSUE4566, KeysLayout
-from electrum.gui.qt.util import (
-    PasswordLineEdit,
-    char_width_in_lineedit,
-    WWLabel,
-    InfoButton,
-    font_height,
-    ChoiceWidget,
-    MessageBoxMixin,
-    WindowModalDialog,
-    ChoicesLayout,
-    CancelButton,
-    Buttons,
-    OkButton,
-)
+from .wizard import QEAbstractWizard, WizardComponent
 
 if TYPE_CHECKING:
-    from electrum.simple_config import SimpleConfig
-    from electrum.plugin import Plugins
     from electrum.daemon import Daemon
     from electrum.gui.qt import QElectrumApplication
+    from electrum.plugin import Plugins
+    from electrum.simple_config import SimpleConfig
 
 WIF_HELP_TEXT = (
     _("Goldcoin private keys generate 2 different wallet addresses starting with E or D.")
@@ -220,7 +219,7 @@ class QENewWalletWizard(NewWalletWizard, QEAbstractWizard, MessageBoxMixin):
         # not supported on desktop
         return False
 
-    def create_storage(self, single_password: str = None):
+    def create_storage(self, single_password: str | None = None):
         self._logger.info("Creating wallet from wizard data")
         data = self.get_wizard_data()
 
@@ -408,10 +407,10 @@ class WCWalletName(WizardComponent, Logger):
                         temp_storage = WalletStorage(_path)
                     self.wallet_exists = temp_storage.file_exists()
                 except (StorageReadWriteError, WalletFileException) as e:
-                    msg = _("Cannot read file") + f"\n{repr(e)}"
+                    msg = _("Cannot read file") + f"\n{e!r}"
                 except Exception as e:
                     self.logger.exception("")
-                    msg = _("Cannot read file") + f"\n{repr(e)}"
+                    msg = _("Cannot read file") + f"\n{e!r}"
             else:
                 msg = ""
             self.valid = temp_storage is not None
@@ -1160,7 +1159,7 @@ class WCWalletPassword(WizardComponent):
 
 class SeedExtensionEdit(QWidget):
     def __init__(
-        self, parent, *, message: str = None, warning: str = None, warn_issue4566: bool = False
+        self, parent, *, message: str | None = None, warning: str | None = None, warn_issue4566: bool = False
     ):
         super().__init__(parent)
 
@@ -1320,7 +1319,7 @@ class WCChooseHWDevice(WizardComponent, Logger):
                 nonlocal debug_msg
                 err_str_oneline = " // ".join(str(e).splitlines())
                 self.logger.warning(f"error getting device infos for {name}: {err_str_oneline}")
-                _indented_error_msg = "    ".join([""] + str(e).splitlines(keepends=True))
+                _indented_error_msg = "    ".join(["", *str(e).splitlines(keepends=True)])
                 debug_msg += f"  {name}: (error getting device infos)\n{_indented_error_msg}\n"
 
             # scan devices
@@ -1329,7 +1328,7 @@ class WCChooseHWDevice(WizardComponent, Logger):
                 #                                                      msg=_("Scanning devices..."))
                 scanned_devices = devmgr.scan_devices()
             except BaseException as e:
-                self.logger.info("error scanning devices: {}".format(repr(e)))
+                self.logger.info(f"error scanning devices: {e!r}")
                 debug_msg = "  {}:\n    {}".format(_("Error scanning devices"), e)
             else:
                 for splugin in supported_plugins:
@@ -1337,7 +1336,7 @@ class WCChooseHWDevice(WizardComponent, Logger):
                     # plugin init errored?
                     if not plugin:
                         e = splugin.exception
-                        indented_error_msg = "    ".join([""] + str(e).splitlines(keepends=True))
+                        indented_error_msg = "    ".join(["", *str(e).splitlines(keepends=True)])
                         debug_msg += f"  {name}: (error during plugin init)\n"
                         debug_msg += "    {}\n".format(_("You might have an incompatible library."))
                         debug_msg += f"{indented_error_msg}\n"
@@ -1366,7 +1365,7 @@ class WCChooseHWDevice(WizardComponent, Logger):
                     device_infos_working = list(
                         filter(lambda di: di.exception is None, device_infos)
                     )
-                    devices += list(map(lambda x: (name, x), device_infos_working))
+                    devices += [(name, x) for x in device_infos_working]
             if not debug_msg:
                 debug_msg = "  {}".format(_("No exceptions encountered."))
             if not devices:

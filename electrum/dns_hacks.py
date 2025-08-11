@@ -2,18 +2,15 @@
 # Distributed under the MIT software license, see the accompanying
 # file LICENCE or http://www.opensource.org/licenses/mit-license.php
 
-import sys
-import socket
 import concurrent
-from concurrent import futures
 import ipaddress
-from typing import Optional
+import socket
+import sys
 
 import dns
 import dns.resolver
 
 from .logging import get_logger
-
 
 _logger = get_logger(__name__)
 
@@ -30,7 +27,7 @@ def configure_dns_resolver() -> None:
         # See https://github.com/spesmilo/electrum/issues/4421
         try:
             _prepare_windows_dns_hack()
-        except Exception as e:
+        except Exception:
             _logger.exception("failed to apply windows dns hack.")
         else:
             socket.getaddrinfo = _fast_getaddrinfo
@@ -83,11 +80,11 @@ def _fast_getaddrinfo(host, *args, **kwargs):
         try:
             answers = ipv6_fut.result()
             addrs += [str(answer) for answer in answers]
-        except expected_errors as e:
+        except expected_errors:
             pass
         except BaseException as e:
             _logger.info(
-                f"dnspython failed to resolve dns (AAAA) for {repr(host)} with error: {repr(e)}"
+                f"dnspython failed to resolve dns (AAAA) for {host!r} with error: {e!r}"
             )
         # try IPv4
         try:
@@ -101,7 +98,7 @@ def _fast_getaddrinfo(host, *args, **kwargs):
         except BaseException as e:
             # Possibly internal error in dnspython :( see #4483 and #5638
             _logger.info(
-                f"dnspython failed to resolve dns (A) for {repr(host)} with error: {repr(e)}"
+                f"dnspython failed to resolve dns (A) for {host!r} with error: {e!r}"
             )
         if addrs:
             return addrs

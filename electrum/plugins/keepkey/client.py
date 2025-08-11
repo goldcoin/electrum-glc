@@ -1,4 +1,5 @@
-from keepkeylib.client import proto, BaseClient, ProtocolMixin
+from keepkeylib.client import BaseClient, ProtocolMixin, proto
+
 from .clientbase import KeepKeyClientBase
 
 

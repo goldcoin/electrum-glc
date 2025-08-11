@@ -15,28 +15,19 @@
 # TODO impl RAW descriptors
 
 import enum
-
-from .bip32 import convert_bip32_strpath_to_intpath, BIP32Node, KeyOriginInfo, BIP32_PRIME
-from . import bitcoin
-from .bitcoin import construct_script, opcodes, construct_witness
-from . import constants
-from .crypto import hash_160, sha256
-from . import ecc
-from . import segwit_addr
-from .util import bfh
-
 from binascii import unhexlify
+from collections.abc import Mapping, Sequence
 from enum import Enum
 from typing import (
-    List,
     NamedTuple,
     Optional,
-    Tuple,
-    Sequence,
-    Mapping,
-    Set,
 )
 
+from . import bitcoin, constants, ecc, segwit_addr
+from .bip32 import BIP32Node, KeyOriginInfo, convert_bip32_strpath_to_intpath
+from .bitcoin import construct_script, construct_witness, opcodes
+from .crypto import hash_160, sha256
+from .util import bfh
 
 MAX_TAPROOT_NODES = 128
 
@@ -55,9 +46,9 @@ class ExpandedScripts:
         self,
         *,
         output_script: bytes,  # "scriptPubKey"
-        redeem_script: Optional[bytes] = None,
-        witness_script: Optional[bytes] = None,
-        scriptcode_for_sighash: Optional[bytes] = None,
+        redeem_script: bytes | None = None,
+        witness_script: bytes | None = None,
+        scriptcode_for_sighash: bytes | None = None,
     ):
         self.output_script = output_script
         self.redeem_script = redeem_script
@@ -65,26 +56,26 @@ class ExpandedScripts:
         self.scriptcode_for_sighash = scriptcode_for_sighash
 
     @property
-    def scriptcode_for_sighash(self) -> Optional[bytes]:
+    def scriptcode_for_sighash(self) -> bytes | None:
         if self._scriptcode_for_sighash:
             return self._scriptcode_for_sighash
         return self.witness_script or self.redeem_script or self.output_script
 
     @scriptcode_for_sighash.setter
-    def scriptcode_for_sighash(self, value: Optional[bytes]):
+    def scriptcode_for_sighash(self, value: bytes | None):
         self._scriptcode_for_sighash = value
 
-    def address(self, *, net=None) -> Optional[str]:
+    def address(self, *, net=None) -> str | None:
         return bitcoin.script_to_address(self.output_script.hex(), net=net)
 
 
 class ScriptSolutionInner(NamedTuple):
-    witness_items: Optional[Sequence] = None
+    witness_items: Sequence | None = None
 
 
 class ScriptSolutionTop(NamedTuple):
-    witness: Optional[bytes] = None
-    script_sig: Optional[bytes] = None
+    witness: bytes | None = None
+    script_sig: bytes | None = None
 
 
 class MissingSolutionPiece(Exception):
@@ -141,12 +132,12 @@ def DescriptorChecksum(desc: str) -> str:
             clscount = 0
     if clscount > 0:
         c = PolyMod(c, cls)
-    for j in range(0, 8):
+    for j in range(8):
         c = PolyMod(c, 0)
     c ^= 1
 
     ret = [""] * 8
-    for j in range(0, 8):
+    for j in range(8):
         ret[j] = _CHECKSUM_CHARSET[(c >> (5 * (7 - j))) & 31]
     return "".join(ret)
 
@@ -161,7 +152,7 @@ def AddChecksum(desc: str) -> str:
     return desc + "#" + DescriptorChecksum(desc)
 
 
-class PubkeyProvider(object):
+class PubkeyProvider:
     """
     A public key expression in a descriptor.
     Can contain the key origin info, the pubkey itself, and subsequent derivation paths for derivation from the pubkey
@@ -169,7 +160,7 @@ class PubkeyProvider(object):
     """
 
     def __init__(
-        self, origin: Optional["KeyOriginInfo"], pubkey: str, deriv_path: Optional[str]
+        self, origin: Optional["KeyOriginInfo"], pubkey: str, deriv_path: str | None
     ) -> None:
         """
         :param origin: The key origin if one is available
@@ -231,13 +222,13 @@ class PubkeyProvider(object):
         """
         s = ""
         if self.origin:
-            s += "[{}]".format(self.origin.to_string())
+            s += f"[{self.origin.to_string()}]"
         s += self.pubkey
         if self.deriv_path:
             s += self.deriv_path
         return s
 
-    def get_pubkey_bytes(self, *, pos: Optional[int] = None) -> bytes:
+    def get_pubkey_bytes(self, *, pos: int | None = None) -> bytes:
         if self.is_range() and pos is None:
             raise ValueError("pos must be set for ranged descriptor")
         # note: if not ranged, we ignore pos.
@@ -258,7 +249,7 @@ class PubkeyProvider(object):
             assert not self.is_range()
             return unhexlify(self.pubkey)
 
-    def get_full_derivation_path(self, *, pos: Optional[int] = None) -> str:
+    def get_full_derivation_path(self, *, pos: int | None = None) -> str:
         """
         Returns the full derivation path at the given position, including the origin
         """
@@ -270,18 +261,18 @@ class PubkeyProvider(object):
             path = path[:-1] + str(pos)
         return path
 
-    def get_full_derivation_int_list(self, *, pos: Optional[int] = None) -> List[int]:
+    def get_full_derivation_int_list(self, *, pos: int | None = None) -> list[int]:
         """
         Returns the full derivation path as an integer list at the given position.
         Includes the origin and master key fingerprint as an int
         """
         if self.is_range() and pos is None:
             raise ValueError("pos must be set for ranged descriptor")
-        path: List[int] = self.origin.get_full_int_list() if self.origin is not None else []
+        path: list[int] = self.origin.get_full_int_list() if self.origin is not None else []
         path.extend(self.get_der_suffix_int_list(pos=pos))
         return path
 
-    def get_der_suffix_int_list(self, *, pos: Optional[int] = None) -> List[int]:
+    def get_der_suffix_int_list(self, *, pos: int | None = None) -> list[int]:
         if not self.deriv_path:
             return []
         der_suffix = self.deriv_path
@@ -305,7 +296,7 @@ class PubkeyProvider(object):
         return b"\x04" == self.get_pubkey_bytes()[:1]
 
 
-class Descriptor(object):
+class Descriptor:
     r"""
     An abstract class for Descriptors themselves.
     Descriptors can contain multiple :class:`PubkeyProvider`\ s and multiple ``Descriptor`` as subdescriptors.
@@ -317,7 +308,7 @@ class Descriptor(object):
     """
 
     def __init__(
-        self, pubkeys: List["PubkeyProvider"], subdescriptors: List["Descriptor"], name: str
+        self, pubkeys: list["PubkeyProvider"], subdescriptors: list["Descriptor"], name: str
     ) -> None:
         r"""
         :param pubkeys: The :class:`PubkeyProvider`\ s that are part of this descriptor
@@ -348,7 +339,7 @@ class Descriptor(object):
         """
         return AddChecksum(self.to_string_no_checksum())
 
-    def expand(self, *, pos: Optional[int] = None) -> "ExpandedScripts":
+    def expand(self, *, pos: int | None = None) -> "ExpandedScripts":
         """
         Returns the scripts for a descriptor at the given `pos` for ranged descriptors.
         """
@@ -357,7 +348,7 @@ class Descriptor(object):
     def _satisfy_inner(
         self,
         *,
-        sigdata: Mapping[bytes, bytes] = None,  # pubkey -> sig
+        sigdata: Mapping[bytes, bytes] | None = None,  # pubkey -> sig
         allow_dummy: bool = False,
     ) -> ScriptSolutionInner:
         raise NotImplementedError("The Descriptor base class does not implement this method")
@@ -365,7 +356,7 @@ class Descriptor(object):
     def satisfy(
         self,
         *,
-        sigdata: Mapping[bytes, bytes] = None,  # pubkey -> sig
+        sigdata: Mapping[bytes, bytes] | None = None,  # pubkey -> sig
         allow_dummy: bool = False,
     ) -> ScriptSolutionTop:
         """Construct a witness and/or scriptSig to be used in a txin, to satisfy the bitcoin SCRIPT.
@@ -389,8 +380,8 @@ class Descriptor(object):
     def get_satisfaction_progress(
         self,
         *,
-        sigdata: Mapping[bytes, bytes] = None,  # pubkey -> sig
-    ) -> Tuple[int, int]:
+        sigdata: Mapping[bytes, bytes] | None = None,  # pubkey -> sig
+    ) -> tuple[int, int]:
         """Returns (num_sigs_we_have, num_sigs_required) towards satisfying this script.
         Besides signatures, later this can also consider hash-preimages.
         """
@@ -412,12 +403,12 @@ class Descriptor(object):
         return False
 
     def is_segwit(self) -> bool:
-        return any([desc.is_segwit() for desc in self.subdescriptors])
+        return any(desc.is_segwit() for desc in self.subdescriptors)
 
-    def get_all_pubkeys(self) -> Set[bytes]:
+    def get_all_pubkeys(self) -> set[bytes]:
         """Returns set of pubkeys that appear at any level in this descriptor."""
         assert not self.is_range()
-        all_pubkeys = set([p.get_pubkey_bytes() for p in self.pubkeys])
+        all_pubkeys = {p.get_pubkey_bytes() for p in self.pubkeys}
         for desc in self.subdescriptors:
             all_pubkeys |= desc.get_all_pubkeys()
         return all_pubkeys
@@ -474,7 +465,7 @@ class PKDescriptor(Descriptor):
         """
         super().__init__([pubkey], [], "pk")
 
-    def expand(self, *, pos: Optional[int] = None) -> "ExpandedScripts":
+    def expand(self, *, pos: int | None = None) -> "ExpandedScripts":
         pubkey = self.pubkeys[0].get_pubkey_bytes(pos=pos)
         script = construct_script([pubkey, opcodes.OP_CHECKSIG])
         return ExpandedScripts(output_script=bytes.fromhex(script))
@@ -494,7 +485,7 @@ class PKDescriptor(Descriptor):
             witness_items=(sig,),
         )
 
-    def get_satisfaction_progress(self, *, sigdata=None) -> Tuple[int, int]:
+    def get_satisfaction_progress(self, *, sigdata=None) -> tuple[int, int]:
         if sigdata is None:
             sigdata = {}
         signatures = list(sigdata.values())
@@ -515,7 +506,7 @@ class PKHDescriptor(Descriptor):
         """
         super().__init__([pubkey], [], "pkh")
 
-    def expand(self, *, pos: Optional[int] = None) -> "ExpandedScripts":
+    def expand(self, *, pos: int | None = None) -> "ExpandedScripts":
         pubkey = self.pubkeys[0].get_pubkey_bytes(pos=pos)
         pkh = hash_160(pubkey).hex()
         script = bitcoin.pubkeyhash_to_p2pkh_script(pkh)
@@ -536,7 +527,7 @@ class PKHDescriptor(Descriptor):
             witness_items=(sig, pubkey),
         )
 
-    def get_satisfaction_progress(self, *, sigdata=None) -> Tuple[int, int]:
+    def get_satisfaction_progress(self, *, sigdata=None) -> tuple[int, int]:
         if sigdata is None:
             sigdata = {}
         signatures = list(sigdata.values())
@@ -557,7 +548,7 @@ class WPKHDescriptor(Descriptor):
         """
         super().__init__([pubkey], [], "wpkh")
 
-    def expand(self, *, pos: Optional[int] = None) -> "ExpandedScripts":
+    def expand(self, *, pos: int | None = None) -> "ExpandedScripts":
         pkh = hash_160(self.pubkeys[0].get_pubkey_bytes(pos=pos))
         output_script = construct_script([0, pkh])
         scriptcode = bitcoin.pubkeyhash_to_p2pkh_script(pkh.hex())
@@ -581,7 +572,7 @@ class WPKHDescriptor(Descriptor):
             witness_items=(sig, pubkey),
         )
 
-    def get_satisfaction_progress(self, *, sigdata=None) -> Tuple[int, int]:
+    def get_satisfaction_progress(self, *, sigdata=None) -> tuple[int, int]:
         if sigdata is None:
             sigdata = {}
         signatures = list(sigdata.values())
@@ -599,7 +590,7 @@ class MultisigDescriptor(Descriptor):
     A descriptor for ``multi()`` and ``sortedmulti()`` descriptors
     """
 
-    def __init__(self, pubkeys: List["PubkeyProvider"], thresh: int, is_sorted: bool) -> None:
+    def __init__(self, pubkeys: list["PubkeyProvider"], thresh: int, is_sorted: bool) -> None:
         r"""
         :param pubkeys: The :class:`PubkeyProvider`\ s for this descriptor
         :param thresh: The number of keys required to sign this multisig
@@ -614,7 +605,7 @@ class MultisigDescriptor(Descriptor):
             if not self.is_range():
                 # sort xpubs using the order of pubkeys
                 der_pks = [p.get_pubkey_bytes() for p in self.pubkeys]
-                self.pubkeys = [x[1] for x in sorted(zip(der_pks, self.pubkeys))]
+                self.pubkeys = [x[1] for x in sorted(zip(der_pks, self.pubkeys, strict=False))]
             else:
                 # not possible to sort according to final order in expanded scripts,
                 # but for easier visual comparison, we do a lexicographical sort
@@ -625,7 +616,7 @@ class MultisigDescriptor(Descriptor):
             self.name, self.thresh, ",".join([p.to_string() for p in self.pubkeys])
         )
 
-    def expand(self, *, pos: Optional[int] = None) -> "ExpandedScripts":
+    def expand(self, *, pos: int | None = None) -> "ExpandedScripts":
         der_pks = [p.get_pubkey_bytes(pos=pos) for p in self.pubkeys]
         if self.is_sorted:
             der_pks.sort()
@@ -652,7 +643,7 @@ class MultisigDescriptor(Descriptor):
             dummy_sig = DUMMY_DER_SIG
             signatures += (self.thresh - len(signatures)) * [dummy_sig]
         if len(signatures) < self.thresh:
-            raise MissingSolutionPiece(f"not enough sigs")
+            raise MissingSolutionPiece("not enough sigs")
         assert (
             len(signatures) == self.thresh
         ), f"thresh={self.thresh}, but got {len(signatures)} sigs"
@@ -660,7 +651,7 @@ class MultisigDescriptor(Descriptor):
             witness_items=(0, *signatures),
         )
 
-    def get_satisfaction_progress(self, *, sigdata=None) -> Tuple[int, int]:
+    def get_satisfaction_progress(self, *, sigdata=None) -> tuple[int, int]:
         if sigdata is None:
             sigdata = {}
         signatures = list(sigdata.values())
@@ -681,7 +672,7 @@ class SHDescriptor(Descriptor):
         """
         super().__init__([], [subdescriptor], "sh")
 
-    def expand(self, *, pos: Optional[int] = None) -> "ExpandedScripts":
+    def expand(self, *, pos: int | None = None) -> "ExpandedScripts":
         assert len(self.subdescriptors) == 1
         sub_scripts = self.subdescriptors[0].expand(pos=pos)
         redeem_script = sub_scripts.output_script
@@ -705,7 +696,7 @@ class SHDescriptor(Descriptor):
         subdesc = self.subdescriptors[0]
         redeem_script = self.expand().redeem_script
         witness = None
-        if isinstance(subdesc, (WSHDescriptor, WPKHDescriptor)):  # witness_v0 nested in p2sh
+        if isinstance(subdesc, WSHDescriptor | WPKHDescriptor):  # witness_v0 nested in p2sh
             witness = subdesc.satisfy(sigdata=sigdata, allow_dummy=allow_dummy).witness
             script_sig = bfh(construct_script([redeem_script]))
         else:  # legacy p2sh
@@ -728,7 +719,7 @@ class WSHDescriptor(Descriptor):
         """
         super().__init__([], [subdescriptor], "wsh")
 
-    def expand(self, *, pos: Optional[int] = None) -> "ExpandedScripts":
+    def expand(self, *, pos: int | None = None) -> "ExpandedScripts":
         assert len(self.subdescriptors) == 1
         sub_scripts = self.subdescriptors[0].expand(pos=pos)
         witness_script = sub_scripts.output_script
@@ -763,8 +754,8 @@ class TRDescriptor(Descriptor):
     def __init__(
         self,
         internal_key: "PubkeyProvider",
-        subdescriptors: List["Descriptor"] = None,
-        depths: List[int] = None,
+        subdescriptors: list["Descriptor"] | None = None,
+        depths: list[int] | None = None,
     ) -> None:
         r"""
         :param internal_key: The :class:`PubkeyProvider` that is the internal key for this descriptor
@@ -780,7 +771,7 @@ class TRDescriptor(Descriptor):
 
     def to_string_no_checksum(self) -> str:
         r = f"{self.name}({self.pubkeys[0].to_string()}"
-        path: List[bool] = []  # Track left or right for each depth
+        path: list[bool] = []  # Track left or right for each depth
         for p, depth in enumerate(self.depths):
             r += ","
             while len(path) <= depth:
@@ -801,7 +792,7 @@ class TRDescriptor(Descriptor):
         return True
 
 
-def _get_func_expr(s: str) -> Tuple[str, str]:
+def _get_func_expr(s: str) -> tuple[str, str]:
     """
     Get the function name and then the expression inside
 
@@ -829,7 +820,7 @@ def _get_const(s: str, const: str) -> str:
     return s[1:]
 
 
-def _get_expr(s: str) -> Tuple[str, str]:
+def _get_expr(s: str) -> tuple[str, str]:
     """
     Extract the expression that ``s`` begins with.
 
@@ -850,7 +841,7 @@ def _get_expr(s: str) -> Tuple[str, str]:
     return s[0:i], s[i:]
 
 
-def parse_pubkey(expr: str, *, ctx: "_ParseDescriptorContext") -> Tuple["PubkeyProvider", str]:
+def parse_pubkey(expr: str, *, ctx: "_ParseDescriptorContext") -> tuple["PubkeyProvider", str]:
     """
     Parses an individual pubkey expression from a string that may contain more than one pubkey expression.
 
@@ -931,17 +922,13 @@ def _parse_descriptor(desc: str, *, ctx: "_ParseDescriptorContext") -> "Descript
             pubkeys.append(pubkey)
         if len(pubkeys) == 0 or len(pubkeys) > 15:
             raise ValueError(
-                "Cannot have {} keys in a multisig; must have between 1 and 15 keys, inclusive".format(
-                    len(pubkeys)
-                )
+                f"Cannot have {len(pubkeys)} keys in a multisig; must have between 1 and 15 keys, inclusive"
             )
         elif thresh < 1:
-            raise ValueError("Multisig threshold cannot be {}, must be at least 1".format(thresh))
+            raise ValueError(f"Multisig threshold cannot be {thresh}, must be at least 1")
         elif thresh > len(pubkeys):
             raise ValueError(
-                "Multisig threshold cannot be larger than the number of keys; threshold is {} but only {} keys specified".format(
-                    thresh, len(pubkeys)
-                )
+                f"Multisig threshold cannot be larger than the number of keys; threshold is {thresh} but only {len(pubkeys)} keys specified"
             )
         if ctx == _ParseDescriptorContext.TOP and len(pubkeys) > 3:
             raise ValueError("Cannot have {} pubkeys in bare multisig: only at most 3 pubkeys")
@@ -1006,7 +993,7 @@ def _parse_descriptor(desc: str, *, ctx: "_ParseDescriptorContext") -> "Descript
         raise ValueError("A function is needed within P2SH")
     elif ctx == _ParseDescriptorContext.P2WSH:
         raise ValueError("A function is needed within P2WSH")
-    raise ValueError("{} is not a valid descriptor function".format(func))
+    raise ValueError(f"{func} is not a valid descriptor function")
 
 
 def parse_descriptor(desc: str) -> "Descriptor":
@@ -1025,7 +1012,7 @@ def parse_descriptor(desc: str) -> "Descriptor":
         computed = DescriptorChecksum(desc)
         if computed != checksum:
             raise ValueError(
-                "The checksum does not match; Got {}, expected {}".format(checksum, computed)
+                f"The checksum does not match; Got {checksum}, expected {computed}"
             )
     return _parse_descriptor(desc, ctx=_ParseDescriptorContext.TOP)
 
@@ -1035,7 +1022,7 @@ def parse_descriptor(desc: str) -> "Descriptor":
 
 def get_singlesig_descriptor_from_legacy_leaf(
     *, pubkey: str, script_type: str
-) -> Optional[Descriptor]:
+) -> Descriptor | None:
     pubkey = PubkeyProvider.parse(pubkey)
     if script_type == "p2pk":
         return PKDescriptor(pubkey=pubkey)
@@ -1050,7 +1037,7 @@ def get_singlesig_descriptor_from_legacy_leaf(
         raise NotImplementedError(f"unexpected {script_type=}")
 
 
-def create_dummy_descriptor_from_address(addr: Optional[str]) -> "Descriptor":
+def create_dummy_descriptor_from_address(addr: str | None) -> "Descriptor":
     # It's not possible to tell the script type in general just from an address.
     # - "1" addresses are of course p2pkh
     # - "3" addresses are p2sh but we don't know the redeem script...
@@ -1059,7 +1046,7 @@ def create_dummy_descriptor_from_address(addr: Optional[str]) -> "Descriptor":
     # If we don't know the script, we _guess_ it is pubkeyhash.
     # As this method is used e.g. for tx size estimation,
     # the estimation will not be precise.
-    def guess_script_type(addr: Optional[str]) -> str:
+    def guess_script_type(addr: str | None) -> str:
         if addr is None:
             return "p2wpkh"  # the default guess
         witver, witprog = segwit_addr.decode_segwit_address(constants.net.SEGWIT_HRP, addr)
@@ -1070,7 +1057,7 @@ def create_dummy_descriptor_from_address(addr: Optional[str]) -> "Descriptor":
             return "p2pkh"
         elif addrtype == constants.net.ADDRTYPE_P2SH:
             return "p2wpkh-p2sh"
-        raise Exception(f"unrecognized address: {repr(addr)}")
+        raise Exception(f"unrecognized address: {addr!r}")
 
     script_type = guess_script_type(addr)
     # guess pubkey-len to be 33-bytes:

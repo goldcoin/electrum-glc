@@ -5,6 +5,7 @@
 
 import base64
 import binascii
+import copy
 import hashlib
 import hmac
 import json
@@ -14,27 +15,28 @@ import re
 import struct
 import sys
 import time
-import copy
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
-from electrum.crypto import sha256d, EncodeAES_bytes, DecodeAES_bytes, hmac_oneshot
+from electrum import constants, descriptor, ecc
+from electrum.bip32 import (
+    BIP32Node,
+    convert_bip32_intpath_to_strpath,
+    is_all_public_derivation,
+    normalize_bip32_derivation,
+)
 from electrum.bitcoin import public_key_to_p2pkh
-from electrum.bip32 import BIP32Node, convert_bip32_intpath_to_strpath, is_all_public_derivation
-from electrum.bip32 import normalize_bip32_derivation
-from electrum import descriptor
-from electrum import ecc
+from electrum.crypto import DecodeAES_bytes, EncodeAES_bytes, hmac_oneshot, sha256d
 from electrum.ecc import msg_magic
-from electrum.wallet import Standard_Wallet
-from electrum import constants
-from electrum.transaction import Transaction, PartialTransaction, PartialTxInput, Sighash
 from electrum.i18n import _
 from electrum.keystore import Hardware_KeyStore
-from electrum.util import to_string, UserCancelled, UserFacingException, bfh
-from electrum.network import Network
 from electrum.logging import get_logger
-from electrum.plugin import runs_in_hwd_thread, run_in_hwd_thread
+from electrum.network import Network
+from electrum.plugin import run_in_hwd_thread, runs_in_hwd_thread
+from electrum.transaction import PartialTransaction, PartialTxInput, Sighash, Transaction
+from electrum.util import UserCancelled, UserFacingException, bfh, to_string
+from electrum.wallet import Standard_Wallet
 
-from ..hw_wallet import HW_PluginBase, HardwareClientBase, HardwareHandlerBase
+from ..hw_wallet import HardwareClientBase, HardwareHandlerBase, HW_PluginBase
 from ..hw_wallet.plugin import OperationCancelled
 
 if TYPE_CHECKING:
@@ -48,7 +50,7 @@ try:
     import hid
 
     DIGIBOX = True
-except ImportError as e:
+except ImportError:
     DIGIBOX = False
 
 
@@ -87,7 +89,7 @@ class DigitalBitbox_Client(HardwareClientBase):
         self.setupRunning = False
         self.usbReportSize = 64  # firmware > v2.0.0
 
-    def device_model_name(self) -> Optional[str]:
+    def device_model_name(self) -> str | None:
         return "Digital BitBox"
 
     @runs_in_hwd_thread
@@ -118,7 +120,7 @@ class DigitalBitbox_Client(HardwareClientBase):
     def _get_xpub(self, bip32_path: str):
         bip32_path = normalize_bip32_derivation(bip32_path, hardened_char="'")
         if self.check_device_dialog():
-            return self.hid_send_encrypt(('{"xpub": "%s"}' % bip32_path).encode("utf8"))
+            return self.hid_send_encrypt((f'{{"xpub": "{bip32_path}"}}').encode())
 
     def get_xpub(self, bip32_path, xtype):
         assert xtype in self.plugin.SUPPORTED_XTYPES
@@ -340,9 +342,8 @@ class DigitalBitbox_Client(HardwareClientBase):
         key = self.stretch_key(self.password)
         filename = "Electrum-" + time.strftime("%Y-%m-%d-%H-%M-%S") + ".pdf"
         msg = (
-            '{"seed":{"source": "create", "key": "%s", "filename": "%s", "entropy": "%s"}}'
-            % (key, filename, to_hexstr(os.urandom(32)))
-        ).encode("utf8")
+            f'{{"seed":{{"source": "create", "key": "{key}", "filename": "{filename}", "entropy": "{to_hexstr(os.urandom(32))}"}}}}'
+        ).encode()
         reply = self.hid_send_encrypt(msg)
         if "error" in reply:
             raise UserFacingException(reply["error"]["message"])
@@ -385,8 +386,7 @@ class DigitalBitbox_Client(HardwareClientBase):
                 + _("To cancel, briefly touch the light or wait for the timeout.")
             )
         msg = (
-            '{"seed":{"source": "backup", "key": "%s", "filename": "%s"}}'
-            % (key, backups["backup"][f])
+            '{{"seed":{{"source": "backup", "key": "{}", "filename": "{}"}}}}'.format(key, backups["backup"][f])
         ).encode("utf8")
         hid_reply = self.hid_send_encrypt(msg)
         self.handler.finished()
@@ -430,8 +430,8 @@ class DigitalBitbox_Client(HardwareClientBase):
     def hid_read_frame(self):
         # INIT response
         read = bytearray(self.dbb_hid.read(self.usbReportSize))
-        cid = ((read[0] * 256 + read[1]) * 256 + read[2]) * 256 + read[3]
-        cmd = read[4]
+        ((read[0] * 256 + read[1]) * 256 + read[2]) * 256 + read[3]
+        read[4]
         data_len = read[5] * 256 + read[6]
         data = read[7:]
         idx = len(read) - 7
@@ -461,7 +461,7 @@ class DigitalBitbox_Client(HardwareClientBase):
             r = to_string(r, "utf8")
             reply = json.loads(r)
         except Exception as e:
-            _logger.info(f"Exception caught {repr(e)}")
+            _logger.info(f"Exception caught {e!r}")
         return reply
 
     @runs_in_hwd_thread
@@ -488,7 +488,7 @@ class DigitalBitbox_Client(HardwareClientBase):
             if "error" in reply:
                 self.password = None
         except Exception as e:
-            _logger.info(f"Exception caught {repr(e)}")
+            _logger.info(f"Exception caught {e!r}")
         return reply
 
 
@@ -527,7 +527,7 @@ class DigitalBitbox_KeyStore(Hardware_KeyStore):
             hasharray.append({"hash": inputHash, "keypath": inputPath})
             hasharray = json.dumps(hasharray)
 
-            msg = ('{"sign":{"meta":"sign message", "data":%s}}' % hasharray).encode("utf8")
+            msg = (f'{{"sign":{{"meta":"sign message", "data":{hasharray}}}}}').encode()
 
             dbb_client = self.plugin.get_client(self)
 
@@ -779,7 +779,7 @@ class DigitalBitboxPlugin(HW_PluginBase):
         url = "https://digitalbitbox.com/smartverification/index.php"
         key_s = base64.b64decode(self.digitalbitbox_config[ENCRYPTION_PRIVKEY_KEY])
         ciphertext = EncodeAES_bytes(key_s, json.dumps(payload).encode("ascii"))
-        args = "c=data&s=0&dt=0&uuid=%s&pl=%s" % (
+        args = "c=data&s=0&dt=0&uuid={}&pl={}".format(
             self.digitalbitbox_config[CHANNEL_ID_KEY],
             base64.b64encode(ciphertext).decode("ascii"),
         )

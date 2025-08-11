@@ -1,7 +1,7 @@
 # loosely based on
 # http://trevorius.com/scrapbook/uncategorized/pyqt-custom-abstractitemmodel/
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore
 
 
 class CustomNode:

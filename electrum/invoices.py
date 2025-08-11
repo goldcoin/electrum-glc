@@ -1,20 +1,18 @@
 import time
-from typing import TYPE_CHECKING, List, Optional, Union, Dict, Any, Sequence
-from decimal import Decimal
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, Union
 
 import attr
 
-from .json_db import StoredObject, stored_in
-from .i18n import _
-from .util import age, InvoiceError, format_satoshis
 from .bip21 import create_bip21_uri
-from .lnutil import hex_to_bytes
-from .lnaddr import lndecode, LnAddr
-from . import constants
 from .bitcoin import COIN, TOTAL_COIN_SUPPLY_LIMIT_IN_BTC
-from .bitcoin import address_to_script
-from .transaction import PartialTxOutput
 from .crypto import sha256d
+from .i18n import _
+from .json_db import StoredObject, stored_in
+from .lnaddr import LnAddr, lndecode
+from .lnutil import hex_to_bytes
+from .transaction import PartialTxOutput
+from .util import InvoiceError, age, format_satoshis
 
 if TYPE_CHECKING:
     from .paymentrequest import PaymentRequest
@@ -78,7 +76,7 @@ PR_DEFAULT_EXPIRATION_WHEN_CREATING = 24 * 60 * 60  # 1 day
 assert PR_DEFAULT_EXPIRATION_WHEN_CREATING in pr_expiration_values()
 
 
-def _decode_outputs(outputs) -> Optional[List[PartialTxOutput]]:
+def _decode_outputs(outputs) -> list[PartialTxOutput] | None:
     if outputs is None:
         return None
     ret = []
@@ -143,7 +141,7 @@ class BaseInvoice(StoredObject):
     def is_lightning(self) -> bool:
         raise NotImplementedError()
 
-    def get_address(self) -> Optional[str]:
+    def get_address(self) -> str | None:
         """returns the first address, to be displayed in GUI"""
         raise NotImplementedError()
 
@@ -298,7 +296,7 @@ class Invoice(BaseInvoice):
     def get_broadcasting_status(self):
         return self._broadcasting_status
 
-    def get_address(self) -> Optional[str]:
+    def get_address(self) -> str | None:
         address = None
         if self.outputs:
             address = self.outputs[0].address if len(self.outputs) > 0 else None
@@ -329,7 +327,7 @@ class Invoice(BaseInvoice):
         else:
             return True
 
-    def to_debug_json(self) -> Dict[str, Any]:
+    def to_debug_json(self) -> dict[str, Any]:
         d = self.to_json()
         d["lnaddr"] = self._lnaddr.to_debug_json()
         return d
@@ -345,7 +343,7 @@ class Request(BaseInvoice):
     def is_lightning(self):
         return self.payment_hash is not None
 
-    def get_address(self) -> Optional[str]:
+    def get_address(self) -> str | None:
         address = None
         if self.outputs:
             address = self.outputs[0].address if len(self.outputs) > 0 else None
@@ -359,8 +357,8 @@ class Request(BaseInvoice):
     def get_bip21_URI(
         self,
         *,
-        lightning_invoice: Optional[str] = None,
-    ) -> Optional[str]:
+        lightning_invoice: str | None = None,
+    ) -> str | None:
         addr = self.get_address()
         amount = self.get_amount_sat()
         if amount is not None:

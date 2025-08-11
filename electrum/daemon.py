@@ -22,57 +22,48 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import asyncio
 import ast
+import asyncio
 import errno
+import json
 import os
-import time
-import traceback
+import socket
 import sys
 import threading
-from typing import (
-    Dict,
-    Optional,
-    Tuple,
-    Iterable,
-    Callable,
-    Union,
-    Sequence,
-    Mapping,
-    TYPE_CHECKING,
-)
+import time
 from base64 import b64decode, b64encode
-from collections import defaultdict
-import json
-import socket
+from typing import (
+    TYPE_CHECKING,
+    Optional,
+    Union,
+)
 
 import aiohttp
-from aiohttp import web, client_exceptions
-from aiorpcx import timeout_after, TaskTimeout, ignore_after
+from aiohttp import web
+from aiorpcx import ignore_after
 
-from . import util
+from . import GuiImportError, util
+from .commands import Commands, known_commands
+from .exchange_rate import FxThread
+from .logging import Logger, get_logger
 from .network import Network
+from .plugin import Plugins, run_hook
+from .simple_config import SimpleConfig
+from .storage import WalletStorage
 from .util import (
+    InvalidPassword,
+    OldTaskGroup,
+    constant_time_compare,
     json_decode,
+    log_exceptions,
+    profiler,
+    randrange,
+    standardize_path,
     to_bytes,
     to_string,
-    profiler,
-    standardize_path,
-    constant_time_compare,
-    InvalidPassword,
 )
-from .invoices import PR_PAID, PR_EXPIRED
-from .util import log_exceptions, ignore_exceptions, randrange, OldTaskGroup
-from .util import EventListener, event_listener
-from .wallet import Wallet, Abstract_Wallet
-from .storage import WalletStorage
-from .wallet_db import WalletDB, WalletRequiresSplit, WalletRequiresUpgrade, WalletUnfinished
-from .commands import known_commands, Commands
-from .simple_config import SimpleConfig
-from .exchange_rate import FxThread
-from .logging import get_logger, Logger
-from . import GuiImportError
-from .plugin import run_hook, Plugins
+from .wallet import Abstract_Wallet, Wallet
+from .wallet_db import WalletDB, WalletUnfinished
 
 if TYPE_CHECKING:
     from electrum import gui
@@ -193,7 +184,7 @@ def wait_until_daemon_becomes_ready(*, config: SimpleConfig, timeout=5) -> bool:
             continue
 
 
-def get_rpc_credentials(config: SimpleConfig) -> Tuple[str, str]:
+def get_rpc_credentials(config: SimpleConfig) -> tuple[str, str]:
     rpc_user = config.RPC_USERNAME or None
     rpc_password = config.RPC_PASSWORD or None
     if rpc_user is None or rpc_password is None:
@@ -274,7 +265,7 @@ class AuthenticatedServer(Logger):
             if method not in self._methods:
                 raise Exception(f"attempting to use unregistered method: {method}")
             f = self._methods[method]
-        except Exception as e:
+        except Exception:
             self.logger.exception("invalid request")
             return web.Response(text="Invalid Request", status=500)
         response = {
@@ -430,7 +421,7 @@ class WatchTowerServer(AuthenticatedServer):
 
 class Daemon(Logger):
 
-    network: Optional[Network] = None
+    network: Network | None = None
     gui_object: Optional["gui.BaseElectrumGui"] = None
     watchtower: Optional["WatchTowerServer"] = None
 
@@ -496,7 +487,7 @@ class Daemon(Logger):
             self._stopping_soon_or_errored.set()
 
     def start_network(self):
-        self.logger.info(f"starting network.")
+        self.logger.info("starting network.")
         assert not self.config.NETWORK_OFFLINE
         assert self.network
         # server-side watchtower
@@ -530,7 +521,7 @@ class Daemon(Logger):
         return func_wrapper
 
     @with_wallet_lock
-    def load_wallet(self, path, password, *, upgrade=False) -> Optional[Abstract_Wallet]:
+    def load_wallet(self, path, password, *, upgrade=False) -> Abstract_Wallet | None:
         path = standardize_path(path)
         wallet_key = self._wallet_key_from_path(path)
         # wizard will be launched if we return
@@ -549,7 +540,7 @@ class Daemon(Logger):
         *,
         upgrade: bool = False,
         config: SimpleConfig,
-    ) -> Optional[Abstract_Wallet]:
+    ) -> Abstract_Wallet | None:
         path = standardize_path(path)
         storage = WalletStorage(path)
         if not storage.file_exists():
@@ -572,12 +563,12 @@ class Daemon(Logger):
         self._wallets[wallet_key] = wallet
         run_hook("daemon_wallet_loaded", self, wallet)
 
-    def get_wallet(self, path: str) -> Optional[Abstract_Wallet]:
+    def get_wallet(self, path: str) -> Abstract_Wallet | None:
         wallet_key = self._wallet_key_from_path(path)
         return self._wallets.get(wallet_key)
 
     @with_wallet_lock
-    def get_wallets(self) -> Dict[str, Abstract_Wallet]:
+    def get_wallets(self) -> dict[str, Abstract_Wallet]:
         return dict(self._wallets)  # copy
 
     def delete_wallet(self, path: str) -> bool:
@@ -629,7 +620,7 @@ class Daemon(Logger):
                 self.gui_object.stop()
             self.logger.info("stopping all wallets")
             async with OldTaskGroup() as group:
-                for k, wallet in self._wallets.items():
+                for _k, wallet in self._wallets.items():
                     await group.spawn(wallet.stop())
             self.logger.info("stopping network and taskgroup")
             async with ignore_after(2):
@@ -671,7 +662,7 @@ class Daemon(Logger):
                 # If daemon.stop() was called before gui_object got created, stop gui now.
                 self.gui_object.stop()
         except BaseException as e:
-            self.logger.error(f"GUI raised exception: {repr(e)}. shutting down.")
+            self.logger.error(f"GUI raised exception: {e!r}. shutting down.")
             raise
         finally:
             # app will exit now
@@ -680,7 +671,7 @@ class Daemon(Logger):
     @with_wallet_lock
     def _check_password_for_directory(
         self, *, old_password, new_password=None, wallet_dir: str
-    ) -> Tuple[bool, bool]:
+    ) -> tuple[bool, bool]:
         """Checks password against all wallets (in dir), returns whether they can be unified and whether they are already.
         If new_password is not None, update all wallet passwords to new_password.
         """
@@ -733,7 +724,7 @@ class Daemon(Logger):
         *,
         old_password,
         new_password,
-        wallet_dir: Optional[str] = None,
+        wallet_dir: str | None = None,
     ) -> bool:
         """returns whether password is unified"""
         if new_password is None:

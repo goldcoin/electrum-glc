@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Electrum - lightweight Bitcoin client
 # Copyright (C) 2018 The Electrum developers
@@ -23,24 +22,22 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import io
 import hashlib
-from typing import Sequence, List, Tuple, NamedTuple, TYPE_CHECKING, Dict, Any, Optional, Union
+import io
+from collections.abc import Sequence
 from enum import IntEnum
+from typing import TYPE_CHECKING, Any, NamedTuple, Union
 
-from . import ecc
-from .crypto import sha256, hmac_oneshot, chacha20_encrypt
-from .util import profiler, xor_bytes, bfh
-from .lnutil import (
-    get_ecdh,
-    PaymentFailure,
-    NUM_MAX_HOPS_IN_PAYMENT_PATH,
-    NUM_MAX_EDGES_IN_PAYMENT_PATH,
-    ShortChannelID,
-    OnionFailureCodeMetaFlag,
-)
+from . import ecc, lnmsg
+from .crypto import chacha20_encrypt, hmac_oneshot, sha256
 from .lnmsg import OnionWireSerializer, read_bigsize_int, write_bigsize_int
-from . import lnmsg
+from .lnutil import (
+    NUM_MAX_EDGES_IN_PAYMENT_PATH,
+    OnionFailureCodeMetaFlag,
+    PaymentFailure,
+    get_ecdh,
+)
+from .util import xor_bytes
 
 if TYPE_CHECKING:
     from .lnrouter import LNPaymentRoute
@@ -65,7 +62,7 @@ class InvalidOnionPubkey(Exception):
 
 class OnionHopsDataSingle:  # called HopData in lnd
 
-    def __init__(self, *, payload: dict = None):
+    def __init__(self, *, payload: dict | None = None):
         if payload is None:
             payload = {}
         self.payload = payload
@@ -94,7 +91,7 @@ class OnionHopsDataSingle:  # called HopData in lnd
     def from_fd(cls, fd: io.BytesIO) -> "OnionHopsDataSingle":
         first_byte = fd.read(1)
         if len(first_byte) == 0:
-            raise Exception(f"unexpected EOF")
+            raise Exception("unexpected EOF")
         fd.seek(-1, io.SEEK_CUR)  # undo read
         if first_byte == b"\x00":
             # legacy hop data format
@@ -106,7 +103,7 @@ class OnionHopsDataSingle:  # called HopData in lnd
             hop_payload_length = read_bigsize_int(fd)
             hop_payload = fd.read(hop_payload_length)
             if hop_payload_length != len(hop_payload):
-                raise Exception(f"unexpected EOF")
+                raise Exception("unexpected EOF")
             ret = OnionHopsDataSingle()
             ret.payload = OnionWireSerializer.read_tlv_stream(
                 fd=io.BytesIO(hop_payload), tlv_stream_name="payload"
@@ -141,22 +138,22 @@ class OnionPacket:
         ret += self.hops_data
         ret += self.hmac
         if len(ret) - 66 not in [HOPS_DATA_SIZE, TRAMPOLINE_HOPS_DATA_SIZE]:
-            raise Exception("unexpected length {}".format(len(ret)))
+            raise Exception(f"unexpected length {len(ret)}")
         return ret
 
     @classmethod
     def from_bytes(cls, b: bytes):
         if len(b) - 66 not in [HOPS_DATA_SIZE, TRAMPOLINE_HOPS_DATA_SIZE]:
-            raise Exception("unexpected length {}".format(len(b)))
+            raise Exception(f"unexpected length {len(b)}")
         version = b[0]
         if version != 0:
-            raise UnsupportedOnionPacketVersion("version {} is not supported".format(version))
+            raise UnsupportedOnionPacketVersion(f"version {version} is not supported")
         return OnionPacket(public_key=b[1:34], hops_data=b[34:-32], hmac=b[-32:])
 
 
 def get_bolt04_onion_key(key_type: bytes, secret: bytes) -> bytes:
     if key_type not in (b"rho", b"mu", b"um", b"ammag", b"pad"):
-        raise Exception("invalid key_type {}".format(key_type))
+        raise Exception(f"invalid key_type {key_type}")
     key = hmac_oneshot(key_type, msg=secret, digest=hashlib.sha256)
     return key
 
@@ -168,7 +165,7 @@ def get_shared_secrets_along_route(
     hop_shared_secrets = num_hops * [b""]
     ephemeral_key = session_key
     # compute shared key for each hop
-    for i in range(0, num_hops):
+    for i in range(num_hops):
         hop_shared_secrets[i] = get_ecdh(ephemeral_key, payment_path_pubkeys[i])
         ephemeral_pubkey = ecc.ECPrivkey(ephemeral_key).get_public_key_bytes()
         blinding_factor = sha256(ephemeral_pubkey + hop_shared_secrets[i])
@@ -229,7 +226,7 @@ def calc_hops_data_for_payment(
     final_cltv_abs: int,
     total_msat: int,
     payment_secret: bytes,
-) -> Tuple[List[OnionHopsDataSingle], int, int]:
+) -> tuple[list[OnionHopsDataSingle], int, int]:
     """Returns the hops_data to be used for constructing an onion packet,
     and the amount_msat and cltv_abs to be used on our immediate channel.
     """
@@ -279,7 +276,7 @@ def _generate_filler(
         filler_size += len(hop_data.to_bytes())
     filler = bytearray(filler_size)
 
-    for i in range(0, num_hops - 1):  # -1, as last hop does not obfuscate
+    for i in range(num_hops - 1):  # -1, as last hop does not obfuscate
         # Sum up how many frames were used by prior hops.
         filler_start = data_size
         for hop_data in hops_data[:i]:
@@ -336,7 +333,7 @@ def process_onion_packet(
     # trampoline
     trampoline_onion_packet = hop_data.payload.get("trampoline_onion_packet")
     if trampoline_onion_packet:
-        top_version = trampoline_onion_packet.get("version")
+        trampoline_onion_packet.get("version")
         top_public_key = trampoline_onion_packet.get("public_key")
         top_hops_data = trampoline_onion_packet.get("hops_data")
         top_hops_data_fd = io.BytesIO(top_hops_data)
@@ -396,7 +393,7 @@ class OnionRoutingFailure(Exception):
             return str(self.code.name)
         return f"Unknown error ({self.code!r})"
 
-    def decode_data(self) -> Optional[Dict[str, Any]]:
+    def decode_data(self) -> dict[str, Any] | None:
         try:
             message_type, payload = OnionWireSerializer.decode_msg(self.to_bytes())
         except lnmsg.FailedToParseMsg:
@@ -436,7 +433,7 @@ def obfuscate_onion_error(error_packet, their_public_key, our_onion_private_key)
 
 def _decode_onion_error(
     error_packet: bytes, payment_path_pubkeys: Sequence[bytes], session_key: bytes
-) -> Tuple[bytes, int]:
+) -> tuple[bytes, int]:
     """Returns the decoded error bytes, and the index of the sender of the error."""
     num_hops = len(payment_path_pubkeys)
     hop_shared_secrets = get_shared_secrets_along_route(payment_path_pubkeys, session_key)

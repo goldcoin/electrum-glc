@@ -1,23 +1,22 @@
 from enum import IntEnum
-from typing import Optional
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject, QTimer, pyqtEnum
+from PyQt6.QtCore import QObject, QTimer, pyqtEnum, pyqtProperty, pyqtSignal, pyqtSlot
 
-from electrum.logging import get_logger
 from electrum.invoices import (
-    PR_UNPAID,
+    LN_EXPIRY_NEVER,
     PR_EXPIRED,
-    PR_UNKNOWN,
-    PR_PAID,
-    PR_INFLIGHT,
     PR_FAILED,
+    PR_INFLIGHT,
+    PR_PAID,
     PR_ROUTING,
     PR_UNCONFIRMED,
-    LN_EXPIRY_NEVER,
+    PR_UNKNOWN,
+    PR_UNPAID,
 )
+from electrum.logging import get_logger
 
-from .qewallet import QEWallet
 from .qetypes import QEAmount
+from .qewallet import QEWallet
 from .util import QtEventListener, event_listener, status_update_timer_interval
 
 

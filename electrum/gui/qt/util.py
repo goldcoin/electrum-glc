@@ -1,122 +1,96 @@
-import asyncio
-import enum
+import os
 import os.path
-import time
-import sys
 import platform
 import queue
-import traceback
-import os
+import sys
+import time
 import webbrowser
-from decimal import Decimal
-from functools import partial, lru_cache, wraps
+from collections.abc import Callable, Sequence
+from functools import lru_cache, partial, wraps
 from typing import (
-    NamedTuple,
-    Callable,
-    Optional,
     TYPE_CHECKING,
-    Union,
-    List,
-    Dict,
     Any,
-    Sequence,
-    Iterable,
-    Tuple,
-    Type,
+    NamedTuple,
 )
 
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import (
-    QFont,
-    QColor,
-    QCursor,
-    QPixmap,
-    QStandardItem,
-    QImage,
-    QPalette,
-    QIcon,
-    QFontMetrics,
-    QShowEvent,
-    QPainter,
-    QHelpEvent,
-    QMouseEvent,
-    QContextMenuEvent,
-)
+from PyQt5 import QtCore
 from PyQt5.QtCore import (
-    Qt,
-    QPersistentModelIndex,
-    QModelIndex,
-    pyqtSignal,
     QCoreApplication,
-    QItemSelectionModel,
-    QThread,
-    QSortFilterProxyModel,
-    QSize,
-    QLocale,
-    QAbstractItemModel,
-    QEvent,
-    QRect,
-    QPoint,
     QObject,
+    QPoint,
+    QRect,
+    QSize,
+    Qt,
+    QThread,
+    pyqtSignal,
+)
+from PyQt5.QtGui import (
+    QColor,
+    QContextMenuEvent,
+    QCursor,
+    QFont,
+    QFontMetrics,
+    QIcon,
+    QImage,
+    QPainter,
+    QPalette,
+    QPixmap,
 )
 from PyQt5.QtWidgets import (
-    QPushButton,
-    QLabel,
-    QMessageBox,
-    QHBoxLayout,
-    QAbstractItemView,
-    QVBoxLayout,
-    QLineEdit,
-    QStyle,
-    QDialog,
-    QGroupBox,
-    QButtonGroup,
-    QRadioButton,
-    QFileDialog,
-    QWidget,
-    QToolButton,
-    QTreeView,
-    QPlainTextEdit,
-    QHeaderView,
     QApplication,
-    QToolTip,
-    QTreeWidget,
-    QStyledItemDelegate,
-    QMenu,
-    QStyleOptionViewItem,
+    QButtonGroup,
+    QDialog,
+    QFileDialog,
+    QGraphicsEffect,
+    QGraphicsPixmapItem,
+    QGraphicsScene,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
     QLayout,
     QLayoutItem,
-    QAbstractButton,
-    QGraphicsEffect,
-    QGraphicsScene,
-    QGraphicsPixmapItem,
-    QSizePolicy,
+    QLineEdit,
+    QMenu,
+    QMessageBox,
+    QPlainTextEdit,
+    QPushButton,
+    QRadioButton,
+    QStyle,
+    QToolButton,
+    QToolTip,
+    QVBoxLayout,
+    QWidget,
 )
 
-from electrum.i18n import _, languages
-from electrum.util import FileImportFailed, FileExportFailed, make_aiohttp_session, resource_path
-from electrum.util import EventListener, event_listener, get_logger
+from electrum.i18n import _
 from electrum.invoices import (
-    PR_UNPAID,
-    PR_PAID,
+    PR_BROADCAST,
+    PR_BROADCASTING,
     PR_EXPIRED,
-    PR_INFLIGHT,
-    PR_UNKNOWN,
     PR_FAILED,
+    PR_INFLIGHT,
+    PR_PAID,
     PR_ROUTING,
     PR_UNCONFIRMED,
-    PR_BROADCASTING,
-    PR_BROADCAST,
+    PR_UNKNOWN,
+    PR_UNPAID,
 )
 from electrum.logging import Logger
 from electrum.qrreader import MissingQrDetectionLib
+from electrum.util import (
+    EventListener,
+    FileExportFailed,
+    FileImportFailed,
+    event_listener,
+    get_logger,
+    resource_path,
+)
 
 if TYPE_CHECKING:
+    from electrum.simple_config import ConfigVarWithConfig, SimpleConfig
+
     from .main_window import ElectrumWindow
     from .paytoedit import PayToEdit
-
-    from electrum.simple_config import SimpleConfig
-    from electrum.simple_config import ConfigVarWithConfig
 
 
 if platform.system() == "Windows":
@@ -204,7 +178,7 @@ class AmountLabel(QLabel):
 
 
 class HelpMixin:
-    def __init__(self, help_text: str, *, help_title: str = None):
+    def __init__(self, help_text: str, *, help_title: str | None = None):
         assert isinstance(self, QWidget), "HelpMixin must be a QWidget instance!"
         self.help_text = help_text
         self._help_title = help_title or _("Help")
@@ -315,13 +289,14 @@ class CancelButton(QPushButton):
         self.clicked.connect(dialog.reject)
 
 
-class MessageBoxMixin(object):
+class MessageBoxMixin:
     def top_level_window_recurse(self, window=None, test_func=None):
         window = window or self
         classes = (WindowModalDialog, QMessageBox)
         if test_func is None:
-            test_func = lambda x: True
-        for n, child in enumerate(window.children()):
+            def test_func(x):
+                return True
+        for _n, child in enumerate(window.children()):
             # Test for visibility as old closed dialogs may not be GC-ed.
             # Only accept children that confirm to test_func.
             if isinstance(child, classes) and child.isVisible() and test_func(child):
@@ -536,7 +511,7 @@ def text_dialog(
         return txt.toPlainText()
 
 
-class ChoicesLayout(object):
+class ChoicesLayout:
     def __init__(self, msg, choices, on_clicked=None, checked_index=0):
         vbox = QVBoxLayout()
         if len(msg) > 50:
@@ -735,7 +710,7 @@ class GenericInputHandler:
         config: "SimpleConfig",
         allow_multi: bool = False,
         show_error: Callable[[str], None],
-        setText: Callable[[str], None] = None,
+        setText: Callable[[str], None] | None = None,
         parent: QWidget = None,
     ) -> None:
         if setText is None:
@@ -768,7 +743,7 @@ class GenericInputHandler:
         *,
         allow_multi: bool = False,
         show_error: Callable[[str], None],
-        setText: Callable[[str], None] = None,
+        setText: Callable[[str], None] | None = None,
     ) -> None:
         if setText is None:
             setText = self.setText
@@ -810,7 +785,7 @@ class GenericInputHandler:
         *,
         config: "SimpleConfig",
         show_error: Callable[[str], None],
-        setText: Callable[[str], None] = None,
+        setText: Callable[[str], None] | None = None,
     ) -> None:
         if setText is None:
             setText = self.setText
@@ -823,9 +798,9 @@ class GenericInputHandler:
             return
         try:
             try:
-                with open(fileName, "r") as f:
+                with open(fileName) as f:
                     data = f.read()
-            except UnicodeError as e:
+            except UnicodeError:
                 with open(fileName, "rb") as f:
                     data = f.read()
                 data = data.hex()
@@ -840,7 +815,7 @@ class GenericInputHandler:
     def input_paste_from_clipboard(
         self,
         *,
-        setText: Callable[[str], None] = None,
+        setText: Callable[[str], None] | None = None,
     ) -> None:
         if setText is None:
             setText = self.setText
@@ -918,7 +893,7 @@ class OverlayControlMixin(GenericInputHandler):
     def addPasteButton(
         self,
         *,
-        setText: Callable[[str], None] = None,
+        setText: Callable[[str], None] | None = None,
     ):
         input_paste_from_clipboard = partial(
             self.input_paste_from_clipboard,
@@ -926,7 +901,7 @@ class OverlayControlMixin(GenericInputHandler):
         )
         self.addButton("copy.png", input_paste_from_clipboard, _("Paste from clipboard"))
 
-    def add_qr_show_button(self, *, config: "SimpleConfig", title: Optional[str] = None):
+    def add_qr_show_button(self, *, config: "SimpleConfig", title: str | None = None):
         if title is None:
             title = _("QR code")
 
@@ -956,7 +931,7 @@ class OverlayControlMixin(GenericInputHandler):
         config: "SimpleConfig",
         allow_multi: bool = False,
         show_error: Callable[[str], None],
-        setText: Callable[[str], None] = None,
+        setText: Callable[[str], None] | None = None,
     ):
         input_qr_from_camera = partial(
             self.input_qr_from_camera,
@@ -989,7 +964,7 @@ class OverlayControlMixin(GenericInputHandler):
         config: "SimpleConfig",
         allow_multi: bool = False,
         show_error: Callable[[str], None],
-        setText: Callable[[str], None] = None,
+        setText: Callable[[str], None] | None = None,
     ):
         input_qr_from_camera = partial(
             self.input_qr_from_camera,
@@ -1007,7 +982,7 @@ class OverlayControlMixin(GenericInputHandler):
         *,
         config: "SimpleConfig",
         show_error: Callable[[str], None],
-        setText: Callable[[str], None] = None,
+        setText: Callable[[str], None] | None = None,
     ) -> None:
         input_file = partial(
             self.input_file,
@@ -1021,10 +996,10 @@ class OverlayControlMixin(GenericInputHandler):
         self,
         *,
         options: Sequence[
-            Tuple[Optional[str], str, Callable[[], None]]
+            tuple[str | None, str, Callable[[], None]]
         ],  # list of (icon, text, cb)
-        icon: Optional[str] = None,
-        tooltip: Optional[str] = None,
+        icon: str | None = None,
+        tooltip: str | None = None,
     ):
         if icon is None:
             icon = "menu_vertical_white.png" if ColorScheme.dark_scheme else "menu_vertical.png"
@@ -1083,10 +1058,10 @@ class TaskThread(QThread, Logger):
 
     class Task(NamedTuple):
         task: Callable
-        cb_success: Optional[Callable]
-        cb_done: Optional[Callable]
-        cb_error: Optional[Callable]
-        cancel: Optional[Callable] = None
+        cb_success: Callable | None
+        cb_done: Callable | None
+        cb_error: Callable | None
+        cancel: Callable | None = None
 
     doneSig = pyqtSignal(object, object, object)
 
@@ -1102,7 +1077,7 @@ class TaskThread(QThread, Logger):
 
     def add(self, task, on_success=None, on_done=None, on_error=None, *, cancel=None):
         if self._stopping:
-            self.logger.warning(f"stopping or already stopped but tried to add new task.")
+            self.logger.warning("stopping or already stopped but tried to add new task.")
             return
         on_error = on_error or self.on_error
         task_ = TaskThread.Task(task, on_success, on_done, on_error, cancel=cancel)
@@ -1159,7 +1134,7 @@ class ColorSchemeItem:
     def as_stylesheet(self, background=False):
         css_prefix = "background-" if background else ""
         color = self._get_color(background)
-        return "QWidget {{ {}color:{}; }}".format(css_prefix, color)
+        return f"QWidget {{ {css_prefix}color:{color}; }}"
 
     def as_color(self, background=False):
         color = self._get_color(background)
@@ -1244,7 +1219,7 @@ def export_meta_gui(electrum_window: "ElectrumWindow", title, exporter):
     filename = getSaveFileName(
         parent=electrum_window,
         title=_("Select file to save your {}").format(title),
-        filename="electrum_{}.json".format(title),
+        filename=f"electrum_{title}.json",
         filter=filter_,
         config=electrum_window.config,
     )
@@ -1260,7 +1235,7 @@ def export_meta_gui(electrum_window: "ElectrumWindow", title, exporter):
         )
 
 
-def getOpenFileName(*, parent, title, filter="", config: "SimpleConfig") -> Optional[str]:
+def getOpenFileName(*, parent, title, filter="", config: "SimpleConfig") -> str | None:
     """Custom wrapper for getOpenFileName that remembers the path selected by the user."""
     directory = config.IO_DIRECTORY
     fileName, __ = QFileDialog.getOpenFileName(parent, title, directory, filter)
@@ -1275,10 +1250,10 @@ def getSaveFileName(
     title,
     filename,
     filter="",
-    default_extension: str = None,
-    default_filter: str = None,
+    default_extension: str | None = None,
+    default_filter: str | None = None,
     config: "SimpleConfig",
-) -> Optional[str]:
+) -> str | None:
     """Custom wrapper for getSaveFileName that remembers the path selected by the user."""
     directory = config.IO_DIRECTORY
     path = os.path.join(directory, filename)
@@ -1365,7 +1340,7 @@ class FixedAspectRatioLayout(QLayout):
     def __init__(self, parent: QWidget = None, aspect_ratio: float = 1.0):
         super().__init__(parent)
         self.aspect_ratio = aspect_ratio
-        self.items: List[QLayoutItem] = []
+        self.items: list[QLayoutItem] = []
 
     def set_aspect_ratio(self, aspect_ratio: float = 1.0):
         self.aspect_ratio = aspect_ratio
@@ -1512,7 +1487,7 @@ def qt_event_listener(func):
 
     @wraps(func)
     def decorator(self, *args):
-        self.qt_callback_signal.emit((func,) + args)
+        self.qt_callback_signal.emit((func, *args))
 
     return decorator
 

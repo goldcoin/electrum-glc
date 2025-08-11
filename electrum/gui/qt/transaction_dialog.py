@@ -24,86 +24,73 @@
 # SOFTWARE.
 
 import asyncio
-import sys
-import concurrent.futures
 import copy
 import datetime
-import traceback
 import time
-from typing import TYPE_CHECKING, Callable, Optional, List, Union, Tuple
-from functools import partial
+from collections.abc import Callable
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import QSize, Qt, QUrl, QPoint, pyqtSignal
-from PyQt5.QtGui import QTextCharFormat, QBrush, QFont, QPixmap, QCursor
+import qrcode
+from PyQt5.QtCore import QPoint, QSize, Qt, QUrl, pyqtSignal
+from PyQt5.QtGui import QBrush, QCursor, QFont, QPixmap, QTextCharFormat
 from PyQt5.QtWidgets import (
+    QAction,
     QDialog,
-    QLabel,
-    QPushButton,
+    QFrame,
     QHBoxLayout,
+    QLabel,
+    QMenu,
+    QPushButton,
+    QSizePolicy,
+    QTextBrowser,
+    QToolButton,
     QVBoxLayout,
     QWidget,
-    QGridLayout,
-    QTextEdit,
-    QFrame,
-    QAction,
-    QToolButton,
-    QMenu,
-    QCheckBox,
-    QTextBrowser,
-    QToolTip,
-    QApplication,
-    QSizePolicy,
 )
-import qrcode
-from qrcode import exceptions
 
-from electrum.simple_config import SimpleConfig
-from electrum.util import quantize_feerate
 from electrum import bitcoin
-
-from electrum.bitcoin import base_encode, NLOCKTIME_BLOCKHEIGHT_MAX, DummyAddress
+from electrum.bitcoin import NLOCKTIME_BLOCKHEIGHT_MAX, DummyAddress
 from electrum.i18n import _
+from electrum.logging import get_logger
+from electrum.network import Network
 from electrum.plugin import run_hook
-from electrum import simple_config
 from electrum.transaction import (
+    PartialTransaction,
     SerializationError,
     Transaction,
-    PartialTransaction,
-    TxOutpoint,
     TxinDataFetchProgress,
+    TxOutpoint,
 )
-from electrum.logging import get_logger
 from electrum.util import ShortID, get_asyncio_loop
-from electrum.network import Network
 
-from . import util
+from .my_treeview import create_toolbar_with_menu
+from .rate_limiter import rate_limited
 from .util import (
-    MessageBoxMixin,
-    read_QIcon,
-    Buttons,
-    icon_path,
     MONOSPACE_FONT,
-    ColorScheme,
-    ButtonsLineEdit,
-    ShowQRLineEdit,
-    text_dialog,
-    char_width_in_lineedit,
-    TRANSACTION_FILE_EXTENSION_FILTER_SEPARATE,
     TRANSACTION_FILE_EXTENSION_FILTER_ONLY_COMPLETE_TX,
     TRANSACTION_FILE_EXTENSION_FILTER_ONLY_PARTIAL_TX,
+    TRANSACTION_FILE_EXTENSION_FILTER_SEPARATE,
     BlockingWaitingDialog,
-    getSaveFileName,
+    Buttons,
+    ButtonsLineEdit,
+    ColorScheme,
     ColorSchemeItem,
+    MessageBoxMixin,
+    ShowQRLineEdit,
+    char_width_in_lineedit,
     get_iconname_qrcode,
+    getSaveFileName,
+    icon_path,
+    read_QIcon,
+    text_dialog,
 )
-from .rate_limiter import rate_limited
-from .my_treeview import create_toolbar_with_menu
 
 if TYPE_CHECKING:
-    from .main_window import ElectrumWindow
-    from electrum.wallet import Abstract_Wallet
     from electrum.payment_identifier import PaymentIdentifier
+    from electrum.wallet import Abstract_Wallet
+
+    from .main_window import ElectrumWindow
 
 
 _logger = get_logger(__name__)
@@ -112,12 +99,12 @@ dialogs = []  # Otherwise python randomly garbage collects the dialogs...
 
 class TxSizeLabel(QLabel):
     def setAmount(self, byte_size):
-        self.setText(("x   %s bytes   =" % byte_size) if byte_size else "")
+        self.setText((f"x   {byte_size} bytes   =") if byte_size else "")
 
 
 class TxFiatLabel(QLabel):
     def setAmount(self, fiat_fee):
-        self.setText(("≈  %s" % fiat_fee) if fiat_fee else "")
+        self.setText((f"≈  {fiat_fee}") if fiat_fee else "")
 
 
 class QTextBrowserWithDefaultSize(QTextBrowser):
@@ -222,7 +209,7 @@ class TxInOutWidget(QWidget):
         self.setLayout(vbox)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-    def update(self, tx: Optional[Transaction]):
+    def update(self, tx: Transaction | None):
         self.tx = tx
         if tx is None:
             self.inputs_header.setText("")
@@ -255,7 +242,7 @@ class TxInOutWidget(QWidget):
                 fmt.setAnchor(True)
                 fmt.setUnderlineStyle(QTextCharFormat.SingleUnderline)
                 return fmt
-            elif sm and sm.is_lockup_address_for_a_swap(addr) or addr == DummyAddress.SWAP:
+            elif (sm and sm.is_lockup_address_for_a_swap(addr)) or addr == DummyAddress.SWAP:
                 tf_used_swap = True
                 return self.txo_color_swap.text_char_format
             elif self.wallet.is_billing_address(addr):
@@ -270,8 +257,8 @@ class TxInOutWidget(QWidget):
             is_coinbase: bool,
             tcf_shortid: QTextCharFormat = None,
             short_id: str,
-            addr: Optional[str],
-            value: Optional[int],
+            addr: str | None,
+            value: int | None,
         ):
             tcf_ext = QTextCharFormat(ext)
             tcf_addr = addr_text_format(addr)
@@ -709,10 +696,11 @@ class TxDialog(QDialog, MessageBoxMixin):
         self.close()
 
     def add_export_actions_to_menu(
-        self, menu: QMenu, *, gettx: Callable[[], Transaction] = None
+        self, menu: QMenu, *, gettx: Callable[[], Transaction] | None = None
     ) -> None:
         if gettx is None:
-            gettx = lambda: None
+            def gettx():
+                return None
 
         action = QAction(_("Copy to clipboard"), self)
         action.triggered.connect(lambda: self.copy_to_clipboard(tx=gettx()))
@@ -964,16 +952,16 @@ class TxDialog(QDialog, MessageBoxMixin):
             amount_str = ""
         else:
             if amount > 0:
-                amount_str = _("Amount received:") + " %s" % format_amount(amount) + " " + base_unit
+                amount_str = _("Amount received:") + f" {format_amount(amount)}" + " " + base_unit
             else:
-                amount_str = _("Amount sent:") + " %s" % format_amount(-amount) + " " + base_unit
+                amount_str = _("Amount sent:") + f" {format_amount(-amount)}" + " " + base_unit
             if fx.is_enabled():
                 if tx_item_fiat:  # historical tx -> using historical price
                     amount_str += " ({})".format(tx_item_fiat["fiat_value"].to_ui_string())
                 elif (
                     tx_details.is_related_to_wallet
                 ):  # probably "tx preview" -> using current price
-                    amount_str += " ({})".format(format_fiat_and_units(abs(amount)))
+                    amount_str += f" ({format_fiat_and_units(abs(amount))})"
         if amount_str:
             self.amount_label.setText(amount_str)
         else:
@@ -987,7 +975,7 @@ class TxDialog(QDialog, MessageBoxMixin):
                         + f" ({prog.num_tasks_done}/{prog.num_tasks_total})"
                     )
                 else:
-                    fee_str = _("Downloading input data...") + f" error."
+                    fee_str = _("Downloading input data...") + " error."
             else:
                 fee_str = _("Fee") + ": " + _("unknown")
         else:
@@ -998,10 +986,10 @@ class TxDialog(QDialog, MessageBoxMixin):
                 elif (
                     tx_details.is_related_to_wallet
                 ):  # probably "tx preview" -> using current price
-                    fee_str += " ({})".format(format_fiat_and_units(fee))
+                    fee_str += f" ({format_fiat_and_units(fee)})"
         if fee is not None:
             fee_rate = Decimal(fee) / size  # sat/byte
-            fee_str += "  ( %s ) " % self.main_window.format_fee_rate(fee_rate * 1000)
+            fee_str += f"  ( {self.main_window.format_fee_rate(fee_rate * 1000)} ) "
             if isinstance(self.tx, PartialTransaction):
                 invoice_amt = amount
                 fee_warning_tuple = self.wallet.get_tx_fee_warning(

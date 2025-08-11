@@ -2,8 +2,15 @@ import asyncio
 import concurrent
 from enum import IntEnum
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, pyqtEnum
-from PyQt6.QtCore import Qt, QAbstractListModel, QModelIndex
+from PyQt6.QtCore import (
+    QAbstractListModel,
+    QModelIndex,
+    Qt,
+    pyqtEnum,
+    pyqtProperty,
+    pyqtSignal,
+    pyqtSlot,
+)
 
 from electrum import Network, keystore
 from electrum.bip32 import BIP32Node
@@ -31,7 +38,7 @@ class QEBip39RecoveryListModel(QAbstractListModel):
     # define listmodel rolemap
     _ROLE_NAMES = ("description", "derivation_path", "script_type")
     _ROLE_KEYS = range(Qt.ItemDataRole.UserRole, Qt.ItemDataRole.UserRole + len(_ROLE_NAMES))
-    _ROLE_MAP = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES]))
+    _ROLE_MAP = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES], strict=False))
 
     def __init__(self, config, parent=None):
         super().__init__(parent)
@@ -50,7 +57,7 @@ class QEBip39RecoveryListModel(QAbstractListModel):
         account = self._accounts[index.row()]
         role_index = role - Qt.ItemDataRole.UserRole
         value = account[self._ROLE_NAMES[role_index]]
-        if isinstance(value, (bool, list, int, str)) or value is None:
+        if isinstance(value, bool | list | int | str) or value is None:
             return value
         return str(value)
 
@@ -71,7 +78,7 @@ class QEBip39RecoveryListModel(QAbstractListModel):
 
     @pyqtSlot(str, str)
     @pyqtSlot(str, str, str)
-    def startScan(self, wallet_type: str, seed: str, seed_extra_words: str = None):
+    def startScan(self, wallet_type: str, seed: str, seed_extra_words: str | None = None):
         if not seed or not wallet_type:
             return
 
@@ -112,7 +119,7 @@ class QEBip39RecoveryListModel(QAbstractListModel):
         if isinstance(e, concurrent.futures.CancelledError):
             self.state = QEBip39RecoveryListModel.State.Cancelled
             return
-        self._logger.error(f"recovery error", exc_info=exc_info)
+        self._logger.error("recovery error", exc_info=exc_info)
         self.state = QEBip39RecoveryListModel.State.Failed
         self._thread.stop()
 

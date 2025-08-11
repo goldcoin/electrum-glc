@@ -26,14 +26,14 @@ See https://github.com/satoshilabs/slips/blob/master/slip-0039.md.
 
 import hmac
 from collections import defaultdict
+from collections.abc import Iterable
 from hashlib import pbkdf2_hmac
-from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 from .i18n import _
 from .mnemonic import Wordlist
 
-Indices = Tuple[int, ...]
-MnemonicGroups = Dict[int, Tuple[int, Set[Tuple[int, bytes]]]]
+Indices = tuple[int, ...]
+MnemonicGroups = dict[int, tuple[int, set[tuple[int, bytes]]]]
 
 
 """
@@ -53,7 +53,7 @@ def _bits_to_words(n: int) -> int:
 
 
 def _xor(a: bytes, b: bytes) -> bytes:
-    return bytes(x ^ y for x, y in zip(a, b))
+    return bytes(x ^ y for x, y in zip(a, b, strict=False))
 
 
 """
@@ -178,7 +178,7 @@ class EncryptedSeed:
         return r + l
 
 
-def recover_ems(mnemonics: List[str]) -> EncryptedSeed:
+def recover_ems(mnemonics: list[str]) -> EncryptedSeed:
     """
     Combines mnemonic shares to obtain the encrypted master secret which was previously
     split using Shamir's secret sharing scheme.
@@ -203,9 +203,7 @@ def recover_ems(mnemonics: List[str]) -> EncryptedSeed:
 
     if len(groups) < group_threshold:
         raise Slip39Error(
-            "Insufficient number of mnemonic groups. Expected {} full groups, but {} were provided.".format(
-                group_threshold, len(groups)
-            )
+            f"Insufficient number of mnemonic groups. Expected {group_threshold} full groups, but {len(groups)} were provided."
         )
 
     group_shares = [
@@ -278,7 +276,7 @@ def get_wordlist() -> Wordlist:
     return wordlist
 
 
-def process_mnemonics(mnemonics: List[str]) -> Tuple[Optional[EncryptedSeed], str]:
+def process_mnemonics(mnemonics: list[str]) -> tuple[EncryptedSeed | None, str]:
     # Collect valid shares.
     shares = []
     for i, mnemonic in enumerate(mnemonics):
@@ -293,7 +291,7 @@ def process_mnemonics(mnemonics: List[str]) -> Tuple[Optional[EncryptedSeed], st
         return None, _("No valid shares.")
 
     # Sort shares into groups.
-    groups: Dict[int, Set[Share]] = defaultdict(set)  # group idx : shares
+    groups: dict[int, set[Share]] = defaultdict(set)  # group idx : shares
     common_params = shares[0].common_parameters()
     for share in shares:
         if share.common_parameters() != common_params:
@@ -375,13 +373,13 @@ def _make_group_prefix(identifier, iteration_exponent, group_index, group_thresh
     return prefix
 
 
-def _group_status(group: Set[Share], group_prefix) -> str:
+def _group_status(group: set[Share], group_prefix) -> str:
     len(group)
     if not group:
         return (
             _EMPTY
             + _("{} shares from group {}").format("<b>0</b> ", f"<b>{group_prefix}</b>")
-            + f".<br/>"
+            + ".<br/>"
         )
     else:
         share = next(iter(group))
@@ -391,7 +389,7 @@ def _group_status(group: Set[Share], group_prefix) -> str:
             + _("{} of {} shares needed from group {}").format(
                 f"<b>{len(group)}</b>", f"<b>{share.member_threshold}</b>", f"<b>{group_prefix}</b>"
             )
-            + f".<br/>"
+            + ".<br/>"
         )
 
 
@@ -414,7 +412,7 @@ def _int_to_indices(value: int, output_length: int, bits: int) -> Iterable[int]:
     return ((value >> (i * bits)) & mask for i in reversed(range(output_length)))
 
 
-def _mnemonic_to_indices(mnemonic: str) -> List[int]:
+def _mnemonic_to_indices(mnemonic: str) -> list[int]:
     wordlist = get_wordlist()
     indices = []
     for word in mnemonic.split():
@@ -423,7 +421,7 @@ def _mnemonic_to_indices(mnemonic: str) -> List[int]:
         except ValueError:
             if len(word) > 8:
                 word = word[:8] + "..."
-            raise Slip39Error(_("Invalid mnemonic word") + ' "%s".' % word) from None
+            raise Slip39Error(_("Invalid mnemonic word") + f' "{word}".') from None
     return indices
 
 
@@ -466,7 +464,7 @@ def _rs1024_verify_checksum(data: Indices) -> bool:
 """
 
 
-def _precompute_exp_log() -> Tuple[List[int], List[int]]:
+def _precompute_exp_log() -> tuple[list[int], list[int]]:
     exp = [0 for i in range(255)]
     log = [0 for i in range(256)]
 
@@ -499,12 +497,12 @@ def _interpolate(shares, x) -> bytes:
     :rtype: Array of bytes.
     """
 
-    x_coordinates = set(share[0] for share in shares)
+    x_coordinates = {share[0] for share in shares}
 
     if len(x_coordinates) != len(shares):
         raise Slip39Error("Invalid set of shares. Share indices must be unique.")
 
-    share_value_lengths = set(len(share[1]) for share in shares)
+    share_value_lengths = {len(share[1]) for share in shares}
     if len(share_value_lengths) != 1:
         raise Slip39Error("Invalid set of shares. All share values must have the same length.")
 
@@ -528,7 +526,7 @@ def _interpolate(shares, x) -> bytes:
         result = bytes(
             intermediate_sum
             ^ (_EXP_TABLE[(_LOG_TABLE[share_val] + log_basis_eval) % 255] if share_val != 0 else 0)
-            for share_val, intermediate_sum in zip(share[1], result)
+            for share_val, intermediate_sum in zip(share[1], result, strict=False)
         )
 
     return result
@@ -553,7 +551,7 @@ def _create_digest(random_data: bytes, shared_secret: bytes) -> bytes:
     return hmac.new(random_data, shared_secret, "sha256").digest()[:_DIGEST_LENGTH_BYTES]
 
 
-def _recover_secret(threshold: int, shares: List[Tuple[int, bytes]]) -> bytes:
+def _recover_secret(threshold: int, shares: list[tuple[int, bytes]]) -> bytes:
     # If the threshold is 1, then the digest of the shared secret is not used.
     if threshold == 1:
         return shares[0][1]
@@ -570,8 +568,8 @@ def _recover_secret(threshold: int, shares: List[Tuple[int, bytes]]) -> bytes:
 
 
 def _decode_mnemonics(
-    mnemonics: List[str],
-) -> Tuple[int, int, int, int, MnemonicGroups]:
+    mnemonics: list[str],
+) -> tuple[int, int, int, int, MnemonicGroups]:
     identifiers = set()
     iteration_exponents = set()
     group_thresholds = set()
@@ -594,9 +592,7 @@ def _decode_mnemonics(
 
     if len(identifiers) != 1 or len(iteration_exponents) != 1:
         raise Slip39Error(
-            "Invalid set of mnemonics. All mnemonics must begin with the same {} words.".format(
-                _ID_EXP_LENGTH_WORDS
-            )
+            f"Invalid set of mnemonics. All mnemonics must begin with the same {_ID_EXP_LENGTH_WORDS} words."
         )
 
     if len(group_thresholds) != 1:
@@ -607,8 +603,8 @@ def _decode_mnemonics(
     if len(group_counts) != 1:
         raise Slip39Error("Invalid set of mnemonics. All mnemonics must have the same group count.")
 
-    for group_index, group in groups.items():
-        if len(set(share[0] for share in group[1])) != len(group[1]):
+    for _group_index, group in groups.items():
+        if len({share[0] for share in group[1]}) != len(group[1]):
             raise Slip39Error("Invalid set of shares. Member indices in each group must be unique.")
 
     return (

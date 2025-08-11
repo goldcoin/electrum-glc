@@ -1,10 +1,10 @@
 import os
 from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject
+from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
 
-from electrum.logging import get_logger
 from electrum import mnemonic
+from electrum.logging import get_logger
 from electrum.wizard import NewWalletWizard, ServerConnectWizard
 
 if TYPE_CHECKING:

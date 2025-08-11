@@ -1,14 +1,11 @@
 import asyncio
-import tempfile
 import unittest
 
-from electrum import constants
-from electrum.simple_config import SimpleConfig
-from electrum import blockchain
-from electrum.interface import Interface, ServerAddr
+from electrum import blockchain, constants, util
 from electrum.crypto import sha256
+from electrum.interface import Interface, ServerAddr
+from electrum.simple_config import SimpleConfig
 from electrum.util import OldTaskGroup
-from electrum import util
 
 from . import ElectrumTestCase
 
@@ -242,7 +239,8 @@ class TestNetwork(ElectrumTestCase):
                 "mock": {"catchup": 1, "check": lambda x: False, "connect": lambda x: False},
             }
         )
-        mock_connect = lambda height: height == 3
+        def mock_connect(height):
+            return height == 3
         self.interface.q.put_nowait(
             {
                 "block_height": 7,

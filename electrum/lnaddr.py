@@ -1,23 +1,25 @@
 #! /usr/bin/env python3
 # This was forked from https://github.com/rustyrussell/lightning-payencode/tree/acc16ec13a3fa1dc16c07af6ec67c261bd8aff23
 
+import random
 import re
 import time
-from hashlib import sha256
 from binascii import hexlify
 from decimal import Decimal
-from typing import Optional, TYPE_CHECKING, Type, Dict, Any
+from hashlib import sha256
+from typing import TYPE_CHECKING, Any
 
-import random
 import bitstring
 
-from .bitcoin import hash160_to_b58_address, b58_address_to_hash160, TOTAL_COIN_SUPPLY_LIMIT_IN_BTC
-from .segwit_addr import bech32_encode, bech32_decode, CHARSET
-from . import segwit_addr
-from . import constants
+from . import constants, ecc, segwit_addr
+from .bitcoin import (
+    COIN,
+    TOTAL_COIN_SUPPLY_LIMIT_IN_BTC,
+    b58_address_to_hash160,
+    hash160_to_b58_address,
+)
 from .constants import AbstractNet
-from . import ecc
-from .bitcoin import COIN
+from .segwit_addr import CHARSET, bech32_decode, bech32_encode
 
 if TYPE_CHECKING:
     from .lnutil import LnFeatures
@@ -74,7 +76,7 @@ def unshorten_amount(amount) -> Decimal:
     # A reader SHOULD fail if `amount` contains a non-digit, or is followed by
     # anything except a `multiplier` in the table above.
     if not re.fullmatch("\\d+[pnum]?", str(amount)):
-        raise LnDecodeException("Invalid amount '{}'".format(amount))
+        raise LnDecodeException(f"Invalid amount '{amount}'")
 
     if unit in units.keys():
         return Decimal(amount[:-1]) / units[unit]
@@ -100,7 +102,7 @@ def bitarray_to_u5(barr):
     return ret
 
 
-def encode_fallback(fallback: str, net: Type[AbstractNet]):
+def encode_fallback(fallback: str, net: type[AbstractNet]):
     """Encode all supported fallback addresses."""
     wver, wprog_ints = segwit_addr.decode_segwit_address(net.SEGWIT_HRP, fallback)
     if wver is not None:
@@ -117,7 +119,7 @@ def encode_fallback(fallback: str, net: Type[AbstractNet]):
     return tagged("f", bitstring.pack("uint:5", wver) + wprog)
 
 
-def parse_fallback(fallback, net: Type[AbstractNet]):
+def parse_fallback(fallback, net: type[AbstractNet]):
     wver = fallback[0:5].uint
     if wver == 17:
         addr = hash160_to_b58_address(fallback[5:].tobytes(), net.ADDRTYPE_P2PKH)
@@ -215,7 +217,7 @@ def lnencode(addr: "LnAddr", privkey) -> str:
         # A writer MUST NOT include more than one `d`, `h`, `n` or `x` fields,
         if k in ("d", "h", "n", "x", "p", "s", "9"):
             if k in tags_set:
-                raise LnEncodeException("Duplicate '{}' tag".format(k))
+                raise LnEncodeException(f"Duplicate '{k}' tag")
 
         if k == "r":
             route = bitstring.BitArray()
@@ -264,7 +266,7 @@ def lnencode(addr: "LnAddr", privkey) -> str:
             data += tagged("9", feature_bits)
         else:
             # FIXME: Support unknown tags?
-            raise LnEncodeException("Unknown tag {}".format(k))
+            raise LnEncodeException(f"Unknown tag {k}")
 
         tags_set.add(k)
 
@@ -288,16 +290,16 @@ def lnencode(addr: "LnAddr", privkey) -> str:
     return bech32_encode(segwit_addr.Encoding.BECH32, hrp, bitarray_to_u5(data))
 
 
-class LnAddr(object):
+class LnAddr:
     def __init__(
         self,
         *,
-        paymenthash: bytes = None,
+        paymenthash: bytes | None = None,
         amount=None,
-        net: Type[AbstractNet] = None,
+        net: type[AbstractNet] | None = None,
         tags=None,
         date=None,
-        payment_secret: bytes = None,
+        payment_secret: bytes | None = None,
     ):
         self.date = int(time.time()) if not date else int(date)
         self.tags = [] if not tags else tags
@@ -310,7 +312,7 @@ class LnAddr(object):
         self._amount = amount  # type: Optional[Decimal]  # in bitcoins
 
     @property
-    def amount(self) -> Optional[Decimal]:
+    def amount(self) -> Decimal | None:
         return self._amount
 
     @amount.setter
@@ -328,7 +330,7 @@ class LnAddr(object):
             raise LnInvoiceException(f"Cannot encode {value!r}: too many decimal places")
         self._amount = value
 
-    def get_amount_sat(self) -> Optional[Decimal]:
+    def get_amount_sat(self) -> Decimal | None:
         # note that this has msat resolution potentially
         if self.amount is None:
             return None
@@ -338,13 +340,13 @@ class LnAddr(object):
         # note: tag will be 't' for trampoline
         r_tags = list(filter(lambda x: x[0] == tag, self.tags))
         # strip the tag type, it's implicitly 'r' now
-        r_tags = list(map(lambda x: x[1], r_tags))
+        r_tags = [x[1] for x in r_tags]
         # if there are multiple hints, we will use the first one that works,
         # from a random permutation
         random.shuffle(r_tags)
         return r_tags
 
-    def get_amount_msat(self) -> Optional[int]:
+    def get_amount_msat(self) -> int | None:
         if self.amount is None:
             return None
         return int(self.amount * COIN * 1000)
@@ -360,7 +362,7 @@ class LnAddr(object):
         note: these checks are not done by the parser (in lndecode), as then when we started requiring a new feature,
               old saved already paid invoices could no longer be parsed.
         """
-        from .lnutil import validate_features, ln_compare_features
+        from .lnutil import ln_compare_features, validate_features
 
         invoice_features = self.get_features()
         validate_features(invoice_features)
@@ -404,7 +406,7 @@ class LnAddr(object):
         # we treat it as 0 seconds here (instead of never)
         return now > self.get_expiry() + self.date
 
-    def to_debug_json(self) -> Dict[str, Any]:
+    def to_debug_json(self) -> dict[str, Any]:
         d = {
             "pubkey": self.pubkey.serialize().hex(),
             "amount_BTC": str(self.amount),
@@ -577,8 +579,8 @@ def lndecode(invoice: str, *, verbose=False, net=None) -> LnAddr:
             addr.unknown_tags.append((tag, tagdata))
 
     if verbose:
-        print("hex of signature data (32 byte r, 32 byte s): {}".format(hexlify(sigdecoded[0:64])))
-        print("recovery flag: {}".format(sigdecoded[64]))
+        print(f"hex of signature data (32 byte r, 32 byte s): {hexlify(sigdecoded[0:64])}")
+        print(f"recovery flag: {sigdecoded[64]}")
         print("hex of data for signing: {}".format(hexlify(hrp.encode("ascii") + data.tobytes())))
         print(
             "SHA256 of above: {}".format(sha256(hrp.encode("ascii") + data.tobytes()).hexdigest())

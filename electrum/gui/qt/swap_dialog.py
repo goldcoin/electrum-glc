@@ -1,31 +1,29 @@
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Union
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QLabel, QVBoxLayout, QGridLayout, QPushButton
+from PyQt5.QtWidgets import QGridLayout, QLabel, QPushButton, QVBoxLayout
 
-from electrum.i18n import _
-from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates
 from electrum.bitcoin import DummyAddress
-from electrum.transaction import PartialTxOutput, PartialTransaction
+from electrum.i18n import _
+from electrum.transaction import PartialTransaction, PartialTxOutput
+from electrum.util import NoDynamicFeeEstimates, NotEnoughFunds
 
-from electrum.gui import messages
-from . import util
-from .util import (
-    WindowModalDialog,
-    Buttons,
-    OkButton,
-    CancelButton,
-    EnterButton,
-    ColorScheme,
-    WWLabel,
-    read_QIcon,
-    IconLabel,
-    char_width_in_lineedit,
-)
-from .util import qt_event_listener, QtEventListener
 from .amountedit import BTCAmountEdit
-from .fee_slider import FeeSlider, FeeComboBox
+from .fee_slider import FeeComboBox, FeeSlider
 from .my_treeview import create_toolbar_with_menu
+from .util import (
+    Buttons,
+    CancelButton,
+    ColorScheme,
+    EnterButton,
+    IconLabel,
+    OkButton,
+    QtEventListener,
+    WindowModalDialog,
+    WWLabel,
+    char_width_in_lineedit,
+    qt_event_listener,
+    read_QIcon,
+)
 
 if TYPE_CHECKING:
     from .main_window import ElectrumWindow
@@ -183,7 +181,7 @@ class SwapDialog(WindowModalDialog, QtEventListener):
         self.max_button.setChecked(False)
         self.update()
 
-    def _spend_max_forward_swap(self, tx: Optional[PartialTransaction]) -> None:
+    def _spend_max_forward_swap(self, tx: PartialTransaction | None) -> None:
         if tx:
             amount = tx.output_value_for_address(DummyAddress.SWAP)
             self.send_amount_e.setAmount(amount)
@@ -234,7 +232,6 @@ class SwapDialog(WindowModalDialog, QtEventListener):
         self.needs_tx_update = True
 
     def update(self):
-        from .util import IconLabel
 
         sm = self.swap_manager
         send_icon = read_QIcon("lightning.png" if self.is_reverse else "goldcoin.png")
@@ -245,8 +242,8 @@ class SwapDialog(WindowModalDialog, QtEventListener):
         self.description_label.repaint()  # macOS hack for #6269
         server_mining_fee = sm.lockup_fee if self.is_reverse else sm.normal_fee
         server_fee_str = (
-            "%.2f" % sm.percentage
-            + "%  +  "
+            f"{sm.percentage:.2f}"
+             "%  +  "
             + self.window.format_amount(server_mining_fee)
             + " "
             + self.window.base_unit()
@@ -255,7 +252,7 @@ class SwapDialog(WindowModalDialog, QtEventListener):
         self.server_fee_label.repaint()  # macOS hack for #6269
         self.needs_tx_update = True
 
-    def update_fee(self, tx: Optional[PartialTransaction]) -> None:
+    def update_fee(self, tx: PartialTransaction | None) -> None:
         """Updates self.fee_label. No other side-effects."""
         if self.is_reverse:
             sm = self.swap_manager
@@ -332,7 +329,7 @@ class SwapDialog(WindowModalDialog, QtEventListener):
 
     def _create_tx_safe(
         self, onchain_amount: Union[int, str, None]
-    ) -> Optional[PartialTransaction]:
+    ) -> PartialTransaction | None:
         try:
             return self._create_tx(onchain_amount=onchain_amount)
         except InvalidSwapParameters:

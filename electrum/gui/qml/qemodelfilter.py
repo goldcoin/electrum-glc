@@ -1,4 +1,4 @@
-from PyQt6.QtCore import pyqtSignal, pyqtProperty, QSortFilterProxyModel, QModelIndex, pyqtSlot
+from PyQt6.QtCore import QModelIndex, QSortFilterProxyModel, pyqtProperty, pyqtSignal, pyqtSlot
 
 from electrum.logging import get_logger
 

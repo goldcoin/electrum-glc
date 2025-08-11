@@ -4,19 +4,19 @@ from typing import TYPE_CHECKING
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QInputDialog, QLineEdit
 
+from electrum.gui.qt.wizard.wallet import (
+    WCHWUninitialized,
+    WCHWUnlock,
+    WCHWXPub,
+    WCScriptAndDerivation,
+)
 from electrum.i18n import _
 from electrum.plugin import hook
 from electrum.wallet import Standard_Wallet
 
-from .ledger import LedgerPlugin, Ledger_Client
-from ..hw_wallet.qt import QtHandlerBase, QtPluginBase
 from ..hw_wallet.plugin import only_hook_if_libraries_available
-from electrum.gui.qt.wizard.wallet import (
-    WCScriptAndDerivation,
-    WCHWUninitialized,
-    WCHWUnlock,
-    WCHWXPub,
-)
+from ..hw_wallet.qt import QtHandlerBase, QtPluginBase
+from .ledger import Ledger_Client, LedgerPlugin
 
 if TYPE_CHECKING:
     from electrum.gui.qt.wizard.wallet import QENewWalletWizard
@@ -65,7 +65,7 @@ class Ledger_Handler(QtHandlerBase):
     MESSAGE_DIALOG_TITLE = _("Ledger Status")
 
     def __init__(self, win):
-        super(Ledger_Handler, self).__init__(win, "Ledger")
+        super().__init__(win, "Ledger")
         self.setup_signal.connect(self.setup_dialog)
         self.auth_signal.connect(self.auth_dialog)
 

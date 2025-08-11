@@ -1,10 +1,9 @@
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot
-from PyQt6.QtCore import Qt, QAbstractListModel, QModelIndex
+from PyQt6.QtCore import QAbstractListModel, QModelIndex, Qt, pyqtProperty, pyqtSignal, pyqtSlot
 
+from electrum import blockchain
+from electrum.interface import PREFERRED_NETWORK_PROTOCOL, ServerAddr
 from electrum.logging import get_logger
 from electrum.util import Satoshis
-from electrum.interface import ServerAddr, PREFERRED_NETWORK_PROTOCOL
-from electrum import blockchain
 
 from .util import QtEventListener, qt_event_listener
 
@@ -15,8 +14,8 @@ class QEServerListModel(QAbstractListModel, QtEventListener):
     # define listmodel rolemap
     _ROLE_NAMES = ("name", "address", "is_connected", "is_primary", "is_tor", "chain", "height")
     _ROLE_KEYS = range(Qt.ItemDataRole.UserRole, Qt.ItemDataRole.UserRole + len(_ROLE_NAMES))
-    _ROLE_MAP = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES]))
-    _ROLE_RMAP = dict(zip(_ROLE_NAMES, _ROLE_KEYS))
+    _ROLE_MAP = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES], strict=False))
+    _ROLE_RMAP = dict(zip(_ROLE_NAMES, _ROLE_KEYS, strict=False))
 
     def __init__(self, network, parent=None):
         super().__init__(parent)
@@ -31,17 +30,17 @@ class QEServerListModel(QAbstractListModel, QtEventListener):
 
     @qt_event_listener
     def on_event_network_updated(self):
-        self._logger.info(f"network updated")
+        self._logger.info("network updated")
         self.initModel()
 
     @qt_event_listener
     def on_event_blockchain_updated(self):
-        self._logger.info(f"blockchain updated")
+        self._logger.info("blockchain updated")
         self.initModel()
 
     @qt_event_listener
     def on_event_default_server_changed(self):
-        self._logger.info(f"default server changed")
+        self._logger.info("default server changed")
         self.initModel()
 
     def rowCount(self, index):
@@ -55,7 +54,7 @@ class QEServerListModel(QAbstractListModel, QtEventListener):
         role_index = role - Qt.ItemDataRole.UserRole
         value = server[self._ROLE_NAMES[role_index]]
 
-        if isinstance(value, (bool, list, int, str)) or value is None:
+        if isinstance(value, bool | list | int | str) or value is None:
             return value
         if isinstance(value, Satoshis):
             return value.value
@@ -115,7 +114,7 @@ class QEServerListModel(QAbstractListModel, QtEventListener):
 
         # disconnected servers
         all_servers = self.network.get_servers()
-        connected_hosts = set([iface.host for ifaces in chains.values() for iface in ifaces])
+        connected_hosts = {iface.host for ifaces in chains.values() for iface in ifaces}
         protocol = PREFERRED_NETWORK_PROTOCOL
         for _host, d in sorted(all_servers.items()):
             if _host in connected_hosts:

@@ -1,17 +1,16 @@
-from functools import partial
-import zlib
-import json
-from io import BytesIO
-import sys
 import platform
+import sys
+import zlib
+from functools import partial
+from io import BytesIO
 from typing import TYPE_CHECKING
 
 from PyQt5.QtWidgets import QComboBox, QGridLayout, QLabel, QPushButton
 
-from electrum.plugin import BasePlugin, hook
-from electrum.gui.qt.util import WaitingDialog, EnterButton, WindowModalDialog, read_QIcon
+from electrum.gui.qt.util import EnterButton, WaitingDialog, WindowModalDialog, read_QIcon
 from electrum.i18n import _
 from electrum.logging import get_logger
+from electrum.plugin import BasePlugin, hook
 
 if TYPE_CHECKING:
     from electrum.gui.qt.transaction_dialog import TxDialog
@@ -22,8 +21,8 @@ _logger = get_logger(__name__)
 
 try:
     import amodem.audio
-    import amodem.main
     import amodem.config
+    import amodem.main
 
     _logger.info("Audio MODEM is available.")
     amodem.log.addHandler(amodem.logging.StreamHandler(sys.stderr))
@@ -56,7 +55,7 @@ class Plugin(BasePlugin):
         layout = QGridLayout(d)
         layout.addWidget(QLabel(_("Bit rate [kbps]: ")), 0, 0)
 
-        bitrates = list(sorted(amodem.config.bitrates.keys()))
+        bitrates = sorted(amodem.config.bitrates.keys())
 
         def _index_changed(index):
             bitrate = bitrates[index]
@@ -108,11 +107,11 @@ class Plugin(BasePlugin):
                 dst = interface.player()
                 amodem.main.send(config=self.modem_config, src=src, dst=dst)
 
-        _logger.info(f"Sending: {repr(blob)}")
+        _logger.info(f"Sending: {blob!r}")
         blob = zlib.compress(blob.encode("ascii"))
 
         kbps = self.modem_config.modem_bps / 1e3
-        msg = "Sending to Audio MODEM ({0:.1f} kbps)...".format(kbps)
+        msg = f"Sending to Audio MODEM ({kbps:.1f} kbps)..."
         WaitingDialog(parent, msg, sender_thread)
 
     def _recv(self, parent):
@@ -126,9 +125,9 @@ class Plugin(BasePlugin):
         def on_finished(blob):
             if blob:
                 blob = zlib.decompress(blob).decode("ascii")
-                _logger.info(f"Received: {repr(blob)}")
+                _logger.info(f"Received: {blob!r}")
                 parent.setText(blob)
 
         kbps = self.modem_config.modem_bps / 1e3
-        msg = "Receiving from Audio MODEM ({0:.1f} kbps)...".format(kbps)
+        msg = f"Receiving from Audio MODEM ({kbps:.1f} kbps)..."
         WaitingDialog(parent, msg, receiver_thread, on_finished)

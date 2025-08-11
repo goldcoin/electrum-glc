@@ -32,17 +32,16 @@
 
 
 import dns
-import dns.name
-import dns.query
 import dns.dnssec
 import dns.message
-import dns.resolver
+import dns.name
+import dns.query
 import dns.rdatatype
-import dns.rdtypes.ANY.NS
 import dns.rdtypes.ANY.CNAME
 import dns.rdtypes.ANY.DLV
 import dns.rdtypes.ANY.DNSKEY
 import dns.rdtypes.ANY.DS
+import dns.rdtypes.ANY.NS
 import dns.rdtypes.ANY.NSEC
 import dns.rdtypes.ANY.NSEC3
 import dns.rdtypes.ANY.NSEC3PARAM
@@ -51,9 +50,9 @@ import dns.rdtypes.ANY.SOA
 import dns.rdtypes.ANY.TXT
 import dns.rdtypes.IN.A
 import dns.rdtypes.IN.AAAA
+import dns.resolver
 
 from .logging import get_logger
-
 
 _logger = get_logger(__name__)
 
@@ -157,7 +156,7 @@ def query(url, rtype):
         out = _get_and_validate(ns, url, rtype)
         validated = True
     except Exception as e:
-        _logger.info(f"DNSSEC error: {repr(e)}")
+        _logger.info(f"DNSSEC error: {e!r}")
         out = dns.resolver.resolve(url, rtype)
         validated = False
     return out, validated

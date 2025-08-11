@@ -3,20 +3,21 @@ import base64
 import queue
 import threading
 import time
-from typing import TYPE_CHECKING, Callable
+from collections.abc import Callable
 from functools import partial
+from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject, QTimer
+from PyQt6.QtCore import QObject, QTimer, pyqtProperty, pyqtSignal, pyqtSlot
 
-from electrum.i18n import _
-from electrum.invoices import InvoiceError, PR_PAID, PR_BROADCASTING, PR_BROADCAST
-from electrum.logging import get_logger
-from electrum.network import TxBroadcastError, BestEffortRequestFailed
-from electrum.transaction import PartialTransaction, Transaction
-from electrum.util import InvalidPassword, event_listener, AddTransactionException, get_asyncio_loop
-from electrum.plugin import run_hook
-from electrum.wallet import Multisig_Wallet
 from electrum.crypto import pw_decode_with_version_and_mac
+from electrum.i18n import _
+from electrum.invoices import PR_BROADCAST, PR_BROADCASTING, PR_PAID, InvoiceError
+from electrum.logging import get_logger
+from electrum.network import BestEffortRequestFailed, TxBroadcastError
+from electrum.plugin import run_hook
+from electrum.transaction import PartialTransaction, Transaction
+from electrum.util import AddTransactionException, InvalidPassword, event_listener, get_asyncio_loop
+from electrum.wallet import Multisig_Wallet
 
 from .auth import AuthMixin, auth_protect
 from .qeaddresslistmodel import QEAddressCoinListModel
@@ -28,6 +29,7 @@ from .util import QtEventListener, qt_event_listener
 
 if TYPE_CHECKING:
     from electrum.wallet import Abstract_Wallet
+
     from .qeinvoice import QEInvoice
 
 
@@ -521,8 +523,8 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         tx,
         *,
         broadcast: bool = False,
-        on_success: Callable[[Transaction], None] = None,
-        on_failure: Callable[[], None] = None,
+        on_success: Callable[[Transaction], None] | None = None,
+        on_failure: Callable[[], None] | None = None,
     ):
         sign_hook = run_hook(
             "tc_sign_wrapper",
@@ -578,7 +580,7 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
 
     # this assumes a 2fa wallet, but there are no other tc_sign_wrapper hooks, so that's ok
     def on_sign_complete(
-        self, broadcast, cb: Callable[[Transaction], None] = None, tx: Transaction = None
+        self, broadcast, cb: Callable[[Transaction], None] | None = None, tx: Transaction = None
     ):
         self.otpSuccess.emit()
         if cb:
@@ -587,7 +589,7 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
             self.broadcast(tx)
 
     # this assumes a 2fa wallet, but there are no other tc_sign_wrapper hooks, so that's ok
-    def on_sign_failed(self, cb: Callable[[], None] = None, error: str = None):
+    def on_sign_failed(self, cb: Callable[[], None] | None = None, error: str | None = None):
         self.otpFailed.emit("error", error)
         if cb:
             cb()
@@ -721,13 +723,13 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
 
     @pyqtSlot(str)
     def deleteRequest(self, key: str):
-        self._logger.debug("delete req %s" % key)
+        self._logger.debug(f"delete req {key}")
         self.wallet.delete_request(key)
         self.requestModel.delete_invoice(key)
 
     @pyqtSlot(str)
     def deleteInvoice(self, key: str):
-        self._logger.debug("delete inv %s" % key)
+        self._logger.debug(f"delete inv {key}")
         self.wallet.delete_invoice(key)
         self.invoiceModel.delete_invoice(key)
 
@@ -738,7 +740,7 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         try:
             self.wallet.check_password(password)
             return True
-        except InvalidPassword as e:
+        except InvalidPassword:
             return False
 
     @pyqtSlot(str, result=bool)
@@ -782,8 +784,8 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         try:
             self.wallet.lnworker.import_channel_backup(backup_str)
         except Exception as e:
-            self._logger.debug(f"could not import channel backup: {repr(e)}")
-            self.importChannelBackupFailed.emit(f"Failed to import backup:\n\n{str(e)}")
+            self._logger.debug(f"could not import channel backup: {e!r}")
+            self.importChannelBackupFailed.emit(f"Failed to import backup:\n\n{e!s}")
 
     @pyqtSlot(str, result=bool)
     def isValidChannelBackup(self, backup_str):
@@ -791,7 +793,7 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
             assert backup_str.startswith("channel_backup:")
             encrypted = backup_str[15:]
             xpub = self.wallet.get_fingerprint()
-            decrypted = pw_decode_with_version_and_mac(encrypted, xpub)
+            pw_decode_with_version_and_mac(encrypted, xpub)
             return True
         except Exception:
             return False

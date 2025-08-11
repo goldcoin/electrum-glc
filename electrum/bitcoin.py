@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Electrum - lightweight Bitcoin client
 # Copyright (C) 2011 thomasv@gitorious
@@ -23,17 +22,14 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import hashlib
-from typing import List, Tuple, TYPE_CHECKING, Optional, Union, Sequence
 import enum
-from enum import IntEnum, Enum
+from collections.abc import Sequence
+from enum import Enum, IntEnum
+from typing import TYPE_CHECKING, Union
 
-from .util import bfh, BitcoinException, assert_bytes, to_bytes, inv_dict, is_hex_str, classproperty
-from . import version
-from . import segwit_addr
-from . import constants
-from . import ecc
-from .crypto import sha256d, sha256, hash_160, hmac_oneshot
+from . import constants, ecc, segwit_addr
+from .crypto import hash_160, sha256, sha256d
+from .util import BitcoinException, assert_bytes, bfh, classproperty, inv_dict, is_hex_str, to_bytes
 
 if TYPE_CHECKING:
     from .network import Network
@@ -206,10 +202,10 @@ def int_to_hex(i: int, length: int = 1) -> str:
     `length` is the number of bytes available
     """
     if not isinstance(i, int):
-        raise TypeError("{} instead of int".format(i))
+        raise TypeError(f"{i} instead of int")
     range_size = pow(256, length)
     if i < -(range_size // 2) or i >= range_size:
-        raise OverflowError("cannot convert int {} to hex ({} bytes)".format(i, length))
+        raise OverflowError(f"cannot convert int {i} to hex ({length} bytes)")
     if i < 0:
         # two's complement
         i = range_size + i
@@ -286,7 +282,7 @@ def push_script(data: str) -> str:
     data_len = len(data)
 
     # "small integer" opcodes
-    if data_len == 0 or data_len == 1 and data[0] == 0:
+    if data_len == 0 or (data_len == 1 and data[0] == 0):
         return opcodes.OP_0.hex()
     elif data_len == 1 and data[0] <= 16:
         return bytes([opcodes.OP_1 - 1 + data[0]]).hex()
@@ -310,7 +306,7 @@ def construct_witness(items: Sequence[Union[str, int, bytes]]) -> str:
     for item in items:
         if type(item) is int:
             item = script_num_to_hex(item)
-        elif isinstance(item, (bytes, bytearray)):
+        elif isinstance(item, bytes | bytearray):
             item = item.hex()
         else:
             assert is_hex_str(item)
@@ -329,7 +325,7 @@ def construct_script(items: Sequence[Union[str, int, bytes, opcodes]], values=No
             script += item.hex()
         elif type(item) is int:
             script += add_number_to_script(item).hex()
-        elif isinstance(item, (bytes, bytearray)):
+        elif isinstance(item, bytes | bytearray):
             script += push_script(item.hex())
         elif isinstance(item, str):
             assert is_hex_str(item)
@@ -387,7 +383,7 @@ def hash160_to_b58_address(h160: bytes, addrtype: int) -> str:
     return base_encode(s, base=58)
 
 
-def b58_address_to_hash160(addr: str) -> Tuple[int, bytes]:
+def b58_address_to_hash160(addr: str) -> tuple[int, bytes]:
     addr = to_bytes(addr, "ascii")
     _bytes = DecodeBase58Check(addr)
     if len(_bytes) != 21:
@@ -462,7 +458,7 @@ def redeem_script_to_address(txin_type: str, scriptcode: str, *, net=None) -> st
         raise NotImplementedError(txin_type)
 
 
-def script_to_address(script: str, *, net=None) -> Optional[str]:
+def script_to_address(script: str, *, net=None) -> str | None:
     from .transaction import get_address_from_output_script
 
     return get_address_from_output_script(bfh(script), net=net)
@@ -500,7 +496,7 @@ class OnchainOutputType(Enum):
     WITVER1_P2TR = enum.auto()
 
 
-def address_to_payload(addr: str, *, net=None) -> Tuple[OnchainOutputType, bytes]:
+def address_to_payload(addr: str, *, net=None) -> tuple[OnchainOutputType, bytes]:
     """Return (type, pubkey hash / witness program) for an address."""
     if net is None:
         net = constants.net
@@ -577,7 +573,7 @@ def base_encode(v: bytes, *, base: int) -> str:
     """encode v, which is a string of bytes, to base58."""
     assert_bytes(v)
     if base not in (58, 43):
-        raise ValueError("not supported base: {}".format(base))
+        raise ValueError(f"not supported base: {base}")
     chars = __b58chars
     if base == 43:
         chars = __b43chars
@@ -596,7 +592,7 @@ def base_encode(v: bytes, *, base: int) -> str:
     return result.decode("ascii")
 
 
-def base_decode(v: Union[bytes, str], *, base: int) -> Optional[bytes]:
+def base_decode(v: Union[bytes, str], *, base: int) -> bytes | None:
     """decode v into a string of len bytes.
 
     based on the work of David Keijser in https://github.com/keis/base58
@@ -604,7 +600,7 @@ def base_decode(v: Union[bytes, str], *, base: int) -> Optional[bytes]:
     # assert_bytes(v)
     v = to_bytes(v, "ascii")
     if base not in (58, 43):
-        raise ValueError("not supported base: {}".format(base))
+        raise ValueError(f"not supported base: {base}")
     chars = __b58chars
     chars_inv = __b58chars_inv
     if base == 43:
@@ -620,7 +616,7 @@ def base_decode(v: Union[bytes, str], *, base: int) -> Optional[bytes]:
         for char in v:
             num = num * base + chars_inv[char]
     except KeyError:
-        raise BaseDecodeError("Forbidden character {} for base {}".format(char, base))
+        raise BaseDecodeError(f"Forbidden character {char} for base {base}")
 
     return num.to_bytes(origlen - newlen + (num.bit_length() + 7) // 8, "big")
 
@@ -678,10 +674,10 @@ def serialize_privkey(
     if internal_use:
         return base58_wif
     else:
-        return "{}:{}".format(txin_type, base58_wif)
+        return f"{txin_type}:{base58_wif}"
 
 
-def deserialize_privkey(key: str) -> Tuple[str, bytes, bool]:
+def deserialize_privkey(key: str) -> tuple[str, bytes, bool]:
     if is_minikey(key):
         return "p2pkh", minikey_to_private_key(key), False
 
@@ -689,7 +685,7 @@ def deserialize_privkey(key: str) -> Tuple[str, bytes, bool]:
     if ":" in key:
         txin_type, key = key.split(sep=":", maxsplit=1)
         if txin_type not in WIF_SCRIPT_TYPES:
-            raise BitcoinException("unknown script type: {}".format(txin_type))
+            raise BitcoinException(f"unknown script type: {txin_type}")
     try:
         vch = DecodeBase58Check(key)
     except Exception as e:
@@ -701,15 +697,15 @@ def deserialize_privkey(key: str) -> Tuple[str, bytes, bool]:
         prefix_value = vch[0] - constants.net.WIF_PREFIX
         try:
             txin_type = WIF_SCRIPT_TYPES_INV[prefix_value]
-        except KeyError as e:
-            raise BitcoinException("invalid prefix ({}) for WIF key (1)".format(vch[0])) from None
+        except KeyError:
+            raise BitcoinException(f"invalid prefix ({vch[0]}) for WIF key (1)") from None
     else:
         # all other keys must have a fixed first byte
         if vch[0] != constants.net.WIF_PREFIX:
-            raise BitcoinException("invalid prefix ({}) for WIF key (2)".format(vch[0]))
+            raise BitcoinException(f"invalid prefix ({vch[0]}) for WIF key (2)")
 
     if len(vch) not in [33, 34]:
-        raise BitcoinException("invalid vch len for WIF key: {}".format(len(vch)))
+        raise BitcoinException(f"invalid vch len for WIF key: {len(vch)}")
     compressed = False
     if len(vch) == 34:
         if vch[33] == 0x01:
@@ -744,7 +740,7 @@ def is_segwit_address(addr: str, *, net=None) -> bool:
         net = constants.net
     try:
         witver, witprog = segwit_addr.decode_segwit_address(net.SEGWIT_HRP, addr)
-    except Exception as e:
+    except Exception:
         return False
     return witprog is not None
 
@@ -755,7 +751,7 @@ def is_b58_address(addr: str, *, net=None) -> bool:
     try:
         # test length, checksum, encoding:
         addrtype, h = b58_address_to_hash160(addr)
-    except Exception as e:
+    except Exception:
         return False
     if addrtype not in [net.ADDRTYPE_P2PKH, net.ADDRTYPE_P2SH]:
         return False
@@ -770,7 +766,7 @@ def is_private_key(key: str, *, raise_on_error=False) -> bool:
     try:
         deserialize_privkey(key)
         return True
-    except BaseException as e:
+    except BaseException:
         if raise_on_error:
             raise
         return False
@@ -809,9 +805,9 @@ class DummyAddress:
     Use e.g. as: DummyAddress.CHANNEL
     """
 
-    def purpose(func):
-        _dummy_addr_funcs.add(func)
-        return classproperty(func)
+    def purpose(self):
+        _dummy_addr_funcs.add(self)
+        return classproperty(self)
 
     @purpose
     def CHANNEL(self) -> str:

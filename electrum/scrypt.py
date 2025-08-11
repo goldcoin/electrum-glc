@@ -131,7 +131,7 @@ def _xor_salsa8_2(X):
     t14 = x14
     t15 = x15
 
-    for j in range(4):
+    for _j in range(4):
         t = t00 + t12 & 0xFFFFFFFF
         t04 ^= (t >> 25) | (t << 7)
         t = t04 + t00 & 0xFFFFFFFF
@@ -248,7 +248,7 @@ def _xor_salsa8_2(X):
     t14 = x30
     t15 = x31
 
-    for j in range(4):
+    for _j in range(4):
         t = t00 + t12 & 0xFFFFFFFF
         t04 ^= (t >> 25) | (t << 7)
         t = t04 + t00 & 0xFFFFFFFF

@@ -1,60 +1,54 @@
 import asyncio
 import base64
-import sys
 
-from electrum.bitcoin import (
-    public_key_to_p2pkh,
-    address_from_private_key,
-    is_address,
-    is_private_key,
-    var_int,
-    _op_push,
-    address_to_script,
-    OnchainOutputType,
-    address_to_payload,
-    deserialize_privkey,
-    serialize_privkey,
-    is_segwit_address,
-    is_b58_address,
-    address_to_scripthash,
-    is_minikey,
-    is_compressed_privkey,
-    EncodeBase58Check,
-    DecodeBase58Check,
-    script_num_to_hex,
-    push_script,
-    add_number_to_script,
-    int_to_hex,
-    opcodes,
-    base_encode,
-    base_decode,
-    BitcoinException,
-)
-from electrum import bip32
-from electrum import segwit_addr
-from electrum.segwit_addr import DecodedBech32
+from electrum import bip32, constants, crypto, ecc, ecc_fast, segwit_addr
 from electrum.bip32 import (
     BIP32Node,
     convert_bip32_intpath_to_strpath,
+    convert_bip32_strpath_to_intpath,
+    is_all_public_derivation,
+    is_bip32_derivation,
+    is_xprv,
+    is_xpub,
+    normalize_bip32_derivation,
     xpub_from_xprv,
     xpub_type,
-    is_xprv,
-    is_bip32_derivation,
-    is_xpub,
-    convert_bip32_strpath_to_intpath,
-    normalize_bip32_derivation,
-    is_all_public_derivation,
 )
-from electrum.crypto import sha256d, SUPPORTED_PW_HASH_VERSIONS
-from electrum import ecc, crypto, constants
-from electrum.util import bfh, InvalidPassword, randrange
-from electrum.storage import WalletStorage
+from electrum.bitcoin import (
+    BitcoinException,
+    DecodeBase58Check,
+    EncodeBase58Check,
+    OnchainOutputType,
+    _op_push,
+    add_number_to_script,
+    address_from_private_key,
+    address_to_payload,
+    address_to_script,
+    address_to_scripthash,
+    base_decode,
+    base_encode,
+    deserialize_privkey,
+    int_to_hex,
+    is_address,
+    is_b58_address,
+    is_compressed_privkey,
+    is_minikey,
+    is_private_key,
+    is_segwit_address,
+    opcodes,
+    public_key_to_p2pkh,
+    push_script,
+    script_num_to_hex,
+    serialize_privkey,
+    var_int,
+)
+from electrum.crypto import SUPPORTED_PW_HASH_VERSIONS, sha256d
 from electrum.keystore import xtype_from_derivation
+from electrum.segwit_addr import DecodedBech32
+from electrum.storage import WalletStorage
+from electrum.util import InvalidPassword, bfh, randrange
 
-from electrum import ecc_fast
-
-from . import ElectrumTestCase
-from . import FAST_TESTS
+from . import FAST_TESTS, ElectrumTestCase
 
 
 def needs_test_with_all_aes_implementations(func):
@@ -235,7 +229,7 @@ class Test_bitcoin(ElectrumTestCase):
         Pub = pvk * G
         pubkey_c = Pub.get_public_key_bytes(True)
         # pubkey_u = point_to_ser(Pub,False)
-        addr_c = public_key_to_p2pkh(pubkey_c)
+        public_key_to_p2pkh(pubkey_c)
 
         # print "Private key            ", '%064x'%pvk
         eck = ecc.ECPrivkey.from_secret_scalar(pvk)
@@ -602,7 +596,7 @@ class Test_bitcoin(ElectrumTestCase):
 
     def test_var_int(self):
         for i in range(0xFD):
-            self.assertEqual(var_int(i), "{:02x}".format(i))
+            self.assertEqual(var_int(i), f"{i:02x}")
 
         self.assertEqual(var_int(0xFD), "fdfd00")
         self.assertEqual(var_int(0xFE), "fdfe00")
@@ -1790,7 +1784,7 @@ class Test_xprv_xpub(ElectrumTestCase):
             "p2wsh": "Zpub",
         }
         for xtype, xkey_header_bytes in constants.net.XPRV_HEADERS.items():
-            xkey_header_bytes = bfh("%08x" % xkey_header_bytes)
+            xkey_header_bytes = bfh(f"{xkey_header_bytes:08x}")
             xkey_bytes = xkey_header_bytes + bytes([0] * 74)
             xkey_b58 = EncodeBase58Check(xkey_bytes)
             self.assertTrue(xkey_b58.startswith(xprv_headers_b58[xtype]))
@@ -1800,7 +1794,7 @@ class Test_xprv_xpub(ElectrumTestCase):
             self.assertTrue(xkey_b58.startswith(xprv_headers_b58[xtype]))
 
         for xtype, xkey_header_bytes in constants.net.XPUB_HEADERS.items():
-            xkey_header_bytes = bfh("%08x" % xkey_header_bytes)
+            xkey_header_bytes = bfh(f"{xkey_header_bytes:08x}")
             xkey_bytes = xkey_header_bytes + bytes([0] * 74)
             xkey_b58 = EncodeBase58Check(xkey_bytes)
             self.assertTrue(xkey_b58.startswith(xpub_headers_b58[xtype]))
@@ -1829,7 +1823,7 @@ class Test_xprv_xpub_testnet(ElectrumTestCase):
             "p2wsh": "Vpub",
         }
         for xtype, xkey_header_bytes in constants.net.XPRV_HEADERS.items():
-            xkey_header_bytes = bfh("%08x" % xkey_header_bytes)
+            xkey_header_bytes = bfh(f"{xkey_header_bytes:08x}")
             xkey_bytes = xkey_header_bytes + bytes([0] * 74)
             xkey_b58 = EncodeBase58Check(xkey_bytes)
             self.assertTrue(xkey_b58.startswith(xprv_headers_b58[xtype]))
@@ -1839,7 +1833,7 @@ class Test_xprv_xpub_testnet(ElectrumTestCase):
             self.assertTrue(xkey_b58.startswith(xprv_headers_b58[xtype]))
 
         for xtype, xkey_header_bytes in constants.net.XPUB_HEADERS.items():
-            xkey_header_bytes = bfh("%08x" % xkey_header_bytes)
+            xkey_header_bytes = bfh(f"{xkey_header_bytes:08x}")
             xkey_bytes = xkey_header_bytes + bytes([0] * 74)
             xkey_b58 = EncodeBase58Check(xkey_bytes)
             self.assertTrue(xkey_b58.startswith(xpub_headers_b58[xtype]))

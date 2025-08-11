@@ -1,10 +1,10 @@
 import os
-from typing import Optional, Iterable
+from collections.abc import Iterable
 
+from electrum import util
 from electrum.daemon import Daemon
 from electrum.simple_config import SimpleConfig
 from electrum.wallet import restore_wallet_from_text
-from electrum import util
 
 from . import ElectrumTestCase, as_testnet
 
@@ -31,12 +31,12 @@ class TestUnifiedPassword(ElectrumTestCase):
         await super().asyncTearDown()
 
     def _restore_wallet_from_text(
-        self, text, *, password: Optional[str], encrypt_file: bool = None
+        self, text, *, password: str | None, encrypt_file: bool | None = None
     ) -> str:
         """Returns path for created wallet."""
         basename = util.get_new_wallet_name(self.wallet_dir)
         path = os.path.join(self.wallet_dir, basename)
-        wallet_dict = restore_wallet_from_text(
+        restore_wallet_from_text(
             text,
             path=path,
             password=password,

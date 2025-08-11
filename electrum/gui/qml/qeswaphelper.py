@@ -2,15 +2,15 @@ import asyncio
 import concurrent
 import threading
 from enum import IntEnum
-from typing import Union, Optional
+from typing import Union
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject, QTimer, pyqtEnum
+from PyQt6.QtCore import QObject, QTimer, pyqtEnum, pyqtProperty, pyqtSignal, pyqtSlot
 
-from electrum.i18n import _
 from electrum.bitcoin import DummyAddress
+from electrum.i18n import _
 from electrum.logging import get_logger
-from electrum.transaction import PartialTxOutput, PartialTransaction
-from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates, profiler, get_asyncio_loop
+from electrum.transaction import PartialTransaction, PartialTxOutput
+from electrum.util import NoDynamicFeeEstimates, NotEnoughFunds, get_asyncio_loop, profiler
 
 from .auth import AuthMixin, auth_protect
 from .qetypes import QEAmount
@@ -275,7 +275,7 @@ class QESwapHelper(AuthMixin, QObject, QtEventListener):
             self.state = QESwapHelper.State.ServiceReady
         except Exception as e:
             self.error.emit(_("Swap service unavailable"))
-            self._logger.error(f"could not get pairs for swap: {repr(e)}")
+            self._logger.error(f"could not get pairs for swap: {e!r}")
             return
 
         """Sets the minimal and maximal amount that can be swapped for the swap
@@ -410,7 +410,7 @@ class QESwapHelper(AuthMixin, QObject, QtEventListener):
                 self._fut_htlc_wait = fut = asyncio.run_coroutine_threadsafe(coro2, loop)
 
                 self.canCancel = True
-                txid = fut.result()
+                fut.result()
                 try:  # swaphelper might be destroyed at this point
                     self.userinfo = " ".join(
                         [

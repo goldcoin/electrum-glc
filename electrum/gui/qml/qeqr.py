@@ -1,21 +1,19 @@
 import asyncio
-import qrcode
-from qrcode.exceptions import DataOverflowError
-
 import math
 import urllib
 
+import qrcode
 from PIL import ImageQt
-
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject, QRect
-from PyQt6.QtGui import QImage, QColor
-from PyQt6.QtQuick import QQuickImageProvider
+from PyQt6.QtCore import QObject, QRect, pyqtProperty, pyqtSignal, pyqtSlot
+from PyQt6.QtGui import QColor, QImage
 from PyQt6.QtMultimedia import QVideoSink
+from PyQt6.QtQuick import QQuickImageProvider
+from qrcode.exceptions import DataOverflowError
 
+from electrum.i18n import _
 from electrum.logging import get_logger
 from electrum.qrreader import get_qr_reader
-from electrum.i18n import _
-from electrum.util import profiler, get_asyncio_loop
+from electrum.util import get_asyncio_loop, profiler
 
 
 class QEQRParser(QObject):

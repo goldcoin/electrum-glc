@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
-import sys
 import asyncio
+import sys
 
 from electrum import bitcoin
 from electrum.network import Network
-from electrum.util import json_encode, print_msg, create_and_start_event_loop, log_exceptions
 from electrum.simple_config import SimpleConfig
-
+from electrum.util import create_and_start_event_loop, json_encode, log_exceptions, print_msg
 
 try:
     addr = sys.argv[1]

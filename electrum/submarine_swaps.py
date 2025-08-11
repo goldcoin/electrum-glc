@@ -1,64 +1,56 @@
 import asyncio
 import json
-import os
-from typing import TYPE_CHECKING, Optional, Dict, Union, Sequence, Tuple
-from decimal import Decimal
 import math
+import os
 import time
+from collections.abc import Sequence
+from decimal import Decimal
+from typing import TYPE_CHECKING, Optional
 
-import attr
 import aiohttp
+import attr
 
 from . import lnutil
-from .crypto import sha256, hash_160
-from .ecc import ECPrivkey
+from .address_synchronizer import TX_HEIGHT_LOCAL
 from .bitcoin import (
-    script_to_p2wsh,
-    opcodes,
-    p2wsh_nested_script,
-    push_script,
-    is_segwit_address,
+    DummyAddress,
+    construct_script,
     construct_witness,
+    dust_threshold,
+    opcodes,
+    script_to_p2wsh,
 )
+from .crypto import ripemd, sha256
+from .ecc import ECPrivkey
+from .i18n import _
+from .invoices import Invoice
+from .json_db import StoredObject, stored_in
+from .lnaddr import lndecode
+from .lnonion import OnionFailureCode, OnionRoutingFailure
+from .lnutil import REDEEM_AFTER_DOUBLE_SPENT_DELAY, hex_to_bytes
+from .logging import Logger
+from .network import TxBroadcastServerReturnedError
 from .transaction import (
+    OPPushDataGeneric,
+    OPPushDataPubkey,
+    PartialTransaction,
     PartialTxInput,
     PartialTxOutput,
-    PartialTransaction,
     Transaction,
     TxInput,
     TxOutpoint,
-)
-from .transaction import (
-    script_GetOp,
     match_script_against_template,
-    OPPushDataGeneric,
-    OPPushDataPubkey,
+    script_GetOp,
 )
-from .util import log_exceptions, BelowDustLimit, OldTaskGroup
-from .lnutil import REDEEM_AFTER_DOUBLE_SPENT_DELAY
-from .bitcoin import dust_threshold, DummyAddress
-from .logging import Logger
-from .lnutil import hex_to_bytes
-from .lnaddr import lndecode
-from .json_db import StoredObject, stored_in
-from . import constants
-from .address_synchronizer import TX_HEIGHT_LOCAL
-from .i18n import _
-
-from .bitcoin import construct_script
-from .crypto import ripemd
-from .invoices import Invoice
-from .network import TxBroadcastServerReturnedError
-from .lnonion import OnionRoutingFailure, OnionFailureCode
-
+from .util import BelowDustLimit, OldTaskGroup, log_exceptions
 
 if TYPE_CHECKING:
-    from .network import Network
-    from .wallet import Abstract_Wallet
+    from .lnchannel import Channel
     from .lnwatcher import LNWalletWatcher
     from .lnworker import LNWallet
-    from .lnchannel import Channel
+    from .network import Network
     from .simple_config import SimpleConfig
+    from .wallet import Abstract_Wallet
 
 
 CLAIM_FEE_SIZE = 136
@@ -106,11 +98,11 @@ def check_reverse_redeem_script(
     lockup_address: str,
     payment_hash: bytes,
     locktime: int,
-    refund_pubkey: bytes = None,
-    claim_pubkey: bytes = None,
+    refund_pubkey: bytes | None = None,
+    claim_pubkey: bytes | None = None,
 ) -> None:
     redeem_script = bytes.fromhex(redeem_script)
-    parsed_script = [x for x in script_GetOp(redeem_script)]
+    parsed_script = list(script_GetOp(redeem_script))
     if not match_script_against_template(redeem_script, WITNESS_TEMPLATE_REVERSE_SWAP):
         raise Exception("rswap check failed: scriptcode does not match template")
     if script_to_p2wsh(redeem_script.hex()) != lockup_address:
@@ -221,7 +213,7 @@ class SwapManager(Logger):
         assert self.network is None, "already started"
         self.network = network
         self.lnwatcher = lnwatcher
-        for k, swap in self.swaps.items():
+        for _k, swap in self.swaps.items():
             if swap.is_redeemed:
                 continue
             self.add_lnwatcher_callback(swap)
@@ -236,7 +228,7 @@ class SwapManager(Logger):
         try:
             invoice = self.wallet.get_invoice(key)
             success, log = await self.lnworker.pay_invoice(invoice.lightning_invoice, attempts=10)
-        except Exception as e:
+        except Exception:
             self.logger.info(f"exception paying {key}, will not retry")
             self.invoices_to_pay.pop(key, None)
             return
@@ -392,7 +384,7 @@ class SwapManager(Logger):
     def _get_fee(cls, *, size, config: "SimpleConfig"):
         return config.estimate_fee(size, allow_fallback_to_static_rates=True)
 
-    def get_swap(self, payment_hash: bytes) -> Optional[SwapData]:
+    def get_swap(self, payment_hash: bytes) -> SwapData | None:
         # for history
         swap = self.swaps.get(payment_hash.hex())
         if swap:
@@ -402,7 +394,8 @@ class SwapManager(Logger):
             return self.swaps.get(payment_hash.hex())
 
     def add_lnwatcher_callback(self, swap: SwapData) -> None:
-        callback = lambda: self._claim_swap(swap)
+        def callback():
+            return self._claim_swap(swap)
         self.lnwatcher.add_callback(swap.lockup_address, callback)
 
     async def hold_invoice_callback(self, payment_hash: bytes) -> None:
@@ -421,7 +414,7 @@ class SwapManager(Logger):
                     break
 
     def create_normal_swap(
-        self, *, lightning_amount_sat: int, payment_hash: bytes, their_pubkey: bytes = None
+        self, *, lightning_amount_sat: int, payment_hash: bytes, their_pubkey: bytes | None = None
     ):
         """server method"""
         assert lightning_amount_sat
@@ -457,8 +450,8 @@ class SwapManager(Logger):
         payment_hash: bytes,
         our_privkey: bytes,
         prepay: bool,
-        channels: Optional[Sequence["Channel"]] = None,
-    ) -> Tuple[SwapData, str, str]:
+        channels: Sequence["Channel"] | None = None,
+    ) -> tuple[SwapData, str, str]:
         """creates a hold invoice"""
         if prepay:
             prepay_amount_sat = self.get_claim_fee() * 2
@@ -550,7 +543,7 @@ class SwapManager(Logger):
         onchain_amount_sat: int,
         preimage: bytes,
         payment_hash: bytes,
-        prepay_hash: Optional[bytes] = None,
+        prepay_hash: bytes | None = None,
     ) -> SwapData:
         lockup_address = script_to_p2wsh(redeem_script)
         receive_address = self.wallet.get_receiving_address()
@@ -598,7 +591,7 @@ class SwapManager(Logger):
         password,
         tx: PartialTransaction = None,
         channels=None,
-    ) -> Optional[str]:
+    ) -> str | None:
         """send on-chain BTC, receive on Lightning
 
         Old (removed) flow:
@@ -633,8 +626,8 @@ class SwapManager(Logger):
         *,
         lightning_amount_sat: int,
         expected_onchain_amount_sat: int,
-        channels: Optional[Sequence["Channel"]] = None,
-    ) -> Tuple[SwapData, str]:
+        channels: Sequence["Channel"] | None = None,
+    ) -> tuple[SwapData, str]:
         refund_privkey = os.urandom(32)
         refund_pubkey = ECPrivkey(refund_privkey).get_public_key_bytes(compressed=True)
 
@@ -649,7 +642,7 @@ class SwapManager(Logger):
         data = json.loads(response)
         payment_hash = bytes.fromhex(data["preimageHash"])
 
-        zeroconf = data["acceptZeroConf"]
+        data["acceptZeroConf"]
         onchain_amount = data["expectedAmount"]
         locktime = data["timeoutBlockHeight"]
         lockup_address = data["address"]
@@ -691,7 +684,7 @@ class SwapManager(Logger):
         swap: SwapData,
         invoice: str,
         tx: Transaction,
-    ) -> Optional[str]:
+    ) -> str | None:
         payment_hash = swap.payment_hash
         refund_pubkey = ECPrivkey(swap.privkey).get_public_key_bytes(compressed=True)
 
@@ -709,7 +702,7 @@ class SwapManager(Logger):
         response = await self.network.async_send_http_on_proxy(
             "post", self.api_url + "/addswapinvoice", json=request_data, timeout=30
         )
-        data = json.loads(response)
+        json.loads(response)
         # wait for funding tx
         lnaddr = lndecode(invoice)
         while swap.funding_txid is None and not lnaddr.is_expired():
@@ -719,10 +712,10 @@ class SwapManager(Logger):
     def create_funding_tx(
         self,
         swap: SwapData,
-        tx: Optional[PartialTransaction],
+        tx: PartialTransaction | None,
         *,
         password,
-        batch_rbf: Optional[bool] = None,
+        batch_rbf: bool | None = None,
     ) -> PartialTransaction:
         # create funding tx
         # note: rbf must not decrease payment
@@ -746,7 +739,7 @@ class SwapManager(Logger):
     @log_exceptions
     async def request_swap_for_tx(
         self, tx: "PartialTransaction"
-    ) -> Optional[Tuple[SwapData, str, PartialTransaction]]:
+    ) -> tuple[SwapData, str, PartialTransaction] | None:
         for o in tx.outputs():
             if o.address == self.dummy_address:
                 change_amount = o.value
@@ -771,8 +764,8 @@ class SwapManager(Logger):
         *,
         lightning_amount_sat: int,
         expected_onchain_amount_sat: int,
-        channels: Optional[Sequence["Channel"]] = None,
-    ) -> Optional[str]:
+        channels: Sequence["Channel"] | None = None,
+    ) -> str | None:
         """send on Lightning, receive on-chain
 
         - User generates preimage, RHASH. Sends RHASH to server.
@@ -808,7 +801,7 @@ class SwapManager(Logger):
         redeem_script = data["redeemScript"]
         locktime = data["timeoutBlockHeight"]
         onchain_amount = data["onchainAmount"]
-        response_id = data["id"]
+        data["id"]
         # verify redeem_script is built with our pubkey and preimage
         check_reverse_redeem_script(
             redeem_script=redeem_script,
@@ -920,7 +913,7 @@ class SwapManager(Logger):
     def init_min_max_values(self):
         # use default values if we never requested pairs
         try:
-            with open(self.pairs_filename(), "r", encoding="utf-8") as f:
+            with open(self.pairs_filename(), encoding="utf-8") as f:
                 pairs = json.loads(f.read())
             limits = pairs["pairs"]["BTC/BTC"]["limits"]
             self._min_amount = limits["minimal"]
@@ -938,7 +931,7 @@ class SwapManager(Logger):
     def check_invoice_amount(self, x):
         return x >= self.get_min_amount() and x <= self.get_max_amount()
 
-    def _get_recv_amount(self, send_amount: Optional[int], *, is_reverse: bool) -> Optional[int]:
+    def _get_recv_amount(self, send_amount: int | None, *, is_reverse: bool) -> int | None:
         """For a given swap direction and amount we send, returns how much we will receive.
 
         Note: in the reverse direction, the mining fee for the on-chain claim tx is NOT accounted for.
@@ -968,7 +961,7 @@ class SwapManager(Logger):
         x = int(x)
         return x
 
-    def _get_send_amount(self, recv_amount: Optional[int], *, is_reverse: bool) -> Optional[int]:
+    def _get_send_amount(self, recv_amount: int | None, *, is_reverse: bool) -> int | None:
         """For a given swap direction and amount we want to receive, returns how much we will need to send.
 
         Note: in the reverse direction, the mining fee for the on-chain claim tx is NOT accounted for.
@@ -998,7 +991,7 @@ class SwapManager(Logger):
         x = int(x)
         return x
 
-    def get_recv_amount(self, send_amount: Optional[int], *, is_reverse: bool) -> Optional[int]:
+    def get_recv_amount(self, send_amount: int | None, *, is_reverse: bool) -> int | None:
         # first, add percentage fee
         recv_amount = self._get_recv_amount(send_amount, is_reverse=is_reverse)
         # sanity check calculation can be inverted
@@ -1015,7 +1008,7 @@ class SwapManager(Logger):
             recv_amount -= self.get_claim_fee()
         return recv_amount
 
-    def get_send_amount(self, recv_amount: Optional[int], *, is_reverse: bool) -> Optional[int]:
+    def get_send_amount(self, recv_amount: int | None, *, is_reverse: bool) -> int | None:
         # first, add on-chain claim tx fee
         if is_reverse and recv_amount is not None:
             recv_amount += self.get_claim_fee()
@@ -1031,17 +1024,17 @@ class SwapManager(Logger):
                 )
         return send_amount
 
-    def get_swap_by_funding_tx(self, tx: Transaction) -> Optional[SwapData]:
+    def get_swap_by_funding_tx(self, tx: Transaction) -> SwapData | None:
         if len(tx.outputs()) != 1:
             return False
         prevout = TxOutpoint(txid=bytes.fromhex(tx.txid()), out_idx=0)
         return self._swaps_by_funding_outpoint.get(prevout)
 
-    def get_swap_by_claim_tx(self, tx: Transaction) -> Optional[SwapData]:
+    def get_swap_by_claim_tx(self, tx: Transaction) -> SwapData | None:
         txin = tx.inputs()[0]
         return self.get_swap_by_claim_txin(txin)
 
-    def get_swap_by_claim_txin(self, txin: TxInput) -> Optional[SwapData]:
+    def get_swap_by_claim_txin(self, txin: TxInput) -> SwapData | None:
         return self._swaps_by_funding_outpoint.get(txin.prevout)
 
     def is_lockup_address_for_a_swap(self, addr: str) -> bool:
@@ -1105,7 +1098,7 @@ class SwapManager(Logger):
         cls.sign_tx(tx, swap)
         return tx
 
-    def max_amount_forward_swap(self) -> Optional[int]:
+    def max_amount_forward_swap(self) -> int | None:
         """returns None if we cannot swap"""
         max_swap_amt_ln = self.get_max_amount()
         max_recv_amt_ln = int(self.lnworker.num_sats_can_receive())

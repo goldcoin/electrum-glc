@@ -1,8 +1,8 @@
 import threading
 
-from PyQt5.QtGui import QCursor
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QSlider, QToolTip, QComboBox
+from PyQt5.QtGui import QCursor
+from PyQt5.QtWidgets import QComboBox, QSlider, QToolTip
 
 from electrum.i18n import _
 

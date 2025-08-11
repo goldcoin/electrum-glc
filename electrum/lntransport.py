@@ -5,25 +5,24 @@
 
 # Derived from https://gist.github.com/AdamISZ/046d05c156aaeb56cc897f85eecb3eb8
 
-import hashlib
 import asyncio
+import hashlib
 from asyncio import StreamReader, StreamWriter
-from typing import Optional
 from functools import cached_property
 
-from .crypto import sha256, hmac_oneshot, chacha20_poly1305_encrypt, chacha20_poly1305_decrypt
+from . import ecc
+from .crypto import chacha20_poly1305_decrypt, chacha20_poly1305_encrypt, hmac_oneshot, sha256
 from .lnutil import (
+    HandshakeFailed,
+    LightningPeerConnectionClosed,
+    LNPeerAddr,
     get_ecdh,
     privkey_to_pubkey,
-    LightningPeerConnectionClosed,
-    HandshakeFailed,
-    LNPeerAddr,
 )
-from . import ecc
 from .util import MySocksProxy
 
 
-class HandshakeState(object):
+class HandshakeState:
     prologue = b"lightning"
     protocol_name = b"Noise_XK_secp256k1_ChaChaPoly_SHA256"
     handshake_version = b"\x00"
@@ -101,7 +100,7 @@ class LNTransportBase:
     reader: StreamReader
     writer: StreamWriter
     privkey: bytes
-    peer_addr: Optional[LNPeerAddr] = None
+    peer_addr: LNPeerAddr | None = None
 
     def name(self) -> str:
         pubkey = self.remote_pubkey()
@@ -173,7 +172,7 @@ class LNTransportBase:
     def close(self):
         self.writer.close()
 
-    def remote_pubkey(self) -> Optional[bytes]:
+    def remote_pubkey(self) -> bytes | None:
         raise NotImplementedError()
 
 
@@ -244,14 +243,14 @@ class LNResponderTransport(LNTransportBase):
         self._pubkey = rs
         return rs
 
-    def remote_pubkey(self) -> Optional[bytes]:
+    def remote_pubkey(self) -> bytes | None:
         return self._pubkey
 
 
 class LNTransport(LNTransportBase):
     """Transport initiated by local party."""
 
-    def __init__(self, privkey: bytes, peer_addr: LNPeerAddr, *, proxy: Optional[dict]):
+    def __init__(self, privkey: bytes, peer_addr: LNPeerAddr, *, proxy: dict | None):
         LNTransportBase.__init__(self)
         assert type(privkey) is bytes and len(privkey) == 32
         self.privkey = privkey
@@ -282,13 +281,13 @@ class LNTransport(LNTransportBase):
             )
         hver, alice_epub, tag = rspns[0], rspns[1:34], rspns[34:]
         if bytes([hver]) != hs.handshake_version:
-            raise HandshakeFailed("unexpected handshake version: {}".format(hver))
+            raise HandshakeFailed(f"unexpected handshake version: {hver}")
         # act 2
         hs.update(alice_epub)
         ss = get_ecdh(epriv, alice_epub)
         ck, temp_k2 = get_bolt8_hkdf(hs.ck, ss)
         hs.ck = ck
-        p = aead_decrypt(temp_k2, 0, hs.h, tag)
+        aead_decrypt(temp_k2, 0, hs.h, tag)
         hs.update(tag)
         # act 3
         my_pubkey = privkey_to_pubkey(self.privkey)
@@ -303,5 +302,5 @@ class LNTransport(LNTransportBase):
         self.sk, self.rk = get_bolt8_hkdf(hs.ck, b"")
         self.init_counters(ck)
 
-    def remote_pubkey(self) -> Optional[bytes]:
+    def remote_pubkey(self) -> bytes | None:
         return self.peer_addr.pubkey

@@ -2,15 +2,15 @@ import copy
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject, QRegularExpression
+from PyQt6.QtCore import QObject, QRegularExpression, pyqtProperty, pyqtSignal, pyqtSlot
 
 from electrum.bitcoin import TOTAL_COIN_SUPPLY_LIMIT_IN_BTC
-from electrum.i18n import set_language, languages
+from electrum.i18n import languages, set_language
 from electrum.logging import get_logger
 from electrum.util import base_unit_name_to_decimal_point
 
-from .qetypes import QEAmount
 from .auth import AuthMixin, auth_protect
+from .qetypes import QEAmount
 
 if TYPE_CHECKING:
     from electrum.simple_config import SimpleConfig
@@ -46,7 +46,7 @@ class QEConfig(AuthMixin, QObject):
         langs = copy.deepcopy(languages)
         default = langs.pop("")
         langs_sorted = sorted(
-            list(map(lambda x: {"value": x[0], "text": x[1]}, langs.items())),
+            ({"value": x[0], "text": x[1]} for x in langs.items()),
             key=lambda x: x["text"],
         )
         langs_sorted.insert(0, {"value": "", "text": default})

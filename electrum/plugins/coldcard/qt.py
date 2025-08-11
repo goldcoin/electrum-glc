@@ -1,31 +1,29 @@
 from functools import partial
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import QPushButton, QLabel, QVBoxLayout, QWidget, QGridLayout
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QGridLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
+from electrum.gui.qt.main_window import ElectrumWindow
 from electrum.gui.qt.util import (
-    WindowModalDialog,
     CloseButton,
-    Buttons,
+    WindowModalDialog,
     getOpenFileName,
     getSaveFileName,
 )
-from electrum.gui.qt.main_window import ElectrumWindow
-
+from electrum.gui.qt.wizard.wallet import (
+    WCHWUninitialized,
+    WCHWUnlock,
+    WCHWXPub,
+    WCScriptAndDerivation,
+)
 from electrum.i18n import _
 from electrum.plugin import hook
 from electrum.wallet import Multisig_Wallet
 
-from .coldcard import ColdcardPlugin, xfp2str
-from ..hw_wallet.qt import QtHandlerBase, QtPluginBase
 from ..hw_wallet.plugin import only_hook_if_libraries_available
-from electrum.gui.qt.wizard.wallet import (
-    WCScriptAndDerivation,
-    WCHWXPub,
-    WCHWUninitialized,
-    WCHWUnlock,
-)
+from ..hw_wallet.qt import QtHandlerBase, QtPluginBase
+from .coldcard import ColdcardPlugin, xfp2str
 
 if TYPE_CHECKING:
     from electrum.gui.qt.wizard.wallet import QENewWalletWizard
@@ -54,7 +52,7 @@ class Plugin(ColdcardPlugin, QtPluginBase):
                         partial(self.show_address, wallet, addrs[0], keystore=keystore)
                     )
 
-                device_name = "{} ({})".format(self.device, keystore.label)
+                device_name = f"{self.device} ({keystore.label})"
                 menu.addAction(_("Show on {}").format(device_name), show_address)
 
     @only_hook_if_libraries_available
@@ -88,7 +86,7 @@ class Plugin(ColdcardPlugin, QtPluginBase):
             config=self.config,
         )
         if fileName:
-            with open(fileName, "wt") as f:
+            with open(fileName, "w") as f:
                 ColdcardPlugin.export_ms_wallet(wallet, f, basename)
             main_window.show_message(_("Wallet setup file exported successfully"))
 
@@ -117,14 +115,14 @@ class Coldcard_Handler(QtHandlerBase):
     MESSAGE_DIALOG_TITLE = _("Coldcard Status")
 
     def __init__(self, win):
-        super(Coldcard_Handler, self).__init__(win, "Coldcard")
+        super().__init__(win, "Coldcard")
 
 
 class CKCCSettingsDialog(WindowModalDialog):
 
     def __init__(self, window: ElectrumWindow, plugin, keystore):
         title = _("{} Settings").format(plugin.device)
-        super(CKCCSettingsDialog, self).__init__(window, title)
+        super().__init__(window, title)
         self.setMaximumWidth(540)
 
         # Note: Coldcard may **not** be connected at present time. Keep working!
@@ -171,7 +169,7 @@ class CKCCSettingsDialog(WindowModalDialog):
             ("fw_built", _("Build Date")),
             ("bl_version", _("Bootloader")),
         ]
-        for row_num, (member_name, label) in enumerate(rows):
+        for _row_num, (member_name, label) in enumerate(rows):
             # XXX we know xfp already, even if not connected
             widget = QLabel("<tt>000000000000")
             widget.setTextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard)
@@ -202,7 +200,7 @@ class CKCCSettingsDialog(WindowModalDialog):
 
     def show_placeholders(self, unclear_arg):
         # device missing, so hide lots of detail.
-        self.xfp.setText("<tt>%s" % self.keystore.get_root_fingerprint())
+        self.xfp.setText(f"<tt>{self.keystore.get_root_fingerprint()}")
         self.serial.setText("(not connected)")
         self.fw_version.setText("")
         self.fw_built.setText("")
@@ -212,15 +210,15 @@ class CKCCSettingsDialog(WindowModalDialog):
 
         dev = client.dev
 
-        self.xfp.setText("<tt>%s" % xfp2str(dev.master_fingerprint))
-        self.serial.setText("<tt>%s" % dev.serial)
+        self.xfp.setText(f"<tt>{xfp2str(dev.master_fingerprint)}")
+        self.serial.setText(f"<tt>{dev.serial}")
 
         # ask device for versions: allow extras for future
         fw_date, fw_rel, bl_rel, *rfu = client.get_version()
 
-        self.fw_version.setText("<tt>%s" % fw_rel)
-        self.fw_built.setText("<tt>%s" % fw_date)
-        self.bl_version.setText("<tt>%s" % bl_rel)
+        self.fw_version.setText(f"<tt>{fw_rel}")
+        self.fw_built.setText(f"<tt>{fw_date}")
+        self.bl_version.setText(f"<tt>{bl_rel}")
 
     def start_upgrade(self, client):
         # ask for a filename (must have already downloaded it)
@@ -235,11 +233,11 @@ class CKCCSettingsDialog(WindowModalDialog):
         if not fileName:
             return
 
-        from ckcc.utils import dfu_parse
-        from ckcc.sigheader import FW_HEADER_SIZE, FW_HEADER_OFFSET, FW_HEADER_MAGIC
-        from ckcc.protocol import CCProtocolPacker
-        from hashlib import sha256
         import struct
+
+        from ckcc.protocol import CCProtocolPacker
+        from ckcc.sigheader import FW_HEADER_MAGIC, FW_HEADER_OFFSET, FW_HEADER_SIZE
+        from ckcc.utils import dfu_parse
 
         try:
             with open(fileName, "rb") as fd:
@@ -257,7 +255,7 @@ class CKCCSettingsDialog(WindowModalDialog):
             if magic != FW_HEADER_MAGIC:
                 raise ValueError("Bad magic")
         except Exception as exc:
-            self.window.show_error("Does not appear to be a Coldcard firmware file.\n\n%s" % exc)
+            self.window.show_error(f"Does not appear to be a Coldcard firmware file.\n\n{exc}")
             return
 
         # TODO:
@@ -274,7 +272,7 @@ class CKCCSettingsDialog(WindowModalDialog):
             assert dlen == len(firmware)
 
             # append the firmware header a second time
-            result = dev.send_recv(CCProtocolPacker.upload(size, size + FW_HEADER_SIZE, hdr))
+            dev.send_recv(CCProtocolPacker.upload(size, size + FW_HEADER_SIZE, hdr))
 
             # make it reboot into bootloader which might install it
             dev.send_recv(CCProtocolPacker.reboot())

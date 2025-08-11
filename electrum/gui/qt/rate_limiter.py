@@ -2,15 +2,14 @@
 # Distributed under the MIT software license, see the accompanying
 # file LICENCE or http://www.opensource.org/licenses/mit-license.php
 
-from functools import wraps
 import threading
 import time
 import weakref
+from functools import wraps
 
 from PyQt5.QtCore import QObject, QTimer
 
 from electrum.logging import Logger, get_logger
-
 
 _logger = get_logger(__name__)
 
@@ -26,7 +25,7 @@ class RateLimiter(Logger):
     # some defaults
     last_ts = 0.0
     timer = None
-    saved_args = (tuple(), dict())
+    saved_args = ((), {})
     ctr = 0
 
     def __init__(self, rate, ts_after, obj, func):
@@ -62,7 +61,7 @@ class RateLimiter(Logger):
 
     @classmethod
     def attr_name(cls, func):
-        return "__{}__{}".format(func.__name__, cls.__name__)
+        return f"__{func.__name__}__{cls.__name__}"
 
     @classmethod
     def invoke(cls, rate, ts_after, func, args, kwargs):
@@ -117,7 +116,7 @@ class RateLimiter(Logger):
         args, kwargs = (
             self.saved_args
         )  # grab the latest collated invocation's args. this attribute is always defined.
-        self.saved_args = (tuple(), dict())  # clear saved args immediately
+        self.saved_args = ((), {})  # clear saved args immediately
         return args, kwargs
 
     def _push_args(self, args, kwargs):
@@ -188,7 +187,7 @@ class RateLimiterClassLvl(RateLimiter):
         args.insert(
             0, objcls
         )  # prepend obj class to trick super.invoke() into making this state object be class-level.
-        return super(RateLimiterClassLvl, cls).invoke(rate, ts_after, func, args, kwargs)
+        return super().invoke(rate, ts_after, func, args, kwargs)
 
     def _push_args(self, args, kwargs):
         objcls, obj = args[0:2]
@@ -198,14 +197,14 @@ class RateLimiterClassLvl(RateLimiter):
     def _pop_args(self):
         weak_dict = self.saved_args
         self.saved_args = weakref.WeakKeyDictionary()
-        return (weak_dict,), dict()
+        return (weak_dict,), {}
 
     def _call_func_for_all(self, weak_dict):
         for ref in weak_dict.keyrefs():
             obj = ref()
             if obj:
                 args, kwargs = weak_dict[obj]
-                obj_name = obj.diagnostic_name() if hasattr(obj, "diagnostic_name") else obj
+                obj.diagnostic_name() if hasattr(obj, "diagnostic_name") else obj
                 # self.logger.debug(f"calling for {obj_name}, timer={bool(self.timer)}")
                 self.func_target(obj, *args, **kwargs)
 

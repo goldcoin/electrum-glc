@@ -1,8 +1,8 @@
+from collections.abc import Sequence
 from copy import deepcopy
-from typing import Optional, Sequence, Tuple, List, Dict, TYPE_CHECKING, Set
-import threading
+from typing import TYPE_CHECKING
 
-from .lnutil import SENT, RECEIVED, LOCAL, REMOTE, HTLCOwner, UpdateAddHtlc, Direction, FeeUpdate
+from .lnutil import LOCAL, RECEIVED, REMOTE, SENT, Direction, FeeUpdate, HTLCOwner, UpdateAddHtlc
 from .util import bfh, with_lock
 
 if TYPE_CHECKING:
@@ -111,7 +111,7 @@ class HTLCManager:
         if not self.is_htlc_active_at_ctn(
             ctx_owner=REMOTE, ctn=next_ctn, htlc_proposer=REMOTE, htlc_id=htlc_id
         ):
-            raise Exception(f"(local) cannot remove htlc that is not there...")
+            raise Exception("(local) cannot remove htlc that is not there...")
         self.log[REMOTE]["settles"][htlc_id] = {LOCAL: None, REMOTE: next_ctn}
 
     @with_lock
@@ -120,7 +120,7 @@ class HTLCManager:
         if not self.is_htlc_active_at_ctn(
             ctx_owner=LOCAL, ctn=next_ctn, htlc_proposer=LOCAL, htlc_id=htlc_id
         ):
-            raise Exception(f"(remote) cannot remove htlc that is not there...")
+            raise Exception("(remote) cannot remove htlc that is not there...")
         self.log[LOCAL]["settles"][htlc_id] = {LOCAL: next_ctn, REMOTE: None}
 
     @with_lock
@@ -129,7 +129,7 @@ class HTLCManager:
         if not self.is_htlc_active_at_ctn(
             ctx_owner=REMOTE, ctn=next_ctn, htlc_proposer=REMOTE, htlc_id=htlc_id
         ):
-            raise Exception(f"(local) cannot remove htlc that is not there...")
+            raise Exception("(local) cannot remove htlc that is not there...")
         self.log[REMOTE]["fails"][htlc_id] = {LOCAL: None, REMOTE: next_ctn}
 
     @with_lock
@@ -138,7 +138,7 @@ class HTLCManager:
         if not self.is_htlc_active_at_ctn(
             ctx_owner=LOCAL, ctn=next_ctn, htlc_proposer=LOCAL, htlc_id=htlc_id
         ):
-            raise Exception(f"(remote) cannot remove htlc that is not there...")
+            raise Exception("(remote) cannot remove htlc that is not there...")
         self.log[LOCAL]["fails"][htlc_id] = {LOCAL: next_ctn, REMOTE: None}
 
     @with_lock
@@ -204,7 +204,7 @@ class HTLCManager:
                     ctns[REMOTE] = self.ctn_latest(REMOTE) + 1
         self._update_maybe_active_htlc_ids()
         # fee updates
-        for k, fee_update in list(self.log[REMOTE]["fee_updates"].items()):
+        for _k, fee_update in list(self.log[REMOTE]["fee_updates"].items()):
             if fee_update.ctn_remote is None and fee_update.ctn_local <= self.ctn_latest(LOCAL):
                 fee_update.ctn_remote = self.ctn_latest(REMOTE) + 1
 
@@ -226,7 +226,7 @@ class HTLCManager:
                     ctns[LOCAL] = self.ctn_latest(LOCAL) + 1
         self._update_maybe_active_htlc_ids()
         # fee updates
-        for k, fee_update in list(self.log[LOCAL]["fee_updates"].items()):
+        for _k, fee_update in list(self.log[LOCAL]["fee_updates"].items()):
             if fee_update.ctn_local is None and fee_update.ctn_remote <= self.ctn_latest(REMOTE):
                 fee_update.ctn_local = self.ctn_latest(LOCAL) + 1
 
@@ -319,7 +319,7 @@ class HTLCManager:
         self.log[LOCAL]["unacked_updates"][ctn_idx] = l
 
     @with_lock
-    def get_unacked_local_updates(self) -> Dict[int, Sequence[bytes]]:
+    def get_unacked_local_updates(self) -> dict[int, Sequence[bytes]]:
         # return self.log[LOCAL]['unacked_updates']
         return {
             ctn: [bfh(msg) for msg in messages]
@@ -454,8 +454,8 @@ class HTLCManager:
 
     @with_lock
     def htlcs_by_direction(
-        self, subject: HTLCOwner, direction: Direction, ctn: int = None
-    ) -> Dict[int, UpdateAddHtlc]:
+        self, subject: HTLCOwner, direction: Direction, ctn: int | None = None
+    ) -> dict[int, UpdateAddHtlc]:
         """Return the dict of received or sent (depending on direction) HTLCs
         in subject's ctx at ctn, keyed by htlc_id.
 
@@ -483,8 +483,8 @@ class HTLCManager:
 
     @with_lock
     def htlcs(
-        self, subject: HTLCOwner, ctn: int = None
-    ) -> Sequence[Tuple[Direction, UpdateAddHtlc]]:
+        self, subject: HTLCOwner, ctn: int | None = None
+    ) -> Sequence[tuple[Direction, UpdateAddHtlc]]:
         """Return the list of HTLCs in subject's ctx at ctn."""
         assert type(subject) is HTLCOwner
         if ctn is None:
@@ -497,7 +497,7 @@ class HTLCManager:
     @with_lock
     def get_htlcs_in_oldest_unrevoked_ctx(
         self, subject: HTLCOwner
-    ) -> Sequence[Tuple[Direction, UpdateAddHtlc]]:
+    ) -> Sequence[tuple[Direction, UpdateAddHtlc]]:
         assert type(subject) is HTLCOwner
         ctn = self.ctn_oldest_unrevoked(subject)
         return self.htlcs(subject, ctn)
@@ -505,7 +505,7 @@ class HTLCManager:
     @with_lock
     def get_htlcs_in_latest_ctx(
         self, subject: HTLCOwner
-    ) -> Sequence[Tuple[Direction, UpdateAddHtlc]]:
+    ) -> Sequence[tuple[Direction, UpdateAddHtlc]]:
         assert type(subject) is HTLCOwner
         ctn = self.ctn_latest(subject)
         return self.htlcs(subject, ctn)
@@ -513,7 +513,7 @@ class HTLCManager:
     @with_lock
     def get_htlcs_in_next_ctx(
         self, subject: HTLCOwner
-    ) -> Sequence[Tuple[Direction, UpdateAddHtlc]]:
+    ) -> Sequence[tuple[Direction, UpdateAddHtlc]]:
         assert type(subject) is HTLCOwner
         ctn = self.ctn_latest(subject) + 1
         return self.htlcs(subject, ctn)
@@ -533,7 +533,7 @@ class HTLCManager:
 
     @with_lock
     def all_settled_htlcs_ever_by_direction(
-        self, subject: HTLCOwner, direction: Direction, ctn: int = None
+        self, subject: HTLCOwner, direction: Direction, ctn: int | None = None
     ) -> Sequence[UpdateAddHtlc]:
         """Return the list of all HTLCs that have been ever settled in subject's
         ctx up to ctn, filtered to only "direction".
@@ -552,8 +552,8 @@ class HTLCManager:
 
     @with_lock
     def all_settled_htlcs_ever(
-        self, subject: HTLCOwner, ctn: int = None
-    ) -> Sequence[Tuple[Direction, UpdateAddHtlc]]:
+        self, subject: HTLCOwner, ctn: int | None = None
+    ) -> Sequence[tuple[Direction, UpdateAddHtlc]]:
         """Return the list of all HTLCs that have been ever settled in subject's
         ctx up to ctn.
         """
@@ -567,7 +567,7 @@ class HTLCManager:
         return sent + received
 
     @with_lock
-    def all_htlcs_ever(self) -> Sequence[Tuple[Direction, UpdateAddHtlc]]:
+    def all_htlcs_ever(self) -> Sequence[tuple[Direction, UpdateAddHtlc]]:
         sent = [(SENT, htlc) for htlc in self.log[LOCAL]["adds"].values()]
         received = [(RECEIVED, htlc) for htlc in self.log[REMOTE]["adds"].values()]
         return sent + received
@@ -578,7 +578,7 @@ class HTLCManager:
         whose: HTLCOwner,
         *,
         ctx_owner=HTLCOwner.LOCAL,
-        ctn: int = None,
+        ctn: int | None = None,
         initial_balance_msat: int,
     ) -> int:
         """Returns the balance of 'whose' in 'ctx' at 'ctn'.

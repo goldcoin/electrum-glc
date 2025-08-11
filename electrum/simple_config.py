@@ -1,31 +1,33 @@
 import json
-import threading
-import time
 import os
 import stat
-from decimal import Decimal
-from typing import Union, Optional, Dict, Sequence, Tuple, Any, Set, Callable
-from numbers import Real
-from functools import cached_property
-
+import threading
+import time
+from collections.abc import Callable
 from copy import deepcopy
+from decimal import Decimal
+from functools import cached_property
+from numbers import Real
+from typing import Any, Union
 
-from . import util
-from . import constants
-from . import invoices
-from .util import (
-    base_units,
-    base_unit_name_to_decimal_point,
-    decimal_point_to_base_unit_name,
-    UnknownBaseUnit,
-    DECIMAL_POINT_DEFAULT,
-)
-from .util import format_satoshis, format_fee_satoshis, os_chmod
-from .util import user_dir, make_dir, NoDynamicFeeEstimates, quantize_feerate
-from .lnutil import LN_MAX_FUNDING_SAT_LEGACY
+from . import constants, invoices, util
 from .i18n import _
-from .logging import get_logger, Logger
-
+from .lnutil import LN_MAX_FUNDING_SAT_LEGACY
+from .logging import Logger, get_logger
+from .util import (
+    DECIMAL_POINT_DEFAULT,
+    NoDynamicFeeEstimates,
+    UnknownBaseUnit,
+    base_unit_name_to_decimal_point,
+    base_units,
+    decimal_point_to_base_unit_name,
+    format_fee_satoshis,
+    format_satoshis,
+    make_dir,
+    os_chmod,
+    quantize_feerate,
+    user_dir,
+)
 
 FEE_ETA_TARGETS = [25, 10, 5, 2]
 FEE_DEPTH_TARGETS = [
@@ -76,8 +78,8 @@ class ConfigVar(property):
             Any, Callable[["SimpleConfig"], Any]
         ],  # typically a literal, but can also be a callable
         type_=None,
-        short_desc: Callable[[], str] = None,
-        long_desc: Callable[[], str] = None,
+        short_desc: Callable[[], str] | None = None,
+        long_desc: Callable[[], str] | None = None,
     ):
         self._key = key
         self._default = default
@@ -125,11 +127,11 @@ class ConfigVar(property):
     def get_default_value(self) -> Any:
         return self._default
 
-    def get_short_desc(self) -> Optional[str]:
+    def get_short_desc(self) -> str | None:
         desc = self._short_desc
         return desc() if desc else None
 
-    def get_long_desc(self) -> Optional[str]:
+    def get_long_desc(self) -> str | None:
         desc = self._long_desc
         return desc() if desc else None
 
@@ -159,10 +161,10 @@ class ConfigVarWithConfig:
     def get_default_value(self) -> Any:
         return self._config_var.get_default_value()
 
-    def get_short_desc(self) -> Optional[str]:
+    def get_short_desc(self) -> str | None:
         return self._config_var.get_short_desc()
 
-    def get_long_desc(self) -> Optional[str]:
+    def get_long_desc(self) -> str | None:
         return self._config_var.get_long_desc()
 
     def is_modifiable(self) -> bool:
@@ -282,8 +284,8 @@ class SimpleConfig(Logger):
                     config[new_key] = config[old_key]
                     if deprecation_warning:
                         self.logger.warning(
-                            "Note that the {} variable has been deprecated. "
-                            "You should use {} instead.".format(old_key, new_key)
+                            f"Note that the {old_key} variable has been deprecated. "
+                            f"You should use {new_key} instead."
                         )
                 del config[old_key]
                 updated = True
@@ -295,7 +297,7 @@ class SimpleConfig(Logger):
               This method side-steps ConfigVars completely, and is mainly kept for situations
               where the config key is dynamically constructed.
         """
-        if isinstance(key, (ConfigVar, ConfigVarWithConfig)):
+        if isinstance(key, ConfigVar | ConfigVarWithConfig):
             key = key.key()
         assert isinstance(key, str), key
         if not self.is_modifiable(key):
@@ -305,7 +307,7 @@ class SimpleConfig(Logger):
             json.dumps(key)
             json.dumps(value)
         except Exception:
-            self.logger.info(f"json error: cannot save {repr(key)} ({repr(value)})")
+            self.logger.info(f"json error: cannot save {key!r} ({value!r})")
             return
         self._set_key_in_user_config(key, value, save=save)
 
@@ -334,7 +336,7 @@ class SimpleConfig(Logger):
 
     def is_set(self, key: Union[str, ConfigVar, ConfigVarWithConfig]) -> bool:
         """Returns whether the config key has any explicit value set/defined."""
-        if isinstance(key, (ConfigVar, ConfigVarWithConfig)):
+        if isinstance(key, ConfigVar | ConfigVarWithConfig):
             key = key.key()
         assert isinstance(key, str), key
         return self.get(key, default=...) is not ...
@@ -372,7 +374,7 @@ class SimpleConfig(Logger):
             host, port, protocol = str(server_str).rsplit(":", 2)
             assert protocol in ("s", "t")
             int(port)  # Throw if cannot be converted to int
-            server_str = "{}:{}:s".format(host, port)
+            server_str = f"{host}:{port}:s"
             self._set_key_in_user_config("server", server_str)
         except BaseException:
             self._set_key_in_user_config("server", None)
@@ -398,10 +400,10 @@ class SimpleConfig(Logger):
             return False
         elif cur_version < min_version:
             raise Exception(
-                (
+
                     "config upgrade: unexpected version %d (should be %d-%d)"
                     % (cur_version, min_version, max_version)
-                )
+
             )
         else:
             return True
@@ -410,19 +412,17 @@ class SimpleConfig(Logger):
         config_version = self.get("config_version", 1)
         if config_version > FINAL_CONFIG_VERSION:
             self.logger.warning(
-                "config version ({}) is higher than latest ({})".format(
-                    config_version, FINAL_CONFIG_VERSION
-                )
+                f"config version ({config_version}) is higher than latest ({FINAL_CONFIG_VERSION})"
             )
         return config_version
 
     def is_modifiable(self, key: Union[str, ConfigVar, ConfigVarWithConfig]) -> bool:
-        if isinstance(key, (ConfigVar, ConfigVarWithConfig)):
+        if isinstance(key, ConfigVar | ConfigVarWithConfig):
             key = key.key()
         return key not in self.cmdline_options and key not in self._not_modifiable_keys
 
     def make_key_not_modifiable(self, key: Union[str, ConfigVar, ConfigVarWithConfig]) -> None:
-        if isinstance(key, (ConfigVar, ConfigVarWithConfig)):
+        if isinstance(key, ConfigVar | ConfigVarWithConfig):
             key = key.key()
         assert isinstance(key, str), key
         self._not_modifiable_keys.add(key)
@@ -445,7 +445,7 @@ class SimpleConfig(Logger):
             if os.path.exists(self.path):  # or maybe not?
                 raise
 
-    def get_backup_dir(self) -> Optional[str]:
+    def get_backup_dir(self) -> str | None:
         # this is used to save wallet file backups (without active lightning channels)
         # on Android, the export backup button uses android_backup_dir()
         if "ANDROID_DATA" in os.environ:
@@ -510,7 +510,7 @@ class SimpleConfig(Logger):
 
         return get_fee_within_limits
 
-    def eta_to_fee(self, slider_pos) -> Optional[int]:
+    def eta_to_fee(self, slider_pos) -> int | None:
         """Returns fee in sat/kbyte."""
         slider_pos = max(slider_pos, 0)
         slider_pos = min(slider_pos, len(FEE_ETA_TARGETS))
@@ -522,7 +522,7 @@ class SimpleConfig(Logger):
         return fee
 
     @impose_hard_limits_on_fee
-    def eta_target_to_fee(self, num_blocks: int) -> Optional[int]:
+    def eta_target_to_fee(self, num_blocks: int) -> int | None:
         """Returns fee in sat/kbyte."""
         if num_blocks == 1:
             fee = self.fee_estimates.get(2)
@@ -535,7 +535,7 @@ class SimpleConfig(Logger):
                 fee = int(fee)
         return fee
 
-    def fee_to_depth(self, target_fee: Real) -> Optional[int]:
+    def fee_to_depth(self, target_fee: Real) -> int | None:
         """For a given sat/vbyte fee, returns an estimate of how deep
         it would be in the current mempool in vbytes.
         Pessimistic == overestimates the depth.
@@ -549,13 +549,13 @@ class SimpleConfig(Logger):
                 break
         return depth
 
-    def depth_to_fee(self, slider_pos) -> Optional[int]:
+    def depth_to_fee(self, slider_pos) -> int | None:
         """Returns fee in sat/kbyte."""
         target = self.depth_target(slider_pos)
         return self.depth_target_to_fee(target)
 
     @impose_hard_limits_on_fee
-    def depth_target_to_fee(self, target: int) -> Optional[int]:
+    def depth_target_to_fee(self, target: int) -> int | None:
         """Returns fee in sat/kbyte.
         target: desired mempool depth in vbytes
         """
@@ -589,7 +589,7 @@ class SimpleConfig(Logger):
             return 1
         return FEE_ETA_TARGETS[slider_pos]
 
-    def fee_to_eta(self, fee_per_kb: Optional[int]) -> int:
+    def fee_to_eta(self, fee_per_kb: int | None) -> int:
         """Returns 'num blocks' ETA estimate for given fee rate,
         or -1 for low fee.
         """
@@ -601,7 +601,7 @@ class SimpleConfig(Logger):
             lst += [(1, next_block_fee)]
         if not lst or fee_per_kb is None:
             return -1
-        dist = map(lambda x: (x[0], abs(x[1] - fee_per_kb)), lst)
+        dist = ((x[0], abs(x[1] - fee_per_kb)) for x in lst)
         min_target, min_value = min(dist, key=operator.itemgetter(1))
         if fee_per_kb < self.fee_estimates.get(FEE_ETA_TARGETS[0]) / 2:
             min_target = -1
@@ -609,10 +609,10 @@ class SimpleConfig(Logger):
 
     def get_depth_mb_str(self, depth: int) -> str:
         # e.g. 500_000 -> "0.50 MB"
-        depth_mb = "{:.2f}".format(depth / 1_000_000)  # maybe .rstrip("0") ?
+        depth_mb = f"{depth / 1_000_000:.2f}"  # maybe .rstrip("0") ?
         return f"{depth_mb} MB"
 
-    def depth_tooltip(self, depth: Optional[int]) -> str:
+    def depth_tooltip(self, depth: int | None) -> str:
         """Returns text tooltip for given mempool depth (in vbytes)."""
         if depth is None:
             return "unknown from tip"
@@ -637,14 +637,14 @@ class SimpleConfig(Logger):
 
     def get_fee_status(self):
         target, tooltip, dyn = self.get_fee_target()
-        return tooltip + "  [%s]" % target if dyn else target + "  [Static]"
+        return tooltip + f"  [{target}]" if dyn else target + "  [Static]"
 
     def get_fee_text(
         self,
         slider_pos: int,
         dyn: bool,
         mempool: bool,
-        fee_per_kb: Optional[int],
+        fee_per_kb: int | None,
     ):
         """Returns (text, tooltip) where
         text is what we target: static fee / num blocks to confirm in / mempool depth
@@ -689,7 +689,7 @@ class SimpleConfig(Logger):
         maxp = len(FEE_ETA_TARGETS)  # not (-1) to have "next block"
         return min(maxp, self.FEE_EST_DYNAMIC_ETA_SLIDERPOS)
 
-    def get_fee_slider(self, dyn, mempool) -> Tuple[int, int, Optional[int]]:
+    def get_fee_slider(self, dyn, mempool) -> tuple[int, int, int | None]:
         if dyn:
             if mempool:
                 pos = self.get_depth_level()
@@ -708,10 +708,10 @@ class SimpleConfig(Logger):
     def static_fee(self, i):
         return FEERATE_STATIC_VALUES[i]
 
-    def static_fee_index(self, fee_per_kb: Optional[int]) -> int:
+    def static_fee_index(self, fee_per_kb: int | None) -> int:
         if fee_per_kb is None:
             raise TypeError("static fee cannot be None")
-        dist = list(map(lambda x: abs(x - fee_per_kb), FEERATE_STATIC_VALUES))
+        dist = [abs(x - fee_per_kb) for x in FEERATE_STATIC_VALUES]
         return min(range(len(dist)), key=dist.__getitem__)
 
     def has_fee_etas(self):
@@ -748,8 +748,8 @@ class SimpleConfig(Logger):
         return fee_rate
 
     def fee_per_kb(
-        self, dyn: bool = None, mempool: bool = None, fee_level: float = None
-    ) -> Optional[int]:
+        self, dyn: bool | None = None, mempool: bool | None = None, fee_level: float | None = None
+    ) -> int | None:
         """Returns sat/kvB fee to pay for a txn.
         Note: might return None.
 
@@ -777,7 +777,7 @@ class SimpleConfig(Logger):
             fee_rate = int(fee_rate)
         return fee_rate
 
-    def getfeerate(self) -> Tuple[str, int, Optional[int], str]:
+    def getfeerate(self) -> tuple[str, int, int | None, str]:
         dyn = self.is_dynfee()
         mempool = self.use_mempool_fees()
         if dyn:
@@ -881,7 +881,7 @@ class SimpleConfig(Logger):
         is_diff=False,
         whitespaces=False,
         precision=None,
-        add_thousands_sep: bool = None,
+        add_thousands_sep: bool | None = None,
     ) -> str:
         if precision is None:
             precision = self.amt_precision_post_satoshi
@@ -1359,7 +1359,7 @@ This will result in longer routes; it might increase your fees and decrease the 
     PLUGIN_TRUSTEDCOIN_NUM_PREPAY = ConfigVar("trustedcoin_prepay", default=20, type_=int)
 
 
-def read_user_config(path: Optional[str]) -> Dict[str, Any]:
+def read_user_config(path: str | None) -> dict[str, Any]:
     """Parse and store the user config settings in electrum.conf into user_config[]."""
     if not path:
         return {}
@@ -1367,12 +1367,12 @@ def read_user_config(path: Optional[str]) -> Dict[str, Any]:
     if not os.path.exists(config_path):
         return {}
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             data = f.read()
         result = json.loads(data)
     except Exception as exc:
         _logger.warning(f"Cannot read config file at {config_path}: {exc}")
         return {}
-    if not type(result) is dict:
+    if type(result) is not dict:
         return {}
     return result

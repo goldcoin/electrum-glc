@@ -1,8 +1,7 @@
-from electrum.util import print_stderr, raw_input
 from electrum.logging import get_logger
+from electrum.util import print_stderr, raw_input
 
 from .plugin import HardwareHandlerBase
-
 
 _logger = get_logger(__name__)
 
@@ -31,9 +30,9 @@ class CmdLineHandler(HardwareHandlerBase):
         print_stderr("a b c\nd e f\ng h i\n-----")
         o = raw_input()
         try:
-            return "".join(map(lambda x: t[x], o))
+            return "".join(t[x] for x in o)
         except KeyError as e:
-            raise Exception("Character {} not in matrix!".format(e)) from e
+            raise Exception(f"Character {e} not in matrix!") from e
 
     def prompt_auth(self, msg):
         import getpass

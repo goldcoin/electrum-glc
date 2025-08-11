@@ -22,22 +22,22 @@
 import asyncio
 import json
 import locale
-import traceback
-import sys
 import queue
-from typing import NamedTuple, Optional
+import sys
+import traceback
+from typing import NamedTuple
 
-from .version import ELECTRUM_VERSION
 from . import constants
 from .i18n import _
-from .util import make_aiohttp_session, error_text_str_to_safe_str
-from .logging import describe_os_version, Logger, get_git_version
+from .logging import Logger, describe_os_version, get_git_version
+from .util import error_text_str_to_safe_str, make_aiohttp_session
+from .version import ELECTRUM_VERSION
 
 
 class CrashReportResponse(NamedTuple):
-    status: Optional[str]
+    status: str | None
     text: str
-    url: Optional[str]
+    url: str | None
 
 
 class BaseCrashReporter(Logger):

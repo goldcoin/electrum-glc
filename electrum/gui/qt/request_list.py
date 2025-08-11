@@ -24,22 +24,20 @@
 # SOFTWARE.
 
 import enum
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtWidgets import QMenu, QAbstractItemView
-from PyQt5.QtCore import Qt, QItemSelectionModel, QModelIndex
+from PyQt5.QtCore import QItemSelectionModel, QModelIndex, Qt
+from PyQt5.QtGui import QStandardItem, QStandardItemModel
+from PyQt5.QtWidgets import QAbstractItemView, QMenu
 
 from electrum.i18n import _
-from electrum.util import format_time
 from electrum.plugin import run_hook
-from electrum.invoices import Invoice
+from electrum.util import format_time
 
-from .util import pr_icons, read_QIcon, webopen
-from .my_treeview import MyTreeView, MySortModel
+from .my_treeview import MySortModel, MyTreeView
+from .util import pr_icons, read_QIcon
 
 if TYPE_CHECKING:
-    from .main_window import ElectrumWindow
     from .receive_tab import ReceiveTab
 
 
@@ -104,7 +102,7 @@ class RequestList(MyTreeView):
     def get_current_key(self):
         return self.get_role_data_for_current_item(col=self.Columns.DATE, role=ROLE_KEY)
 
-    def item_changed(self, idx: Optional[QModelIndex]):
+    def item_changed(self, idx: QModelIndex | None):
         if idx is None:
             self.receive_tab.update_current_request()
             return
@@ -232,7 +230,7 @@ class RequestList(MyTreeView):
         self.receive_tab.do_clear()
 
     def delete_expired_requests(self):
-        keys = self.wallet.delete_expired_requests()
+        self.wallet.delete_expired_requests()
         self.update()
         self.receive_tab.do_clear()
 

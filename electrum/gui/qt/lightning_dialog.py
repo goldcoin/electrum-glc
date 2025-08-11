@@ -25,12 +25,11 @@
 
 from typing import TYPE_CHECKING
 
-from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QPushButton
+from PyQt5.QtWidgets import QDialog, QLabel, QPushButton, QVBoxLayout
 
 from electrum.i18n import _
 
-from .util import Buttons
-from .util import QtEventListener, qt_event_listener
+from .util import Buttons, QtEventListener, qt_event_listener
 
 if TYPE_CHECKING:
     from . import ElectrumGui

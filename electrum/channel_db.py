@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Electrum - lightweight Bitcoin client
 # Copyright (C) 2018 The Electrum developers
@@ -23,42 +22,39 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import time
-import random
-import os
-from collections import defaultdict
-from typing import Sequence, List, Tuple, Optional, Dict, NamedTuple, TYPE_CHECKING, Set
-import binascii
-import base64
 import asyncio
-import threading
-from enum import IntEnum
+import base64
+import binascii
 import functools
+import os
+import random
+import threading
+import time
+from collections import defaultdict
+from collections.abc import Sequence
+from enum import IntEnum
+from typing import TYPE_CHECKING, NamedTuple, Optional
 
 from aiorpcx import NetAddress
 
-from .sql_db import SqlDB, sql
-from . import constants, util
-from .util import profiler, get_headers_dir, is_ip_address, json_normalize, UserFacingException
-from .logging import Logger
+from . import constants, ecc, util
+from .crypto import sha256d
+from .lnmsg import FailedToParseMsg, decode_msg
 from .lnutil import (
-    LNPeerAddr,
-    format_short_channel_id,
-    ShortChannelID,
-    validate_features,
     IncompatibleOrInsaneFeatures,
     InvalidGossipMsg,
+    LNPeerAddr,
+    ShortChannelID,
+    validate_features,
 )
 from .lnverifier import LNChannelVerifier, verify_sig_for_channel_update
-from .lnmsg import decode_msg
-from . import ecc
-from .crypto import sha256d
-from .lnmsg import FailedToParseMsg
+from .sql_db import SqlDB, sql
+from .util import UserFacingException, get_headers_dir, is_ip_address, json_normalize, profiler
 
 if TYPE_CHECKING:
-    from .network import Network
     from .lnchannel import Channel
     from .lnrouter import RouteEdge
+    from .network import Network
     from .simple_config import SimpleConfig
 
 
@@ -74,7 +70,7 @@ class ChannelInfo(NamedTuple):
     short_channel_id: ShortChannelID
     node1_id: bytes
     node2_id: bytes
-    capacity_sat: Optional[int]
+    capacity_sat: int | None
 
     @staticmethod
     def from_msg(payload: dict) -> "ChannelInfo":
@@ -83,7 +79,7 @@ class ChannelInfo(NamedTuple):
         channel_id = payload["short_channel_id"]
         node_id_1 = payload["node_id_1"]
         node_id_2 = payload["node_id_2"]
-        assert list(sorted([node_id_1, node_id_2])) == [node_id_1, node_id_2]
+        assert sorted([node_id_1, node_id_2]) == [node_id_1, node_id_2]
         capacity_sat = None
         return ChannelInfo(
             short_channel_id=ShortChannelID.normalize(channel_id),
@@ -112,7 +108,7 @@ class Policy(NamedTuple):
     key: bytes
     cltv_delta: int
     htlc_minimum_msat: int
-    htlc_maximum_msat: Optional[int]
+    htlc_maximum_msat: int | None
     fee_base_msat: int
     fee_proportional_millionths: int
     channel_flags: int
@@ -172,7 +168,7 @@ class NodeInfo(NamedTuple):
     alias: str
 
     @staticmethod
-    def from_msg(payload) -> Tuple["NodeInfo", Sequence["LNPeerAddr"]]:
+    def from_msg(payload) -> tuple["NodeInfo", Sequence["LNPeerAddr"]]:
         node_id = payload["node_id"]
         features = int.from_bytes(payload["features"], "big")
         features = validate_features(features)
@@ -193,7 +189,7 @@ class NodeInfo(NamedTuple):
         return node_info, peer_addrs
 
     @staticmethod
-    def from_raw_msg(raw: bytes) -> Tuple["NodeInfo", Sequence["LNPeerAddr"]]:
+    def from_raw_msg(raw: bytes) -> tuple["NodeInfo", Sequence["LNPeerAddr"]]:
         payload_dict = decode_msg(raw)[1]
         return NodeInfo.from_msg(payload_dict)
 
@@ -212,7 +208,7 @@ class NodeInfo(NamedTuple):
             if atype == 0:
                 pass
             elif atype == 1:  # IPv4
-                ipv4_addr = ".".join(map(lambda x: "%d" % x, read(4)))
+                ipv4_addr = ".".join("%d" % x for x in read(4))
                 port = int.from_bytes(read(2), "big")
                 if is_ip_address(ipv4_addr) and port != 0:
                     addresses.append((ipv4_addr, port))
@@ -249,16 +245,16 @@ class UpdateStatus(IntEnum):
 
 
 class CategorizedChannelUpdates(NamedTuple):
-    orphaned: List  # no channel announcement for channel update
-    expired: List  # update older than two weeks
-    deprecated: List  # update older than database entry
-    unchanged: List  # unchanged policies
-    good: List  # good updates
+    orphaned: list  # no channel announcement for channel update
+    expired: list  # update older than two weeks
+    deprecated: list  # update older than database entry
+    unchanged: list  # unchanged policies
+    good: list  # good updates
 
 
 def get_mychannel_info(
-    short_channel_id: ShortChannelID, my_channels: Dict[ShortChannelID, "Channel"]
-) -> Optional[ChannelInfo]:
+    short_channel_id: ShortChannelID, my_channels: dict[ShortChannelID, "Channel"]
+) -> ChannelInfo | None:
     chan = my_channels.get(short_channel_id)
     if not chan:
         return
@@ -268,8 +264,8 @@ def get_mychannel_info(
 
 
 def get_mychannel_policy(
-    short_channel_id: bytes, node_id: bytes, my_channels: Dict[ShortChannelID, "Channel"]
-) -> Optional[Policy]:
+    short_channel_id: bytes, node_id: bytes, my_channels: dict[ShortChannelID, "Channel"]
+) -> Policy | None:
     chan = my_channels.get(short_channel_id)  # type: Optional[Channel]
     if not chan:
         return
@@ -393,12 +389,12 @@ class ChannelDB(SqlDB):
             unshuffled = set(self._nodes.keys()) - node_ids
         return random.sample(list(unshuffled), min(200, len(unshuffled)))
 
-    def get_last_good_address(self, node_id: bytes) -> Optional[LNPeerAddr]:
+    def get_last_good_address(self, node_id: bytes) -> LNPeerAddr | None:
         """Returns latest address we successfully connected to, for given node."""
         addr_to_ts = self._addresses.get(node_id)
         if not addr_to_ts:
             return None
-        addr = sorted(list(addr_to_ts), key=lambda a: addr_to_ts[a], reverse=True)[0]
+        addr = sorted(addr_to_ts, key=lambda a: addr_to_ts[a], reverse=True)[0]
         try:
             return LNPeerAddr(str(addr.host), addr.port, node_id)
         except ValueError:
@@ -431,7 +427,7 @@ class ChannelDB(SqlDB):
                 )
                 continue
             try:
-                channel_info = ChannelInfo.from_msg(msg)
+                ChannelInfo.from_msg(msg)
             except IncompatibleOrInsaneFeatures as e:
                 self.logger.info(f"unknown or insane feature bits: {e!r}")
                 continue
@@ -444,7 +440,7 @@ class ChannelDB(SqlDB):
         self.update_counts()
         self.logger.debug("add_channel_announcement: %d/%d" % (added, len(msg_payloads)))
 
-    def add_verified_channel_info(self, msg: dict, *, capacity_sat: int = None) -> None:
+    def add_verified_channel_info(self, msg: dict, *, capacity_sat: int | None = None) -> None:
         try:
             channel_info = ChannelInfo.from_msg(msg)
         except IncompatibleOrInsaneFeatures:
@@ -633,7 +629,7 @@ class ChannelDB(SqlDB):
                 )
 
     @classmethod
-    def verify_channel_update(cls, payload, *, start_node: bytes = None) -> None:
+    def verify_channel_update(cls, payload, *, start_node: bytes | None = None) -> None:
         short_channel_id = payload["short_channel_id"]
         short_channel_id = ShortChannelID(short_channel_id)
         if constants.net.rev_genesis_bytes() != payload["chain_hash"]:
@@ -658,7 +654,7 @@ class ChannelDB(SqlDB):
             payload["bitcoin_signature_1"],
             payload["bitcoin_signature_2"],
         ]
-        for pubkey, sig in zip(pubkeys, sigs):
+        for pubkey, sig in zip(pubkeys, sigs, strict=False):
             if not ecc.verify_signature(pubkey, sig, h):
                 raise InvalidGossipMsg("signature failed")
 
@@ -705,11 +701,11 @@ class ChannelDB(SqlDB):
         self.logger.debug("on_node_announcement: %d/%d" % (len(new_nodes), len(msg_payloads)))
         self.update_counts()
 
-    def get_old_policies(self, delta) -> Sequence[Tuple[bytes, ShortChannelID]]:
+    def get_old_policies(self, delta) -> Sequence[tuple[bytes, ShortChannelID]]:
         with self.lock:
             _policies = self._policies.copy()
         now = int(time.time())
-        return list(k for k, v in _policies.items() if v.timestamp <= now - delta)
+        return [k for k, v in _policies.items() if v.timestamp <= now - delta]
 
     def prune_old_policies(self, delta):
         old_policies = self.get_old_policies(delta)
@@ -737,8 +733,8 @@ class ChannelDB(SqlDB):
         start_node_id: bytes,
         short_channel_id: ShortChannelID,
         *,
-        now: int = None,  # unix ts
-    ) -> Optional[dict]:
+        now: int | None = None,  # unix ts
+    ) -> dict | None:
         if now is None:
             now = int(time.time())
         key = (start_node_id, short_channel_id)
@@ -755,7 +751,7 @@ class ChannelDB(SqlDB):
         msg_payload: dict,
         start_node_id: bytes,
         *,
-        cache_ttl: int = None,  # seconds
+        cache_ttl: int | None = None,  # seconds
     ) -> bool:
         """Returns True iff the channel update was successfully added and it was different than
         what we had before (if any).
@@ -789,7 +785,7 @@ class ChannelDB(SqlDB):
         # delete from database
         self._db_delete_channel(short_channel_id)
 
-    def get_node_addresses(self, node_id: bytes) -> Sequence[Tuple[str, int, int]]:
+    def get_node_addresses(self, node_id: bytes) -> Sequence[tuple[str, int, int]]:
         """Returns list of (host, port, timestamp)."""
         addr_to_ts = self._addresses.get(node_id)
         if not addr_to_ts:
@@ -832,7 +828,7 @@ class ChannelDB(SqlDB):
 
         def newest_ts_for_node_id(node_id):
             newest_ts = 0
-            for addr, ts in self._addresses[node_id].items():
+            for _addr, ts in self._addresses[node_id].items():
                 newest_ts = max(newest_ts, ts)
             return newest_ts
 
@@ -907,7 +903,7 @@ class ChannelDB(SqlDB):
             else:
                 self._chans_with_1_policies.add(short_channel_id)
 
-    def get_num_channels_partitioned_by_policy_count(self) -> Tuple[int, int, int]:
+    def get_num_channels_partitioned_by_policy_count(self) -> tuple[int, int, int]:
         nchans_with_0p = len(self._chans_with_0_policies)
         nchans_with_1p = len(self._chans_with_1_policies)
         nchans_with_2p = len(self._chans_with_2_policies)
@@ -918,9 +914,9 @@ class ChannelDB(SqlDB):
         short_channel_id: ShortChannelID,
         node_id: bytes,
         *,
-        my_channels: Dict[ShortChannelID, "Channel"] = None,
-        private_route_edges: Dict[ShortChannelID, "RouteEdge"] = None,
-        now: int = None,  # unix ts
+        my_channels: dict[ShortChannelID, "Channel"] | None = None,
+        private_route_edges: dict[ShortChannelID, "RouteEdge"] | None = None,
+        now: int | None = None,  # unix ts
     ) -> Optional["Policy"]:
         channel_info = self.get_channel_info(short_channel_id)
         if channel_info is not None:  # publicly announced channel
@@ -945,9 +941,9 @@ class ChannelDB(SqlDB):
         self,
         short_channel_id: ShortChannelID,
         *,
-        my_channels: Dict[ShortChannelID, "Channel"] = None,
-        private_route_edges: Dict[ShortChannelID, "RouteEdge"] = None,
-    ) -> Optional[ChannelInfo]:
+        my_channels: dict[ShortChannelID, "Channel"] | None = None,
+        private_route_edges: dict[ShortChannelID, "RouteEdge"] | None = None,
+    ) -> ChannelInfo | None:
         ret = self._channels.get(short_channel_id)
         if ret:
             return ret
@@ -965,9 +961,9 @@ class ChannelDB(SqlDB):
         self,
         node_id: bytes,
         *,
-        my_channels: Dict[ShortChannelID, "Channel"] = None,
-        private_route_edges: Dict[ShortChannelID, "RouteEdge"] = None,
-    ) -> Set[ShortChannelID]:
+        my_channels: dict[ShortChannelID, "Channel"] | None = None,
+        private_route_edges: dict[ShortChannelID, "RouteEdge"] | None = None,
+    ) -> set[ShortChannelID]:
         """Returns the set of short channel IDs where node_id is one of the channel participants."""
         if not self.data_loaded.is_set():
             raise ChannelDBNotLoaded("channelDB data not loaded yet!")
@@ -989,8 +985,8 @@ class ChannelDB(SqlDB):
         self,
         short_channel_id: ShortChannelID,
         *,
-        my_channels: Dict[ShortChannelID, "Channel"] = None,
-    ) -> Optional[Tuple[bytes, bytes]]:
+        my_channels: dict[ShortChannelID, "Channel"] | None = None,
+    ) -> tuple[bytes, bytes] | None:
         channel_info = self.get_channel_info(short_channel_id)
         if channel_info is not None:  # publicly announced channel
             return channel_info.node1_id, channel_info.node2_id
@@ -1005,11 +1001,11 @@ class ChannelDB(SqlDB):
     def get_node_info_for_node_id(self, node_id: bytes) -> Optional["NodeInfo"]:
         return self._nodes.get(node_id)
 
-    def get_node_infos(self) -> Dict[bytes, NodeInfo]:
+    def get_node_infos(self) -> dict[bytes, NodeInfo]:
         with self.lock:
             return self._nodes.copy()
 
-    def get_node_policies(self) -> Dict[Tuple[bytes, ShortChannelID], Policy]:
+    def get_node_policies(self) -> dict[tuple[bytes, ShortChannelID], Policy]:
         with self.lock:
             return self._policies.copy()
 
@@ -1041,7 +1037,7 @@ class ChannelDB(SqlDB):
                 ]
 
             # gather channels
-            for cid, channelinfo in self._channels.items():
+            for _cid, channelinfo in self._channels.items():
                 graph["channels"].append(
                     channelinfo._asdict(),
                 )

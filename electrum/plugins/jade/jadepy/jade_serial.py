@@ -1,6 +1,6 @@
-import serial
 import logging
 
+import serial
 
 logger = logging.getLogger("jade.serial")
 
@@ -28,7 +28,7 @@ class JadeSerialImpl:
     def connect(self):
         assert self.ser is None
 
-        logger.info("Connecting to {} at {}".format(self.device, self.baud))
+        logger.info(f"Connecting to {self.device} at {self.baud}")
         self.ser = serial.Serial(
             self.device, self.baud, timeout=self.timeout, write_timeout=self.timeout
         )

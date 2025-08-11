@@ -2,11 +2,10 @@ import threading
 
 from PyQt6.QtCore import pyqtSignal, pyqtSlot
 
+from electrum.gui.common_qt.plugins import PluginQObject
+from electrum.gui.qml.qewallet import QEWallet
 from electrum.i18n import _
 from electrum.plugin import hook
-
-from electrum.gui.qml.qewallet import QEWallet
-from electrum.gui.common_qt.plugins import PluginQObject
 
 from .labels import LabelsPlugin
 
@@ -70,7 +69,7 @@ class Plugin(LabelsPlugin):
 
     @hook
     def load_wallet(self, wallet):
-        self.logger.debug(f'plugin enabled for wallet "{str(wallet)}"')
+        self.logger.debug(f'plugin enabled for wallet "{wallet!s}"')
         self.start_wallet(wallet)
 
     def push_async(self):
@@ -122,7 +121,7 @@ class Plugin(LabelsPlugin):
 
     @hook
     def init_qml(self, app):
-        self.logger.debug(f"init_qml hook called, gui={str(type(app))}")
+        self.logger.debug(f"init_qml hook called, gui={type(app)!s}")
         self.logger.debug(f"app={self._app!r}, so={self.so!r}")
         self._app = app
         # important: QSignalObject needs to be parented, as keeping a ref
@@ -131,5 +130,5 @@ class Plugin(LabelsPlugin):
 
         # If the user just enabled the plugin, the 'load_wallet' hook would not
         # get called for already loaded wallets, hence we call it manually for those:
-        for wallet_name, wallet in app.daemon.daemon._wallets.items():
+        for _wallet_name, wallet in app.daemon.daemon._wallets.items():
             self.load_wallet(wallet)

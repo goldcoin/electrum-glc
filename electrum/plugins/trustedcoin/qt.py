@@ -23,64 +23,63 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from functools import partial
-import threading
 import os
+import threading
+from functools import partial
 from typing import TYPE_CHECKING
 
-from PyQt5.QtGui import QPixmap, QMovie, QColor
-from PyQt5.QtCore import QObject, pyqtSignal, QSize, Qt
+from PyQt5.QtCore import QObject, QSize, Qt, pyqtSignal
+from PyQt5.QtGui import QColor, QMovie, QPixmap
 from PyQt5.QtWidgets import (
-    QTextEdit,
-    QVBoxLayout,
-    QLabel,
+    QCheckBox,
     QGridLayout,
     QHBoxLayout,
-    QRadioButton,
-    QCheckBox,
+    QLabel,
     QLineEdit,
     QPushButton,
+    QRadioButton,
+    QTextEdit,
+    QVBoxLayout,
     QWidget,
 )
 
-from electrum.i18n import _
-from electrum.plugin import hook
-from electrum.util import is_valid_email
-from electrum.logging import Logger, get_logger
 from electrum import keystore
-
-from electrum.gui.qt.util import (
-    read_QIcon,
-    WindowModalDialog,
-    WaitingDialog,
-    OkButton,
-    CancelButton,
-    Buttons,
-    icon_path,
-    WWLabel,
-    CloseButton,
-    ColorScheme,
-    ChoiceWidget,
-)
-from electrum.gui.qt.qrcodewidget import QRCodeWidget
 from electrum.gui.qt.amountedit import AmountEdit
 from electrum.gui.qt.main_window import StatusBarButton
+from electrum.gui.qt.qrcodewidget import QRCodeWidget
+from electrum.gui.qt.util import (
+    Buttons,
+    CancelButton,
+    ChoiceWidget,
+    CloseButton,
+    ColorScheme,
+    OkButton,
+    WaitingDialog,
+    WindowModalDialog,
+    WWLabel,
+    icon_path,
+    read_QIcon,
+)
 from electrum.gui.qt.wizard.wallet import (
-    WCCreateSeed,
-    WCConfirmSeed,
-    WCHaveSeed,
-    WCEnterExt,
     WCConfirmExt,
+    WCConfirmSeed,
+    WCCreateSeed,
+    WCEnterExt,
+    WCHaveSeed,
 )
 from electrum.gui.qt.wizard.wizard import WizardComponent
+from electrum.i18n import _
+from electrum.logging import Logger, get_logger
+from electrum.plugin import hook
+from electrum.util import is_valid_email
 
 from .common_qt import TrustedcoinPluginQObject
-from .trustedcoin import TrustedCoinPlugin, server, DISCLAIMER
+from .trustedcoin import DISCLAIMER, TrustedCoinPlugin, server
 
 if TYPE_CHECKING:
     from electrum.gui.qt.main_window import ElectrumWindow
-    from electrum.wallet import Abstract_Wallet
     from electrum.gui.qt.wizard.wallet import QENewWalletWizard
+    from electrum.wallet import Abstract_Wallet
 
 
 class TOS(QTextEdit):
@@ -134,7 +133,8 @@ class Plugin(TrustedCoinPlugin):
                     _("Therefore, two-factor authentication is disabled."),
                 ]
             )
-            action = lambda: window.show_message(msg)
+            def action():
+                return window.show_message(msg)
             icon = read_QIcon("trustedcoin-status-disabled.png")
         else:
             action = partial(self.settings_dialog, window)
@@ -333,10 +333,9 @@ class Plugin(TrustedCoinPlugin):
     def request_otp_dialog(self, window, short_id, otp_secret, xpub3):
         vbox = QVBoxLayout()
         if otp_secret is not None:
-            uri = "otpauth://totp/%s?secret=%s" % ("trustedcoin.com", otp_secret)
+            uri = "otpauth://totp/{}?secret={}".format("trustedcoin.com", otp_secret)
             l = QLabel(
-                "Please scan the following QR code in Google Authenticator. You may as well use the following key: %s"
-                % otp_secret
+                f"Please scan the following QR code in Google Authenticator. You may as well use the following key: {otp_secret}"
             )
             l.setWordWrap(True)
             vbox.addWidget(l)
@@ -662,7 +661,7 @@ class WCShowConfirmOTP(WizardComponent):
 
         if self.wizard.trustedcoin_qhelper.otpSecret:
             self.secretlabel.setText(self.wizard.trustedcoin_qhelper.otpSecret)
-            uri = "otpauth://totp/Electrum 2FA %s?secret=%s&digits=6" % (
+            uri = "otpauth://totp/Electrum 2FA {}?secret={}&digits=6".format(
                 self.wizard_data["wallet_name"],
                 self.wizard.trustedcoin_qhelper.otpSecret,
             )

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Electrum - lightweight Bitcoin client
 # Copyright (C) 2018 The Electrum developers
@@ -25,24 +24,21 @@
 
 import asyncio
 import threading
-from typing import TYPE_CHECKING, Dict, Set
+from typing import TYPE_CHECKING
 
 import aiorpcx
 
-from . import bitcoin
-from . import ecc
-from . import constants
-from .util import bfh, NetworkJobOnDefaultServer
-from .lnutil import funding_output_script_from_keys, ShortChannelID
-from .verifier import verify_tx_is_in_block, MerkleVerificationFailure
-from .transaction import Transaction
-from .interface import GracefulDisconnect
+from . import bitcoin, constants, ecc
 from .crypto import sha256d
-from .lnmsg import decode_msg, encode_msg
+from .interface import GracefulDisconnect
+from .lnutil import ShortChannelID, funding_output_script_from_keys
+from .transaction import Transaction
+from .util import NetworkJobOnDefaultServer
+from .verifier import MerkleVerificationFailure, verify_tx_is_in_block
 
 if TYPE_CHECKING:
-    from .network import Network
     from .lnrouter import ChannelDB
+    from .network import Network
 
 
 class LNChannelVerifier(NetworkJobOnDefaultServer):

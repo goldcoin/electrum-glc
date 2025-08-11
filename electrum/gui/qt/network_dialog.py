@@ -23,48 +23,45 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import socket
-import time
-from enum import IntEnum
-from typing import Tuple, TYPE_CHECKING
 import threading
+from enum import IntEnum
 
-from PyQt5.QtCore import Qt, pyqtSignal, QThread
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QGridLayout,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QMenu,
+    QTabWidget,
     QTreeWidget,
     QTreeWidgetItem,
-    QMenu,
-    QGridLayout,
-    QComboBox,
-    QLineEdit,
-    QDialog,
     QVBoxLayout,
-    QHeaderView,
-    QCheckBox,
-    QTabWidget,
     QWidget,
-    QLabel,
 )
-from PyQt5.QtGui import QIntValidator
 
+from electrum import blockchain
 from electrum.i18n import _
-from electrum import constants, blockchain, util
-from electrum.interface import ServerAddr, PREFERRED_NETWORK_PROTOCOL
-from electrum.network import Network
+from electrum.interface import PREFERRED_NETWORK_PROTOCOL, ServerAddr
 from electrum.logging import get_logger
-from electrum.util import detect_tor_socks_proxy
+from electrum.network import Network
 from electrum.simple_config import SimpleConfig
+from electrum.util import detect_tor_socks_proxy
 
 from .util import (
     Buttons,
     CloseButton,
     HelpButton,
-    read_QIcon,
-    char_width_in_lineedit,
     PasswordLineEdit,
+    QtEventListener,
+    char_width_in_lineedit,
+    qt_event_listener,
+    read_QIcon,
 )
-from .util import QtEventListener, qt_event_listener
-
 
 _logger = get_logger(__name__)
 
@@ -202,7 +199,7 @@ class NodesListWidget(QTreeWidget):
         # disconnected servers
         disconnected_servers_item = QTreeWidgetItem([_("Other known servers"), ""])
         disconnected_servers_item.setData(0, self.ITEMTYPE_ROLE, self.ItemType.TOPLEVEL)
-        connected_hosts = set([iface.host for ifaces in chains.values() for iface in ifaces])
+        connected_hosts = {iface.host for ifaces in chains.values() for iface in ifaces}
         protocol = PREFERRED_NETWORK_PROTOCOL
         for _host, d in sorted(servers.items()):
             if _host in connected_hosts:
@@ -234,7 +231,7 @@ class NodesListWidget(QTreeWidget):
         super().update()
 
 
-class NetworkChoiceLayout(object):
+class NetworkChoiceLayout:
     # TODO consolidate to ProxyWidget+ServerWidget
     # TODO TorDetector is unnecessary, Network tests socks5 peer and detects Tor
     # TODO apply on editingFinished is not ideal, separate Apply button and on Close?

@@ -23,26 +23,26 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import hashlib
 import json
 import time
-import hashlib
-from typing import Dict, Union, Sequence, List, TYPE_CHECKING
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Union
+from urllib.parse import quote, urljoin
 
-from urllib.parse import urljoin
-from urllib.parse import quote
 from aiohttp import ClientResponse
 
-from electrum import ecc, constants, keystore, version, bip32, bitcoin
+from electrum import bip32, bitcoin, constants, ecc, keystore, version
 from electrum.bip32 import BIP32Node, xpub_type
 from electrum.crypto import sha256
-from electrum.transaction import PartialTxOutput, PartialTxInput, PartialTransaction, Transaction
-from electrum.mnemonic import Mnemonic, seed_type, is_any_2fa_seed_type
-from electrum.wallet import Multisig_Wallet, Deterministic_Wallet
 from electrum.i18n import _
-from electrum.plugin import BasePlugin, hook
-from electrum.util import NotEnoughFunds, UserFacingException
-from electrum.network import Network
 from electrum.logging import Logger
+from electrum.mnemonic import Mnemonic, is_any_2fa_seed_type, seed_type
+from electrum.network import Network
+from electrum.plugin import BasePlugin, hook
+from electrum.transaction import PartialTransaction, PartialTxInput, PartialTxOutput, Transaction
+from electrum.util import NotEnoughFunds, UserFacingException
+from electrum.wallet import Deterministic_Wallet, Multisig_Wallet
 
 if TYPE_CHECKING:
     from electrum.wizard import NewWalletWizard
@@ -54,7 +54,7 @@ def get_signing_xpub(xtype):
     else:
         xpub = "tpubD6NzVbkrYhZ4XdmyJQcCPjQfg6RXVUzGFhPjZ7uvRC8JLcS7Hw1i7UTpyhp9grHpak4TyK2hzBJrujDVLXQ6qB5tNpVx9rC6ixijUXadnmY"
     if xtype not in ("standard", "p2wsh"):
-        raise NotImplementedError("xtype: {}".format(xtype))
+        raise NotImplementedError(f"xtype: {xtype}")
     if xtype == "standard":
         return xpub
     node = BIP32Node.from_xkey(xpub)
@@ -123,7 +123,7 @@ class TrustedCoinException(Exception):
 
 
 class ErrorConnectingServer(Exception):
-    def __init__(self, reason: Union[str, Exception] = None):
+    def __init__(self, reason: Union[str, Exception] | None = None):
         self.reason = reason
 
     def __str__(self):
@@ -225,20 +225,20 @@ class TrustedCoinCosignerClient(Logger):
         :param otp: the one time password
         """
         payload = {"otp": otp}
-        return self.send_request("post", "cosigner/%s/auth" % quote(id), payload)
+        return self.send_request("post", f"cosigner/{quote(id)}/auth", payload)
 
     def get(self, id):
         """Get billing info"""
-        return self.send_request("get", "cosigner/%s" % quote(id))
+        return self.send_request("get", f"cosigner/{quote(id)}")
 
     def get_challenge(self, id):
         """Get challenge to reset Google Auth secret"""
-        return self.send_request("get", "cosigner/%s/otp_secret" % quote(id))
+        return self.send_request("get", f"cosigner/{quote(id)}/otp_secret")
 
     def reset_auth(self, id, challenge, signatures):
         """Reset Google Auth secret"""
         payload = {"challenge": challenge, "signatures": signatures}
-        return self.send_request("post", "cosigner/%s/otp_secret" % quote(id), payload)
+        return self.send_request("post", f"cosigner/{quote(id)}/otp_secret", payload)
 
     def sign(self, id, transaction, otp):
         """
@@ -248,7 +248,7 @@ class TrustedCoinCosignerClient(Logger):
         :param otp: the one time password
         """
         payload = {"otp": otp, "transaction": transaction}
-        return self.send_request("post", "cosigner/%s/sign" % quote(id), payload, timeout=60)
+        return self.send_request("post", f"cosigner/{quote(id)}/sign", payload, timeout=60)
 
     def transfer_credit(self, id, recipient, otp, signature_callback):
         """
@@ -263,7 +263,7 @@ class TrustedCoinCosignerClient(Logger):
             "recipient": recipient,
             "timestamp": int(time.time()),
         }
-        relative_url = "cosigner/%s/transfer" % quote(id)
+        relative_url = f"cosigner/{quote(id)}/transfer"
         full_url = urljoin(self.base_url, relative_url)
         headers = {"x-signature": signature_callback(full_url + "\n" + json.dumps(payload))}
         return self.send_request("post", relative_url, payload, headers)
@@ -337,22 +337,23 @@ class Wallet_2fa(Multisig_Wallet):
         self,
         *,
         coins: Sequence[PartialTxInput],
-        outputs: List[PartialTxOutput],
+        outputs: list[PartialTxOutput],
         fee=None,
-        change_addr: str = None,
+        change_addr: str | None = None,
         is_sweep=False,
         rbf=False,
     ) -> PartialTransaction:
 
-        mk_tx = lambda o: Multisig_Wallet.make_unsigned_transaction(
-            self, coins=coins, outputs=o, fee=fee, change_addr=change_addr, rbf=rbf
-        )
+        def mk_tx(o):
+            return Multisig_Wallet.make_unsigned_transaction(
+                    self, coins=coins, outputs=o, fee=fee, change_addr=change_addr, rbf=rbf
+                )
         extra_fee = self.extra_fee() if not is_sweep else 0
         if extra_fee:
             address = self.billing_info["billing_address_segwit"]
             fee_output = PartialTxOutput.from_address_and_value(address, extra_fee)
             try:
-                tx = mk_tx(outputs + [fee_output])
+                tx = mk_tx([*outputs, fee_output])
             except NotEnoughFunds:
                 # TrustedCoin won't charge if the total inputs is
                 # lower than their fee
@@ -397,9 +398,7 @@ class Wallet_2fa(Multisig_Wallet):
             else:
                 raise Exception(
                     "trustedcoin billing address inconsistency.. "
-                    "for index {}, already saved {}, now got {}".format(
-                        billing_index, saved_addr, address
-                    )
+                    f"for index {billing_index}, already saved {saved_addr}, now got {address}"
                 )
         # do we have all prior indices? (are we synced?)
         largest_index_we_have = (
@@ -580,7 +579,7 @@ class TrustedCoinPlugin(BasePlugin):
         window.wallet.is_billing = False
 
     @classmethod
-    def get_xkeys(self, seed, t, passphrase, derivation):
+    def get_xkeys(cls, seed, t, passphrase, derivation):
         assert is_any_2fa_seed_type(t)
         xtype = "standard" if t == "2fa" else "p2wsh"
         bip32_seed = Mnemonic.mnemonic_to_seed(seed, passphrase)
@@ -589,7 +588,7 @@ class TrustedCoinPlugin(BasePlugin):
         return child_node.to_xprv(), child_node.to_xpub()
 
     @classmethod
-    def xkeys_from_seed(self, seed, passphrase):
+    def xkeys_from_seed(cls, seed, passphrase):
         t = seed_type(seed)
         if not is_any_2fa_seed_type(t):
             raise Exception(f"unexpected seed type: {t}")
@@ -602,16 +601,16 @@ class TrustedCoinPlugin(BasePlugin):
                 # the probability of it being < 20 words is about 2^(-(256+12-19*11)) = 2^(-59)
                 if passphrase != "":
                     raise Exception("old 2fa seed cannot have passphrase")
-                xprv1, xpub1 = self.get_xkeys(" ".join(words[0:12]), t, "", "m/")
-                xprv2, xpub2 = self.get_xkeys(" ".join(words[12:]), t, "", "m/")
+                xprv1, xpub1 = cls.get_xkeys(" ".join(words[0:12]), t, "", "m/")
+                xprv2, xpub2 = cls.get_xkeys(" ".join(words[12:]), t, "", "m/")
             elif n == 12:  # new scheme
-                xprv1, xpub1 = self.get_xkeys(seed, t, passphrase, "m/0'/")
-                xprv2, xpub2 = self.get_xkeys(seed, t, passphrase, "m/1'/")
+                xprv1, xpub1 = cls.get_xkeys(seed, t, passphrase, "m/0'/")
+                xprv2, xpub2 = cls.get_xkeys(seed, t, passphrase, "m/1'/")
             else:
                 raise Exception(f'unrecognized seed length for "2fa" seed: {n}')
         elif t == "2fa_segwit":
-            xprv1, xpub1 = self.get_xkeys(seed, t, passphrase, "m/0'/")
-            xprv2, xpub2 = self.get_xkeys(seed, t, passphrase, "m/1'/")
+            xprv1, xpub1 = cls.get_xkeys(seed, t, passphrase, "m/0'/")
+            xprv2, xpub2 = cls.get_xkeys(seed, t, passphrase, "m/1'/")
         else:
             raise Exception(f"unexpected seed type: {t}")
         return xprv1, xpub1, xprv2, xpub2

@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Dict, Any
+from typing import TYPE_CHECKING, Any
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot
-from PyQt6.QtCore import Qt, QAbstractListModel, QModelIndex
+from PyQt6.QtCore import QAbstractListModel, QModelIndex, Qt, pyqtProperty, pyqtSignal, pyqtSlot
 
+from electrum.address_synchronizer import TX_HEIGHT_FUTURE, TX_HEIGHT_LOCAL
 from electrum.logging import get_logger
 from electrum.util import Satoshis, TxMinedInfo
-from electrum.address_synchronizer import TX_HEIGHT_FUTURE, TX_HEIGHT_LOCAL
 
 from .qetypes import QEAmount
 from .util import QtEventListener, qt_event_listener
@@ -42,8 +41,8 @@ class QETransactionListModel(QAbstractListModel, QtEventListener):
         "complete",
     )
     _ROLE_KEYS = range(Qt.ItemDataRole.UserRole, Qt.ItemDataRole.UserRole + len(_ROLE_NAMES))
-    _ROLE_MAP = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES]))
-    _ROLE_RMAP = dict(zip(_ROLE_NAMES, _ROLE_KEYS))
+    _ROLE_MAP = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES], strict=False))
+    _ROLE_RMAP = dict(zip(_ROLE_NAMES, _ROLE_KEYS, strict=False))
 
     requestRefresh = pyqtSignal()
 
@@ -70,7 +69,7 @@ class QETransactionListModel(QAbstractListModel, QtEventListener):
     @qt_event_listener
     def on_event_verified(self, wallet, txid, info):
         if wallet == self.wallet:
-            self._logger.debug("verified event for txid %s" % txid)
+            self._logger.debug(f"verified event for txid {txid}")
             self.on_tx_verified(txid, info)
 
     @qt_event_listener
@@ -85,7 +84,7 @@ class QETransactionListModel(QAbstractListModel, QtEventListener):
 
     @qt_event_listener
     def on_event_fee_histogram(self, histogram):
-        self._logger.debug(f"fee histogram updated")
+        self._logger.debug("fee histogram updated")
         for i, tx_item in enumerate(self.tx_history):
             if "height" not in tx_item:  # filter to on-chain
                 continue
@@ -121,11 +120,11 @@ class QETransactionListModel(QAbstractListModel, QtEventListener):
 
         try:
             value = tx[self._ROLE_NAMES[role_index]]
-        except KeyError as e:
+        except KeyError:
             self._logger.error(f'non-existing key "{self._ROLE_NAMES[role_index]}" requested')
             value = None
 
-        if isinstance(value, (bool, list, int, str, QEAmount)) or value is None:
+        if isinstance(value, bool | list | int | str | QEAmount) or value is None:
             return value
         if isinstance(value, Satoshis):
             return value.value
@@ -212,7 +211,7 @@ class QETransactionListModel(QAbstractListModel, QtEventListener):
         return date.strftime(dfmt[section])
 
     @staticmethod
-    def _tx_mined_info_from_tx_item(tx_item: Dict[str, Any]) -> TxMinedInfo:
+    def _tx_mined_info_from_tx_item(tx_item: dict[str, Any]) -> TxMinedInfo:
         # FIXME a bit hackish to have to reconstruct the TxMinedInfo... same thing in qt-gui
         tx_mined_info = TxMinedInfo(
             height=tx_item["height"],
@@ -236,7 +235,7 @@ class QETransactionListModel(QAbstractListModel, QtEventListener):
             include_fiat=False,
         )
         txs = []
-        for key, tx in history.items():
+        for _key, tx in history.items():
             txs.append(self.tx_to_model(tx))
 
         self.clear()

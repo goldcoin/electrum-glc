@@ -3,23 +3,21 @@
 # https://github.com/sipa/bech32/tree/master/ref/python
 # https://github.com/lnbits/lnurl
 
-import asyncio
 import json
-from typing import Callable, Optional, NamedTuple, Any, TYPE_CHECKING
 import re
 import urllib.parse
+from typing import TYPE_CHECKING, NamedTuple
 
 import aiohttp.client_exceptions
-from aiohttp import ClientResponse
 
 from electrum import segwit_addr
-from electrum.segwit_addr import bech32_decode, Encoding, convertbits, bech32_encode
 from electrum.lnaddr import LnDecodeException, LnEncodeException
-from electrum.network import Network
 from electrum.logging import get_logger
+from electrum.network import Network
+from electrum.segwit_addr import Encoding, bech32_decode, bech32_encode, convertbits
 
 if TYPE_CHECKING:
-    from collections.abc import Coroutine
+    pass
 
 
 _logger = get_logger(__name__)
@@ -83,14 +81,14 @@ async def _request_lnurl(url: str) -> dict:
         )
     try:
         response_raw = await Network.async_send_http_on_proxy("get", url, timeout=10)
-    except asyncio.TimeoutError as e:
+    except TimeoutError as e:
         raise LNURLError("Server did not reply in time.") from e
     except aiohttp.client_exceptions.ClientError as e:
         raise LNURLError(f"Client error: {e}") from e
     try:
         response = json.loads(response_raw)
     except json.JSONDecodeError:
-        raise LNURLError(f"Invalid response from server")
+        raise LNURLError("Invalid response from server")
 
     status = response.get("status")
     if status and status == "ERROR":
@@ -121,7 +119,7 @@ async def request_lnurl(url: str) -> LNURL6Data:
     try:
         callback_url = lnurl_dict["callback"]
     except KeyError as e:
-        raise LNURLError(f"Missing 'callback' field in lnurl6 response.") from e
+        raise LNURLError("Missing 'callback' field in lnurl6 response.") from e
     if not _is_url_safe_enough_for_lnurl(callback_url):
         raise LNURLError(
             f"This lnurl callback_url looks unsafe. It must use 'https://' or '.onion' (found: {callback_url[:10]}...)"
@@ -157,14 +155,14 @@ async def callback_lnurl(url: str, params: dict) -> dict:
         )
     try:
         response_raw = await Network.async_send_http_on_proxy("get", url, params=params)
-    except asyncio.TimeoutError as e:
+    except TimeoutError as e:
         raise LNURLError("Server did not reply in time.") from e
     except aiohttp.client_exceptions.ClientError as e:
         raise LNURLError(f"Client error: {e}") from e
     try:
         response = json.loads(response_raw)
     except json.JSONDecodeError:
-        raise LNURLError(f"Invalid response from server")
+        raise LNURLError("Invalid response from server")
 
     status = response.get("status")
     if status and status == "ERROR":
@@ -175,7 +173,7 @@ async def callback_lnurl(url: str, params: dict) -> dict:
     return response
 
 
-def lightning_address_to_url(address: str) -> Optional[str]:
+def lightning_address_to_url(address: str) -> str | None:
     """Converts an email-type lightning address to a decoded lnurl.
     see https://github.com/fiatjaf/lnurl-rfc/blob/luds/16.md
     """

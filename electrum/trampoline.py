@@ -1,22 +1,18 @@
 import os
-import bitstring
 import random
+from collections.abc import Iterable, Mapping, Sequence
 
-from typing import Mapping, DefaultDict, Tuple, Optional, Dict, List, Iterable, Sequence, Set
+import bitstring
 
-from .lnutil import LnFeatures, PaymentFeeBudget
-from .lnonion import calc_hops_data_for_payment, new_onion_packet, OnionPacket
-from .lnrouter import (
-    RouteEdge,
-    TrampolineEdge,
-    LNPaymentRoute,
-    is_route_within_budget,
-    LNPaymentTRoute,
-)
-from .lnutil import NoPathFound, LNPeerAddr
 from . import constants
+from .lnonion import OnionPacket, calc_hops_data_for_payment, new_onion_packet
+from .lnrouter import (
+    LNPaymentTRoute,
+    TrampolineEdge,
+    is_route_within_budget,
+)
+from .lnutil import LnFeatures, LNPeerAddr, NoPathFound, PaymentFeeBudget
 from .logging import get_logger
-
 
 _logger = get_logger(__name__)
 
@@ -122,7 +118,7 @@ def hardcoded_trampoline_nodes() -> Mapping[str, LNPeerAddr]:
 
 
 def trampolines_by_id():
-    return dict([(x.pubkey, x) for x in hardcoded_trampoline_nodes().values()])
+    return {x.pubkey: x for x in hardcoded_trampoline_nodes().values()}
 
 
 def is_hardcoded_trampoline(node_id: bytes) -> bool:
@@ -153,7 +149,7 @@ def decode_routing_info(s: bytes):
         route = []
         length, s = s[0:8], s[8:]
         length = length.unpack("uint:8")[0]
-        for i in range(length):
+        for _i in range(length):
             chunk, s = s[0:n], s[n:]
             item = chunk.unpack("bytes:33, bytes:8, intbe:32, intbe:32, intbe:16")
             route.append(item)
@@ -161,7 +157,7 @@ def decode_routing_info(s: bytes):
     return r_tags
 
 
-def is_legacy_relay(invoice_features, r_tags) -> Tuple[bool, Set[bytes]]:
+def is_legacy_relay(invoice_features, r_tags) -> tuple[bool, set[bytes]]:
     """Returns if we deal with a legacy payment and the list of trampoline pubkeys in the invoice."""
     invoice_features = LnFeatures(invoice_features)
     # trampoline-supporting wallets:
@@ -194,7 +190,7 @@ def is_legacy_relay(invoice_features, r_tags) -> Tuple[bool, Set[bytes]]:
 
 def trampoline_policy(
     trampoline_fee_level: int,
-) -> Dict:
+) -> dict:
     """Return the fee policy for all trampoline nodes.
 
     Raises NoPathFound if the fee level is exhausted."""
@@ -208,9 +204,9 @@ def trampoline_policy(
 
 
 def _extend_trampoline_route(
-    route: List[TrampolineEdge],
+    route: list[TrampolineEdge],
     *,
-    start_node: bytes = None,
+    start_node: bytes | None = None,
     end_node: bytes,
     trampoline_fee_level: int,
     pay_fees: bool = True,
@@ -344,7 +340,7 @@ def create_trampoline_onion(
     total_msat: int,
     payment_hash: bytes,
     payment_secret: bytes,
-) -> Tuple[OnionPacket, int, int]:
+) -> tuple[OnionPacket, int, int]:
     # all edges are trampoline
     hops_data, amount_msat, cltv_abs = calc_hops_data_for_payment(
         route,
@@ -405,7 +401,7 @@ def create_trampoline_route_and_onion(
     use_two_trampolines: bool,
     failed_routes: Iterable[Sequence[str]],
     budget: PaymentFeeBudget,
-) -> Tuple[LNPaymentTRoute, OnionPacket, int, int]:
+) -> tuple[LNPaymentTRoute, OnionPacket, int, int]:
     # create route for the trampoline_onion
     trampoline_route = create_trampoline_route(
         amount_msat=amount_msat,

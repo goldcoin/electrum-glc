@@ -7,19 +7,17 @@
 #       a chance to set the default language.
 
 import os
-from typing import Optional
 
 from electrum.i18n import languages
 
-
 jLocale = None
 if "ANDROID_DATA" in os.environ:
-    from jnius import autoclass, cast
+    from jnius import autoclass
 
     jLocale = autoclass("java.util.Locale")
 
 
-def get_default_language(*, gui_name: Optional[str] = None) -> str:
+def get_default_language(*, gui_name: str | None = None) -> str:
     if gui_name == "qt":
         from PyQt5.QtCore import QLocale
 

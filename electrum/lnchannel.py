@@ -18,104 +18,89 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 import enum
-import os
-from collections import namedtuple, defaultdict
-import binascii
-import json
-from enum import IntEnum, Enum
-from typing import (
-    Optional,
-    Dict,
-    List,
-    Tuple,
-    NamedTuple,
-    Set,
-    Callable,
-    Iterable,
-    Sequence,
-    TYPE_CHECKING,
-    Iterator,
-    Union,
-    Mapping,
-)
-import time
-import threading
-from abc import ABC, abstractmethod
 import itertools
+import threading
+import time
+from abc import ABC, abstractmethod
+from collections import defaultdict
+from collections.abc import Iterable, Iterator, Mapping, Sequence
+from enum import Enum, IntEnum
+from typing import (
+    TYPE_CHECKING,
+    NamedTuple,
+    Optional,
+    Union,
+)
 
-from aiorpcx import NetAddress
 import attr
+from aiorpcx import NetAddress
 
-from . import ecc
-from . import constants, util
-from .util import bfh, chunks, TxMinedInfo
-from .invoices import PR_PAID
+from . import constants, ecc, lnutil, util
+from .address_synchronizer import TX_HEIGHT_LOCAL
 from .bitcoin import redeem_script_to_address
 from .crypto import sha256, sha256d
-from .transaction import Transaction, PartialTransaction, TxInput, Sighash
-from .logging import Logger
-from .lnonion import OnionFailureCode, OnionRoutingFailure
-from . import lnutil
+from .invoices import PR_PAID
+from .lnhtlc import HTLCManager
+from .lnmsg import decode_msg, encode_msg
+from .lnonion import OnionRoutingFailure
+from .lnsweep import (
+    SweepInfo,
+    create_sweeptx_for_their_revoked_htlc,
+    create_sweeptxs_for_our_ctx,
+    create_sweeptxs_for_their_ctx,
+)
 from .lnutil import (
-    Outpoint,
-    LocalConfig,
-    RemoteConfig,
-    Keypair,
-    OnlyPubkeyKeypair,
-    ChannelConstraints,
-    get_per_commitment_secret_from_seed,
-    secret_to_pubkey,
-    derive_privkey,
-    make_closing_tx,
-    sign_and_get_sig_string,
-    RevocationStore,
-    derive_blinded_pubkey,
-    Direction,
-    derive_pubkey,
-    make_htlc_tx_with_open_channel,
-    make_commitment,
-    make_received_htlc,
-    make_offered_htlc,
-    HTLC_TIMEOUT_WEIGHT,
-    HTLC_SUCCESS_WEIGHT,
-    extract_ctn_from_tx_and_chan,
-    UpdateAddHtlc,
-    funding_output_script,
-    SENT,
-    RECEIVED,
+    CHANNEL_OPENING_TIMEOUT,
     LOCAL,
+    RECEIVED,
     REMOTE,
+    SENT,
+    ChannelBackupStorage,
+    ChannelType,
+    Direction,
     HTLCOwner,
-    make_commitment_outputs,
-    ScriptHtlc,
-    PaymentFailure,
-    calc_fees_for_commitment_tx,
-    RemoteMisbehaving,
-    make_htlc_output_witness_script,
-    ShortChannelID,
-    map_htlcs_to_ctx_output_idxs,
+    ImportedChannelBackupStorage,
     LNPeerAddr,
+    LNProtocolWarning,
+    LocalConfig,
+    OnchainChannelBackupStorage,
+    OnlyPubkeyKeypair,
+    Outpoint,
+    PaymentFailure,
+    RemoteConfig,
+    RemoteMisbehaving,
+    RevocationStore,
+    ScriptHtlc,
+    ShortChannelID,
+    UpdateAddHtlc,
+    calc_fees_for_commitment_tx,
+    derive_blinded_pubkey,
+    derive_privkey,
+    derive_pubkey,
     fee_for_htlc_output,
+    format_short_channel_id,
+    funding_output_script,
+    get_per_commitment_secret_from_seed,
+    make_closing_tx,
+    make_commitment,
+    make_commitment_output_to_remote_address,
+    make_commitment_outputs,
+    make_htlc_output_witness_script,
+    make_htlc_tx_with_open_channel,
+    map_htlcs_to_ctx_output_idxs,
     offered_htlc_trim_threshold_sat,
     received_htlc_trim_threshold_sat,
-    make_commitment_output_to_remote_address,
-    ChannelType,
-    LNProtocolWarning,
+    secret_to_pubkey,
+    sign_and_get_sig_string,
 )
-from .lnsweep import create_sweeptxs_for_our_ctx, create_sweeptxs_for_their_ctx
-from .lnsweep import create_sweeptx_for_their_revoked_htlc, SweepInfo
-from .lnhtlc import HTLCManager
-from .lnmsg import encode_msg, decode_msg
-from .address_synchronizer import TX_HEIGHT_LOCAL
-from .lnutil import CHANNEL_OPENING_TIMEOUT
-from .lnutil import ChannelBackupStorage, ImportedChannelBackupStorage, OnchainChannelBackupStorage
-from .lnutil import format_short_channel_id
+from .logging import Logger
 from .simple_config import FEERATE_PER_KW_MIN_RELAY_LIGHTNING
+from .transaction import PartialTransaction, Sighash, Transaction, TxInput
+from .util import TxMinedInfo, bfh, chunks
 
 if TYPE_CHECKING:
-    from .lnworker import LNWallet
     from .json_db import StoredDict
-    from .lnrouter import RouteEdge
+    from .lnworker import LNWallet
 
 # channel flags
 CF_ANNOUNCE_CHANNEL = 0x01
@@ -232,11 +217,11 @@ class HTLCWithStatus(NamedTuple):
 
 class AbstractChannel(Logger, ABC):
     storage: Union["StoredDict", dict]
-    config: Dict[HTLCOwner, Union[LocalConfig, RemoteConfig]]
-    _sweep_info: Dict[str, Dict[str, "SweepInfo"]]
+    config: dict[HTLCOwner, Union[LocalConfig, RemoteConfig]]
+    _sweep_info: dict[str, dict[str, "SweepInfo"]]
     lnworker: Optional["LNWallet"]
     channel_id: bytes
-    short_channel_id: Optional[ShortChannelID] = None
+    short_channel_id: ShortChannelID | None = None
     funding_outpoint: Outpoint
     node_id: bytes  # note that it might not be the full 33 bytes; for OCB it is only the prefix
     _state: ChannelState
@@ -314,7 +299,7 @@ class AbstractChannel(Logger, ABC):
     def get_close_options(self) -> Sequence[ChanCloseOption]:
         pass
 
-    def save_funding_height(self, *, txid: str, height: int, timestamp: Optional[int]) -> None:
+    def save_funding_height(self, *, txid: str, height: int, timestamp: int | None) -> None:
         self.storage["funding_height"] = txid, height, timestamp
 
     def get_funding_height(self):
@@ -323,7 +308,7 @@ class AbstractChannel(Logger, ABC):
     def delete_funding_height(self):
         self.storage.pop("funding_height", None)
 
-    def save_closing_height(self, *, txid: str, height: int, timestamp: Optional[int]) -> None:
+    def save_closing_height(self, *, txid: str, height: int, timestamp: int | None) -> None:
         self.storage["closing_height"] = txid, height, timestamp
 
     def get_closing_height(self):
@@ -341,25 +326,25 @@ class AbstractChannel(Logger, ABC):
     def is_backup(self):
         return False
 
-    def sweep_ctx(self, ctx: Transaction) -> Dict[str, SweepInfo]:
+    def sweep_ctx(self, ctx: Transaction) -> dict[str, SweepInfo]:
         txid = ctx.txid()
         if self._sweep_info.get(txid) is None:
             our_sweep_info = self.create_sweeptxs_for_our_ctx(ctx)
             their_sweep_info = self.create_sweeptxs_for_their_ctx(ctx)
             if our_sweep_info:
                 self._sweep_info[txid] = our_sweep_info
-                self.logger.info(f"we (local) force closed")
+                self.logger.info("we (local) force closed")
             elif their_sweep_info:
                 self._sweep_info[txid] = their_sweep_info
-                self.logger.info(f"they (remote) force closed.")
+                self.logger.info("they (remote) force closed.")
             else:
                 self._sweep_info[txid] = {}
-                self.logger.info(f"not sure who closed.")
+                self.logger.info("not sure who closed.")
         return self._sweep_info[txid]
 
     def maybe_sweep_revoked_htlc(
         self, ctx: Transaction, htlc_tx: Transaction
-    ) -> Optional[SweepInfo]:
+    ) -> SweepInfo | None:
         return None
 
     def extract_preimage_from_htlc_txin(self, txin: TxInput) -> None:
@@ -403,7 +388,7 @@ class AbstractChannel(Logger, ABC):
                 # we check that funding_inputs have been double spent and deeply mined
                 inputs = self.storage.get("funding_inputs", [])
                 if not inputs:
-                    self.logger.info(f"channel funding inputs are not provided")
+                    self.logger.info("channel funding inputs are not provided")
                     self.set_state(ChannelState.REDEEMED)
                 for i in inputs:
                     spender_txid = self.lnworker.wallet.db.get_spent_outpoint(*i)
@@ -503,7 +488,7 @@ class AbstractChannel(Logger, ABC):
 
     @abstractmethod
     def included_htlcs(
-        self, subject: HTLCOwner, direction: Direction, ctn: int = None
+        self, subject: HTLCOwner, direction: Direction, ctn: int | None = None
     ) -> Sequence[UpdateAddHtlc]:
         pass
 
@@ -512,20 +497,18 @@ class AbstractChannel(Logger, ABC):
         pass
 
     @abstractmethod
-    def balance(self, whose: HTLCOwner, *, ctx_owner=HTLCOwner.LOCAL, ctn: int = None) -> int:
+    def balance(self, whose: HTLCOwner, *, ctx_owner=HTLCOwner.LOCAL, ctn: int | None = None) -> int:
         """This balance (in msat) only considers HTLCs that have been settled by ctn.
         It disregards reserve, fees, and pending HTLCs (in both directions).
         """
-        pass
 
     @abstractmethod
     def balance_minus_outgoing_htlcs(
-        self, whose: HTLCOwner, *, ctx_owner: HTLCOwner = HTLCOwner.LOCAL, ctn: int = None
+        self, whose: HTLCOwner, *, ctx_owner: HTLCOwner = HTLCOwner.LOCAL, ctn: int | None = None
     ) -> int:
         """This balance (in msat), which includes the value of
         pending outgoing HTLCs, is used in the UI.
         """
-        pass
 
     @abstractmethod
     def is_frozen_for_sending(self) -> bool:
@@ -533,7 +516,6 @@ class AbstractChannel(Logger, ABC):
         Frozen channels are not supposed to be used for new outgoing payments.
         (note that payment-forwarding ignores this option)
         """
-        pass
 
     @abstractmethod
     def is_frozen_for_receiving(self) -> bool:
@@ -541,17 +523,14 @@ class AbstractChannel(Logger, ABC):
         Frozen channels are not supposed to be used for new incoming payments.
         (note that payment-forwarding ignores this option)
         """
-        pass
 
     @abstractmethod
     def get_local_pubkey(self) -> bytes:
         """Returns our node ID."""
-        pass
 
     @abstractmethod
-    def get_capacity(self) -> Optional[int]:
+    def get_capacity(self) -> int | None:
         """Returns channel capacity in satoshis, or None if unknown."""
-        pass
 
 
 class ChannelBackup(AbstractChannel):
@@ -587,8 +566,8 @@ class ChannelBackup(AbstractChannel):
         local_payment_pubkey = cb.local_payment_pubkey
         if local_payment_pubkey is None:
             self.logger.warning(
-                f"local_payment_pubkey missing from (old-type) channel backup. "
-                f"You should export and re-import a newer backup."
+                "local_payment_pubkey missing from (old-type) channel backup. "
+                "You should export and re-import a newer backup."
             )
         self.config[LOCAL] = LocalConfig.from_seed(
             channel_seed=cb.channel_seed,
@@ -644,10 +623,10 @@ class ChannelBackup(AbstractChannel):
     def is_backup(self):
         return True
 
-    def get_local_scid_alias(self, *, create_new_if_needed: bool = False) -> Optional[bytes]:
+    def get_local_scid_alias(self, *, create_new_if_needed: bool = False) -> bytes | None:
         return None
 
-    def get_remote_scid_alias(self) -> Optional[bytes]:
+    def get_remote_scid_alias(self) -> bytes | None:
         return None
 
     def create_sweeptxs_for_their_ctx(self, ctx):
@@ -682,11 +661,11 @@ class ChannelBackup(AbstractChannel):
         return funding_height.conf > 1
 
     def balance_minus_outgoing_htlcs(
-        self, whose: HTLCOwner, *, ctx_owner: HTLCOwner = HTLCOwner.LOCAL, ctn: int = None
+        self, whose: HTLCOwner, *, ctx_owner: HTLCOwner = HTLCOwner.LOCAL, ctn: int | None = None
     ):
         return 0
 
-    def balance(self, whose: HTLCOwner, *, ctx_owner=HTLCOwner.LOCAL, ctn: int = None) -> int:
+    def balance(self, whose: HTLCOwner, *, ctx_owner=HTLCOwner.LOCAL, ctn: int | None = None) -> int:
         return 0
 
     def is_frozen_for_sending(self) -> bool:
@@ -726,7 +705,7 @@ class Channel(AbstractChannel):
     forwarding_fee_proportional_millionths = 1
 
     def __repr__(self):
-        return "Channel(%s)" % self.get_id_for_log()
+        return f"Channel({self.get_id_for_log()})"
 
     def __init__(
         self,
@@ -768,7 +747,7 @@ class Channel(AbstractChannel):
         self.sent_announcement_signatures = False
         self.htlc_settle_time = {}
 
-    def get_local_scid_alias(self, *, create_new_if_needed: bool = False) -> Optional[bytes]:
+    def get_local_scid_alias(self, *, create_new_if_needed: bool = False) -> bytes | None:
         """Get scid_alias to be used for *outgoing* HTLCs.
         (called local as we choose the value)
         """
@@ -785,7 +764,7 @@ class Channel(AbstractChannel):
     def save_remote_scid_alias(self, alias: bytes):
         self.storage["alias"] = alias.hex()
 
-    def get_remote_scid_alias(self) -> Optional[bytes]:
+    def get_remote_scid_alias(self) -> bytes | None:
         """Get scid_alias to be used for *incoming* HTLCs.
         (called remote as the remote chooses the value)
         """
@@ -850,7 +829,7 @@ class Channel(AbstractChannel):
         raw = payload["raw"]
         self.storage["remote_update"] = raw.hex()
 
-    def get_remote_update(self) -> Optional[bytes]:
+    def get_remote_update(self) -> bytes | None:
         return bfh(self.storage.get("remote_update")) if self.storage.get("remote_update") else None
 
     def add_or_update_peer_addr(self, peer: LNPeerAddr) -> None:
@@ -863,7 +842,7 @@ class Channel(AbstractChannel):
         addrs = sorted(
             self.storage.get("peer_network_addresses", {}).items(), key=lambda x: x[1], reverse=True
         )
-        for net_addr_str, ts in addrs:
+        for net_addr_str, _ts in addrs:
             net_addr = NetAddress.from_string(net_addr_str)
             yield LNPeerAddr(host=str(net_addr.host), port=net_addr.port, pubkey=self.node_id)
 
@@ -877,7 +856,7 @@ class Channel(AbstractChannel):
             raise Exception("lnworker not set for channel!")
         if scid is None:
             scid = self.short_channel_id
-        sorted_node_ids = list(sorted([self.node_id, self.get_local_pubkey()]))
+        sorted_node_ids = sorted([self.node_id, self.get_local_pubkey()])
         channel_flags = b"\x00" if sorted_node_ids[0] == self.get_local_pubkey() else b"\x01"
         htlc_maximum_msat = min(
             self.config[REMOTE].max_htlc_value_in_flight_msat, 1000 * self.constraints.capacity
@@ -972,7 +951,7 @@ class Channel(AbstractChannel):
     def get_next_feerate(self, subject: HTLCOwner) -> int:
         return self.hm.get_feerate_in_next_ctx(subject)
 
-    def get_payments(self, status=None) -> Mapping[bytes, List[HTLCWithStatus]]:
+    def get_payments(self, status=None) -> Mapping[bytes, list[HTLCWithStatus]]:
         out = defaultdict(list)
         for direction, htlc in self.hm.all_htlcs_ever():
             htlc_proposer = LOCAL if direction is SENT else REMOTE
@@ -1166,7 +1145,7 @@ class Channel(AbstractChannel):
         self.logger.info("add_htlc")
         return htlc
 
-    def receive_htlc(self, htlc: UpdateAddHtlc, onion_packet: bytes = None) -> UpdateAddHtlc:
+    def receive_htlc(self, htlc: UpdateAddHtlc, onion_packet: bytes | None = None) -> UpdateAddHtlc:
         """Adds a new REMOTE HTLC to the channel.
         Action must be initiated by REMOTE.
         """
@@ -1195,7 +1174,7 @@ class Channel(AbstractChannel):
         self.logger.info("receive_htlc")
         return htlc
 
-    def sign_next_commitment(self) -> Tuple[bytes, Sequence[bytes]]:
+    def sign_next_commitment(self) -> tuple[bytes, Sequence[bytes]]:
         """Returns signatures for our next remote commitment tx.
         Action must be initiated by LOCAL.
         Finally, the next remote ctx becomes the latest remote ctx.
@@ -1228,7 +1207,7 @@ class Channel(AbstractChannel):
         )
         for (direction, htlc), (
             ctx_output_idx,
-            htlc_relative_idx,
+            _htlc_relative_idx,
         ) in htlc_to_ctx_output_idx_map.items():
             _script, htlc_tx = make_htlc_tx_with_open_channel(
                 chan=self,
@@ -1434,7 +1413,7 @@ class Channel(AbstractChannel):
                 # self.lnworker.htlc_received(self, payment_hash)
                 pass
 
-    def balance(self, whose: HTLCOwner, *, ctx_owner=HTLCOwner.LOCAL, ctn: int = None) -> int:
+    def balance(self, whose: HTLCOwner, *, ctx_owner=HTLCOwner.LOCAL, ctn: int | None = None) -> int:
         assert type(whose) is HTLCOwner
         initial = self.config[whose].initial_msat
         return self.hm.get_balance_msat(
@@ -1442,7 +1421,7 @@ class Channel(AbstractChannel):
         )
 
     def balance_minus_outgoing_htlcs(
-        self, whose: HTLCOwner, *, ctx_owner: HTLCOwner = HTLCOwner.LOCAL, ctn: int = None
+        self, whose: HTLCOwner, *, ctx_owner: HTLCOwner = HTLCOwner.LOCAL, ctn: int | None = None
     ) -> int:
         assert type(whose) is HTLCOwner
         if ctn is None:
@@ -1455,7 +1434,7 @@ class Channel(AbstractChannel):
         return committed_balance - balance_in_htlcs
 
     def balance_tied_up_in_htlcs_by_direction(
-        self, ctx_owner: HTLCOwner = LOCAL, *, ctn: int = None, direction: Direction
+        self, ctx_owner: HTLCOwner = LOCAL, *, ctn: int | None = None, direction: Direction
     ):
         # in msat
         if ctn is None:
@@ -1552,7 +1531,7 @@ class Channel(AbstractChannel):
         return max_send_msat
 
     def included_htlcs(
-        self, subject: HTLCOwner, direction: Direction, ctn: int = None, *, feerate: int = None
+        self, subject: HTLCOwner, direction: Direction, ctn: int | None = None, *, feerate: int | None = None
     ) -> Sequence[UpdateAddHtlc]:
         """Returns list of non-dust HTLCs for subject's commitment tx at ctn,
         filtered by direction (of HTLCs).
@@ -1575,7 +1554,7 @@ class Channel(AbstractChannel):
         htlcs = self.hm.htlcs_by_direction(subject, direction, ctn=ctn).values()
         return list(filter(lambda htlc: htlc.amount_msat // 1000 >= threshold_sat, htlcs))
 
-    def get_secret_and_point(self, subject: HTLCOwner, ctn: int) -> Tuple[Optional[bytes], bytes]:
+    def get_secret_and_point(self, subject: HTLCOwner, ctn: int) -> tuple[bytes | None, bytes]:
         assert type(subject) is HTLCOwner
         assert ctn >= 0, ctn
         offset = ctn - self.get_oldest_unrevoked_ctn(subject)
@@ -1601,7 +1580,7 @@ class Channel(AbstractChannel):
 
     def get_secret_and_commitment(
         self, subject: HTLCOwner, *, ctn: int
-    ) -> Tuple[Optional[bytes], PartialTransaction]:
+    ) -> tuple[bytes | None, PartialTransaction]:
         secret, point = self.get_secret_and_point(subject, ctn)
         ctx = self.make_commitment(subject, point, ctn)
         return secret, ctx
@@ -1622,7 +1601,7 @@ class Channel(AbstractChannel):
         ctn = self.get_oldest_unrevoked_ctn(subject)
         return self.get_commitment(subject, ctn=ctn)
 
-    def create_sweeptxs(self, ctn: int) -> List[Transaction]:
+    def create_sweeptxs(self, ctn: int) -> list[Transaction]:
         from .lnsweep import create_sweeptxs_for_watchtower
 
         secret, ctx = self.get_secret_and_commitment(REMOTE, ctn=ctn)
@@ -1688,8 +1667,8 @@ class Channel(AbstractChannel):
         self,
         htlc_id: int,
         *,
-        error_bytes: Optional[bytes],
-        reason: Optional[OnionRoutingFailure] = None,
+        error_bytes: bytes | None,
+        reason: OnionRoutingFailure | None = None,
     ) -> None:
         """Fail a pending offered HTLC.
         Action must be initiated by REMOTE.
@@ -1774,7 +1753,7 @@ class Channel(AbstractChannel):
             other_config.revocation_basepoint.pubkey, this_point
         )
         htlcs = []  # type: List[ScriptHtlc]
-        for is_received_htlc, htlc_list in zip((True, False), (received_htlcs, sent_htlcs)):
+        for is_received_htlc, htlc_list in zip((True, False), (received_htlcs, sent_htlcs), strict=False):
             for htlc in htlc_list:
                 htlcs.append(
                     ScriptHtlc(
@@ -1824,7 +1803,7 @@ class Channel(AbstractChannel):
 
     def make_closing_tx(
         self, local_script: bytes, remote_script: bytes, fee_sat: int, *, drop_remote=False
-    ) -> Tuple[bytes, PartialTransaction]:
+    ) -> tuple[bytes, PartialTransaction]:
         """cooperative close"""
         _, outputs = make_commitment_outputs(
             fees_per_participant={
@@ -1902,7 +1881,7 @@ class Channel(AbstractChannel):
 
     def maybe_sweep_revoked_htlc(
         self, ctx: Transaction, htlc_tx: Transaction
-    ) -> Optional[SweepInfo]:
+    ) -> SweepInfo | None:
         # look at the output address, check if it matches
         return create_sweeptx_for_their_revoked_htlc(self, ctx, htlc_tx, self.sweep_address)
 

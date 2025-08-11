@@ -6,13 +6,13 @@
 # $ ./electrum/scripts/servers.py > reply.txt
 
 import asyncio
-import sys
 import json
+import sys
 
-from electrum.network import Network
-from electrum.util import create_and_start_event_loop, log_exceptions
-from electrum.simple_config import SimpleConfig
 from electrum import constants
+from electrum.network import Network
+from electrum.simple_config import SimpleConfig
+from electrum.util import create_and_start_event_loop, log_exceptions
 
 try:
     fname1 = sys.argv[1]

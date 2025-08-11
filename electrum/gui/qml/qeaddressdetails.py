@@ -1,8 +1,8 @@
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject
+from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
 
 from electrum.logging import get_logger
 
-from .auth import auth_protect, AuthMixin
+from .auth import AuthMixin, auth_protect
 from .qetransactionlistmodel import QETransactionListModel
 from .qetypes import QEAmount
 from .qewallet import QEWallet

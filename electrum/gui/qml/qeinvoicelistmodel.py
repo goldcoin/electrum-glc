@@ -1,15 +1,14 @@
 from abc import abstractmethod
-from typing import TYPE_CHECKING, List, Dict, Any
+from typing import TYPE_CHECKING, Any
 
-from PyQt6.QtCore import pyqtSlot, QTimer
-from PyQt6.QtCore import Qt, QAbstractListModel, QModelIndex
+from PyQt6.QtCore import QAbstractListModel, QModelIndex, Qt, QTimer, pyqtSlot
 
+from electrum.invoices import LN_EXPIRY_NEVER, PR_EXPIRED, BaseInvoice, Invoice, Request
 from electrum.logging import get_logger
 from electrum.util import Satoshis, format_time
-from electrum.invoices import BaseInvoice, PR_EXPIRED, LN_EXPIRY_NEVER, Invoice, Request
 
-from .util import QtEventListener, qt_event_listener, status_update_timer_interval
 from .qetypes import QEAmount
+from .util import QtEventListener, qt_event_listener, status_update_timer_interval
 
 if TYPE_CHECKING:
     from electrum.wallet import Abstract_Wallet
@@ -35,8 +34,8 @@ class QEAbstractInvoiceListModel(QAbstractListModel):
         "lightning_invoice",
     )
     _ROLE_KEYS = range(Qt.ItemDataRole.UserRole, Qt.ItemDataRole.UserRole + len(_ROLE_NAMES))
-    _ROLE_MAP = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES]))
-    _ROLE_RMAP = dict(zip(_ROLE_NAMES, _ROLE_KEYS))
+    _ROLE_MAP = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES], strict=False))
+    _ROLE_RMAP = dict(zip(_ROLE_NAMES, _ROLE_KEYS, strict=False))
 
     def __init__(self, wallet: "Abstract_Wallet", parent=None):
         super().__init__(parent)
@@ -50,7 +49,7 @@ class QEAbstractInvoiceListModel(QAbstractListModel):
         try:
             self.initModel()
         except Exception as e:
-            self._logger.error(f"{repr(e)}")
+            self._logger.error(f"{e!r}")
             raise e
 
     def rowCount(self, index):
@@ -64,7 +63,7 @@ class QEAbstractInvoiceListModel(QAbstractListModel):
         role_index = role - Qt.ItemDataRole.UserRole
         value = invoice[self._ROLE_NAMES[role_index]]
 
-        if isinstance(value, (bool, list, int, str, QEAmount)) or value is None:
+        if isinstance(value, bool | list | int | str | QEAmount) or value is None:
             return value
         if isinstance(value, Satoshis):
             return value.value
@@ -185,11 +184,11 @@ class QEAbstractInvoiceListModel(QAbstractListModel):
         raise Exception("provide impl")
 
     @abstractmethod
-    def get_invoice_list(self) -> List[BaseInvoice]:
+    def get_invoice_list(self) -> list[BaseInvoice]:
         raise Exception("provide impl")
 
     @abstractmethod
-    def get_invoice_as_dict(self, invoice: BaseInvoice) -> Dict[str, Any]:
+    def get_invoice_as_dict(self, invoice: BaseInvoice) -> dict[str, Any]:
         raise Exception("provide impl")
 
 

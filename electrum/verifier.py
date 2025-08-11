@@ -22,21 +22,22 @@
 # SOFTWARE.
 
 import asyncio
-from typing import Sequence, Optional, TYPE_CHECKING
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 import aiorpcx
 
-from .util import TxMinedInfo, NetworkJobOnDefaultServer
-from .crypto import sha256d
-from .bitcoin import hash_decode, hash_encode
-from .transaction import Transaction
-from .blockchain import hash_header
-from .interface import GracefulDisconnect
 from . import constants
+from .bitcoin import hash_decode, hash_encode
+from .blockchain import hash_header
+from .crypto import sha256d
+from .interface import GracefulDisconnect
+from .transaction import Transaction
+from .util import NetworkJobOnDefaultServer, TxMinedInfo
 
 if TYPE_CHECKING:
-    from .network import Network
     from .address_synchronizer import AddressSynchronizer
+    from .network import Network
 
 
 class MerkleVerificationFailure(Exception):
@@ -171,7 +172,7 @@ class SPV(NetworkJobOnDefaultServer):
             h = sha256d(inner_node)
             index >>= 1
         if index != 0:
-            raise MerkleVerificationFailure(f"leaf_pos_in_tree too large for branch")
+            raise MerkleVerificationFailure("leaf_pos_in_tree too large for branch")
         return hash_encode(h)
 
     @classmethod
@@ -212,13 +213,13 @@ def verify_tx_is_in_block(
     tx_hash: str,
     merkle_branch: Sequence[str],
     leaf_pos_in_tree: int,
-    block_header: Optional[dict],
+    block_header: dict | None,
     block_height: int,
 ) -> None:
     """Raise MerkleVerificationFailure if verification fails."""
     if not block_header:
         raise MissingBlockHeader(
-            "merkle verification failed for {} (missing header {})".format(tx_hash, block_height)
+            f"merkle verification failed for {tx_hash} (missing header {block_height})"
         )
     if len(merkle_branch) > 30:
         raise MerkleVerificationFailure(f"merkle branch too long: {len(merkle_branch)}")

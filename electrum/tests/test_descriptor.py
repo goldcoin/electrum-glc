@@ -6,19 +6,18 @@
 # originally from https://github.com/bitcoin-core/HWI/blob/f5a9b29c00e483cc99a1b8f4f5ef75413a092869/test/test_descriptor.py
 
 from binascii import unhexlify
-import unittest
 
+from electrum import ecc
 from electrum.descriptor import (
-    parse_descriptor,
     MultisigDescriptor,
+    PKHDescriptor,
+    PubkeyProvider,
     SHDescriptor,
     TRDescriptor,
-    PKHDescriptor,
     WPKHDescriptor,
     WSHDescriptor,
-    PubkeyProvider,
+    parse_descriptor,
 )
-from electrum import ecc
 from electrum.util import bfh
 
 from . import ElectrumTestCase, as_testnet
@@ -282,11 +281,11 @@ class TestDescriptor(ElectrumTestCase):
     @as_testnet
     def test_parse_descriptor_unknown_notation_for_hardened_derivation(self):
         with self.assertRaises(ValueError):
-            desc = parse_descriptor(
+            parse_descriptor(
                 "wpkh([00000001/84x/1x/0x]tpubD6NzVbkrYhZ4WaWSyoBvQwbpLkojyoTZPRsgXELWz3Popb3qkjcJyJUGLnL4qHHoQvao8ESaAstxYSnhyswJ76uZPStJRJCTKvosUCJZL5B/0/0)"
             )
         with self.assertRaises(ValueError):
-            desc = parse_descriptor(
+            parse_descriptor(
                 "wpkh([00000001/84h/1h/0h]tpubD6NzVbkrYhZ4WaWSyoBvQwbpLkojyoTZPRsgXELWz3Popb3qkjcJyJUGLnL4qHHoQvao8ESaAstxYSnhyswJ76uZPStJRJCTKvosUCJZL5B/0x)"
             )
 
@@ -555,15 +554,15 @@ class TestDescriptor(ElectrumTestCase):
             )
 
     def test_parse_descriptor_ypub_zpub_forbidden(self):
-        desc = parse_descriptor(
+        parse_descriptor(
             "wpkh([535e473f/0h]xpub68W3CJPrQzHhTQcHM6tbCvNVB9ih4tbzsFBLwe7zZUj5uHuhxBUhvnXe1RQhbKCTiTj3D7kXni6yAD88i2xnjKHaJ5NqTtHawKnPFCDnmo4/0/*)"
         )
         with self.assertRaises(ValueError):  # only standard xpub/xprv allowed
-            desc = parse_descriptor(
+            parse_descriptor(
                 "wpkh([535e473f/0h]ypub6TLJVy4mZfqBJhoQBTgDR1TzM7s91WbVnMhZj31swV6xxPiwCqeGYrBn2dNHbDrP86qqxbM6FNTX3VjhRjNoXYyBAR5G3o75D3r2djmhZwM/0/*)"
             )
         with self.assertRaises(ValueError):  # only standard xpub/xprv allowed
-            desc = parse_descriptor(
+            parse_descriptor(
                 "wpkh([535e473f/0h]zpub6nAZodjgiMNf9zzX1pTqd6ZVX61ax8azhUDnWRumKVUr1VYATVoqAuqv3qKsb8WJXjxei4wei2p4vnMG9RnpKnen2kmgdhvZUmug2NnHNsr/0/*)"
             )
 
@@ -626,23 +625,23 @@ class TestDescriptor(ElectrumTestCase):
     def test_pubkey_provider_deriv_path(self):
         xpub = "xpub68W3CJPrQzHhTQcHM6tbCvNVB9ih4tbzsFBLwe7zZUj5uHuhxBUhvnXe1RQhbKCTiTj3D7kXni6yAD88i2xnjKHaJ5NqTtHawKnPFCDnmo4"
         # valid:
-        pp = PubkeyProvider(origin=None, pubkey=xpub, deriv_path="/1/7")
-        pp = PubkeyProvider(origin=None, pubkey=xpub, deriv_path="/1/*")
+        PubkeyProvider(origin=None, pubkey=xpub, deriv_path="/1/7")
+        PubkeyProvider(origin=None, pubkey=xpub, deriv_path="/1/*")
         # invalid:
         with self.assertRaises(ValueError):
-            pp = PubkeyProvider(origin=None, pubkey=xpub, deriv_path="1")
+            PubkeyProvider(origin=None, pubkey=xpub, deriv_path="1")
         with self.assertRaises(ValueError):
-            pp = PubkeyProvider(origin=None, pubkey=xpub, deriv_path="1/7")
+            PubkeyProvider(origin=None, pubkey=xpub, deriv_path="1/7")
         with self.assertRaises(ValueError):
-            pp = PubkeyProvider(origin=None, pubkey=xpub, deriv_path="m/1/7")
+            PubkeyProvider(origin=None, pubkey=xpub, deriv_path="m/1/7")
         with self.assertRaises(ValueError):
-            pp = PubkeyProvider(origin=None, pubkey=xpub, deriv_path="*/7")
+            PubkeyProvider(origin=None, pubkey=xpub, deriv_path="*/7")
         with self.assertRaises(ValueError):
-            pp = PubkeyProvider(origin=None, pubkey=xpub, deriv_path="*/*")
+            PubkeyProvider(origin=None, pubkey=xpub, deriv_path="*/*")
 
         pubkey_hex = "02a0507c8bb3d96dfd7731bafb0ae30e6ed10bbadd6a9f9f88eaf0602b9cc99adc"
         # valid:
-        pp = PubkeyProvider(origin=None, pubkey=pubkey_hex, deriv_path=None)
+        PubkeyProvider(origin=None, pubkey=pubkey_hex, deriv_path=None)
         # invalid:
         with self.assertRaises(ValueError):
-            pp = PubkeyProvider(origin=None, pubkey=pubkey_hex, deriv_path="/1/7")
+            PubkeyProvider(origin=None, pubkey=pubkey_hex, deriv_path="/1/7")

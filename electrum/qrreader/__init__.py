@@ -28,9 +28,7 @@
 from typing import Optional
 
 from ..logging import get_logger
-
 from .abstract_base import AbstractQrCodeReader, QrCodeResult
-
 
 _logger = get_logger(__name__)
 
@@ -75,4 +73,3 @@ def get_qr_reader() -> AbstractQrCodeReader:
 class MissingLib(RuntimeError):
     """Raised by underlying implementation if missing libs"""
 
-    pass

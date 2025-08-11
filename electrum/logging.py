@@ -2,16 +2,16 @@
 # Distributed under the MIT software license, see the accompanying
 # file LICENCE or http://www.opensource.org/licenses/mit-license.php
 
+import copy
+import datetime
 import logging
 import logging.handlers
-import datetime
-import sys
-import pathlib
 import os
+import pathlib
 import platform
-from typing import Optional, TYPE_CHECKING
-import copy
 import subprocess
+import sys
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from .simple_config import SimpleConfig
@@ -21,7 +21,7 @@ class LogFormatterForFiles(logging.Formatter):
 
     def formatTime(self, record, datefmt=None):
         # timestamps follow ISO 8601 UTC
-        date = datetime.datetime.fromtimestamp(record.created).astimezone(datetime.timezone.utc)
+        date = datetime.datetime.fromtimestamp(record.created).astimezone(datetime.UTC)
         if not datefmt:
             datefmt = "%Y%m%dT%H%M%S.%fZ"
         return date.strftime(datefmt)
@@ -121,7 +121,7 @@ class TruncatingMemoryHandler(logging.handlers.MemoryHandler):
 
 
 def _delete_old_logs(path, *, num_files_keep: int):
-    files = sorted(list(pathlib.Path(path).glob("electrum_log_*.log")), reverse=True)
+    files = sorted(pathlib.Path(path).glob("electrum_log_*.log"), reverse=True)
     for f in files[num_files_keep:]:
         try:
             os.remove(str(f))
@@ -139,7 +139,7 @@ def _configure_file_logging(log_directory: pathlib.Path, *, num_files_keep: int)
 
     _delete_old_logs(log_directory, num_files_keep=num_files_keep)
 
-    timestamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    timestamp = datetime.datetime.now(datetime.UTC).strftime("%Y%m%dT%H%M%SZ")
     PID = os.getpid()
     _logfile_path = log_directory / f"electrum_log_{timestamp}_{PID}.log"
 
@@ -216,7 +216,7 @@ def _process_verbosity_filter_shortcuts(verbosity_shortcuts, *, handler: "loggin
 
 class ShortcutInjectingFilter(logging.Filter):
 
-    def __init__(self, *, shortcut: Optional[str]):
+    def __init__(self, *, shortcut: str | None):
         super().__init__()
         self.__shortcut = shortcut
 
@@ -322,7 +322,7 @@ class Logger:
         return ""
 
 
-def configure_logging(config: "SimpleConfig", *, log_to_file: Optional[bool] = None) -> None:
+def configure_logging(config: "SimpleConfig", *, log_to_file: bool | None = None) -> None:
     from .util import is_android_debug_apk
 
     verbosity = config.get("verbosity")
@@ -357,13 +357,13 @@ def configure_logging(config: "SimpleConfig", *, log_to_file: Optional[bool] = N
 
     _logger.info(f"Electrum version: {ELECTRUM_VERSION} - https://electrum.org - {GIT_REPO_URL}")
     _logger.info(f"Python version: {sys.version}. On platform: {describe_os_version()}")
-    _logger.info(f"Logging to file: {str(_logfile_path)}")
+    _logger.info(f"Logging to file: {_logfile_path!s}")
     _logger.info(
-        f"Log filters: verbosity {repr(verbosity)}, verbosity_shortcuts {repr(verbosity_shortcuts)}"
+        f"Log filters: verbosity {verbosity!r}, verbosity_shortcuts {verbosity_shortcuts!r}"
     )
 
 
-def get_logfile_path() -> Optional[pathlib.Path]:
+def get_logfile_path() -> pathlib.Path | None:
     return _logfile_path
 
 
@@ -373,12 +373,12 @@ def describe_os_version() -> str:
 
         bv = jnius.autoclass("android.os.Build$VERSION")
         b = jnius.autoclass("android.os.Build")
-        return "Android {} on {} {} ({})".format(bv.RELEASE, b.BRAND, b.DEVICE, b.DISPLAY)
+        return f"Android {bv.RELEASE} on {b.BRAND} {b.DEVICE} ({b.DISPLAY})"
     else:
         return platform.platform()
 
 
-def get_git_version() -> Optional[str]:
+def get_git_version() -> str | None:
     dir = os.path.dirname(os.path.realpath(__file__))
     try:
         version = subprocess.check_output(["git", "describe", "--always", "--dirty"], cwd=dir)

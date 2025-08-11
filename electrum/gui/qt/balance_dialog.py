@@ -25,32 +25,24 @@
 
 from typing import TYPE_CHECKING
 
+from PyQt5.QtCore import QRect, Qt
+from PyQt5.QtGui import QPainter, QPalette, QPen
 from PyQt5.QtWidgets import (
-    QVBoxLayout,
-    QCheckBox,
-    QHBoxLayout,
-    QLineEdit,
-    QLabel,
-    QCompleter,
-    QDialog,
-    QStyledItemDelegate,
-    QScrollArea,
-    QWidget,
-    QPushButton,
     QGridLayout,
+    QLabel,
     QToolButton,
+    QVBoxLayout,
+    QWidget,
 )
-from PyQt5.QtCore import QRect, QEventLoop, Qt, pyqtSignal
-from PyQt5.QtGui import QPalette, QPen, QPainter, QPixmap
-
 
 from electrum.i18n import _
 
-from .util import Buttons, CloseButton, WindowModalDialog, ColorScheme, font_height, AmountLabel
+from .util import AmountLabel, Buttons, CloseButton, ColorScheme, WindowModalDialog, font_height
 
 if TYPE_CHECKING:
-    from .main_window import ElectrumWindow
     from electrum.wallet import Abstract_Wallet
+
+    from .main_window import ElectrumWindow
 
 
 # Todo:
@@ -68,7 +60,7 @@ COLOR_FROZEN_LIGHTNING = Qt.cyan
 class PieChartObject:
 
     def paintEvent(self, event):
-        bgcolor = self.palette().color(QPalette.Background)
+        self.palette().color(QPalette.Background)
         pen = QPen(Qt.gray, 1, Qt.SolidLine)
         qp = QPainter()
         qp.begin(self)
@@ -79,8 +71,7 @@ class PieChartObject:
         if total == 0:
             return
         alpha = 0
-        s = 0
-        for name, color, amount in self._list:
+        for _name, color, amount in self._list:
             qp.setBrush(color)
             if amount == 0:
                 continue
@@ -147,7 +138,7 @@ class LegendWidget(QWidget):
         self.setMaximumHeight(self.size)
 
     def paintEvent(self, event):
-        bgcolor = self.palette().color(QPalette.Background)
+        self.palette().color(QPalette.Background)
         pen = QPen(Qt.gray, 1, Qt.SolidLine)
         qp = QPainter()
         qp.begin(self)

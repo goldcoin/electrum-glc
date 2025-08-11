@@ -1,14 +1,12 @@
-import os
 import asyncio
+import os
 from collections import defaultdict
 from typing import TYPE_CHECKING
 
 from aiohttp import web
 
-from electrum.util import log_exceptions, ignore_exceptions
 from electrum.logging import Logger
-from electrum.util import EventListener
-from electrum.lnaddr import lndecode
+from electrum.util import EventListener, ignore_exceptions, log_exceptions
 
 if TYPE_CHECKING:
     from electrum.simple_config import SimpleConfig

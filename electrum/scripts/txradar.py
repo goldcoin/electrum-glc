@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-import sys
 import asyncio
+import sys
 
-from electrum.network import filter_protocol, Network
-from electrum.util import create_and_start_event_loop, log_exceptions
+from electrum.network import Network, filter_protocol
 from electrum.simple_config import SimpleConfig
-
+from electrum.util import create_and_start_event_loop, log_exceptions
 
 try:
     txid = sys.argv[1]

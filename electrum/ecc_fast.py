@@ -1,26 +1,18 @@
 # taken (with minor modifications) from pycoin
 # https://github.com/richardkiss/pycoin/blob/01b1787ed902df23f99a55deb00d8cd076a906fe/pycoin/ecdsa/native/secp256k1.py
 
+import ctypes
 import os
 import sys
-import traceback
-import ctypes
 from ctypes import (
-    byref,
-    c_byte,
-    c_int,
-    c_uint,
     c_char_p,
+    c_int,
     c_size_t,
+    c_uint,
     c_void_p,
-    create_string_buffer,
-    CFUNCTYPE,
-    POINTER,
-    cast,
 )
 
 from .logging import get_logger
-
 
 _logger = get_logger(__name__)
 
@@ -86,7 +78,7 @@ def load_library():
         else:
             break
     if not secp256k1:
-        _logger.error(f"libsecp256k1 library failed to load. exceptions: {repr(exceptions)}")
+        _logger.error(f"libsecp256k1 library failed to load. exceptions: {exceptions!r}")
         return None
 
     try:
@@ -188,7 +180,7 @@ def load_library():
         return secp256k1
     except (OSError, AttributeError) as e:
         _logger.error(
-            f"libsecp256k1 library was found and loaded but there was an error when using it: {repr(e)}"
+            f"libsecp256k1 library was found and loaded but there was an error when using it: {e!r}"
         )
         return None
 
@@ -197,7 +189,7 @@ _libsecp256k1 = None
 try:
     _libsecp256k1 = load_library()
 except BaseException as e:
-    _logger.error(f"failed to load libsecp256k1: {repr(e)}")
+    _logger.error(f"failed to load libsecp256k1: {e!r}")
 
 
 if _libsecp256k1 is None:

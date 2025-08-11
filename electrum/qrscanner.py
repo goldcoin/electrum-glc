@@ -27,15 +27,14 @@
 # - to access the camera,
 # - and to find and decode QR codes (visible in the live feed).
 
+import ctypes
 import os
 import sys
-import ctypes
-from typing import Optional, Mapping
+from collections.abc import Mapping
 
-from .util import UserFacingException
 from .i18n import _
 from .logging import get_logger
-
+from .util import UserFacingException
 
 _logger = get_logger(__name__)
 
@@ -57,7 +56,7 @@ except BaseException as e1:
         _logger.error(f"failed to load zbar. exceptions: {[e1,e2]!r}")
 
 
-def scan_barcode(device="", timeout=-1, display=True, threaded=False) -> Optional[str]:
+def scan_barcode(device="", timeout=-1, display=True, threaded=False) -> str | None:
     if libzbar is None:
         raise UserFacingException("Cannot start QR scanner: zbar not available.")
     libzbar.zbar_symbol_get_data.restype = ctypes.c_char_p
@@ -104,7 +103,7 @@ def find_system_cameras() -> Mapping[str, str]:
     return devices
 
 
-def version_info() -> Mapping[str, Optional[str]]:
+def version_info() -> Mapping[str, str | None]:
     return {
         "libzbar.path": libzbar._name if libzbar else None,
     }

@@ -25,11 +25,13 @@
 
 from functools import partial
 from typing import TYPE_CHECKING
+
 from PyQt5 import QtWidgets
 
+from electrum.gui.qt.util import Buttons, EnterButton, OkButton, WindowModalDialog, webopen
 from electrum.i18n import _
 from electrum.plugin import hook
-from electrum.gui.qt.util import WindowModalDialog, OkButton, Buttons, EnterButton, webopen
+
 from .payserver import PayServerPlugin
 
 if TYPE_CHECKING:

@@ -23,27 +23,24 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import TYPE_CHECKING
-from decimal import Decimal
 import datetime
+from decimal import Decimal
+from typing import TYPE_CHECKING
 
-from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QVBoxLayout, QLabel, QGridLayout
+from PyQt5.QtWidgets import QLabel, QVBoxLayout
 
 from electrum.i18n import _
 from electrum.lnworker import PaymentDirection
-from electrum.invoices import Invoice
 
-from .util import (
-    WindowModalDialog,
-    ShowQRLineEdit,
-    ColorScheme,
-    Buttons,
-    CloseButton,
-    font_height,
-    ButtonsLineEdit,
-)
 from .qrtextedit import ShowQRTextEdit
+from .util import (
+    Buttons,
+    ButtonsLineEdit,
+    CloseButton,
+    ShowQRLineEdit,
+    WindowModalDialog,
+    font_height,
+)
 
 if TYPE_CHECKING:
     from .main_window import ElectrumWindow

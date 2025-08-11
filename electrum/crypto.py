@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Electrum - lightweight Bitcoin client
 # Copyright (C) 2018 The Electrum developers
@@ -25,23 +24,23 @@
 
 import base64
 import binascii
-import os
-import sys
 import hashlib
 import hmac
-from typing import Union, Mapping, Optional
+import os
+import sys
+from collections.abc import Mapping
+from typing import Union
 
-from .util import (
-    assert_bytes,
-    InvalidPassword,
-    to_bytes,
-    to_string,
-    WalletFileException,
-    versiontuple,
-)
 from .i18n import _
 from .logging import get_logger
-
+from .util import (
+    InvalidPassword,
+    WalletFileException,
+    assert_bytes,
+    to_bytes,
+    to_string,
+    versiontuple,
+)
 
 _logger = get_logger(__name__)
 
@@ -64,9 +63,9 @@ try:
             f"found module 'Cryptodome' but it is too old: {Cryptodome.__version__}<{MIN_CRYPTODOME_VERSION}"
         )
         raise Exception()
-    from Cryptodome.Cipher import ChaCha20_Poly1305 as CD_ChaCha20_Poly1305
-    from Cryptodome.Cipher import ChaCha20 as CD_ChaCha20
     from Cryptodome.Cipher import AES as CD_AES
+    from Cryptodome.Cipher import ChaCha20 as CD_ChaCha20
+    from Cryptodome.Cipher import ChaCha20_Poly1305 as CD_ChaCha20_Poly1305
 except Exception:
     pass
 else:
@@ -82,12 +81,11 @@ try:
             f"found module 'cryptography' but it is too old: {cryptography.__version__}<{MIN_CRYPTOGRAPHY_VERSION}"
         )
         raise Exception()
-    from cryptography import exceptions
+    import cryptography.hazmat.primitives.ciphers.aead as CG_aead
+    from cryptography.hazmat.backends import default_backend as CG_default_backend
     from cryptography.hazmat.primitives.ciphers import Cipher as CG_Cipher
     from cryptography.hazmat.primitives.ciphers import algorithms as CG_algorithms
     from cryptography.hazmat.primitives.ciphers import modes as CG_modes
-    from cryptography.hazmat.backends import default_backend as CG_default_backend
-    import cryptography.hazmat.primitives.ciphers.aead as CG_aead
 except Exception:
     pass
 else:
@@ -95,10 +93,10 @@ else:
 
 
 if not (HAS_CRYPTODOME or HAS_CRYPTOGRAPHY):
-    sys.exit(f"Error: at least one of ('pycryptodomex', 'cryptography') needs to be installed.")
+    sys.exit("Error: at least one of ('pycryptodomex', 'cryptography') needs to be installed.")
 
 
-def version_info() -> Mapping[str, Optional[str]]:
+def version_info() -> Mapping[str, str | None]:
     ret = {}
     if HAS_PYAES:
         ret["pyaes.version"] = ".".join(map(str, pyaes.VERSION[:3]))
@@ -376,12 +374,12 @@ def hmac_oneshot(key: bytes, msg: bytes, digest) -> bytes:
 
 
 def chacha20_poly1305_encrypt(
-    *, key: bytes, nonce: bytes, associated_data: bytes = None, data: bytes
+    *, key: bytes, nonce: bytes, associated_data: bytes | None = None, data: bytes
 ) -> bytes:
-    assert isinstance(key, (bytes, bytearray))
-    assert isinstance(nonce, (bytes, bytearray))
-    assert isinstance(associated_data, (bytes, bytearray, type(None)))
-    assert isinstance(data, (bytes, bytearray))
+    assert isinstance(key, bytes | bytearray)
+    assert isinstance(nonce, bytes | bytearray)
+    assert isinstance(associated_data, bytes | bytearray | type(None))
+    assert isinstance(data, bytes | bytearray)
     assert len(key) == 32, f"unexpected key size: {len(key)} (expected: 32)"
     assert len(nonce) == 12, f"unexpected nonce size: {len(nonce)} (expected: 12)"
     if HAS_CRYPTODOME:
@@ -397,12 +395,12 @@ def chacha20_poly1305_encrypt(
 
 
 def chacha20_poly1305_decrypt(
-    *, key: bytes, nonce: bytes, associated_data: bytes = None, data: bytes
+    *, key: bytes, nonce: bytes, associated_data: bytes | None = None, data: bytes
 ) -> bytes:
-    assert isinstance(key, (bytes, bytearray))
-    assert isinstance(nonce, (bytes, bytearray))
-    assert isinstance(associated_data, (bytes, bytearray, type(None)))
-    assert isinstance(data, (bytes, bytearray))
+    assert isinstance(key, bytes | bytearray)
+    assert isinstance(nonce, bytes | bytearray)
+    assert isinstance(associated_data, bytes | bytearray | type(None))
+    assert isinstance(data, bytes | bytearray)
     assert len(key) == 32, f"unexpected key size: {len(key)} (expected: 32)"
     assert len(nonce) == 12, f"unexpected nonce size: {len(nonce)} (expected: 12)"
     if HAS_CRYPTODOME:
@@ -421,9 +419,9 @@ def chacha20_poly1305_decrypt(
 
 
 def chacha20_encrypt(*, key: bytes, nonce: bytes, data: bytes) -> bytes:
-    assert isinstance(key, (bytes, bytearray))
-    assert isinstance(nonce, (bytes, bytearray))
-    assert isinstance(data, (bytes, bytearray))
+    assert isinstance(key, bytes | bytearray)
+    assert isinstance(nonce, bytes | bytearray)
+    assert isinstance(data, bytes | bytearray)
     assert len(key) == 32, f"unexpected key size: {len(key)} (expected: 32)"
     assert len(nonce) in (8, 12), f"unexpected nonce size: {len(nonce)} (expected: 8 or 12)"
     if HAS_CRYPTODOME:
@@ -439,9 +437,9 @@ def chacha20_encrypt(*, key: bytes, nonce: bytes, data: bytes) -> bytes:
 
 
 def chacha20_decrypt(*, key: bytes, nonce: bytes, data: bytes) -> bytes:
-    assert isinstance(key, (bytes, bytearray))
-    assert isinstance(nonce, (bytes, bytearray))
-    assert isinstance(data, (bytes, bytearray))
+    assert isinstance(key, bytes | bytearray)
+    assert isinstance(nonce, bytes | bytearray)
+    assert isinstance(data, bytes | bytearray)
     assert len(key) == 32, f"unexpected key size: {len(key)} (expected: 32)"
     assert len(nonce) in (8, 12), f"unexpected nonce size: {len(nonce)} (expected: 8 or 12)"
     if HAS_CRYPTODOME:

@@ -23,78 +23,74 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import sys
-import datetime
-import copy
 import argparse
-import json
 import ast
-import base64
-import operator
 import asyncio
+import base64
+import datetime
 import inspect
-from collections import defaultdict
-from functools import wraps, partial
-from itertools import repeat
-from decimal import Decimal, InvalidOperation
-from typing import Optional, TYPE_CHECKING, Dict, List
+import json
 import os
+import sys
+from collections import defaultdict
+from decimal import InvalidOperation
+from functools import wraps
+from itertools import repeat
+from typing import TYPE_CHECKING
 
-from . import util, ecc
+from . import (
+    GuiImportError,
+    bitcoin,
+    constants,
+    crypto,
+    descriptor,
+    ecc,
+    transaction,
+    util,
+)
+from .address_synchronizer import TX_HEIGHT_LOCAL
+from .bip32 import BIP32Node
+from .bitcoin import COIN, hash_160, is_address
+from .i18n import _
+from .invoices import PR_EXPIRED, PR_PAID, PR_UNPAID, Invoice
+from .lnpeer import channel_id_from_funding_tx
+from .lnutil import SENT, LnFeatures
+from .mnemonic import Mnemonic
+from .plugin import DeviceMgr, Plugins, run_hook
+from .simple_config import SimpleConfig
+from .synchronizer import Notifier
+from .transaction import (
+    PartialTransaction,
+    PartialTxInput,
+    PartialTxOutput,
+    Transaction,
+    TxOutpoint,
+    multisig_script,
+    tx_from_any,
+)
 from .util import (
     bfh,
     format_satoshis,
-    json_decode,
-    json_normalize,
     is_hash256_str,
     is_hex_str,
-    to_bytes,
+    json_decode,
+    json_normalize,
     parse_max_spend,
+    to_bytes,
     to_decimal,
 )
-from . import bitcoin
-from .bitcoin import is_address, hash_160, COIN
-from .bip32 import BIP32Node
-from .i18n import _
-from .transaction import (
-    Transaction,
-    multisig_script,
-    TxOutput,
-    PartialTransaction,
-    PartialTxOutput,
-    tx_from_any,
-    PartialTxInput,
-    TxOutpoint,
-)
-from . import transaction
-from .invoices import PR_PAID, PR_UNPAID, PR_UNKNOWN, PR_EXPIRED
-from .synchronizer import Notifier
+from .version import ELECTRUM_VERSION
 from .wallet import (
     Abstract_Wallet,
+    BumpFeeStrategy,
+    Deterministic_Wallet,
     create_new_wallet,
     restore_wallet_from_text,
-    Deterministic_Wallet,
-    BumpFeeStrategy,
 )
-from .address_synchronizer import TX_HEIGHT_LOCAL
-from .mnemonic import Mnemonic
-from .lnutil import SENT, RECEIVED
-from .lnutil import LnFeatures
-from .lnutil import extract_nodeid
-from .lnpeer import channel_id_from_funding_tx
-from .plugin import run_hook, DeviceMgr, Plugins
-from .version import ELECTRUM_VERSION
-from .simple_config import SimpleConfig
-from .invoices import Invoice
-from . import submarine_swaps
-from . import GuiImportError
-from . import crypto
-from . import constants
-from . import descriptor
 
 if TYPE_CHECKING:
-    from .network import Network
     from .daemon import Daemon
+    from .network import Network
 
 
 known_commands = {}  # type: Dict[str, Command]
@@ -398,7 +394,6 @@ class Commands:
     @command("")
     async def make_seed(self, nbits=None, language=None, seed_type=None):
         """Create a seed"""
-        from .mnemonic import Mnemonic
 
         s = Mnemonic(language).make_seed(seed_type=seed_type, num_bits=nbits)
         return s
@@ -1034,11 +1029,11 @@ class Commands:
     async def encrypt(self, pubkey, message) -> str:
         """Encrypt a message with a public key. Use quotes if the message contains whitespaces."""
         if not is_hex_str(pubkey):
-            raise Exception(f"pubkey must be a hex string instead of {repr(pubkey)}")
+            raise Exception(f"pubkey must be a hex string instead of {pubkey!r}")
         try:
             message = to_bytes(message)
         except TypeError:
-            raise Exception(f"message must be a string-like object instead of {repr(message)}")
+            raise Exception(f"message must be a string-like object instead of {message!r}")
         public_key = ecc.ECPubkey(bfh(pubkey))
         encrypted = public_key.encrypt_message(message)
         return encrypted.decode("utf-8")
@@ -1049,9 +1044,9 @@ class Commands:
     ) -> str:
         """Decrypt a message encrypted with a public key."""
         if not is_hex_str(pubkey):
-            raise Exception(f"pubkey must be a hex string instead of {repr(pubkey)}")
-        if not isinstance(encrypted, (str, bytes, bytearray)):
-            raise Exception(f"encrypted must be a string-like object instead of {repr(encrypted)}")
+            raise Exception(f"pubkey must be a hex string instead of {pubkey!r}")
+        if not isinstance(encrypted, str | bytes | bytearray):
+            raise Exception(f"encrypted must be a string-like object instead of {encrypted!r}")
         decrypted = wallet.decrypt_message(pubkey, encrypted, password)
         return decrypted.decode("utf-8")
 
@@ -1199,7 +1194,7 @@ class Commands:
         return True
 
     @command("n")
-    async def notify(self, address: str, URL: Optional[str]):
+    async def notify(self, address: str, URL: str | None):
         """Watch an address. Every time the address changes, a http POST is sent to the URL.
         Call with an empty URL to stop watching an address.
         """
@@ -1238,7 +1233,7 @@ class Commands:
         transactions.
         """
         if not is_hash256_str(txid):
-            raise Exception(f"{repr(txid)} is not a txid")
+            raise Exception(f"{txid!r} is not a txid")
         height = wallet.adb.get_tx_height(txid).height
         if height != TX_HEIGHT_LOCAL:
             raise Exception(
@@ -1254,7 +1249,7 @@ class Commands:
         The transaction must be related to the wallet.
         """
         if not is_hash256_str(txid):
-            raise Exception(f"{repr(txid)} is not a txid")
+            raise Exception(f"{txid!r} is not a txid")
         if not wallet.db.get_transaction(txid):
             raise Exception("Transaction not in wallet.")
         return {
@@ -1697,7 +1692,9 @@ command_options = {
 # don't use floats because of rounding errors
 from .transaction import convert_raw_tx_to_hex
 
-json_loads = lambda x: json.loads(x, parse_float=lambda x: str(to_decimal(x)))
+
+def json_loads(x):
+    return json.loads(x, parse_float=lambda x: str(to_decimal(x)))
 arg_types = {
     "num": int,
     "nbits": int,
@@ -1761,7 +1758,7 @@ argparse.ArgumentParser.set_default_subparser = set_default_subparser
 
 
 def subparser_call(self, parser, namespace, values, option_string=None):
-    from argparse import ArgumentError, SUPPRESS, _UNRECOGNIZED_ARGS_ATTR
+    from argparse import _UNRECOGNIZED_ARGS_ATTR, SUPPRESS, ArgumentError
 
     parser_name = values[0]
     arg_strings = values[1:]
@@ -1794,7 +1791,7 @@ def add_network_options(parser):
         dest=SimpleConfig.NETWORK_SERVERFINGERPRINT.key(),
         default=None,
         help="only allow connecting to servers with a matching SSL certificate SHA256 fingerprint. "
-        + "To calculate this yourself: '$ openssl x509 -noout -fingerprint -sha256 -inform pem -in mycertfile.crt'. Enter as 64 hex chars.",
+         "To calculate this yourself: '$ openssl x509 -noout -fingerprint -sha256 -inform pem -in mycertfile.crt'. Enter as 64 hex chars.",
     )
     parser.add_argument(
         "-1",
@@ -2004,7 +2001,7 @@ def get_parser():
     for cmdname in sorted(known_commands.keys()):
         cmd = known_commands[cmdname]
         p = subparsers.add_parser(cmdname, help=cmd.help, description=cmd.description)
-        for optname, default in zip(cmd.options, cmd.defaults):
+        for optname, default in zip(cmd.options, cmd.defaults, strict=False):
             if optname in ["wallet_path", "wallet"]:
                 add_wallet_option(p)
                 continue

@@ -23,17 +23,14 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import sys
 import ctypes
 import os
-from typing import List
+import sys
 from enum import IntEnum
 
 from ..logging import get_logger
-
 from . import MissingLib
 from .abstract_base import AbstractQrCodeReader, QrCodeResult
-
 
 _logger = get_logger(__name__)
 
@@ -49,7 +46,7 @@ else:
 try:
     try:
         LIBZBAR = ctypes.cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), "..", LIBNAME))
-    except OSError as e:
+    except OSError:
         LIBZBAR = ctypes.cdll.LoadLibrary(LIBNAME)
 
     LIBZBAR.zbar_image_create.restype = ctypes.c_void_p
@@ -169,7 +166,7 @@ class ZbarQrCodeReader(AbstractQrCodeReader):
         width: int,
         height: int,
         frame_id: int = -1,
-    ) -> List[QrCodeResult]:
+    ) -> list[QrCodeResult]:
         LIBZBAR.zbar_image_set_sequence(self.zbar_image, frame_id)
         LIBZBAR.zbar_image_set_size(self.zbar_image, width, height)
         LIBZBAR.zbar_image_set_format(self.zbar_image, FOURCC_Y800)
@@ -189,7 +186,7 @@ class ZbarQrCodeReader(AbstractQrCodeReader):
 
             symbol_loc = []
             symbol_loc_len = LIBZBAR.zbar_symbol_get_loc_size(symbol)
-            for i in range(0, symbol_loc_len):
+            for i in range(symbol_loc_len):
                 # Normalize the coordinates into 0..1 range by dividing by width / height
                 symbol_loc_x = LIBZBAR.zbar_symbol_get_loc_x(symbol, i)
                 symbol_loc_y = LIBZBAR.zbar_symbol_get_loc_y(symbol, i)

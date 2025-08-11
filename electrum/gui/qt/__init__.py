@@ -27,7 +27,8 @@ import os
 import signal
 import sys
 import threading
-from typing import Optional, TYPE_CHECKING, List, Sequence
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, List, Optional
 
 try:
     import PyQt5
@@ -40,10 +41,10 @@ except Exception as e:
         "you may try 'sudo apt-get install python3-pyqt5'"
     ) from e
 
-from PyQt5.QtGui import QGuiApplication
-from PyQt5.QtWidgets import QApplication, QSystemTrayIcon, QWidget, QMenu, QMessageBox
-from PyQt5.QtCore import QObject, pyqtSignal, QTimer, Qt
 import PyQt5.QtCore as QtCore
+from PyQt5.QtCore import QObject, Qt, QTimer, pyqtSignal
+from PyQt5.QtGui import QGuiApplication
+from PyQt5.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon, QWidget
 
 sys._GUI_QT_VERSION = 5  # used by gui/common_qt
 
@@ -54,41 +55,41 @@ try:
     from PyQt5.QtMultimedia import QCameraInfo
 
     del QCameraInfo
-except ImportError as e:
+except ImportError:
     pass  # failure is ok; it is an optional dependency.
 
+from electrum.gui import BaseElectrumGui
 from electrum.i18n import _, set_language
+from electrum.keystore import load_keystore
+from electrum.logging import Logger
 from electrum.plugin import run_hook
+from electrum.simple_config import SimpleConfig
+from electrum.storage import WalletStorage
 from electrum.util import (
+    BitcoinException,
+    InvalidPassword,
     UserCancelled,
+    WalletFileException,
+    get_new_wallet_name,
     profiler,
     send_exception_to_crash_reporter,
-    WalletFileException,
-    BitcoinException,
-    get_new_wallet_name,
-    InvalidPassword,
 )
-from electrum.wallet import Wallet, Abstract_Wallet
+from electrum.wallet import Abstract_Wallet, Wallet
 from electrum.wallet_db import (
     WalletDB,
     WalletRequiresSplit,
     WalletRequiresUpgrade,
     WalletUnfinished,
 )
-from electrum.logging import Logger
-from electrum.gui import BaseElectrumGui
-from electrum.simple_config import SimpleConfig
-from electrum.storage import WalletStorage
 from electrum.wizard import WizardViewState
-from electrum.keystore import load_keystore
 
-from .util import read_QIcon, ColorScheme, custom_message_box, MessageBoxMixin, WWLabel
+from .exception_window import Exception_Hook
+from .lightning_dialog import LightningDialog
 from .main_window import ElectrumWindow
 from .network_dialog import NetworkDialog
 from .stylesheet_patcher import patch_qt_stylesheet
-from .lightning_dialog import LightningDialog
+from .util import ColorScheme, MessageBoxMixin, WWLabel, custom_message_box, read_QIcon
 from .watchtower_dialog import WatchtowerDialog
-from .exception_window import Exception_Hook
 from .wizard.server_connect import QEServerConnectWizard
 from .wizard.wallet import QENewWalletWizard
 
@@ -100,7 +101,7 @@ if TYPE_CHECKING:
 class OpenFileEventFilter(QObject):
     def __init__(self, windows: Sequence[ElectrumWindow]):
         self.windows = windows
-        super(OpenFileEventFilter, self).__init__()
+        super().__init__()
 
     def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.FileOpen:
@@ -197,7 +198,7 @@ class ElectrumGui(BaseElectrumGui, Logger):
                 self.app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
             except BaseException as e:
                 use_dark_theme = False
-                self.logger.warning(f"Error setting dark theme: {repr(e)}")
+                self.logger.warning(f"Error setting dark theme: {e!r}")
         else:
             self.app.setStyleSheet(self._default_qtstylesheet)
         # Apply any necessary stylesheet patches
@@ -247,7 +248,7 @@ class ElectrumGui(BaseElectrumGui, Logger):
 
     def tray_activated(self, reason):
         if reason == QSystemTrayIcon.DoubleClick:
-            if all([w.is_hidden() for w in self.windows]):
+            if all(w.is_hidden() for w in self.windows):
                 for w in self.windows:
                     w.bring_to_top()
             else:
@@ -346,11 +347,11 @@ class ElectrumGui(BaseElectrumGui, Logger):
     def start_new_window(
         self,
         path,
-        uri: Optional[str],
+        uri: str | None,
         *,
         app_is_starting: bool = False,
         force_wizard: bool = False,
-    ) -> Optional[ElectrumWindow]:
+    ) -> ElectrumWindow | None:
         """Raises the window for the wallet if it is open.
         Otherwise, opens the wallet and creates a new window for it.
         Warning: the returned window might be for a completely different wallet
@@ -433,7 +434,7 @@ class ElectrumGui(BaseElectrumGui, Logger):
             window.send_tab.set_payment_identifier(uri)
         return window
 
-    def _start_wizard_to_select_or_create_wallet(self, path) -> Optional[Abstract_Wallet]:
+    def _start_wizard_to_select_or_create_wallet(self, path) -> Abstract_Wallet | None:
         wizard = QENewWalletWizard(self.config, self.app, self.plugins, self.daemon, path)
         result = wizard.exec()
         # TODO: use dialog.open() instead to avoid new event loop spawn?
@@ -473,7 +474,7 @@ class ElectrumGui(BaseElectrumGui, Logger):
                 action[1] == "accept_terms_of_use"
             ), "only support for resuming trustedcoin split setup"
             k1 = load_keystore(db, "x1")
-            if "password" in d and d["password"]:
+            if d.get("password"):
                 xprv = k1.get_master_private_key(d["password"])
             else:
                 xprv = db.get("x1")["xprv"]
@@ -537,7 +538,7 @@ class ElectrumGui(BaseElectrumGui, Logger):
             self.init_network()
         except UserCancelled:
             return
-        except Exception as e:
+        except Exception:
             self.logger.exception("")
             return
         # start wizard to select/create wallet

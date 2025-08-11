@@ -7,23 +7,20 @@ import base64
 
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
+    QDialog,
+    QHBoxLayout,
     QLabel,
     QProgressBar,
-    QHBoxLayout,
     QPushButton,
-    QDialog,
+    QVBoxLayout,
 )
 
-from electrum import version
-from electrum import constants
-from electrum import ecc
+from electrum import constants, ecc, version
+from electrum._vendor.distutils.version import StrictVersion
 from electrum.i18n import _
-from electrum.util import make_aiohttp_session
 from electrum.logging import Logger
 from electrum.network import Network
-from electrum._vendor.distutils.version import StrictVersion
+from electrum.util import make_aiohttp_session
 
 
 class UpdateCheck(QDialog, Logger):
@@ -55,7 +52,7 @@ class UpdateCheck(QDialog, Logger):
         self.content.addWidget(self.pb)
 
         versions = QHBoxLayout()
-        versions.addWidget(QLabel(_("Current version: {}".format(version.ELECTRUM_VERSION))))
+        versions.addWidget(QLabel(_(f"Current version: {version.ELECTRUM_VERSION}")))
         self.latest_version_label = QLabel(_("Latest version: {}".format(" ")))
         versions.addWidget(self.latest_version_label)
         self.content.addLayout(versions)
@@ -90,10 +87,10 @@ class UpdateCheck(QDialog, Logger):
     def update_view(self, latest_version=None):
         if latest_version:
             self.pb.hide()
-            self.latest_version_label.setText(_("Latest version: {}".format(latest_version)))
+            self.latest_version_label.setText(_(f"Latest version: {latest_version}"))
             if self.is_newer(latest_version):
                 self.heading_label.setText("<h2>" + _("There is a new update available") + "</h2>")
-                url = "<a href='{u}'>{u}</a>".format(u=UpdateCheck.download_url)
+                url = f"<a href='{UpdateCheck.download_url}'>{UpdateCheck.download_url}</a>"
                 self.detail_label.setText(
                     _("You can download the new version from {}.").format(url)
                 )
@@ -154,7 +151,7 @@ class UpdateCheckThread(QThread, Logger):
                 self.get_update_info(), self.network.asyncio_loop
             ).result()
         except Exception as e:
-            self.logger.info(f"got exception: '{repr(e)}'")
+            self.logger.info(f"got exception: '{e!r}'")
             self.failed.emit()
         else:
             self.checked.emit(update_info)

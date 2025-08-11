@@ -2,22 +2,23 @@ from datetime import datetime
 from decimal import Decimal
 
 from electrum import util
+from electrum.bip21 import InvalidBitcoinURI, parse_bip21_URI
 from electrum.util import (
-    format_satoshis,
-    format_fee_satoshis,
-    is_hash256_str,
     chunks,
-    is_ip_address,
-    list_enabled_bits,
+    format_fee_satoshis,
+    format_satoshis,
     format_satoshis_plain,
-    is_private_netaddress,
+    is_hash256_str,
     is_hex_str,
-    is_integer,
-    is_non_negative_integer,
     is_int_or_float,
+    is_integer,
+    is_ip_address,
     is_non_negative_int_or_float,
+    is_non_negative_integer,
+    is_private_netaddress,
+    list_enabled_bits,
 )
-from electrum.bip21 import parse_bip21_URI, InvalidBitcoinURI
+
 from . import ElectrumTestCase, as_testnet
 
 
@@ -377,7 +378,7 @@ class TestUtil(ElectrumTestCase):
         self.assertTrue(is_integer(-7))
 
         self.assertFalse(is_integer(Decimal("2.0")))
-        self.assertFalse(is_integer(Decimal(2.0)))
+        self.assertFalse(is_integer(Decimal("2.0")))
         self.assertFalse(is_integer(Decimal(2)))
         self.assertFalse(is_integer(0.72))
         self.assertFalse(is_integer(2.0))
@@ -395,7 +396,7 @@ class TestUtil(ElectrumTestCase):
         self.assertTrue(is_non_negative_integer(0))
 
         self.assertFalse(is_non_negative_integer(Decimal("2.0")))
-        self.assertFalse(is_non_negative_integer(Decimal(2.0)))
+        self.assertFalse(is_non_negative_integer(Decimal("2.0")))
         self.assertFalse(is_non_negative_integer(Decimal(2)))
         self.assertFalse(is_non_negative_integer(0.72))
         self.assertFalse(is_non_negative_integer(2.0))
@@ -422,7 +423,7 @@ class TestUtil(ElectrumTestCase):
         self.assertTrue(is_int_or_float(-2.0))
 
         self.assertFalse(is_int_or_float(Decimal("2.0")))
-        self.assertFalse(is_int_or_float(Decimal(2.0)))
+        self.assertFalse(is_int_or_float(Decimal("2.0")))
         self.assertFalse(is_int_or_float(Decimal(2)))
         self.assertFalse(is_int_or_float("09a4"))
         self.assertFalse(
@@ -443,7 +444,7 @@ class TestUtil(ElectrumTestCase):
         self.assertFalse(is_non_negative_int_or_float(-7))
         self.assertFalse(is_non_negative_int_or_float(-2.0))
         self.assertFalse(is_non_negative_int_or_float(Decimal("2.0")))
-        self.assertFalse(is_non_negative_int_or_float(Decimal(2.0)))
+        self.assertFalse(is_non_negative_int_or_float(Decimal("2.0")))
         self.assertFalse(is_non_negative_int_or_float(Decimal(2)))
         self.assertFalse(is_non_negative_int_or_float("09a4"))
         self.assertFalse(

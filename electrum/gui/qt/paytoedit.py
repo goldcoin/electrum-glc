@@ -24,18 +24,17 @@
 # SOFTWARE.
 
 from functools import partial
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QTimer, QSize
-from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5.QtGui import QFontMetrics, QFont
-from PyQt5.QtWidgets import QApplication, QTextEdit, QWidget, QLineEdit, QStackedLayout, QSizePolicy
+from PyQt5.QtCore import QSize, Qt, QTimer, pyqtSignal
+from PyQt5.QtGui import QFont, QFontMetrics
+from PyQt5.QtWidgets import QLineEdit, QStackedLayout, QTextEdit, QWidget
 
-from electrum.payment_identifier import PaymentIdentifier
 from electrum.logging import Logger
+from electrum.payment_identifier import PaymentIdentifier
 
 from . import util
-from .util import MONOSPACE_FONT, GenericInputHandler, editor_contextMenuEvent, ColorScheme
+from .util import MONOSPACE_FONT, ColorScheme, GenericInputHandler, editor_contextMenuEvent
 
 if TYPE_CHECKING:
     from .send_tab import SendTab

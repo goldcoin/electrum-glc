@@ -1,22 +1,21 @@
-# -*- coding: utf-8 -*-
 
 from decimal import Decimal
 from typing import Union
 
-from PyQt5.QtCore import pyqtSignal, Qt, QSize
-from PyQt5.QtGui import QPalette, QPainter
-from PyQt5.QtWidgets import QLineEdit, QStyle, QStyleOptionFrame, QSizePolicy
+from PyQt5.QtCore import QSize, Qt, pyqtSignal
+from PyQt5.QtGui import QPainter
+from PyQt5.QtWidgets import QLineEdit, QSizePolicy, QStyle, QStyleOptionFrame
 
-from .util import char_width_in_lineedit, ColorScheme
-
-from electrum.util import (
-    format_satoshis_plain,
-    decimal_point_to_base_unit_name,
-    FEERATE_PRECISION,
-    quantize_feerate,
-    DECIMAL_POINT,
-)
 from electrum.bitcoin import COIN, TOTAL_COIN_SUPPLY_LIMIT_IN_BTC
+from electrum.util import (
+    DECIMAL_POINT,
+    FEERATE_PRECISION,
+    decimal_point_to_base_unit_name,
+    format_satoshis_plain,
+    quantize_feerate,
+)
+
+from .util import ColorScheme, char_width_in_lineedit
 
 _NOT_GIVEN = object()  # sentinel value
 

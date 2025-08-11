@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject, QRegularExpression
+from PyQt6.QtCore import QObject, QRegularExpression, pyqtProperty, pyqtSignal, pyqtSlot
 
 from electrum.bitcoin import COIN
 from electrum.exchange_rate import FxThread
@@ -125,7 +125,7 @@ class QEFX(QObject, QtEventListener):
             satoshis = satoshis.msatsInt / 1000 if satoshis.msatsInt != 0 else satoshis.satsInt
         else:
             try:
-                sd = Decimal(satoshis)
+                Decimal(satoshis)
             except Exception:
                 return ""
         if plain:
@@ -144,7 +144,7 @@ class QEFX(QObject, QtEventListener):
             satoshis = satoshis.msatsInt / 1000 if satoshis.msatsInt != 0 else satoshis.satsInt
         else:
             try:
-                sd = Decimal(satoshis)
+                Decimal(satoshis)
             except Exception:
                 return ""
 

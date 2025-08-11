@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 # these are ~duplicated from run_electrum:
 is_bundle = getattr(sys, "frozen", False)
@@ -17,22 +17,19 @@ class GuiImportError(ImportError):
     pass
 
 
-from .version import ELECTRUM_VERSION
-from .util import format_satoshis
-from .wallet import Wallet
-from .storage import WalletStorage
+from . import bitcoin, daemon, transaction
 from .coinchooser import COIN_CHOOSERS
-from .network import Network, pick_random_server
-from .interface import Interface
-from .simple_config import SimpleConfig
-from . import bitcoin
-from . import transaction
-from . import daemon
-from .transaction import Transaction
-from .plugin import BasePlugin
 from .commands import Commands, known_commands
+from .interface import Interface
 from .logging import get_logger
-
+from .network import Network, pick_random_server
+from .plugin import BasePlugin
+from .simple_config import SimpleConfig
+from .storage import WalletStorage
+from .transaction import Transaction
+from .util import format_satoshis
+from .version import ELECTRUM_VERSION
+from .wallet import Wallet
 
 __version__ = ELECTRUM_VERSION
 

@@ -23,33 +23,35 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from abc import abstractmethod, ABC
-from typing import TYPE_CHECKING, Sequence, Optional, Type, Iterable, Any
+from abc import ABC, abstractmethod
+from collections.abc import Iterable, Sequence
+from typing import TYPE_CHECKING, Any, Optional
 
+from electrum.bip32 import BIP32Node
+from electrum.bitcoin import is_address, opcodes
+from electrum.i18n import _
+from electrum.keystore import Hardware_KeyStore, Xpub
 from electrum.plugin import (
     BasePlugin,
-    hook,
     Device,
     DeviceMgr,
     assert_runs_in_hwd_thread,
+    hook,
     runs_in_hwd_thread,
 )
-from electrum.i18n import _
-from electrum.bitcoin import is_address, opcodes
-from electrum.util import versiontuple, UserFacingException
-from electrum.transaction import TxOutput, PartialTransaction
-from electrum.bip32 import BIP32Node
 from electrum.storage import get_derivation_used_for_hw_device_encryption
-from electrum.keystore import Xpub, Hardware_KeyStore
+from electrum.transaction import PartialTransaction, TxOutput
+from electrum.util import UserFacingException, versiontuple
 
 if TYPE_CHECKING:
     import threading
+
     from electrum.plugin import DeviceInfo
     from electrum.wallet import Abstract_Wallet
 
 
 class HW_PluginBase(BasePlugin, ABC):
-    keystore_class: Type["Hardware_KeyStore"]
+    keystore_class: type["Hardware_KeyStore"]
     libraries_available: bool
     SUPPORTED_XTYPES = ()
 
@@ -103,7 +105,7 @@ class HW_PluginBase(BasePlugin, ABC):
         keystore: "Hardware_KeyStore",
         force_pair: bool = True,
         *,
-        devices: Sequence["Device"] = None,
+        devices: Sequence["Device"] | None = None,
         allow_user_interaction: bool = True,
     ) -> Optional["HardwareClientBase"]:
         devmgr = self.device_manager()
@@ -169,11 +171,7 @@ class HW_PluginBase(BasePlugin, ABC):
             library_version = e.library_version
             self.libraries_available_message = _(
                 "Library version for '{}' is incompatible."
-            ).format(self.name) + "\nInstalled: {}, Needed: {} <= x < {}".format(
-                library_version,
-                version_str(self.minimum_library),
-                version_str(self.maximum_library),
-            )
+            ).format(self.name) + f"\nInstalled: {library_version}, Needed: {version_str(self.minimum_library)} <= x < {version_str(self.maximum_library)}"
             self.logger.warning(self.libraries_available_message)
             return False
 
@@ -211,7 +209,6 @@ class HW_PluginBase(BasePlugin, ABC):
     @abstractmethod
     def wizard_entry_for_device(self, device_info: "DeviceInfo", *, new_wallet: bool) -> str:
         """Return view name for device"""
-        pass
 
 
 class HardwareClientBase(ABC):
@@ -238,9 +235,8 @@ class HardwareClientBase(ABC):
     @abstractmethod
     def is_initialized(self) -> bool:
         """True if initialized, False if wiped."""
-        pass
 
-    def label(self) -> Optional[str]:
+    def label(self) -> str | None:
         """The name given by the user to the device.
 
         Note: labels are shown to the user to help distinguish their devices,
@@ -251,7 +247,7 @@ class HardwareClientBase(ABC):
         # it is supposed to work), make sure the return value is in electrum.plugin.PLACEHOLDER_HW_CLIENT_LABELS
         return " "
 
-    def get_soft_device_id(self) -> Optional[str]:
+    def get_soft_device_id(self) -> str | None:
         """An id-like string that is used to distinguish devices programmatically.
         This is a long term id for the device, that does not change between reconnects.
         This method should not prompt the user, i.e. no user interaction, as it is used
@@ -285,7 +281,7 @@ class HardwareClientBase(ABC):
         password = Xpub.get_pubkey_from_xpub(xpub, ()).hex()
         return password
 
-    def device_model_name(self) -> Optional[str]:
+    def device_model_name(self) -> str | None:
         """Return the name of the model of this device, which might be displayed in the UI.
         E.g. for Trezor, "Trezor One" or "Trezor T".
         If this method is not defined for a plugin, the plugin name is used as default
@@ -312,7 +308,7 @@ class HardwareHandlerBase:
     def update_status(self, paired: bool) -> None:
         pass
 
-    def query_choice(self, msg: str, labels: Sequence[str]) -> Optional[int]:
+    def query_choice(self, msg: str, labels: Sequence[str]) -> int | None:
         raise NotImplementedError()
 
     def yes_no_question(self, msg: str) -> bool:
@@ -330,7 +326,7 @@ class HardwareHandlerBase:
     def get_word(self, msg: str) -> str:
         raise NotImplementedError()
 
-    def get_passphrase(self, msg: str, confirm: bool) -> Optional[str]:
+    def get_passphrase(self, msg: str, confirm: bool) -> str | None:
         raise NotImplementedError()
 
     def get_pin(self, msg: str, *, show_strength: bool = True) -> str:
@@ -338,7 +334,7 @@ class HardwareHandlerBase:
 
 
 def is_any_tx_output_on_change_branch(tx: PartialTransaction) -> bool:
-    return any([txout.is_change for txout in tx.outputs()])
+    return any(txout.is_change for txout in tx.outputs())
 
 
 def trezor_validate_op_return_output_and_get_data(output: TxOutput) -> bytes:
@@ -351,7 +347,7 @@ def trezor_validate_op_return_output_and_get_data(output: TxOutput) -> bytes:
     return script[2:]
 
 
-def validate_op_return_output(output: TxOutput, *, max_size: int = None) -> None:
+def validate_op_return_output(output: TxOutput, *, max_size: int | None = None) -> None:
     script = output.scriptpubkey
     if script[0] != opcodes.OP_RETURN:
         raise UserFacingException(_("Only OP_RETURN scripts are supported."))
@@ -359,8 +355,8 @@ def validate_op_return_output(output: TxOutput, *, max_size: int = None) -> None
         raise UserFacingException(
             _(
                 "OP_RETURN payload too large."
-                + "\n"
-                + f"(scriptpubkey size {len(script)} > {max_size})"
+                 "\n"
+                 f"(scriptpubkey size {len(script)} > {max_size})"
             )
         )
     if output.value != 0:
@@ -404,4 +400,3 @@ class OutdatedHwFirmwareException(UserFacingException):
 class OperationCancelled(UserFacingException):
     """Emitted when an operation is cancelled by user on a HW device"""
 
-    pass

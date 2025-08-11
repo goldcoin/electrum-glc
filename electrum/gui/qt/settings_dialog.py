@@ -24,36 +24,33 @@
 # SOFTWARE.
 
 import ast
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
-    QComboBox,
-    QTabWidget,
-    QDialog,
-    QSpinBox,
-    QFileDialog,
     QCheckBox,
-    QLabel,
-    QVBoxLayout,
+    QComboBox,
+    QDialog,
     QGridLayout,
-    QLineEdit,
-    QPushButton,
-    QWidget,
     QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QSpinBox,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
 )
 
+from electrum import util
+from electrum.gui import messages
 from electrum.i18n import _, languages
-from electrum import util, paymentrequest
 from electrum.util import base_units_list, event_listener
 
-from electrum.gui import messages
-
-from .util import ColorScheme, WindowModalDialog, HelpLabel, Buttons, CloseButton, QtEventListener
-
+from .util import Buttons, CloseButton, ColorScheme, HelpLabel, QtEventListener
 
 if TYPE_CHECKING:
-    from electrum.simple_config import SimpleConfig, ConfigVarWithConfig
+    from electrum.simple_config import ConfigVarWithConfig, SimpleConfig
+
     from .main_window import ElectrumWindow
 
 
@@ -350,7 +347,7 @@ class SettingsDialog(QDialog, QtEventListener):
             h = self.config.FX_HISTORY_RATES
             currencies = sorted(self.fx.get_currencies(h))
             ccy_combo.clear()
-            ccy_combo.addItems([_("None")] + currencies)
+            ccy_combo.addItems([_("None"), *currencies])
             if self.fx.is_enabled():
                 ccy_combo.setCurrentIndex(ccy_combo.findText(self.fx.get_currency()))
 

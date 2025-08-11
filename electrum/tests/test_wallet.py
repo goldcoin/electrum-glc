@@ -1,34 +1,27 @@
-import shutil
-import tempfile
-import sys
-import os
 import json
-from decimal import Decimal
+import os
+import sys
 import time
+from decimal import Decimal
 from io import StringIO
-import asyncio
 
+from electrum.bitcoin import COIN
+from electrum.exchange_rate import ExchangeBase, FxThread
+from electrum.simple_config import SimpleConfig
 from electrum.storage import WalletStorage
-from electrum.wallet_db import FINAL_SEED_VERSION
+from electrum.util import InvalidPassword, TxMinedInfo
 from electrum.wallet import (
     Abstract_Wallet,
-    Standard_Wallet,
+    Wallet,
     create_new_wallet,
     restore_wallet_from_text,
-    Imported_Wallet,
-    Wallet,
 )
-from electrum.exchange_rate import ExchangeBase, FxThread
-from electrum.util import TxMinedInfo, InvalidPassword
-from electrum.bitcoin import COIN
-from electrum.wallet_db import WalletDB, JsonDB
-from electrum.simple_config import SimpleConfig
-from electrum import util
+from electrum.wallet_db import FINAL_SEED_VERSION, JsonDB, WalletDB
 
 from . import ElectrumTestCase
 
 
-class FakeSynchronizer(object):
+class FakeSynchronizer:
 
     def __init__(self, db):
         self.db = db
@@ -41,7 +34,7 @@ class FakeSynchronizer(object):
 class WalletTestCase(ElectrumTestCase):
 
     def setUp(self):
-        super(WalletTestCase, self).setUp()
+        super().setUp()
         self.config = SimpleConfig({"electrum_path": self.electrum_path})
 
         self.wallet_path = os.path.join(self.electrum_path, "somewallet")
@@ -51,7 +44,7 @@ class WalletTestCase(ElectrumTestCase):
         sys.stdout = self._stdout_buffer
 
     def tearDown(self):
-        super(WalletTestCase, self).tearDown()
+        super().tearDown()
         # Restore the "real" stdout
         sys.stdout = self._saved_stdout
 
@@ -81,7 +74,7 @@ class TestWalletStorage(WalletTestCase):
             db.put(key, value)
         db.write()
 
-        with open(self.wallet_path, "r") as f:
+        with open(self.wallet_path) as f:
             contents = f.read()
         d = json.loads(contents)
         for key, value in some_dict.items():

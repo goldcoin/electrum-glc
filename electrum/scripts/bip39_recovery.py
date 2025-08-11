@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
-import sys
 import asyncio
+import sys
 
-from electrum.util import json_encode, print_msg, create_and_start_event_loop, log_exceptions
-from electrum.simple_config import SimpleConfig
-from electrum.network import Network
-from electrum.keystore import bip39_to_seed
 from electrum.bip32 import BIP32Node
 from electrum.bip39_recovery import account_discovery
+from electrum.keystore import bip39_to_seed
+from electrum.network import Network
+from electrum.simple_config import SimpleConfig
+from electrum.util import create_and_start_event_loop, json_encode, log_exceptions, print_msg
 
 try:
     mnemonic = sys.argv[1]

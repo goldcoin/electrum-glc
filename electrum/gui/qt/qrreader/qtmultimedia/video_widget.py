@@ -23,8 +23,8 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from PyQt5.QtGui import QPainter, QPaintEvent, QPixmap
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtGui import QPixmap, QPainter, QPaintEvent
 
 
 class QrReaderVideoWidget(QWidget):

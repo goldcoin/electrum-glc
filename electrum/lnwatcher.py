@@ -2,33 +2,30 @@
 # Distributed under the MIT software license, see the accompanying
 # file LICENCE or http://www.opensource.org/licenses/mit-license.php
 
-from typing import NamedTuple, Iterable, TYPE_CHECKING
-import os
 import asyncio
+import os
 from enum import IntEnum, auto
-from typing import NamedTuple, Dict
+from typing import TYPE_CHECKING, NamedTuple
 
 from . import util
-from .sql_db import SqlDB, sql
-from .wallet_db import WalletDB
-from .util import bfh, log_exceptions, ignore_exceptions, TxMinedInfo, random_shuffled_copy
 from .address_synchronizer import (
-    AddressSynchronizer,
+    TX_HEIGHT_FUTURE,
     TX_HEIGHT_LOCAL,
     TX_HEIGHT_UNCONF_PARENT,
     TX_HEIGHT_UNCONFIRMED,
-    TX_HEIGHT_FUTURE,
+    AddressSynchronizer,
 )
-from .transaction import Transaction, TxOutpoint
-from .transaction import match_script_against_template
-from .lnutil import WITNESS_TEMPLATE_RECEIVED_HTLC, WITNESS_TEMPLATE_OFFERED_HTLC
+from .lnutil import WITNESS_TEMPLATE_OFFERED_HTLC, WITNESS_TEMPLATE_RECEIVED_HTLC
 from .logging import Logger
-
+from .sql_db import SqlDB, sql
+from .transaction import Transaction, TxOutpoint, match_script_against_template
+from .util import TxMinedInfo, bfh, ignore_exceptions, log_exceptions, random_shuffled_copy
+from .wallet_db import WalletDB
 
 if TYPE_CHECKING:
-    from .network import Network
     from .lnsweep import SweepInfo
     from .lnworker import LNWallet
+    from .network import Network
 
 
 class ListenerItem(NamedTuple):
@@ -87,7 +84,7 @@ class SweepStore(SqlDB):
     def list_sweep_tx(self):
         c = self.conn.cursor()
         c.execute("SELECT funding_outpoint FROM sweep_txs")
-        return set([r[0] for r in c.fetchall()])
+        return {r[0] for r in c.fetchall()}
 
     @sql
     def add_sweep_tx(self, funding_outpoint, ctn, prevout, raw_tx):
@@ -177,7 +174,8 @@ class LNWatcher(Logger, EventListener):
     def add_channel(self, outpoint: str, address: str) -> None:
         assert isinstance(outpoint, str)
         assert isinstance(address, str)
-        cb = lambda: self.check_onchain_situation(address, outpoint)
+        def cb():
+            return self.check_onchain_situation(address, outpoint)
         self.add_callback(address, cb)
 
     async def unwatch_channel(self, address, funding_outpoint):
@@ -220,7 +218,7 @@ class LNWatcher(Logger, EventListener):
         if not self.adb.synchronizer:
             self.logger.info("synchronizer not set yet")
             return
-        for address, callback in list(self.callbacks.items()):
+        for _address, callback in list(self.callbacks.items()):
             await callback()
 
     async def check_onchain_situation(self, address, funding_outpoint):
@@ -399,7 +397,7 @@ class WatchTower(LNWatcher):
             txid = await self.network.broadcast_transaction(tx)
         except Exception as e:
             self.logger.info(
-                f"broadcast failure: txid={tx.txid()}, funding_outpoint={funding_outpoint}: {repr(e)}"
+                f"broadcast failure: txid={tx.txid()}, funding_outpoint={funding_outpoint}: {e!r}"
             )
         else:
             self.logger.info(
@@ -483,7 +481,7 @@ class LNWalletWatcher(LNWatcher):
         chan = self.lnworker.channel_by_txo(funding_outpoint)
         if not chan:
             return False
-        chan_id_for_log = chan.get_id_for_log()
+        chan.get_id_for_log()
         # detect who closed and set sweep_info
         sweep_info_dict = chan.sweep_ctx(closing_tx)
         keep_watching = False if sweep_info_dict else not self.is_deeply_mined(closing_tx.txid())
@@ -583,7 +581,7 @@ class LNWalletWatcher(LNWatcher):
                     tx_was_added = self.adb.add_transaction(new_tx, is_new=(old_tx is None))
                 except Exception as e:
                     self.logger.info(
-                        f"could not add future tx: {name}. prevout: {prevout} {str(e)}"
+                        f"could not add future tx: {name}. prevout: {prevout} {e!s}"
                     )
                     tx_was_added = False
                 if tx_was_added:

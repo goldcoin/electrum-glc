@@ -25,12 +25,9 @@
 
 import hashlib
 import time
-from datetime import datetime
 
-from . import util
-from .util import profiler, timestamp_to_datetime
 from .logging import get_logger
-
+from .util import profiler, timestamp_to_datetime
 
 _logger = get_logger(__name__)
 
@@ -205,8 +202,8 @@ class ASN1_Node(bytes):
             raise TypeError("Can only open constructed types.", hex(self[ixs]))
         return self.get_node(ixf)
 
-    def is_child_of(node1, node2):
-        ixs, ixf, ixl = node1
+    def is_child_of(self, node2):
+        ixs, ixf, ixl = self
         jxs, jxf, jxl = node2
         return ((ixf <= jxs) and (jxl <= ixl)) or ((jxf <= ixs) and (ixl <= jxl))
 
@@ -236,7 +233,7 @@ class ASN1_Node(bytes):
         return nodes
 
     def get_sequence(self):
-        return list(map(lambda j: self.get_value(j), self.get_children(self.root())))
+        return [self.get_value(j) for j in self.get_children(self.root())]
 
     def get_dict(self, node):
         p = {}
@@ -264,7 +261,7 @@ class ASN1_Node(bytes):
             )
 
 
-class X509(object):
+class X509:
     def __init__(self, b):
 
         self.bytes = bytearray(b)
@@ -375,7 +372,7 @@ class X509(object):
         now = time.gmtime()
         if self.notBefore > now:
             raise CertificateError(
-                "Certificate has not entered its valid date range. (%s)" % self.get_common_name()
+                f"Certificate has not entered its valid date range. ({self.get_common_name()})"
             )
         if self.notAfter <= now:
             dt = timestamp_to_datetime(time.mktime(self.notAfter), utc=True)
@@ -394,7 +391,7 @@ def load_certificates(ca_path):
     ca_list = {}
     ca_keyID = {}
     # ca_path = '/tmp/tmp.txt'
-    with open(ca_path, "r", encoding="utf-8") as f:
+    with open(ca_path, encoding="utf-8") as f:
         s = f.read()
     bList = pem.dePemList(s, "CERTIFICATE")
     for b in bList:

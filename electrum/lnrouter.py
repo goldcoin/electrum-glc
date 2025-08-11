@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Electrum - lightweight Bitcoin client
 # Copyright (C) 2018 The Electrum developers
@@ -24,24 +23,26 @@
 # SOFTWARE.
 
 import queue
-from collections import defaultdict
-from typing import Sequence, Tuple, Optional, Dict, TYPE_CHECKING, Set
-import time
 import threading
-from threading import RLock
-import attr
+import time
+from collections import defaultdict
+from collections.abc import Sequence
 from math import inf
+from threading import RLock
+from typing import TYPE_CHECKING
 
-from .util import profiler, with_lock
-from .logging import Logger
+import attr
+
+from .channel_db import ChannelDB, NodeInfo, Policy
 from .lnutil import (
-    NUM_MAX_EDGES_IN_PAYMENT_PATH,
-    ShortChannelID,
-    LnFeatures,
     NBLOCK_CLTV_DELTA_TOO_FAR_INTO_FUTURE,
+    NUM_MAX_EDGES_IN_PAYMENT_PATH,
+    LnFeatures,
     PaymentFeeBudget,
+    ShortChannelID,
 )
-from .channel_db import ChannelDB, Policy, NodeInfo
+from .logging import Logger
+from .util import profiler, with_lock
 
 if TYPE_CHECKING:
     from .lnchannel import Channel
@@ -107,7 +108,7 @@ class RouteEdge(PathEdge):
         short_channel_id: bytes,
         start_node: bytes,
         end_node: bytes,
-        node_info: Optional[NodeInfo],  # for end_node
+        node_info: NodeInfo | None,  # for end_node
     ) -> "RouteEdge":
         assert isinstance(short_channel_id, bytes)
         assert type(start_node) is bytes
@@ -338,7 +339,7 @@ class LiquidityHintMgr:
     # TODO: hints based on node pairs only (shadow channels, non-strict forwarding)?
     def __init__(self):
         self.lock = RLock()
-        self._liquidity_hints: Dict[ShortChannelID, LiquidityHint] = {}
+        self._liquidity_hints: dict[ShortChannelID, LiquidityHint] = {}
 
     @with_lock
     def get_hint(self, channel_id: ShortChannelID) -> LiquidityHint:
@@ -416,7 +417,7 @@ class LiquidityHintMgr:
 
     @with_lock
     def reset_liquidity_hints(self):
-        for k, v in self._liquidity_hints.items():
+        for _k, v in self._liquidity_hints.items():
             v.hint_timestamp = 0
 
     def __repr__(self):
@@ -433,7 +434,7 @@ class LNPathFinder(Logger):
         Logger.__init__(self)
         self.channel_db = channel_db
         self.liquidity_hints = LiquidityHintMgr()
-        self._edge_blacklist = dict()  # type: Dict[ShortChannelID, int]  # scid -> expiration
+        self._edge_blacklist = {}  # type: Dict[ShortChannelID, int]  # scid -> expiration
         self._blacklist_lock = threading.Lock()
 
     def _is_edge_blacklisted(self, short_channel_id: ShortChannelID, *, now: int) -> bool:
@@ -449,7 +450,7 @@ class LNPathFinder(Logger):
         self,
         short_channel_id: ShortChannelID,
         *,
-        now: int = None,
+        now: int | None = None,
         duration: int = 3600,  # seconds
     ) -> None:
         if now is None:
@@ -460,7 +461,7 @@ class LNPathFinder(Logger):
 
     def clear_blacklist(self):
         with self._blacklist_lock:
-            self._edge_blacklist = dict()
+            self._edge_blacklist = {}
 
     def update_liquidity_hints(
         self, route: LNPaymentRoute, amount_msat: int, failing_channel: ShortChannelID = None
@@ -507,10 +508,10 @@ class LNPathFinder(Logger):
         payment_amt_msat: int,
         ignore_costs=False,
         is_mine=False,
-        my_channels: Dict[ShortChannelID, "Channel"] = None,
-        private_route_edges: Dict[ShortChannelID, RouteEdge] = None,
+        my_channels: dict[ShortChannelID, "Channel"] | None = None,
+        private_route_edges: dict[ShortChannelID, RouteEdge] | None = None,
         now: int,  # unix ts
-    ) -> Tuple[float, int]:
+    ) -> tuple[float, int]:
         """Heuristic cost (distance metric) of going through a channel.
         Returns (heuristic_cost, fee_for_edge_msat).
         """
@@ -604,9 +605,9 @@ class LNPathFinder(Logger):
         nodeA: bytes,
         nodeB: bytes,
         invoice_amount_msat: int,
-        my_sending_channels: Dict[ShortChannelID, "Channel"] = None,
-        private_route_edges: Dict[ShortChannelID, RouteEdge] = None,
-    ) -> Dict[bytes, PathEdge]:
+        my_sending_channels: dict[ShortChannelID, "Channel"] | None = None,
+        private_route_edges: dict[ShortChannelID, RouteEdge] | None = None,
+    ) -> dict[bytes, PathEdge]:
         # note: we don't lock self.channel_db, so while the path finding runs,
         #       the underlying graph could potentially change... (not good but maybe ~OK?)
 
@@ -709,9 +710,9 @@ class LNPathFinder(Logger):
         nodeA: bytes,
         nodeB: bytes,
         invoice_amount_msat: int,
-        my_sending_channels: Dict[ShortChannelID, "Channel"] = None,
-        private_route_edges: Dict[ShortChannelID, RouteEdge] = None,
-    ) -> Optional[LNPaymentPath]:
+        my_sending_channels: dict[ShortChannelID, "Channel"] | None = None,
+        private_route_edges: dict[ShortChannelID, RouteEdge] | None = None,
+    ) -> LNPaymentPath | None:
         """Return a path from nodeA to nodeB."""
         assert type(nodeA) is bytes
         assert type(nodeB) is bytes
@@ -742,10 +743,10 @@ class LNPathFinder(Logger):
 
     def create_route_from_path(
         self,
-        path: Optional[LNPaymentPath],
+        path: LNPaymentPath | None,
         *,
-        my_channels: Dict[ShortChannelID, "Channel"] = None,
-        private_route_edges: Dict[ShortChannelID, RouteEdge] = None,
+        my_channels: dict[ShortChannelID, "Channel"] | None = None,
+        private_route_edges: dict[ShortChannelID, RouteEdge] | None = None,
     ) -> LNPaymentRoute:
         if path is None:
             raise Exception("cannot create route from None path")
@@ -792,9 +793,9 @@ class LNPathFinder(Logger):
         nodeB: bytes,
         invoice_amount_msat: int,
         path=None,
-        my_sending_channels: Dict[ShortChannelID, "Channel"] = None,
-        private_route_edges: Dict[ShortChannelID, RouteEdge] = None,
-    ) -> Optional[LNPaymentRoute]:
+        my_sending_channels: dict[ShortChannelID, "Channel"] | None = None,
+        private_route_edges: dict[ShortChannelID, RouteEdge] | None = None,
+    ) -> LNPaymentRoute | None:
         route = None
         if not path:
             path = self.find_path_for_payment(

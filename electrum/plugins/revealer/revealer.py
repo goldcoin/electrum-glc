@@ -1,10 +1,10 @@
-import random
 import os
+import random
 from hashlib import sha256
-from typing import NamedTuple, Optional, Dict, Tuple
+from typing import NamedTuple
 
 from electrum.plugin import BasePlugin
-from electrum.util import to_bytes, bfh
+from electrum.util import bfh, to_bytes
 
 from .hmac_drbg import DRBG
 
@@ -42,7 +42,7 @@ class RevealerPlugin(BasePlugin):
         return hash[-3:].upper()
 
     @classmethod
-    def get_versioned_seed_from_user_input(cls, txt: str) -> Optional[VersionedSeed]:
+    def get_versioned_seed_from_user_input(cls, txt: str) -> VersionedSeed | None:
         if len(txt) < 34:
             return None
         try:
@@ -60,7 +60,7 @@ class RevealerPlugin(BasePlugin):
         )
 
     @classmethod
-    def get_noise_map(cls, versioned_seed: VersionedSeed) -> Dict[Tuple[int, int], int]:
+    def get_noise_map(cls, versioned_seed: VersionedSeed) -> dict[tuple[int, int], int]:
         """Returns a map from (x,y) coordinate to pixel value 0/1, to be used as rawnoise."""
         w, h = cls.SIZE
         version = versioned_seed.version
@@ -100,6 +100,6 @@ class RevealerPlugin(BasePlugin):
 
 
 if __name__ == "__main__":
-    for i in range(10**4):
+    for _i in range(10**4):
         vs = RevealerPlugin.gen_random_versioned_seed()
         nm = RevealerPlugin.get_noise_map(vs)

@@ -1,12 +1,17 @@
+from collections.abc import Callable
 from functools import partial
-from typing import Callable
 
 from electrum.i18n import _
 from electrum.plugin import run_hook
 from electrum.simple_config import SimpleConfig
 
-from .util import ButtonsTextEdit, MessageBoxMixin, ColorScheme, read_QIcon
-from .util import get_iconname_camera, get_iconname_qrcode
+from .util import (
+    ButtonsTextEdit,
+    MessageBoxMixin,
+    get_iconname_camera,
+    get_iconname_qrcode,
+    read_QIcon,
+)
 
 
 class ShowQRTextEdit(ButtonsTextEdit):
@@ -31,7 +36,7 @@ class ScanQRTextEdit(ButtonsTextEdit, MessageBoxMixin):
         allow_multi: bool = False,
         *,
         config: SimpleConfig,
-        setText: Callable[[str], None] = None,
+        setText: Callable[[str], None] | None = None,
         is_payto=False,
     ):
         ButtonsTextEdit.__init__(self, text)

@@ -23,31 +23,28 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import TYPE_CHECKING
 import copy
+from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt, QUrl
-from PyQt5.QtGui import QTextCharFormat, QFont
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QTextBrowser
+from PyQt5.QtGui import QFont, QTextCharFormat
+from PyQt5.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout
 
 from electrum.i18n import _
 
+from .transaction_dialog import QTextBrowserWithDefaultSize, TxOutputColoring
 from .util import (
-    WindowModalDialog,
-    ButtonsLineEdit,
-    ShowQRLineEdit,
-    ColorScheme,
+    MONOSPACE_FONT,
     Buttons,
     CloseButton,
-    MONOSPACE_FONT,
+    ColorScheme,
+    WindowModalDialog,
     WWLabel,
 )
-from .history_list import HistoryList, HistoryModel
-from .qrtextedit import ShowQRTextEdit
-from .transaction_dialog import TxOutputColoring, QTextBrowserWithDefaultSize
 
 if TYPE_CHECKING:
     from electrum.transaction import PartialTxInput
+
     from .main_window import ElectrumWindow
 
 

@@ -1,15 +1,13 @@
 import asyncio
 import os
-import unittest
-import threading
-import tempfile
 import shutil
+import tempfile
+import threading
+import unittest
 
 import electrum
 import electrum.logging
-from electrum import constants
-from electrum import util
-
+from electrum import constants, util
 
 # Set this locally to make the test suite run faster.
 # If set, unit tests that would normally test functions with multiple implementations,

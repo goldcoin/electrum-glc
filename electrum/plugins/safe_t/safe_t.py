@@ -1,13 +1,13 @@
-from typing import Optional, TYPE_CHECKING, Sequence
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Optional
 
-from electrum.util import UserFacingException
+from electrum import constants, descriptor
 from electrum.bip32 import BIP32Node
-from electrum import descriptor
-from electrum import constants
 from electrum.i18n import _
-from electrum.plugin import Device, runs_in_hwd_thread
-from electrum.transaction import Transaction, PartialTransaction, PartialTxInput, Sighash
 from electrum.keystore import Hardware_KeyStore
+from electrum.plugin import Device, runs_in_hwd_thread
+from electrum.transaction import PartialTransaction, PartialTxInput, Sighash, Transaction
+from electrum.util import UserFacingException
 
 from ..hw_wallet import HW_PluginBase
 from ..hw_wallet.plugin import (
@@ -16,12 +16,13 @@ from ..hw_wallet.plugin import (
 )
 
 if TYPE_CHECKING:
-    from .client import SafeTClient
     from electrum.plugin import DeviceInfo
     from electrum.wizard import NewWalletWizard
 
+    from .client import SafeTClient
+
 # Safe-T mini initialization methods
-TIM_NEW, TIM_RECOVER, TIM_MNEMONIC, TIM_PRIVKEY = range(0, 4)
+TIM_NEW, TIM_RECOVER, TIM_MNEMONIC, TIM_PRIVKEY = range(4)
 
 
 class SafeTKeyStore(Hardware_KeyStore):
@@ -81,9 +82,9 @@ class SafeTPlugin(HW_PluginBase):
         if not self.libraries_available:
             return
 
-        from . import client
-        from . import transport
         import safetlib.messages
+
+        from . import client, transport
 
         self.client_class = client.SafeTClient
         self.types = safetlib.messages
@@ -236,7 +237,7 @@ class SafeTPlugin(HW_PluginBase):
             return self.types.InputScriptType.SPENDADDRESS
         if electrum_txin_type in ("p2sh",):
             return self.types.InputScriptType.SPENDMULTISIG
-        raise ValueError("unexpected txin type: {}".format(electrum_txin_type))
+        raise ValueError(f"unexpected txin type: {electrum_txin_type}")
 
     def get_safet_output_script_type(self, electrum_txin_type: str):
         if electrum_txin_type in ("p2wpkh", "p2wsh"):
@@ -247,7 +248,7 @@ class SafeTPlugin(HW_PluginBase):
             return self.types.OutputScriptType.PAYTOADDRESS
         if electrum_txin_type in ("p2sh",):
             return self.types.OutputScriptType.PAYTOMULTISIG
-        raise ValueError("unexpected txin type: {}".format(electrum_txin_type))
+        raise ValueError(f"unexpected txin type: {electrum_txin_type}")
 
     @runs_in_hwd_thread
     def sign_transaction(self, keystore, tx: PartialTransaction, prev_tx):
@@ -397,7 +398,7 @@ class SafeTPlugin(HW_PluginBase):
 
         return outputs
 
-    def electrum_tx_to_txtype(self, tx: Optional[Transaction]):
+    def electrum_tx_to_txtype(self, tx: Transaction | None):
         t = self.types.TransactionType()
         if tx is None:
             # probably for segwit input and we don't need this prev txn

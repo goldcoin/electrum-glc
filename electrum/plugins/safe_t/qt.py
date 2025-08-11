@@ -2,47 +2,45 @@ import threading
 from functools import partial
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, pyqtSignal, QRegExp
+from PyQt5.QtCore import QRegExp, Qt, pyqtSignal
 from PyQt5.QtGui import QRegExpValidator
 from PyQt5.QtWidgets import (
-    QVBoxLayout,
-    QLabel,
-    QGridLayout,
-    QPushButton,
-    QHBoxLayout,
     QButtonGroup,
-    QGroupBox,
-    QTextEdit,
-    QLineEdit,
-    QRadioButton,
     QCheckBox,
-    QWidget,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
     QMessageBox,
-    QFileDialog,
+    QPushButton,
+    QRadioButton,
     QSlider,
     QTabWidget,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
 )
 
 from electrum.gui.qt.util import (
-    WindowModalDialog,
-    WWLabel,
     Buttons,
     CancelButton,
-    OkButton,
-    CloseButton,
-    getOpenFileName,
     ChoiceWidget,
+    CloseButton,
+    OkButton,
+    WindowModalDialog,
+    WWLabel,
+    getOpenFileName,
 )
-from electrum.i18n import _
-from electrum.plugin import hook
-from electrum.logging import Logger
-
-from ..hw_wallet.qt import QtHandlerBase, QtPluginBase
-from ..hw_wallet.plugin import only_hook_if_libraries_available
-from .safe_t import SafeTPlugin, TIM_NEW, TIM_RECOVER, TIM_MNEMONIC, TIM_PRIVKEY
-
-from electrum.gui.qt.wizard.wallet import WCScriptAndDerivation, WCHWUnlock, WCHWXPub
+from electrum.gui.qt.wizard.wallet import WCHWUnlock, WCHWXPub, WCScriptAndDerivation
 from electrum.gui.qt.wizard.wizard import WizardComponent
+from electrum.i18n import _
+from electrum.logging import Logger
+from electrum.plugin import hook
+
+from ..hw_wallet.plugin import only_hook_if_libraries_available
+from ..hw_wallet.qt import QtHandlerBase, QtPluginBase
+from .safe_t import TIM_MNEMONIC, TIM_NEW, TIM_PRIVKEY, TIM_RECOVER, SafeTPlugin
 
 if TYPE_CHECKING:
     from electrum.gui.qt.wizard.wallet import QENewWalletWizard
@@ -77,7 +75,7 @@ class QtHandler(QtHandlerBase):
     pin_signal = pyqtSignal(object, object)
 
     def __init__(self, win, pin_matrix_widget_class, device):
-        super(QtHandler, self).__init__(win, device)
+        super().__init__(win, device)
         self.pin_signal.connect(self.pin_dialog)
         self.pin_matrix_widget_class = pin_matrix_widget_class
 
@@ -118,7 +116,7 @@ class QtPlugin(QtPluginBase):
                 def show_address(keystore=keystore):
                     keystore.thread.add(partial(self.show_address, wallet, addrs[0], keystore))
 
-                device_name = "{} ({})".format(self.device, keystore.label)
+                device_name = f"{self.device} ({keystore.label})"
                 menu.addAction(_("Show on {}").format(device_name), show_address)
 
     def show_settings_dialog(self, window, keystore):
@@ -230,7 +228,7 @@ class Plugin(SafeTPlugin, QtPlugin):
         return QtHandler(window, self.pin_matrix_widget_class(), self.device)
 
     @classmethod
-    def pin_matrix_widget_class(self):
+    def pin_matrix_widget_class(cls):
         from safetlib.qt.pinmatrix import PinMatrixWidget
 
         return PinMatrixWidget
@@ -260,7 +258,7 @@ class SettingsDialog(WindowModalDialog):
 
     def __init__(self, window, plugin, keystore, device_id):
         title = _("{} Settings").format(plugin.device)
-        super(SettingsDialog, self).__init__(window, title)
+        super().__init__(window, title)
         self.setMaximumWidth(540)
 
         devmgr = plugin.device_manager()
@@ -445,7 +443,7 @@ class SettingsDialog(WindowModalDialog):
         # Settings tab - Label
         label_msg = QLabel(
             _(
-                "Name this {}.  If you have multiple devices " "their labels help distinguish them."
+                "Name this {}.  If you have multiple devices their labels help distinguish them."
             ).format(plugin.device)
         )
         label_msg.setWordWrap(True)
@@ -568,7 +566,7 @@ class SettingsDialog(WindowModalDialog):
         wipe_device_button = QPushButton(_("Wipe Device"))
         wipe_device_button.clicked.connect(wipe_device)
         wipe_device_msg = QLabel(
-            _("Wipe the device, removing all data from it.  The firmware " "is left unchanged.")
+            _("Wipe the device, removing all data from it.  The firmware is left unchanged.")
         )
         wipe_device_msg.setWordWrap(True)
         wipe_device_warning = QLabel(

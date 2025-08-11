@@ -1,21 +1,21 @@
 import os
 import time
 
-from . import ElectrumTestCase
-
-from electrum.simple_config import SimpleConfig
-from electrum.wallet import restore_wallet_from_text, Standard_Wallet, Abstract_Wallet
+from electrum.address_synchronizer import TX_HEIGHT_UNCONFIRMED
 from electrum.invoices import (
-    PR_UNPAID,
+    LN_EXPIRY_NEVER,
     PR_PAID,
     PR_UNCONFIRMED,
+    PR_UNPAID,
     BaseInvoice,
     Invoice,
-    LN_EXPIRY_NEVER,
 )
-from electrum.address_synchronizer import TX_HEIGHT_UNCONFIRMED
-from electrum.transaction import Transaction, PartialTxOutput
-from electrum.util import TxMinedInfo, InvoiceError
+from electrum.simple_config import SimpleConfig
+from electrum.transaction import PartialTxOutput, Transaction
+from electrum.util import InvoiceError, TxMinedInfo
+from electrum.wallet import Standard_Wallet, restore_wallet_from_text
+
+from . import ElectrumTestCase
 
 
 class TestWalletPaymentRequests(ElectrumTestCase):
@@ -324,7 +324,7 @@ class TestBaseInvoice(ElectrumTestCase):
         with self.assertRaises(InvoiceError):
             invoice.set_amount_msat(10**20)
         with self.assertRaises(InvoiceError):
-            invoice2 = Invoice(
+            Invoice(
                 amount_msat=10**20,
                 message="mymsg",
                 time=1692716965,

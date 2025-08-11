@@ -1,13 +1,13 @@
-import cbor
-import hashlib
-import json
-import time
-import logging
 import collections
 import collections.abc
-import traceback
+import hashlib
+import logging
 import random
 import sys
+import time
+import traceback
+
+import cbor
 
 # JadeError
 from .jade_error import JadeError
@@ -837,7 +837,7 @@ class JadeAPI:
             keys = ["network", "subaccount", "branch", "pointer", "recovery_xpub", "csv_blocks"]
             args += (recovery_xpub, csv_blocks)
 
-        params = dict(zip(keys, args))
+        params = dict(zip(keys, args, strict=False))
         if confidential is not None:
             params["confidential"] = confidential
 
@@ -1203,7 +1203,7 @@ class JadeAPI:
 
             # Request the signatures one at a time, sending the entropy
             signatures = []
-            for i, host_ae_entropy in enumerate(host_ae_entropy_values, 1):
+            for _i, host_ae_entropy in enumerate(host_ae_entropy_values, 1):
                 base_id += 1
                 sig_id = str(base_id)
                 params = {"ae_host_entropy": host_ae_entropy}
@@ -1211,7 +1211,7 @@ class JadeAPI:
                 signatures.append(reply)
 
             assert len(signatures) == len(inputs)
-            return list(zip(signer_commitments, signatures))
+            return list(zip(signer_commitments, signatures, strict=False))
         else:
             # Legacy protocol:
             # We send one message per input - without expecting replies.
@@ -1562,7 +1562,7 @@ class JadeInterface:
             if finished or byte_ == b"\n" or len(drained) > 256:
                 try:
                     device_logger.warn(drained.decode("utf-8"))
-                except Exception as e:
+                except Exception:
                     # Dump the bytes raw and as hex if decoding as utf-8 failed
                     device_logger.warn("Raw:")
                     device_logger.warn(drained)
@@ -1621,7 +1621,7 @@ class JadeInterface:
             msg = "Sending ota_data message {} as cbor of size {}".format(request["id"], len_dump)
             logger.info(msg)
         else:
-            logger.info("Sending: {} as cbor of size {}".format(_hexlify(request), len_dump))
+            logger.info(f"Sending: {_hexlify(request)} as cbor of size {len_dump}")
         return dump
 
     def write(self, bytes_):
@@ -1638,9 +1638,9 @@ class JadeInterface:
         int
             The number of bytes written
         """
-        logger.debug("Sending: {} bytes".format(len(bytes_)))
+        logger.debug(f"Sending: {len(bytes_)} bytes")
         wrote = self.impl.write(bytes_)
-        logger.debug("Sent: {} bytes".format(len(bytes_)))
+        logger.debug(f"Sent: {len(bytes_)} bytes")
         return wrote
 
     def write_request(self, request):
@@ -1666,9 +1666,9 @@ class JadeInterface:
         bytes
             The bytes received
         """
-        logger.debug("Reading {} bytes...".format(n))
+        logger.debug(f"Reading {n} bytes...")
         bytes_ = self.impl.read(n)
-        logger.debug("Received: {} bytes".format(len(bytes_)))
+        logger.debug(f"Received: {len(bytes_)} bytes")
         return bytes_
 
     def read_cbor_message(self):
@@ -1691,7 +1691,7 @@ class JadeInterface:
             if isinstance(message, collections.abc.Mapping):
                 # A message response (to a prior request)
                 if "id" in message:
-                    logger.info("Received msg: {}".format(_hexlify(message)))
+                    logger.info(f"Received msg: {_hexlify(message)}")
                     return message
 
                 # A log message - handle as normal
@@ -1711,8 +1711,8 @@ class JadeInterface:
                             lvl = response[0]
                             log_method = log_methods.get(lvl, device_logger.error)
                     except Exception as e:
-                        logger.error("Error processing log message: {}".format(e))
-                    log_method(">> {}".format(response))
+                        logger.error(f"Error processing log message: {e}")
+                    log_method(f">> {response}")
                     continue
 
             # Unknown/unhandled/unexpected message
@@ -1740,7 +1740,7 @@ class JadeInterface:
         while True:
             try:
                 return self.read_cbor_message()
-            except EOFError as e:
+            except EOFError:
                 if not long_timeout:
                     raise
 
@@ -1752,7 +1752,7 @@ class JadeInterface:
         """
         assert isinstance(reply, dict) and "id" in reply
         assert ("result" in reply) != ("error" in reply)
-        assert reply["id"] == request["id"] or reply["id"] == "00" and "error" in reply
+        assert reply["id"] == request["id"] or (reply["id"] == "00" and "error" in reply)
 
     def make_rpc_call(self, request, long_timeout=False):
         """

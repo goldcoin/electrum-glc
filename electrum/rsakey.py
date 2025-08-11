@@ -33,9 +33,9 @@
 
 """Pure-Python RSA implementation."""
 
-import os
-import math
 import hashlib
+import math
+import os
 
 
 def SHA1(x):
@@ -124,7 +124,7 @@ def numberToMPI(n):
 def numBits(n):
     if n == 0:
         return 0
-    s = "%x" % n
+    s = f"{n:x}"
     return ((len(s) - 1) * 4) + {
         "0": 0,
         "1": 1,
@@ -149,7 +149,7 @@ def numBytes(n):
     if n == 0:
         return 0
     bits = numBits(n)
-    return int(math.ceil(bits / 8.0))
+    return math.ceil(bits / 8.0)
 
 
 # **************************************************************************
@@ -240,7 +240,7 @@ def isPrime(n, iterations=5, display=False):
         s, t = s // 2, t + 1
     # Repeat Rabin-Miller x times
     a = 2  # Use 2 as a base for first iteration speedup, per HAC
-    for count in range(iterations):
+    for _count in range(iterations):
         v = powMod(a, s, n)
         if v == 1:
             continue
@@ -306,7 +306,7 @@ def getRandomSafePrime(bits, display=False):
                     return p
 
 
-class RSAKey(object):
+class RSAKey:
 
     def __init__(self, n=0, e=0, d=0, p=0, q=0, dP=0, dQ=0, qInv=0):
         if (n and not e) or (e and not n):
@@ -524,7 +524,7 @@ class RSAKey(object):
         else:
             raise AssertionError()
 
-        padding = bytearray([0, blockType] + pad + [0])
+        padding = bytearray([0, blockType, *pad, 0])
         paddedBytes = padding + bytes
         return paddedBytes
 
@@ -568,10 +568,10 @@ class RSAKey(object):
     def acceptsPassword(self):
         return False
 
-    def generate(bits):
+    def generate(self):
         key = RSAKey()
-        p = getRandomPrime(bits // 2, False)
-        q = getRandomPrime(bits // 2, False)
+        p = getRandomPrime(self // 2, False)
+        q = getRandomPrime(self // 2, False)
         t = lcm(p - 1, q - 1)
         key.n = p * q
         key.e = 65537

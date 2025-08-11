@@ -1,15 +1,14 @@
-from PyQt6.QtCore import Qt, QAbstractListModel, QModelIndex
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import QAbstractListModel, QModelIndex, Qt, pyqtProperty, pyqtSignal, pyqtSlot
 
+from electrum.gui import messages
 from electrum.lnchannel import ChannelState
 from electrum.lnutil import LOCAL, REMOTE
 from electrum.logging import get_logger
 from electrum.util import Satoshis
-from electrum.gui import messages
 
+from .qemodelfilter import QEFilterProxyModel
 from .qetypes import QEAmount
 from .util import QtEventListener, qt_event_listener
-from .qemodelfilter import QEFilterProxyModel
 
 
 class QEChannelListModel(QAbstractListModel, QtEventListener):
@@ -40,8 +39,8 @@ class QEChannelListModel(QAbstractListModel, QtEventListener):
         "remote_capacity",
     )
     _ROLE_KEYS = range(Qt.ItemDataRole.UserRole, Qt.ItemDataRole.UserRole + len(_ROLE_NAMES))
-    _ROLE_MAP = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES]))
-    _ROLE_RMAP = dict(zip(_ROLE_NAMES, _ROLE_KEYS))
+    _ROLE_MAP = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES], strict=False))
+    _ROLE_RMAP = dict(zip(_ROLE_NAMES, _ROLE_KEYS, strict=False))
 
     _network_signal = pyqtSignal(str, object)
 
@@ -92,7 +91,7 @@ class QEChannelListModel(QAbstractListModel, QtEventListener):
         tx = self._channels[index.row()]
         role_index = role - Qt.ItemDataRole.UserRole
         value = tx[self._ROLE_NAMES[role_index]]
-        if isinstance(value, (bool, list, int, str, QEAmount)) or value is None:
+        if isinstance(value, bool | list | int | str | QEAmount) or value is None:
             return value
         if isinstance(value, Satoshis):
             return value.value
@@ -184,7 +183,7 @@ class QEChannelListModel(QAbstractListModel, QtEventListener):
 
     @pyqtSlot(str)
     def newChannel(self, cid):
-        self._logger.debug("new channel with cid %s" % cid)
+        self._logger.debug(f"new channel with cid {cid}")
         lnchannels = self.wallet.lnworker.channels
         for channel in lnchannels.values():
             if cid == channel.channel_id.hex():
@@ -198,7 +197,7 @@ class QEChannelListModel(QAbstractListModel, QtEventListener):
 
     @pyqtSlot(str)
     def removeChannel(self, cid):
-        self._logger.debug("remove channel with cid %s" % cid)
+        self._logger.debug(f"remove channel with cid {cid}")
         for i, channel in enumerate(self._channels):
             if cid == channel["cid"]:
                 self._logger.debug(cid)

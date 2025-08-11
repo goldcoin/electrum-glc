@@ -23,74 +23,68 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os
-import sys
-import time
 import datetime
-from datetime import date
-from typing import TYPE_CHECKING, Tuple, Dict, Any
-import threading
 import enum
+import threading
+import time
+from datetime import date
 from decimal import Decimal
+from typing import TYPE_CHECKING, Any
 
-from PyQt5.QtGui import QFont, QBrush, QColor
 from PyQt5.QtCore import (
-    Qt,
-    QPersistentModelIndex,
-    QModelIndex,
-    QAbstractItemModel,
-    QSortFilterProxyModel,
-    QVariant,
-    QItemSelectionModel,
     QDate,
+    QItemSelectionModel,
+    QModelIndex,
+    QPersistentModelIndex,
     QPoint,
+    QSortFilterProxyModel,
+    Qt,
+    QVariant,
 )
+from PyQt5.QtGui import QBrush, QColor, QFont
 from PyQt5.QtWidgets import (
-    QMenu,
+    QCalendarWidget,
+    QComboBox,
+    QGridLayout,
     QHeaderView,
     QLabel,
-    QMessageBox,
+    QMenu,
     QPushButton,
-    QComboBox,
     QVBoxLayout,
-    QCalendarWidget,
-    QGridLayout,
 )
 
+from electrum.address_synchronizer import TX_HEIGHT_LOCAL
 from electrum.gui import messages
-from electrum.address_synchronizer import TX_HEIGHT_LOCAL, TX_HEIGHT_FUTURE
 from electrum.i18n import _
-from electrum.util import (
-    block_explorer_URL,
-    profiler,
-    TxMinedInfo,
-    OrderedDictWithIndex,
-    timestamp_to_datetime,
-    Satoshis,
-    Fiat,
-    format_time,
-)
-from electrum.logging import get_logger, Logger
+from electrum.logging import Logger, get_logger
 from electrum.simple_config import SimpleConfig
+from electrum.util import (
+    OrderedDictWithIndex,
+    Satoshis,
+    TxMinedInfo,
+    block_explorer_URL,
+    format_time,
+    profiler,
+    timestamp_to_datetime,
+)
 
-from .custom_model import CustomNode, CustomModel
+from .custom_model import CustomModel, CustomNode
+from .my_treeview import MyTreeView
 from .util import (
-    read_QIcon,
     MONOSPACE_FONT,
+    AcceptFileDragDrop,
     Buttons,
     CancelButton,
-    OkButton,
-    filename_field,
-    AcceptFileDragDrop,
-    WindowModalDialog,
     CloseButton,
-    webopen,
+    OkButton,
+    WindowModalDialog,
     WWLabel,
+    filename_field,
+    read_QIcon,
+    webopen,
 )
-from .my_treeview import MyTreeView
 
 if TYPE_CHECKING:
-    from electrum.wallet import Abstract_Wallet
     from .main_window import ElectrumWindow
 
 
@@ -122,9 +116,9 @@ class HistorySortModel(QSortFilterProxyModel):
             raise Exception(f"UserRole not set for column {source_left.column()}")
         v1 = item1.value()
         v2 = item2.value()
-        if v1 is None or isinstance(v1, Decimal) and v1.is_nan():
+        if v1 is None or (isinstance(v1, Decimal) and v1.is_nan()):
             v1 = -float("inf")
-        if v2 is None or isinstance(v2, Decimal) and v2.is_nan():
+        if v2 is None or (isinstance(v2, Decimal) and v2.is_nan()):
             v2 = -float("inf")
         try:
             return v1 < v2
@@ -360,7 +354,6 @@ class HistoryModel(CustomModel, Logger):
             self.transactions.clear()
             self._root = HistoryNode(self, None)
             self.endRemoveRows()
-        parents = {}
         for tx_item in transactions.values():
             node = HistoryNode(self, tx_item)
             self._root.addChild(node)
@@ -472,9 +465,9 @@ class HistoryModel(CustomModel, Logger):
         fiat_acq_title = "n/a fiat acquisition price"
         fiat_cg_title = "n/a fiat capital gains"
         if self.should_show_fiat():
-            fiat_title = "%s " % fx.ccy + _("Value")
-            fiat_acq_title = "%s " % fx.ccy + _("Acquisition price")
-            fiat_cg_title = "%s " % fx.ccy + _("Capital Gains")
+            fiat_title = f"{fx.ccy} " + _("Value")
+            fiat_acq_title = f"{fx.ccy} " + _("Acquisition price")
+            fiat_cg_title = f"{fx.ccy} " + _("Capital Gains")
         return {
             HistoryColumns.STATUS: _("Date"),
             HistoryColumns.DESCRIPTION: _("Description"),
@@ -494,7 +487,7 @@ class HistoryModel(CustomModel, Logger):
         return super().flags(idx) | int(extra_flags)
 
     @staticmethod
-    def _tx_mined_info_from_tx_item(tx_item: Dict[str, Any]) -> TxMinedInfo:
+    def _tx_mined_info_from_tx_item(tx_item: dict[str, Any]) -> TxMinedInfo:
         # FIXME a bit hackish to have to reconstruct the TxMinedInfo... same thing in qml-gui
         tx_mined_info = TxMinedInfo(
             height=tx_item["height"],
@@ -687,10 +680,10 @@ class HistoryList(MyTreeView, AcceptFileDragDrop):
         flow = summary["flow"]
         start_date = start.get("date")
         end_date = end.get("date")
-        format_amount = (
-            lambda x: self.main_window.format_amount(x.value) + " " + self.main_window.base_unit()
-        )
-        format_fiat = lambda x: str(x) + " " + self.main_window.fx.ccy
+        def format_amount(x):
+            return (self.main_window.format_amount(x.value) + " " + self.main_window.base_unit())
+        def format_fiat(x):
+            return str(x) + " " + self.main_window.fx.ccy
 
         d = WindowModalDialog(self, _("Summary"))
         d.setMinimumSize(600, 150)
@@ -746,7 +739,7 @@ class HistoryList(MyTreeView, AcceptFileDragDrop):
 
     def plot_history_dialog(self):
         try:
-            from electrum.plot import plot_history, NothingToPlotException
+            from electrum.plot import NothingToPlotException, plot_history
         except Exception as e:
             _logger.error(
                 f"could not import electrum.plot. This feature needs matplotlib to be installed. exc={e!r}"
@@ -922,7 +915,7 @@ class HistoryList(MyTreeView, AcceptFileDragDrop):
         try:
             with open(fn) as f:
                 tx = self.main_window.tx_from_text(f.read())
-        except IOError as e:
+        except OSError as e:
             self.main_window.show_error(e)
             return
         if not tx:
@@ -949,7 +942,7 @@ class HistoryList(MyTreeView, AcceptFileDragDrop):
             return
         try:
             self.do_export_history(filename, csv_button.isChecked())
-        except (IOError, os.error) as reason:
+        except OSError as reason:
             export_error_label = _("Electrum was unable to produce a transaction export.")
             self.main_window.show_critical(
                 export_error_label + "\n" + str(reason), title=_("Unable to export history")

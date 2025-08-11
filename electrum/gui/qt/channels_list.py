@@ -1,54 +1,46 @@
-# -*- coding: utf-8 -*-
-import traceback
 import enum
-from typing import Sequence, Optional, Dict, TYPE_CHECKING
-from abc import abstractmethod, ABC
+import traceback
+from abc import ABC, abstractmethod
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import Qt, QRect, QSize
+from PyQt5.QtCore import QRect, QSize, Qt
+from PyQt5.QtGui import QFont, QHelpEvent, QIcon, QPainter, QStandardItem
 from PyQt5.QtWidgets import (
-    QMenu,
-    QHBoxLayout,
-    QLabel,
-    QVBoxLayout,
-    QGridLayout,
-    QLineEdit,
-    QPushButton,
     QAbstractItemView,
-    QComboBox,
     QCheckBox,
+    QGridLayout,
+    QLabel,
+    QMenu,
     QToolTip,
+    QVBoxLayout,
 )
-from PyQt5.QtGui import QFont, QStandardItem, QBrush, QPainter, QIcon, QHelpEvent
 
-from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates
+from electrum.gui import messages
 from electrum.i18n import _
 from electrum.lnchannel import (
     AbstractChannel,
-    PeerState,
-    ChannelBackup,
-    Channel,
-    ChannelState,
     ChanCloseOption,
+    Channel,
+    ChannelBackup,
 )
-from electrum.wallet import Abstract_Wallet
-from electrum.lnutil import LOCAL, REMOTE, format_short_channel_id
+from electrum.lnutil import LOCAL, REMOTE
 from electrum.lnworker import LNWallet
-from electrum.gui import messages
+from electrum.wallet import Abstract_Wallet
 
-from .util import (
-    WindowModalDialog,
-    Buttons,
-    OkButton,
-    CancelButton,
-    EnterButton,
-    WaitingDialog,
-    MONOSPACE_FONT,
-    ColorScheme,
-)
-from .amountedit import BTCAmountEdit, FreezableLineEdit
-from .util import read_QIcon, font_height
 from .my_treeview import MyTreeView
+from .util import (
+    MONOSPACE_FONT,
+    Buttons,
+    ColorScheme,
+    EnterButton,
+    OkButton,
+    WaitingDialog,
+    WindowModalDialog,
+    font_height,
+    read_QIcon,
+)
 
 if TYPE_CHECKING:
     from .main_window import ElectrumWindow
@@ -111,7 +103,7 @@ class ChannelsList(MyTreeView):
     def lnworker(self):
         return self.wallet.lnworker
 
-    def format_fields(self, chan: AbstractChannel) -> Dict["ChannelsList.Columns", str]:
+    def format_fields(self, chan: AbstractChannel) -> dict["ChannelsList.Columns", str]:
         labels = {}
         for subject in (REMOTE, LOCAL):
             if isinstance(chan, Channel):
@@ -156,7 +148,7 @@ class ChannelsList(MyTreeView):
     def on_failure(self, exc_info):
         type_, e, tb = exc_info
         traceback.print_tb(tb)
-        self.main_window.show_error("Failed to close channel:\n{}".format(repr(e)))
+        self.main_window.show_error(f"Failed to close channel:\n{e!r}")
 
     def close_channel(self, channel_id):
         self.is_force_close = False
@@ -501,9 +493,9 @@ class ChannelsList(MyTreeView):
         vbox = QVBoxLayout(d)
         h = QGridLayout()
         h.addWidget(QLabel(_("Nodes") + ":"), 0, 0)
-        h.addWidget(QLabel("{}".format(channel_db.num_nodes)), 0, 1)
+        h.addWidget(QLabel(f"{channel_db.num_nodes}"), 0, 1)
         h.addWidget(QLabel(_("Channels") + ":"), 1, 0)
-        h.addWidget(QLabel("{}".format(channel_db.num_channels)), 1, 1)
+        h.addWidget(QLabel(f"{channel_db.num_channels}"), 1, 1)
         h.addWidget(QLabel(_("Capacity") + ":"), 2, 0)
         h.addWidget(QLabel(capacity), 2, 1)
         vbox.addLayout(h)

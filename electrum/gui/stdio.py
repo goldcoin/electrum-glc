@@ -1,20 +1,18 @@
-from decimal import Decimal
-import getpass
 import datetime
-import logging
-from typing import Optional
+import getpass
+from decimal import Decimal
 
+from electrum import Wallet, WalletStorage
+from electrum.bitcoin import COIN, is_address
 from electrum.gui import BaseElectrumGui
-from electrum import util
-from electrum import WalletStorage, Wallet
-from electrum.wallet import Abstract_Wallet
-from electrum.wallet_db import WalletDB
-from electrum.util import format_satoshis, EventListener, event_listener
-from electrum.bitcoin import is_address, COIN
+from electrum.network import BestEffortRequestFailed, TxBroadcastError
 from electrum.transaction import PartialTxOutput
-from electrum.network import TxBroadcastError, BestEffortRequestFailed
+from electrum.util import EventListener, event_listener, format_satoshis
+from electrum.wallet_db import WalletDB
 
-_ = lambda x: x  # i18n
+
+def _(x):
+    return x  # i18n
 
 # minimal fdisk like gui for console usage
 # written by rofl0r, with some bits stolen from the text gui (ncurses)
@@ -175,14 +173,11 @@ class ElectrumGui(BaseElectrumGui, EventListener):
         return msg
 
     def print_contacts(self):
-        messages = map(lambda x: "%20s   %45s " % (x[0], x[1][1]), self.contacts.items())
+        messages = ("%20s   %45s " % (x[0], x[1][1]) for x in self.contacts.items())
         self.print_list(messages, "%19s  %25s " % ("Key", "Value"))
 
     def print_addresses(self):
-        messages = map(
-            lambda addr: "%30s    %30s       " % (addr, self.wallet.get_label_for_address(addr)),
-            self.wallet.get_addresses(),
-        )
+        messages = ("%30s    %30s       " % (addr, self.wallet.get_label_for_address(addr)) for addr in self.wallet.get_addresses())
         self.print_list(messages, "%19s  %25s " % ("Address", "Label"))
 
     def print_order(self):
@@ -207,7 +202,7 @@ class ElectrumGui(BaseElectrumGui, EventListener):
         self.do_send()
 
     def print_banner(self):
-        for i, x in enumerate(self.wallet.network.banner.split("\n")):
+        for _i, x in enumerate(self.wallet.network.banner.split("\n")):
             print(x)
 
     def print_list(self, lst, firstline):
