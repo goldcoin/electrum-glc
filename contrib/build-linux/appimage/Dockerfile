@@ -8,7 +8,10 @@ ENV LC_ALL=C.UTF-8 LANG=C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
 
 # need ca-certificates before using snapshot packages
-RUN apt update -qq > /dev/null && apt install -qq --yes --no-install-recommends \
+# Use archive.debian.org for initial ca-certificates install since buster is EOL
+RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian-security buster/updates main" >> /etc/apt/sources.list && \
+    apt update -qq > /dev/null && apt install -qq --yes --no-install-recommends \
     ca-certificates
 
 # pin the distro packages

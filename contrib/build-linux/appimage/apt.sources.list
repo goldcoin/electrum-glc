@@ -1,2 +1,2 @@
-deb https://snapshot.debian.org/archive/debian/20230317T205011Z/ buster main
-deb-src https://snapshot.debian.org/archive/debian/20230317T205011Z/ buster main
+deb http://archive.debian.org/debian buster main
+deb http://archive.debian.org/debian-security buster/updates main
