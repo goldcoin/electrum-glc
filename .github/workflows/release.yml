@@ -1,0 +1,254 @@
+name: Build Release Binaries
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (e.g., 4.5.0)'
+        required: true
+        type: string
+
+jobs:
+  build-windows:
+    name: Build Windows Installer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION=${{ github.event.inputs.version }}
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          
+      - name: Build Windows installer
+        run: |
+          cd contrib/build-wine
+          ./build.sh
+          
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: electrum-glc-${{ env.VERSION }}-setup.exe
+          path: contrib/build-wine/dist/electrum-*.exe
+
+  build-macos:
+    name: Build macOS DMG
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION=${{ github.event.inputs.version }}
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          
+      - name: Install dependencies
+        run: |
+          brew install libsecp256k1
+          pip install -r contrib/requirements/requirements-build-mac.txt
+          
+      - name: Build macOS DMG
+        run: |
+          cd contrib/osx
+          ./make_osx.sh
+          
+      - name: Upload macOS DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: electrum-glc-${{ env.VERSION }}.dmg
+          path: contrib/osx/dist/*.dmg
+
+  build-linux:
+    name: Build Linux AppImage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION=${{ github.event.inputs.version }}
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          
+      - name: Build AppImage
+        run: |
+          cd contrib/build-linux/appimage
+          ./build.sh
+          
+      - name: Upload AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: electrum-glc-${{ env.VERSION }}-x86_64.AppImage
+          path: contrib/build-linux/appimage/dist/*.AppImage
+
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION=${{ github.event.inputs.version }}
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev
+          pip install buildozer cython
+          
+      - name: Build Android APK
+        run: |
+          cd contrib/android
+          ./make_apk.sh
+          
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: electrum-glc-${{ env.VERSION }}.apk
+          path: contrib/android/dist/*.apk
+
+  build-source:
+    name: Build Source Distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION=${{ github.event.inputs.version }}
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build wheel setuptools
+          
+      - name: Build source distribution
+        run: python -m build --sdist
+        
+      - name: Build wheel
+        run: python -m build --wheel
+        
+      - name: Upload source distribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: electrum-glc-${{ env.VERSION }}.tar.gz
+          path: dist/*.tar.gz
+          
+      - name: Upload wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: electrum-glc-${{ env.VERSION }}-py3-none-any.whl
+          path: dist/*.whl
+
+  create-release:
+    name: Create GitHub Release
+    needs: [build-windows, build-macos, build-linux, build-android, build-source]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts/
+          
+      - name: Create Release Notes
+        run: |
+          cat > release-notes.md << 'EOF'
+          ## Goldcoin Electrum ${GITHUB_REF#refs/tags/}
+          
+          ### 🎉 Phase 2 Modernization Complete
+          
+          This release marks the completion of Phase 2 of the Goldcoin Electrum modernization project:
+          
+          #### New Features
+          - ✅ PyQt6 compatibility layer for future-proof GUI
+          - ✅ Enhanced security scanning with bandit and safety
+          - ✅ GitHub Actions CI/CD pipeline
+          - ✅ Automated dependency updates with Dependabot
+          - ✅ Improved developer experience with pre-commit hooks
+          
+          #### Improvements
+          - Python 3.12+ requirement across all platforms
+          - Modern code formatting with black and isort
+          - Type checking with mypy
+          - Comprehensive linting with ruff
+          - Security-first development workflow
+          
+          ### Downloads
+          
+          | Platform | File |
+          |----------|------|
+          | Windows | electrum-glc-${GITHUB_REF#refs/tags/v}-setup.exe |
+          | macOS | electrum-glc-${GITHUB_REF#refs/tags/v}.dmg |
+          | Linux | electrum-glc-${GITHUB_REF#refs/tags/v}-x86_64.AppImage |
+          | Android | electrum-glc-${GITHUB_REF#refs/tags/v}.apk |
+          | Source | electrum-glc-${GITHUB_REF#refs/tags/v}.tar.gz |
+          | Python Wheel | electrum-glc-${GITHUB_REF#refs/tags/v}-py3-none-any.whl |
+          
+          ### Verification
+          
+          All binaries are built using GitHub Actions for transparency and reproducibility.
+          
+          ### Requirements
+          - Python 3.12 or higher
+          - PyQt5 5.15.2 or higher (PyQt6 support in progress)
+          
+          ### What's Next (Phase 3)
+          - Complete PyQt6 migration
+          - Sphinx documentation generation
+          - Enhanced testing infrastructure
+          - Performance optimizations
+          EOF
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Goldcoin Electrum ${GITHUB_REF#refs/tags/}
+          body_path: release-notes.md
+          draft: false
+          prerelease: false
+          files: release-artifacts/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

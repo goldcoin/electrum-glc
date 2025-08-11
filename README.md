@@ -4,7 +4,7 @@
 Licence: MIT Licence
 Author: Thomas Voegtlin
 GLC Port Maintainers: Goldcoin Developers
-Language: Python (>= 3.8)
+Language: Python (>= 3.12)
 Homepage: https://www.goldcoinproject.org/
 ```
 ## Getting started

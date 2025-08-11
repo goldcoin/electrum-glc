@@ -11,13 +11,11 @@ task:
         ELECTRUM_PYTHON_NAME: python3
       matrix:
        - env:
-           ELECTRUM_PYTHON_VERSION: 3.8
-       - env:
-           ELECTRUM_PYTHON_VERSION: 3.9
-       - env:
-           ELECTRUM_PYTHON_VERSION: 3.10
+           ELECTRUM_PYTHON_VERSION: 3.12
        - env:
            ELECTRUM_PYTHON_VERSION: 3.11
+       - env:
+           ELECTRUM_PYTHON_VERSION: 3.10
        - name: "unittests: Tox Python 3 debug mode"
          env:
            ELECTRUM_PYTHON_VERSION: 3.11
@@ -72,11 +70,11 @@ task:
   locale_script:
     - contrib/push_locale
   env:
-    ELECTRUM_IMAGE: python:3.8
+    ELECTRUM_IMAGE: python:3.12
     ELECTRUM_REQUIREMENTS_CI: contrib/requirements/requirements-ci.txt
     # in addition, crowdin_api_key is set as an "override" in https://cirrus-ci.com/settings/...
   depends_on:
-    - "unittests: Tox Python 3.8"
+    - "unittests: Tox Python 3.12"
   only_if: $CIRRUS_BRANCH == 'master'
 
 task:
@@ -132,7 +130,7 @@ task:
   flake8_script:
     - flake8 . --count --select="$ELECTRUM_LINTERS" --ignore="$ELECTRUM_LINTERS_IGNORE" --show-source --statistics --exclude "*_pb2.py,electrum/_vendor/"
   env:
-    ELECTRUM_IMAGE: python:3.8
+    ELECTRUM_IMAGE: python:3.12
     ELECTRUM_REQUIREMENTS: contrib/requirements/requirements.txt
   matrix:
     - name: "linter: Flake8 Mandatory"
@@ -148,6 +146,28 @@ task:
         ELECTRUM_LINTERS: E,F,W,C90,B
         ELECTRUM_LINTERS_IGNORE: ""
       allow_failures: true
+
+task:
+  name: "linter: mypy type checking"
+  container:
+    image: $ELECTRUM_IMAGE
+    cpu: 1
+    memory: 2G
+  pip_cache:
+    folder: ~/.cache/pip
+    fingerprint_script: echo mypy && echo $ELECTRUM_IMAGE && cat $ELECTRUM_REQUIREMENTS
+  install_script:
+    - pip install mypy
+    - pip install types-requests types-protobuf types-PyYAML types-jsonschema
+    - pip install -r $ELECTRUM_REQUIREMENTS
+  mypy_script:
+    - mypy --ignore-missing-imports --python-version=3.12 electrum --exclude="electrum/tests|electrum/gui/qt/forms|electrum/locale"
+  env:
+    ELECTRUM_IMAGE: python:3.12
+    ELECTRUM_REQUIREMENTS: contrib/requirements/requirements.txt
+  allow_failures: true  # Initially allow failures while we fix type issues
+  depends_on:
+    - "linter: Flake8 Mandatory"
 
 task:
   name: "build: Windows"
@@ -178,7 +198,7 @@ task:
     CIRRUS_WORKING_DIR: /opt/wine64/drive_c/electrum
     CIRRUS_DOCKER_CONTEXT: contrib/build-wine
   depends_on:
-    - "unittests: Tox Python 3.8"
+    - "unittests: Tox Python 3.12"
 
 task:
   name: "build: Android (QML $APK_ARCH)"
@@ -207,7 +227,7 @@ task:
   binaries_artifacts:
     path: "dist/*"
   depends_on:
-    - "unittests: Tox Python 3.8"
+    - "unittests: Tox Python 3.12"
 
 ## mac build disabled, as Cirrus CI no longer supports Intel-based mac builds
 #task:
@@ -265,7 +285,7 @@ task:
   env:
     CIRRUS_DOCKER_CONTEXT: contrib/build-linux/appimage
   depends_on:
-    - "unittests: Tox Python 3.8"
+    - "unittests: Tox Python 3.12"
 
 task:
   container:
@@ -288,7 +308,7 @@ task:
       env:
         OMIT_UNCLEAN_FILES: 1
   depends_on:
-    - "unittests: Tox Python 3.8"
+    - "unittests: Tox Python 3.12"
 
 task:
   name: "check submodules"

@@ -1,0 +1,38 @@
+version: 2
+updates:
+  # Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python"
+    reviewers:
+      - "MicroGuy"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    ignore:
+      # Don't update Python itself
+      - dependency-name: "python"
+      # Be careful with PyQt updates
+      - dependency-name: "PyQt5"
+        update-types: ["version-update:semver-major"]
+    
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore"
+      include: "scope"

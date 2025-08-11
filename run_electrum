@@ -27,7 +27,7 @@ import os
 import sys
 
 
-MIN_PYTHON_VERSION = "3.8.0"  # FIXME duplicated from setup.py
+MIN_PYTHON_VERSION = "3.12.0"  # Minimum Python version required
 _min_python_version_tuple = tuple(map(int, (MIN_PYTHON_VERSION.split("."))))
 
 

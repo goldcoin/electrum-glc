@@ -1,0 +1,31 @@
+{
+  "version": "2.0",
+  "project": {
+    "name": "Electrum-GLC",
+    "id": "electrum-glc"
+  },
+  "security": {
+    "ignore-cvss-severity-below": 4,
+    "ignore-cvss-unknown-severity": false,
+    "ignore-vulnerabilities": {
+      "reason": "Vulnerabilities to ignore with justification",
+      "expires": "2025-12-31",
+      "vulnerabilities": []
+    },
+    "continue-on-vulnerability-error": false
+  },
+  "scanning": {
+    "exclude": [
+      "electrum/tests/**",
+      "electrum/gui/qt/forms/**"
+    ],
+    "include-dev-dependencies": true,
+    "auto-ignore-in-report": {
+      "python-version": "3.12"
+    }
+  },
+  "policy": {
+    "fail-scan-with-exit-code": true,
+    "only-check-packages-that-are-installed": true
+  }
+}
