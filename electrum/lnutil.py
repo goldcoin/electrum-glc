@@ -43,6 +43,8 @@ from .transaction import (
     opcodes,
 )
 from .util import UserFacingException, bfh, list_enabled_bits
+from .util import ShortID as ShortChannelID
+from .util import format_short_id as format_short_channel_id
 
 if TYPE_CHECKING:
     from .lnchannel import AbstractChannel, Channel
