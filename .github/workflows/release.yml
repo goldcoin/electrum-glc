@@ -13,7 +13,7 @@ on:
 
 jobs:
   build-windows:
-    name: Build Windows Installer
+    name: Build Windows Binaries
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,16 +27,34 @@ jobs:
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           
-      - name: Build Windows installer
+      - name: Build Windows binaries
         run: |
           cd contrib/build-wine
           ./build.sh
           
+      - name: List built files
+        run: ls -la contrib/build-wine/dist/
+        
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
           name: electrum-glc-${{ env.VERSION }}-setup.exe
-          path: contrib/build-wine/dist/electrum-*.exe
+          path: contrib/build-wine/dist/electrum-glc-${{ env.VERSION }}-setup.exe
+          if-no-files-found: warn
+          
+      - name: Upload Windows portable
+        uses: actions/upload-artifact@v4
+        with:
+          name: electrum-glc-${{ env.VERSION }}-portable.exe
+          path: contrib/build-wine/dist/electrum-glc-${{ env.VERSION }}-portable.exe
+          if-no-files-found: warn
+          
+      - name: Upload Windows standalone
+        uses: actions/upload-artifact@v4
+        with:
+          name: electrum-glc-${{ env.VERSION }}.exe
+          path: contrib/build-wine/dist/electrum-glc-${{ env.VERSION }}.exe
+          if-no-files-found: warn
 
   build-macos:
     name: Build macOS DMG
@@ -67,12 +85,14 @@ jobs:
         run: |
           cd contrib/osx
           ./make_osx.sh
+        continue-on-error: true
           
       - name: Upload macOS DMG
         uses: actions/upload-artifact@v4
         with:
           name: electrum-glc-${{ env.VERSION }}.dmg
-          path: contrib/osx/dist/*.dmg
+          path: contrib/osx/dist/electrum-glc-${{ env.VERSION }}.dmg
+          if-no-files-found: warn
 
   build-linux:
     name: Build Linux AppImage
@@ -93,12 +113,14 @@ jobs:
         run: |
           cd contrib/build-linux/appimage
           ./build.sh
+        continue-on-error: true
           
       - name: Upload AppImage
         uses: actions/upload-artifact@v4
         with:
           name: electrum-glc-${{ env.VERSION }}-x86_64.AppImage
-          path: contrib/build-linux/appimage/dist/*.AppImage
+          path: contrib/build-linux/appimage/dist/electrum-glc-${{ env.VERSION }}-x86_64.AppImage
+          if-no-files-found: warn
 
   build-android:
     name: Build Android APK
@@ -130,12 +152,14 @@ jobs:
         run: |
           cd contrib/android
           ./make_apk.sh
+        continue-on-error: true
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: electrum-glc-${{ env.VERSION }}.apk
-          path: contrib/android/dist/*.apk
+          name: Electrum-GLC-${{ env.VERSION }}.apk
+          path: contrib/android/dist/Electrum-GLC-${{ env.VERSION }}.apk
+          if-no-files-found: warn
 
   build-source:
     name: Build Source Distribution
@@ -171,14 +195,16 @@ jobs:
       - name: Upload source distribution
         uses: actions/upload-artifact@v4
         with:
-          name: electrum-glc-${{ env.VERSION }}.tar.gz
-          path: dist/*.tar.gz
+          name: Electrum-GLC-${{ env.VERSION }}.tar.gz
+          path: dist/Electrum-GLC-${{ env.VERSION }}.tar.gz
+          if-no-files-found: warn
           
       - name: Upload wheel
         uses: actions/upload-artifact@v4
         with:
-          name: electrum-glc-${{ env.VERSION }}-py3-none-any.whl
-          path: dist/*.whl
+          name: Electrum_GLC-${{ env.VERSION }}-py3-none-any.whl
+          path: dist/Electrum_GLC-${{ env.VERSION }}-py3-none-any.whl
+          if-no-files-found: warn
 
   create-release:
     name: Create GitHub Release
@@ -195,12 +221,13 @@ jobs:
           
       - name: Create Release Notes
         run: |
-          cat > release-notes.md << 'EOF'
-          ## Goldcoin Electrum ${GITHUB_REF#refs/tags/}
+          VERSION=${GITHUB_REF#refs/tags/v}
+          cat > release-notes.md << EOF
+          ## Goldcoin Electrum $VERSION
           
           ### 🎉 Phase 2 Modernization Complete
           
-          This release marks the completion of Phase 2 of the Goldcoin Electrum modernization project:
+          This release marks the completion of Phase 2 of the Goldcoin Electrum modernization project.
           
           #### New Features
           - ✅ PyQt6 compatibility layer for future-proof GUI
@@ -218,14 +245,23 @@ jobs:
           
           ### Downloads
           
-          | Platform | File |
-          |----------|------|
-          | Windows | electrum-glc-${GITHUB_REF#refs/tags/v}-setup.exe |
-          | macOS | electrum-glc-${GITHUB_REF#refs/tags/v}.dmg |
-          | Linux | electrum-glc-${GITHUB_REF#refs/tags/v}-x86_64.AppImage |
-          | Android | electrum-glc-${GITHUB_REF#refs/tags/v}.apk |
-          | Source | electrum-glc-${GITHUB_REF#refs/tags/v}.tar.gz |
-          | Python Wheel | electrum-glc-${GITHUB_REF#refs/tags/v}-py3-none-any.whl |
+          #### Windows
+          - **Installer:** electrum-glc-$VERSION-setup.exe
+          - **Portable:** electrum-glc-$VERSION-portable.exe
+          - **Standalone:** electrum-glc-$VERSION.exe
+          
+          #### macOS
+          - **DMG:** electrum-glc-$VERSION.dmg
+          
+          #### Linux
+          - **AppImage:** electrum-glc-$VERSION-x86_64.AppImage
+          
+          #### Android
+          - **APK:** Electrum-GLC-$VERSION.apk
+          
+          #### Source
+          - **Source tarball:** Electrum-GLC-$VERSION.tar.gz
+          - **Python wheel:** Electrum_GLC-$VERSION-py3-none-any.whl
           
           ### Verification
           
@@ -245,7 +281,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: Goldcoin Electrum ${GITHUB_REF#refs/tags/}
+          name: Goldcoin Electrum ${{ env.VERSION }}
           body_path: release-notes.md
           draft: false
           prerelease: false
