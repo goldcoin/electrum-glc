@@ -6,6 +6,12 @@
 
 set -e
 
+# Set non-interactive mode if no TTY is available (e.g., in CI)
+if [ ! -t 0 ]; then
+    export DEBIAN_FRONTEND=noninteractive
+    export DOCKER_BUILDKIT=1
+fi
+
 PROJECT_ROOT="$(dirname "$(readlink -e "$0")")/../.."
 PROJECT_ROOT_OR_FRESHCLONE_ROOT="$PROJECT_ROOT"
 CONTRIB="$PROJECT_ROOT/contrib"
@@ -56,7 +62,15 @@ if [ ! -z "$ELECBUILD_COMMIT" ] ; then  # fresh clone (reproducible build)
         sudo chown -R 1000:1000 "$FRESH_CLONE"
     fi
 fi
-docker run -it \
+
+# Check if we're in a CI environment or if TTY is not available
+DOCKER_RUN_FLAGS="-i"
+if [ -t 0 ] ; then
+    # TTY is available, use interactive mode
+    DOCKER_RUN_FLAGS="-it"
+fi
+
+docker run $DOCKER_RUN_FLAGS \
     --name electrum-wine-builder-cont \
     -v "$PROJECT_ROOT_OR_FRESHCLONE_ROOT":/opt/wine64/drive_c/electrum \
     --rm \
