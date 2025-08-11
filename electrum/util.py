@@ -47,6 +47,7 @@ from functools import partial
 from typing import (
     TYPE_CHECKING,
     Any,
+    Generic,
     NamedTuple,
     Optional,
     TypeVar,
@@ -1877,7 +1878,7 @@ _NetAddrType = TypeVar("_NetAddrType")
 # - reasonable __hash__() implementation (e.g. based on host/port of remote endpoint)
 
 
-class NetworkRetryManager[NetAddrType]:
+class NetworkRetryManager(Generic[_NetAddrType]):
     """Truncated Exponential Backoff for network connections."""
 
     def __init__(
@@ -1902,18 +1903,18 @@ class NetworkRetryManager[NetAddrType]:
         self._max_retry_delay_urgent = max_retry_delay_urgent
         self._init_retry_delay_urgent = init_retry_delay_urgent
 
-    def _trying_addr_now(self, addr: NetAddrType) -> None:
+    def _trying_addr_now(self, addr: _NetAddrType) -> None:
         last_time, num_attempts = self._last_tried_addr.get(addr, (0, 0))
         # we add up to 1 second of noise to the time, so that clients are less likely
         # to get synchronised and bombard the remote in connection waves:
         cur_time = time.time() + random.random()
         self._last_tried_addr[addr] = cur_time, num_attempts + 1
 
-    def _on_connection_successfully_established(self, addr: NetAddrType) -> None:
+    def _on_connection_successfully_established(self, addr: _NetAddrType) -> None:
         self._last_tried_addr[addr] = time.time(), 0
 
     def _can_retry_addr(
-        self, addr: NetAddrType, *, now: float | None = None, urgent: bool = False
+        self, addr: _NetAddrType, *, now: float | None = None, urgent: bool = False
     ) -> bool:
         if now is None:
             now = time.time()
@@ -2011,7 +2012,7 @@ class JsonRPCClient:
 T = TypeVar("T")
 
 
-def random_shuffled_copy[T](x: Iterable[T]) -> list[T]:
+def random_shuffled_copy(x: Iterable[T]) -> list[T]:
     """Returns a shuffled copy of the input."""
     x_copy = list(x)  # copy
     random.shuffle(x_copy)  # shuffle in-place
