@@ -1,4 +1,5 @@
 """Module for lnurl-related functionality."""
+
 # https://github.com/sipa/bech32/tree/master/ref/python
 # https://github.com/lnbits/lnurl
 
@@ -30,9 +31,7 @@ class LNURLError(Exception):
 
 def decode_lnurl(lnurl: str) -> str:
     """Converts bech32 encoded lnurl to url."""
-    decoded_bech32 = bech32_decode(
-        lnurl, ignore_long_length=True
-    )
+    decoded_bech32 = bech32_decode(lnurl, ignore_long_length=True)
     hrp = decoded_bech32.hrp
     data = decoded_bech32.data
     if decoded_bech32.encoding is None:
@@ -54,8 +53,7 @@ def encode_lnurl(url: str) -> str:
         raise LnEncodeException("invalid url") from e
     bech32_data = convertbits(url, 8, 5, True)
     assert bech32_data
-    lnurl = bech32_encode(
-        encoding=segwit_addr.Encoding.BECH32, hrp="lnurl", data=bech32_data)
+    lnurl = bech32_encode(encoding=segwit_addr.Encoding.BECH32, hrp="lnurl", data=bech32_data)
     return lnurl.upper()
 
 
@@ -74,13 +72,15 @@ class LNURL6Data(NamedTuple):
     min_sendable_sat: int
     metadata_plaintext: str
     comment_allowed: int
-    #tag: str = "payRequest"
+    # tag: str = "payRequest"
 
 
 async def _request_lnurl(url: str) -> dict:
     """Requests payment data from a lnurl."""
     if not _is_url_safe_enough_for_lnurl(url):
-        raise LNURLError(f"This lnurl looks unsafe. It must use 'https://' or '.onion' (found: {url[:10]}...)")
+        raise LNURLError(
+            f"This lnurl looks unsafe. It must use 'https://' or '.onion' (found: {url[:10]}...)"
+        )
     try:
         response_raw = await Network.async_send_http_on_proxy("get", url, timeout=10)
     except asyncio.TimeoutError as e:
@@ -94,14 +94,16 @@ async def _request_lnurl(url: str) -> dict:
 
     status = response.get("status")
     if status and status == "ERROR":
-        raise LNURLError(f"LNURL request encountered an error: {response.get('reason', '<missing reason>')}")
+        raise LNURLError(
+            f"LNURL request encountered an error: {response.get('reason', '<missing reason>')}"
+        )
     return response
 
 
 async def request_lnurl(url: str) -> LNURL6Data:
     lnurl_dict = await _request_lnurl(url)
-    tag = lnurl_dict.get('tag')
-    if tag != 'payRequest':  # only LNURL6 is handled atm
+    tag = lnurl_dict.get("tag")
+    if tag != "payRequest":  # only LNURL6 is handled atm
         raise LNURLError(f"Unknown subtype of lnurl. tag={tag}")
     # parse lnurl6 "metadata"
     metadata_plaintext = ""
@@ -109,26 +111,32 @@ async def request_lnurl(url: str) -> LNURL6Data:
         metadata_raw = lnurl_dict["metadata"]
         metadata = json.loads(metadata_raw)
         for m in metadata:
-            if m[0] == 'text/plain':
+            if m[0] == "text/plain":
                 metadata_plaintext = str(m[1])
     except Exception as e:
-        raise LNURLError(f"Missing or malformed 'metadata' field in lnurl6 response. exc: {e!r}") from e
+        raise LNURLError(
+            f"Missing or malformed 'metadata' field in lnurl6 response. exc: {e!r}"
+        ) from e
     # parse lnurl6 "callback"
     try:
-        callback_url = lnurl_dict['callback']
+        callback_url = lnurl_dict["callback"]
     except KeyError as e:
         raise LNURLError(f"Missing 'callback' field in lnurl6 response.") from e
     if not _is_url_safe_enough_for_lnurl(callback_url):
-        raise LNURLError(f"This lnurl callback_url looks unsafe. It must use 'https://' or '.onion' (found: {callback_url[:10]}...)")
+        raise LNURLError(
+            f"This lnurl callback_url looks unsafe. It must use 'https://' or '.onion' (found: {callback_url[:10]}...)"
+        )
     # parse lnurl6 "minSendable"/"maxSendable"
     try:
-        max_sendable_sat = int(lnurl_dict['maxSendable']) // 1000
-        min_sendable_sat = int(lnurl_dict['minSendable']) // 1000
+        max_sendable_sat = int(lnurl_dict["maxSendable"]) // 1000
+        min_sendable_sat = int(lnurl_dict["minSendable"]) // 1000
     except Exception as e:
-        raise LNURLError(f"Missing or malformed 'minSendable'/'maxSendable' field in lnurl6 response. {e=!r}") from e
+        raise LNURLError(
+            f"Missing or malformed 'minSendable'/'maxSendable' field in lnurl6 response. {e=!r}"
+        ) from e
     # parse lnurl6 "commentAllowed" (optional, described in lnurl-12)
     try:
-        comment_allowed = int(lnurl_dict['commentAllowed']) if 'commentAllowed' in lnurl_dict else 0
+        comment_allowed = int(lnurl_dict["commentAllowed"]) if "commentAllowed" in lnurl_dict else 0
     except Exception as e:
         raise LNURLError(f"Malformed 'commentAllowed' field in lnurl6 response. {e=!r}") from e
     data = LNURL6Data(
@@ -144,7 +152,9 @@ async def request_lnurl(url: str) -> LNURL6Data:
 async def callback_lnurl(url: str, params: dict) -> dict:
     """Requests an invoice from a lnurl supporting server."""
     if not _is_url_safe_enough_for_lnurl(url):
-        raise LNURLError(f"This lnurl looks unsafe. It must use 'https://' or '.onion' (found: {url[:10]}...)")
+        raise LNURLError(
+            f"This lnurl looks unsafe. It must use 'https://' or '.onion' (found: {url[:10]}...)"
+        )
     try:
         response_raw = await Network.async_send_http_on_proxy("get", url, params=params)
     except asyncio.TimeoutError as e:
@@ -158,7 +168,9 @@ async def callback_lnurl(url: str, params: dict) -> dict:
 
     status = response.get("status")
     if status and status == "ERROR":
-        raise LNURLError(f"LNURL request encountered an error: {response.get('reason', '<missing reason>')}")
+        raise LNURLError(
+            f"LNURL request encountered an error: {response.get('reason', '<missing reason>')}"
+        )
     # TODO: handling of specific errors (validate fields, e.g. for lnurl6)
     return response
 

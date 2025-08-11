@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from .network import Network
 
 
-async def account_discovery(network: Optional['Network'], get_account_xpub):
+async def account_discovery(network: Optional["Network"], get_account_xpub):
     if network is None:
         raise NetworkOfflineException()
     async with OldTaskGroup() as group:
@@ -30,7 +30,7 @@ async def account_discovery(network: Optional['Network'], get_account_xpub):
     return active_accounts
 
 
-async def scan_for_active_accounts(network: 'Network', get_account_xpub, wallet_format):
+async def scan_for_active_accounts(network: "Network", get_account_xpub, wallet_format):
     active_accounts = []
     account_path = bip32_str_to_ints(wallet_format["derivation_path"])
     while True:
@@ -46,7 +46,9 @@ async def scan_for_active_accounts(network: 'Network', get_account_xpub, wallet_
     return active_accounts
 
 
-async def account_has_history(network: 'Network', account_node: BIP32Node, script_type: str) -> bool:
+async def account_has_history(
+    network: "Network", account_node: BIP32Node, script_type: str
+) -> bool:
     # note: scan both receiving and change addresses. some wallets send change across accounts.
     path_suffixes = itertools.chain(
         itertools.product((0,), range(20)),  # ad-hoc gap limits
@@ -73,7 +75,7 @@ def format_account(wallet_format, account_path):
     description = wallet_format["description"]
     if wallet_format["iterate_accounts"]:
         account_index = account_path[-1] % BIP32_PRIME
-        description = f'{description} (Account {account_index})'
+        description = f"{description} (Account {account_index})"
     return {
         "description": description,
         "derivation_path": bip32_ints_to_str(account_path),

@@ -51,19 +51,19 @@ try:
         QStackedWidget,
         QSystemTrayIcon,
     )
-    
+
     PYQT6 = True
     PYQT5 = False
-    
+
     # PyQt6 specific adjustments
     def exec_dialog(dialog: Any) -> int:
         """Execute a dialog (PyQt6 uses exec() instead of exec_())"""
         return dialog.exec()
-    
+
     def exec_app(app: Any) -> int:
         """Execute application (PyQt6 uses exec() instead of exec_())"""
         return app.exec()
-    
+
 except ImportError:
     from PyQt5 import QtCore, QtGui, QtWidgets
     from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QUrl, QTimer
@@ -108,15 +108,15 @@ except ImportError:
         QSystemTrayIcon,
         QAction,
     )
-    
+
     PYQT6 = False
     PYQT5 = True
-    
+
     # PyQt5 specific adjustments
     def exec_dialog(dialog: Any) -> int:
         """Execute a dialog (PyQt5 uses exec_())"""
         return dialog.exec_()
-    
+
     def exec_app(app: Any) -> int:
         """Execute application (PyQt5 uses exec_())"""
         return app.exec_()
@@ -141,22 +141,22 @@ if PYQT6:
     AlignBottom = Qt.AlignmentFlag.AlignBottom
     AlignVCenter = Qt.AlignmentFlag.AlignVCenter
     AlignHCenter = Qt.AlignmentFlag.AlignHCenter
-    
+
     LeftButton = Qt.MouseButton.LeftButton
     RightButton = Qt.MouseButton.RightButton
     MiddleButton = Qt.MouseButton.MiddleButton
-    
+
     Key_Return = Qt.Key.Key_Return
     Key_Enter = Qt.Key.Key_Enter
     Key_Escape = Qt.Key.Key_Escape
     Key_Tab = Qt.Key.Key_Tab
     Key_Backtab = Qt.Key.Key_Backtab
     Key_Space = Qt.Key.Key_Space
-    
+
     Checked = Qt.CheckState.Checked
     Unchecked = Qt.CheckState.Unchecked
     PartiallyChecked = Qt.CheckState.PartiallyChecked
-    
+
     Horizontal = Qt.Orientation.Horizontal
     Vertical = Qt.Orientation.Vertical
 else:
@@ -168,22 +168,22 @@ else:
     AlignBottom = Qt.AlignBottom
     AlignVCenter = Qt.AlignVCenter
     AlignHCenter = Qt.AlignHCenter
-    
+
     LeftButton = Qt.LeftButton
     RightButton = Qt.RightButton
     MiddleButton = Qt.MiddleButton
-    
+
     Key_Return = Qt.Key_Return
     Key_Enter = Qt.Key_Enter
     Key_Escape = Qt.Key_Escape
     Key_Tab = Qt.Key_Tab
     Key_Backtab = Qt.Key_Backtab
     Key_Space = Qt.Key_Space
-    
+
     Checked = Qt.Checked
     Unchecked = Qt.Unchecked
     PartiallyChecked = Qt.PartiallyChecked
-    
+
     Horizontal = Qt.Horizontal
     Vertical = Qt.Vertical
 
@@ -191,40 +191,86 @@ else:
 # Export all for convenience
 __all__ = [
     # Core modules
-    'QtCore', 'QtGui', 'QtWidgets',
-    
+    "QtCore",
+    "QtGui",
+    "QtWidgets",
     # Signals and slots
-    'pyqtSignal', 'pyqtSlot',
-    
+    "pyqtSignal",
+    "pyqtSlot",
     # Core classes
-    'Qt', 'QUrl', 'QTimer',
-    'QIcon', 'QPixmap', 'QFont', 'QAction', 'QKeySequence',
-    
+    "Qt",
+    "QUrl",
+    "QTimer",
+    "QIcon",
+    "QPixmap",
+    "QFont",
+    "QAction",
+    "QKeySequence",
     # Widgets
-    'QApplication', 'QMainWindow', 'QWidget',
-    'QVBoxLayout', 'QHBoxLayout', 'QGridLayout',
-    'QPushButton', 'QLabel', 'QLineEdit', 'QTextEdit',
-    'QComboBox', 'QCheckBox', 'QRadioButton', 'QGroupBox',
-    'QTabWidget', 'QTreeWidget', 'QTreeWidgetItem',
-    'QTableWidget', 'QTableWidgetItem',
-    'QListWidget', 'QListWidgetItem',
-    'QDialog', 'QDialogButtonBox', 'QMessageBox', 'QFileDialog',
-    'QProgressBar', 'QSlider', 'QSpinBox',
-    'QMenu', 'QMenuBar', 'QToolBar', 'QStatusBar',
-    'QSplitter', 'QScrollArea', 'QFrame', 'QStackedWidget',
-    'QSystemTrayIcon',
-    
+    "QApplication",
+    "QMainWindow",
+    "QWidget",
+    "QVBoxLayout",
+    "QHBoxLayout",
+    "QGridLayout",
+    "QPushButton",
+    "QLabel",
+    "QLineEdit",
+    "QTextEdit",
+    "QComboBox",
+    "QCheckBox",
+    "QRadioButton",
+    "QGroupBox",
+    "QTabWidget",
+    "QTreeWidget",
+    "QTreeWidgetItem",
+    "QTableWidget",
+    "QTableWidgetItem",
+    "QListWidget",
+    "QListWidgetItem",
+    "QDialog",
+    "QDialogButtonBox",
+    "QMessageBox",
+    "QFileDialog",
+    "QProgressBar",
+    "QSlider",
+    "QSpinBox",
+    "QMenu",
+    "QMenuBar",
+    "QToolBar",
+    "QStatusBar",
+    "QSplitter",
+    "QScrollArea",
+    "QFrame",
+    "QStackedWidget",
+    "QSystemTrayIcon",
     # Version flags
-    'PYQT5', 'PYQT6',
-    
+    "PYQT5",
+    "PYQT6",
     # Compatibility functions
-    'exec_dialog', 'exec_app', 'get_qt_version',
-    
+    "exec_dialog",
+    "exec_app",
+    "get_qt_version",
     # Common enum values
-    'AlignLeft', 'AlignRight', 'AlignCenter',
-    'AlignTop', 'AlignBottom', 'AlignVCenter', 'AlignHCenter',
-    'LeftButton', 'RightButton', 'MiddleButton',
-    'Key_Return', 'Key_Enter', 'Key_Escape', 'Key_Tab', 'Key_Backtab', 'Key_Space',
-    'Checked', 'Unchecked', 'PartiallyChecked',
-    'Horizontal', 'Vertical',
+    "AlignLeft",
+    "AlignRight",
+    "AlignCenter",
+    "AlignTop",
+    "AlignBottom",
+    "AlignVCenter",
+    "AlignHCenter",
+    "LeftButton",
+    "RightButton",
+    "MiddleButton",
+    "Key_Return",
+    "Key_Enter",
+    "Key_Escape",
+    "Key_Tab",
+    "Key_Backtab",
+    "Key_Space",
+    "Checked",
+    "Unchecked",
+    "PartiallyChecked",
+    "Horizontal",
+    "Vertical",
 ]

@@ -4,8 +4,17 @@ from typing import Optional
 from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject, QTimer, pyqtEnum
 
 from electrum.logging import get_logger
-from electrum.invoices import (PR_UNPAID, PR_EXPIRED, PR_UNKNOWN, PR_PAID, PR_INFLIGHT,
-                               PR_FAILED, PR_ROUTING, PR_UNCONFIRMED, LN_EXPIRY_NEVER)
+from electrum.invoices import (
+    PR_UNPAID,
+    PR_EXPIRED,
+    PR_UNKNOWN,
+    PR_PAID,
+    PR_INFLIGHT,
+    PR_FAILED,
+    PR_ROUTING,
+    PR_UNCONFIRMED,
+    LN_EXPIRY_NEVER,
+)
 
 from .qewallet import QEWallet
 from .qetypes import QEAmount
@@ -27,7 +36,7 @@ class QERequestDetails(QObject, QtEventListener):
 
     _logger = get_logger(__name__)
 
-    detailsChanged = pyqtSignal() # generic request properties changed signal
+    detailsChanged = pyqtSignal()  # generic request properties changed signal
     statusChanged = pyqtSignal()
 
     def __init__(self, parent=None):
@@ -55,10 +64,11 @@ class QERequestDetails(QObject, QtEventListener):
     @event_listener
     def on_event_request_status(self, wallet, key, status):
         if wallet == self._wallet.wallet and key == self._key:
-            self._logger.debug('request status %d for key %s' % (status, key))
+            self._logger.debug("request status %d for key %s" % (status, key))
             self.statusChanged.emit()
 
     walletChanged = pyqtSignal()
+
     @pyqtProperty(QEWallet, notify=walletChanged)
     def wallet(self):
         return self._wallet
@@ -71,6 +81,7 @@ class QERequestDetails(QObject, QtEventListener):
             self.initRequest()
 
     keyChanged = pyqtSignal()
+
     @pyqtProperty(str, notify=keyChanged)
     def key(self):
         return self._key
@@ -79,7 +90,7 @@ class QERequestDetails(QObject, QtEventListener):
     def key(self, key):
         if self._key != key:
             self._key = key
-            self._logger.debug(f'key={key}')
+            self._logger.debug(f"key={key}")
             self.keyChanged.emit()
             self.initRequest()
 
@@ -89,7 +100,7 @@ class QERequestDetails(QObject, QtEventListener):
 
     @pyqtProperty(str, notify=statusChanged)
     def status_str(self):
-        return self._req.get_status_str(self.status) if self._req else ''
+        return self._req.get_status_str(self.status) if self._req else ""
 
     @pyqtProperty(bool, notify=detailsChanged)
     def isLightning(self):
@@ -97,12 +108,12 @@ class QERequestDetails(QObject, QtEventListener):
 
     @pyqtProperty(str, notify=detailsChanged)
     def address(self):
-        addr = self._req.get_address() if self._req else ''
-        return addr if addr else ''
+        addr = self._req.get_address() if self._req else ""
+        return addr if addr else ""
 
     @pyqtProperty(str, notify=detailsChanged)
     def message(self):
-        return self._req.get_message() if self._req else ''
+        return self._req.get_message() if self._req else ""
 
     @pyqtProperty(QEAmount, notify=detailsChanged)
     def amount(self):
@@ -118,11 +129,15 @@ class QERequestDetails(QObject, QtEventListener):
 
     @pyqtProperty(str, notify=detailsChanged)
     def bolt11(self):
-        can_receive = self._wallet.wallet.lnworker.num_sats_can_receive() if  self._wallet.wallet.lnworker else 0
+        can_receive = (
+            self._wallet.wallet.lnworker.num_sats_can_receive()
+            if self._wallet.wallet.lnworker
+            else 0
+        )
         if self._req and can_receive > 0 and (self._req.get_amount_sat() or 0) <= can_receive:
             bolt11 = self._wallet.wallet.get_bolt11_invoice(self._req)
         else:
-            return ''
+            return ""
         # encode lightning invoices as uppercase so QR encoding can use
         # alphanumeric mode; resulting in smaller QR codes
         bolt11 = bolt11.upper()
@@ -130,7 +145,7 @@ class QERequestDetails(QObject, QtEventListener):
 
     @pyqtProperty(str, notify=detailsChanged)
     def bip21(self):
-        return self._req.get_bip21_URI() if self._req else ''
+        return self._req.get_bip21_URI() if self._req else ""
 
     def initRequest(self):
         if self._wallet is None or self._key is None:
@@ -139,7 +154,9 @@ class QERequestDetails(QObject, QtEventListener):
         self._req = self._wallet.wallet.get_request(self._key)
 
         if self._req is None:
-            self._logger.error(f'payment request key {self._key} unknown in wallet {self._wallet.name}')
+            self._logger.error(
+                f"payment request key {self._key} unknown in wallet {self._wallet.name}"
+            )
             return
 
         self._amount = QEAmount(from_invoice=self._req)
@@ -151,10 +168,10 @@ class QERequestDetails(QObject, QtEventListener):
     def set_status_timer(self):
         if self.status == PR_UNPAID:
             if self.expiration > 0 and self.expiration != LN_EXPIRY_NEVER:
-                self._logger.debug(f'set_status_timer, expiration={self.expiration}')
+                self._logger.debug(f"set_status_timer, expiration={self.expiration}")
                 interval = status_update_timer_interval(self.expiration)
                 if interval > 0:
-                    self._logger.debug(f'setting status update timer to {interval}')
+                    self._logger.debug(f"setting status update timer to {interval}")
                     self._timer.setInterval(interval)  # msec
                     self._timer.start()
 
@@ -162,4 +179,3 @@ class QERequestDetails(QObject, QtEventListener):
     def updateStatusString(self):
         self.statusChanged.emit()
         self.set_status_timer()
-

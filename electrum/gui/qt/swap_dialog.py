@@ -10,8 +10,18 @@ from electrum.transaction import PartialTxOutput, PartialTransaction
 
 from electrum.gui import messages
 from . import util
-from .util import (WindowModalDialog, Buttons, OkButton, CancelButton,
-                   EnterButton, ColorScheme, WWLabel, read_QIcon, IconLabel, char_width_in_lineedit)
+from .util import (
+    WindowModalDialog,
+    Buttons,
+    OkButton,
+    CancelButton,
+    EnterButton,
+    ColorScheme,
+    WWLabel,
+    read_QIcon,
+    IconLabel,
+    char_width_in_lineedit,
+)
 from .util import qt_event_listener, QtEventListener
 from .amountedit import BTCAmountEdit
 from .fee_slider import FeeSlider, FeeComboBox
@@ -21,20 +31,23 @@ if TYPE_CHECKING:
     from .main_window import ElectrumWindow
 
 CANNOT_RECEIVE_WARNING = _(
-"""The requested amount is higher than what you can receive in your currently open channels.
+    """The requested amount is higher than what you can receive in your currently open channels.
 If you continue, your funds will be locked until the remote server can find a path to pay you.
 If the swap cannot be performed after 24h, you will be refunded.
 Do you want to continue?"""
 )
 
 
-class InvalidSwapParameters(Exception): pass
+class InvalidSwapParameters(Exception):
+    pass
 
 
 class SwapDialog(WindowModalDialog, QtEventListener):
 
-    def __init__(self, window: 'ElectrumWindow', is_reverse=None, recv_amount_sat=None, channels=None):
-        WindowModalDialog.__init__(self, window, _('Submarine Swap'))
+    def __init__(
+        self, window: "ElectrumWindow", is_reverse=None, recv_amount_sat=None, channels=None
+    ):
+        WindowModalDialog.__init__(self, window, _("Submarine Swap"))
         self.window = window
         self.config = window.config
         self.lnworker = self.window.wallet.lnworker
@@ -43,7 +56,7 @@ class SwapDialog(WindowModalDialog, QtEventListener):
         self.channels = channels
         self.is_reverse = is_reverse if is_reverse is not None else True
         vbox = QVBoxLayout(self)
-        toolbar, menu = create_toolbar_with_menu(self.config, '')
+        toolbar, menu = create_toolbar_with_menu(self.config, "")
         menu.addConfig(
             self.config.cv.LIGHTNING_ALLOW_INSTANT_SWAPS,
         ).setEnabled(self.lnworker.can_have_recoverable_channels())
@@ -55,7 +68,7 @@ class SwapDialog(WindowModalDialog, QtEventListener):
         btn_width = 10 * char_width_in_lineedit()
         self.max_button.setFixedWidth(btn_width)
         self.max_button.setCheckable(True)
-        self.toggle_button = QPushButton('  \U000021c4  ')  # whitespace to force larger min width
+        self.toggle_button = QPushButton("  \U000021c4  ")  # whitespace to force larger min width
         self.toggle_button.setEnabled(is_reverse is None)
         # send_follows is used to know whether the send amount field / receive
         # amount field should be adjusted after the fee slider was moved
@@ -79,17 +92,17 @@ class SwapDialog(WindowModalDialog, QtEventListener):
         self.server_fee_label = QLabel()
         vbox.addWidget(self.description_label)
         h = QGridLayout()
-        self.send_label = IconLabel(text=_('You send')+':')
-        self.recv_label = IconLabel(text=_('You receive')+':')
+        self.send_label = IconLabel(text=_("You send") + ":")
+        self.recv_label = IconLabel(text=_("You receive") + ":")
         h.addWidget(self.send_label, 1, 0)
         h.addWidget(self.send_amount_e, 1, 1)
         h.addWidget(self.max_button, 1, 2)
         h.addWidget(self.toggle_button, 1, 3)
         h.addWidget(self.recv_label, 2, 0)
         h.addWidget(self.recv_amount_e, 2, 1)
-        h.addWidget(QLabel(_('Server fee')+':'), 4, 0)
+        h.addWidget(QLabel(_("Server fee") + ":"), 4, 0)
         h.addWidget(self.server_fee_label, 4, 1, 1, 2)
-        h.addWidget(QLabel(_('Mining fee')+':'), 5, 0)
+        h.addWidget(QLabel(_("Mining fee") + ":"), 5, 0)
         h.addWidget(self.fee_label, 5, 1, 1, 2)
         h.addWidget(fee_slider, 6, 1)
         h.addWidget(fee_combo, 6, 2)
@@ -127,7 +140,7 @@ class SwapDialog(WindowModalDialog, QtEventListener):
             self.needs_tx_update = False
 
     def init_recv_amount(self, recv_amount_sat):
-        if recv_amount_sat == '!':
+        if recv_amount_sat == "!":
             self.max_button.setChecked(True)
             self.spend_max()
         else:
@@ -191,7 +204,11 @@ class SwapDialog(WindowModalDialog, QtEventListener):
         if self.is_reverse and send_amount and send_amount > self.lnworker.num_sats_can_send():
             # cannot send this much on lightning
             recv_amount = None
-        if (not self.is_reverse) and recv_amount and recv_amount > self.lnworker.num_sats_can_receive():
+        if (
+            (not self.is_reverse)
+            and recv_amount
+            and recv_amount > self.lnworker.num_sats_can_receive()
+        ):
             # cannot receive this much on lightning
             recv_amount = None
         self.recv_amount_e.follows = True
@@ -218,6 +235,7 @@ class SwapDialog(WindowModalDialog, QtEventListener):
 
     def update(self):
         from .util import IconLabel
+
         sm = self.swap_manager
         send_icon = read_QIcon("lightning.png" if self.is_reverse else "goldcoin.png")
         self.send_label.setIcon(send_icon)
@@ -226,7 +244,13 @@ class SwapDialog(WindowModalDialog, QtEventListener):
         self.description_label.setText(self.get_description())
         self.description_label.repaint()  # macOS hack for #6269
         server_mining_fee = sm.lockup_fee if self.is_reverse else sm.normal_fee
-        server_fee_str = '%.2f'%sm.percentage + '%  +  '  + self.window.format_amount(server_mining_fee) + ' ' + self.window.base_unit()
+        server_fee_str = (
+            "%.2f" % sm.percentage
+            + "%  +  "
+            + self.window.format_amount(server_mining_fee)
+            + " "
+            + self.window.base_unit()
+        )
         self.server_fee_label.setText(server_fee_str)
         self.server_fee_label.repaint()  # macOS hack for #6269
         self.needs_tx_update = True
@@ -238,7 +262,7 @@ class SwapDialog(WindowModalDialog, QtEventListener):
             fee = sm.get_claim_fee()
         else:
             fee = tx.get_fee() if tx else None
-        fee_text = self.window.format_amount(fee) + ' ' + self.window.base_unit() if fee else ''
+        fee_text = self.window.format_amount(fee) + " " + self.window.base_unit() if fee else ""
         self.fee_label.setText(fee_text)
         self.fee_label.repaint()  # macOS hack for #6269
 
@@ -255,7 +279,9 @@ class SwapDialog(WindowModalDialog, QtEventListener):
                 lightning_amount_sat=lightning_amount,
                 expected_onchain_amount_sat=onchain_amount + self.swap_manager.get_claim_fee(),
             )
-            self.window.run_coroutine_from_thread(coro, _('Swapping funds'), on_result=self.window.on_swap_result)
+            self.window.run_coroutine_from_thread(
+                coro, _("Swapping funds"), on_result=self.window.on_swap_result
+            )
             return True
         else:
             lightning_amount = self.recv_amount_e.get_amount()
@@ -274,7 +300,7 @@ class SwapDialog(WindowModalDialog, QtEventListener):
             return
         is_max = self.max_button.isChecked()
         if is_max:
-            tx = self._create_tx_safe('!')
+            tx = self._create_tx_safe("!")
             self._spend_max_forward_swap(tx)
         else:
             onchain_amount = self.send_amount_e.get_amount()
@@ -286,7 +312,7 @@ class SwapDialog(WindowModalDialog, QtEventListener):
         if onchain_amount is None:
             raise InvalidSwapParameters("onchain_amount is None")
         coins = self.window.get_coins()
-        if onchain_amount == '!':
+        if onchain_amount == "!":
             max_amount = sum(c.value_sats() for c in coins)
             max_swap_amount = self.swap_manager.max_amount_forward_swap()
             if max_swap_amount is None:
@@ -304,7 +330,9 @@ class SwapDialog(WindowModalDialog, QtEventListener):
             raise InvalidSwapParameters(str(e)) from e
         return tx
 
-    def _create_tx_safe(self, onchain_amount: Union[int, str, None]) -> Optional[PartialTransaction]:
+    def _create_tx_safe(
+        self, onchain_amount: Union[int, str, None]
+    ) -> Optional[PartialTransaction]:
         try:
             return self._create_tx(onchain_amount=onchain_amount)
         except InvalidSwapParameters:
@@ -333,9 +361,11 @@ class SwapDialog(WindowModalDialog, QtEventListener):
         tx = sm.create_funding_tx(swap, dummy_tx, password=password)
         coro2 = sm.wait_for_htlcs_and_broadcast(swap=swap, invoice=invoice, tx=tx)
         self.window.run_coroutine_dialog(
-            coro2, _('Awaiting swap payment...'),
+            coro2,
+            _("Awaiting swap payment..."),
             on_result=self.window.on_swap_result,
-            on_cancelled=lambda: sm.cancel_normal_swap(swap))
+            on_cancelled=lambda: sm.cancel_normal_swap(swap),
+        )
 
     def get_description(self):
         onchain_funds = "onchain funds"

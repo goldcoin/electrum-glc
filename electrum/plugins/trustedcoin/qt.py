@@ -30,8 +30,18 @@ from typing import TYPE_CHECKING
 
 from PyQt5.QtGui import QPixmap, QMovie, QColor
 from PyQt5.QtCore import QObject, pyqtSignal, QSize, Qt
-from PyQt5.QtWidgets import (QTextEdit, QVBoxLayout, QLabel, QGridLayout, QHBoxLayout,
-                             QRadioButton, QCheckBox, QLineEdit, QPushButton, QWidget)
+from PyQt5.QtWidgets import (
+    QTextEdit,
+    QVBoxLayout,
+    QLabel,
+    QGridLayout,
+    QHBoxLayout,
+    QRadioButton,
+    QCheckBox,
+    QLineEdit,
+    QPushButton,
+    QWidget,
+)
 
 from electrum.i18n import _
 from electrum.plugin import hook
@@ -39,13 +49,29 @@ from electrum.util import is_valid_email
 from electrum.logging import Logger, get_logger
 from electrum import keystore
 
-from electrum.gui.qt.util import (read_QIcon, WindowModalDialog, WaitingDialog, OkButton,
-                                  CancelButton, Buttons, icon_path, WWLabel, CloseButton, ColorScheme,
-                                  ChoiceWidget)
+from electrum.gui.qt.util import (
+    read_QIcon,
+    WindowModalDialog,
+    WaitingDialog,
+    OkButton,
+    CancelButton,
+    Buttons,
+    icon_path,
+    WWLabel,
+    CloseButton,
+    ColorScheme,
+    ChoiceWidget,
+)
 from electrum.gui.qt.qrcodewidget import QRCodeWidget
 from electrum.gui.qt.amountedit import AmountEdit
 from electrum.gui.qt.main_window import StatusBarButton
-from electrum.gui.qt.wizard.wallet import WCCreateSeed, WCConfirmSeed, WCHaveSeed, WCEnterExt, WCConfirmExt
+from electrum.gui.qt.wizard.wallet import (
+    WCCreateSeed,
+    WCConfirmSeed,
+    WCHaveSeed,
+    WCEnterExt,
+    WCConfirmExt,
+)
 from electrum.gui.qt.wizard.wizard import WizardComponent
 
 from .common_qt import TrustedcoinPluginQObject
@@ -75,16 +101,18 @@ class HandlerTwoFactor(QObject, Logger):
             return
         if wallet.can_sign_without_server():
             return
-        if not wallet.keystores['x3'].can_sign(tx, ignore_watching_only=True):
+        if not wallet.keystores["x3"].can_sign(tx, ignore_watching_only=True):
             self.logger.info("twofactor: xpub3 not needed")
             return
         window = self.window.top_level_window()
         auth_code = self.plugin.auth_dialog(window)
-        WaitingDialog(parent=window,
-                      message=_('Waiting for TrustedCoin server to sign transaction...'),
-                      task=lambda: wallet.on_otp(tx, auth_code),
-                      on_success=lambda *args: on_success(tx),
-                      on_error=on_failure)
+        WaitingDialog(
+            parent=window,
+            message=_("Waiting for TrustedCoin server to sign transaction..."),
+            task=lambda: wallet.on_otp(tx, auth_code),
+            on_success=lambda *args: on_success(tx),
+            on_error=on_failure,
+        )
 
 
 class Plugin(TrustedCoinPlugin):
@@ -93,15 +121,19 @@ class Plugin(TrustedCoinPlugin):
         super().__init__(parent, config, name)
 
     @hook
-    def load_wallet(self, wallet: 'Abstract_Wallet', window: 'ElectrumWindow'):
+    def load_wallet(self, wallet: "Abstract_Wallet", window: "ElectrumWindow"):
         if not isinstance(wallet, self.wallet_class):
             return
         wallet.handler_2fa = HandlerTwoFactor(self, window)
         if wallet.can_sign_without_server():
-            msg = ' '.join([
-                _('This wallet was restored from seed, and it contains two master private keys.'),
-                _('Therefore, two-factor authentication is disabled.')
-            ])
+            msg = " ".join(
+                [
+                    _(
+                        "This wallet was restored from seed, and it contains two master private keys."
+                    ),
+                    _("Therefore, two-factor authentication is disabled."),
+                ]
+            )
             action = lambda: window.show_message(msg)
             icon = read_QIcon("trustedcoin-status-disabled.png")
         else:
@@ -115,15 +147,17 @@ class Plugin(TrustedCoinPlugin):
     def auth_dialog(self, window):
         d = WindowModalDialog(window, _("Authorization"))
         vbox = QVBoxLayout(d)
-        pw = AmountEdit(None, is_int = True)
-        msg = _('Please enter your Google Authenticator code')
+        pw = AmountEdit(None, is_int=True)
+        msg = _("Please enter your Google Authenticator code")
         vbox.addWidget(QLabel(msg))
         grid = QGridLayout()
         grid.setSpacing(8)
-        grid.addWidget(QLabel(_('Code')), 1, 0)
+        grid.addWidget(QLabel(_("Code")), 1, 0)
         grid.addWidget(pw, 1, 1)
         vbox.addLayout(grid)
-        msg = _('If you have lost your second factor, you need to restore your wallet from seed in order to request a new code.')
+        msg = _(
+            "If you have lost your second factor, you need to restore your wallet from seed in order to request a new code."
+        )
         label = QLabel(msg)
         label.setWordWrap(1)
         vbox.addWidget(label)
@@ -138,17 +172,24 @@ class Plugin(TrustedCoinPlugin):
     def waiting_dialog_for_billing_info(self, window, *, on_finished=None):
         def task():
             return self.request_billing_info(window.wallet, suppress_connection_error=False)
+
         def on_error(exc_info):
             e = exc_info[1]
-            window.show_error("{header}\n{exc}\n\n{tor}"
-                              .format(header=_('Error getting TrustedCoin account info.'),
-                                      exc=repr(e),
-                                      tor=_('If you keep experiencing network problems, try using a Tor proxy.')))
-        return WaitingDialog(parent=window,
-                             message=_('Requesting account info from TrustedCoin server...'),
-                             task=task,
-                             on_success=on_finished,
-                             on_error=on_error)
+            window.show_error(
+                "{header}\n{exc}\n\n{tor}".format(
+                    header=_("Error getting TrustedCoin account info."),
+                    exc=repr(e),
+                    tor=_("If you keep experiencing network problems, try using a Tor proxy."),
+                )
+            )
+
+        return WaitingDialog(
+            parent=window,
+            message=_("Requesting account info from TrustedCoin server..."),
+            task=task,
+            on_success=on_finished,
+            on_error=on_error,
+        )
 
     @hook
     def abort_send(self, window):
@@ -163,12 +204,13 @@ class Plugin(TrustedCoinPlugin):
         return False
 
     def settings_dialog(self, window):
-        self.waiting_dialog_for_billing_info(window,
-                                             on_finished=partial(self.show_settings_dialog, window))
+        self.waiting_dialog_for_billing_info(
+            window, on_finished=partial(self.show_settings_dialog, window)
+        )
 
     def show_settings_dialog(self, window, success):
         if not success:
-            window.show_message(_('Server not reachable.'))
+            window.show_message(_("Server not reachable."))
             return
 
         wallet = window.wallet
@@ -179,8 +221,12 @@ class Plugin(TrustedCoinPlugin):
 
         logo = QLabel()
         logo.setPixmap(QPixmap(icon_path("trustedcoin-status.png")))
-        msg = _('This wallet is protected by TrustedCoin\'s two-factor authentication.') + '<br/>'\
-              + _("For more information, visit") + " <a href=\"https://api.trustedcoin.com/#/electrum-help\">https://api.trustedcoin.com/#/electrum-help</a>"
+        msg = (
+            _("This wallet is protected by TrustedCoin's two-factor authentication.")
+            + "<br/>"
+            + _("For more information, visit")
+            + ' <a href="https://api.trustedcoin.com/#/electrum-help">https://api.trustedcoin.com/#/electrum-help</a>'
+        )
         label = QLabel(msg)
         label.setOpenExternalLinks(1)
 
@@ -193,7 +239,12 @@ class Plugin(TrustedCoinPlugin):
         vbox.addLayout(hbox)
         vbox.addStretch(10)
 
-        msg = _('TrustedCoin charges a small fee to co-sign transactions. The fee depends on how many prepaid transactions you buy. An extra output is added to your transaction every time you run out of prepaid transactions.') + '<br/>'
+        msg = (
+            _(
+                "TrustedCoin charges a small fee to co-sign transactions. The fee depends on how many prepaid transactions you buy. An extra output is added to your transaction every time you run out of prepaid transactions."
+            )
+            + "<br/>"
+        )
         label = QLabel(msg)
         label.setWordWrap(1)
         vbox.addWidget(label)
@@ -208,17 +259,21 @@ class Plugin(TrustedCoinPlugin):
         for k, v in sorted(price_per_tx.items()):
             if k == 1:
                 continue
-            grid.addWidget(QLabel("Pay every %d transactions:"%k), i, 0)
-            grid.addWidget(QLabel(window.format_amount(v/k) + ' ' + window.base_unit() + "/tx"), i, 1)
+            grid.addWidget(QLabel("Pay every %d transactions:" % k), i, 0)
+            grid.addWidget(
+                QLabel(window.format_amount(v / k) + " " + window.base_unit() + "/tx"), i, 1
+            )
             b = QRadioButton()
             b.setChecked(k == n_prepay)
+
             def on_click(b, k):
                 self.config.PLUGIN_TRUSTEDCOIN_NUM_PREPAY = k
+
             b.clicked.connect(partial(on_click, k=k))
             grid.addWidget(b, i, 2)
             i += 1
 
-        n = wallet.billing_info.get('tx_remaining', 0)
+        n = wallet.billing_info.get("tx_remaining", 0)
         grid.addWidget(QLabel(_("Your wallet has {} prepaid transactions.").format(n)), i, 0)
         vbox.addLayout(Buttons(CloseButton(d)))
         d.exec_()
@@ -238,15 +293,14 @@ class Plugin(TrustedCoinPlugin):
 
         next_button = window.next_button
         prior_button_text = next_button.text()
-        next_button.setText(_('Accept'))
+        next_button.setText(_("Accept"))
 
         def request_TOS():
             try:
                 tos = server.get_terms_of_service()
             except Exception as e:
-                self.logger.exception('Could not retrieve Terms of Service')
-                tos_e.error_signal.emit(_('Could not retrieve Terms of Service:')
-                                        + '\n' + repr(e))
+                self.logger.exception("Could not retrieve Terms of Service")
+                tos_e.error_signal.emit(_("Could not retrieve Terms of Service:") + "\n" + repr(e))
                 return
             self.TOS = tos
             tos_e.tos_signal.emit()
@@ -279,13 +333,16 @@ class Plugin(TrustedCoinPlugin):
     def request_otp_dialog(self, window, short_id, otp_secret, xpub3):
         vbox = QVBoxLayout()
         if otp_secret is not None:
-            uri = "otpauth://totp/%s?secret=%s"%('trustedcoin.com', otp_secret)
-            l = QLabel("Please scan the following QR code in Google Authenticator. You may as well use the following key: %s"%otp_secret)
+            uri = "otpauth://totp/%s?secret=%s" % ("trustedcoin.com", otp_secret)
+            l = QLabel(
+                "Please scan the following QR code in Google Authenticator. You may as well use the following key: %s"
+                % otp_secret
+            )
             l.setWordWrap(True)
             vbox.addWidget(l)
             qrw = QRCodeWidget(uri)
             vbox.addWidget(qrw, 1)
-            msg = _('Then, enter your Google Authenticator code:')
+            msg = _("Then, enter your Google Authenticator code:")
         else:
             label = QLabel(
                 "This wallet is already registered with TrustedCoin. "
@@ -293,136 +350,155 @@ class Plugin(TrustedCoinPlugin):
             )
             label.setWordWrap(1)
             vbox.addWidget(label)
-            msg = _('Google Authenticator code:')
+            msg = _("Google Authenticator code:")
         hbox = QHBoxLayout()
         hbox.addWidget(WWLabel(msg))
-        pw = AmountEdit(None, is_int = True)
+        pw = AmountEdit(None, is_int=True)
         pw.setFocus(True)
         pw.setMaximumWidth(50)
         hbox.addWidget(pw)
         vbox.addLayout(hbox)
         cb_lost = QCheckBox(_("I have lost my Google Authenticator account"))
-        cb_lost.setToolTip(_("Check this box to request a new secret. You will need to retype your seed."))
+        cb_lost.setToolTip(
+            _("Check this box to request a new secret. You will need to retype your seed.")
+        )
         vbox.addWidget(cb_lost)
         cb_lost.setVisible(otp_secret is None)
+
         def set_enabled():
             b = True if cb_lost.isChecked() else len(pw.text()) == 6
             window.next_button.setEnabled(b)
+
         pw.textChanged.connect(set_enabled)
         cb_lost.toggled.connect(set_enabled)
         window.exec_layout(vbox, next_enabled=False, raise_on_cancel=False)
         self.check_otp(window, short_id, otp_secret, xpub3, pw.get_amount(), cb_lost.isChecked())
 
     @hook
-    def init_wallet_wizard(self, wizard: 'QENewWalletWizard'):
+    def init_wallet_wizard(self, wizard: "QENewWalletWizard"):
         wizard.trustedcoin_qhelper = TrustedcoinPluginQObject(self, wizard, None)
         self.extend_wizard(wizard)
 
-    def extend_wizard(self, wizard: 'QENewWalletWizard'):
+    def extend_wizard(self, wizard: "QENewWalletWizard"):
         super().extend_wizard(wizard)
         views = {
-            'trustedcoin_start': {
-                'gui': WCDisclaimer,
-                'params': {'icon': icon_path('trustedcoin-wizard.png')},
+            "trustedcoin_start": {
+                "gui": WCDisclaimer,
+                "params": {"icon": icon_path("trustedcoin-wizard.png")},
             },
-            'trustedcoin_choose_seed': {
-                'gui': WCChooseSeed,
-                'params': {'icon': icon_path('trustedcoin-wizard.png')},
+            "trustedcoin_choose_seed": {
+                "gui": WCChooseSeed,
+                "params": {"icon": icon_path("trustedcoin-wizard.png")},
             },
-            'trustedcoin_create_seed': {
-                'gui': WCCreateSeed,
-                'params': {'icon': icon_path('trustedcoin-wizard.png')},
+            "trustedcoin_create_seed": {
+                "gui": WCCreateSeed,
+                "params": {"icon": icon_path("trustedcoin-wizard.png")},
             },
-            'trustedcoin_confirm_seed': {
-                'gui': WCConfirmSeed,
-                'params': {'icon': icon_path('trustedcoin-wizard.png')},
+            "trustedcoin_confirm_seed": {
+                "gui": WCConfirmSeed,
+                "params": {"icon": icon_path("trustedcoin-wizard.png")},
             },
-            'trustedcoin_have_seed': {
-                'gui': WCHaveSeed,
-                'params': {'icon': icon_path('trustedcoin-wizard.png')},
+            "trustedcoin_have_seed": {
+                "gui": WCHaveSeed,
+                "params": {"icon": icon_path("trustedcoin-wizard.png")},
             },
-            'trustedcoin_keep_disable': {
-                'gui': WCKeepDisable,
-                'params': {'icon': icon_path('trustedcoin-wizard.png')},
+            "trustedcoin_keep_disable": {
+                "gui": WCKeepDisable,
+                "params": {"icon": icon_path("trustedcoin-wizard.png")},
             },
-            'trustedcoin_tos_email': {
-                'gui': WCTerms,
-                'params': {'icon': icon_path('trustedcoin-wizard.png')},
+            "trustedcoin_tos_email": {
+                "gui": WCTerms,
+                "params": {"icon": icon_path("trustedcoin-wizard.png")},
             },
-            'trustedcoin_show_confirm_otp': {
-                'gui': WCShowConfirmOTP,
-                'params': {'icon': icon_path('trustedcoin-wizard.png')},
-            }
+            "trustedcoin_show_confirm_otp": {
+                "gui": WCShowConfirmOTP,
+                "params": {"icon": icon_path("trustedcoin-wizard.png")},
+            },
         }
         wizard.navmap_merge(views)
 
         # modify default flow, insert seed extension entry/confirm as separate views
         ext = {
-            'trustedcoin_create_seed': {
-                'next': lambda d: 'trustedcoin_create_ext' if wizard.wants_ext(d) else 'trustedcoin_confirm_seed'
+            "trustedcoin_create_seed": {
+                "next": lambda d: (
+                    "trustedcoin_create_ext" if wizard.wants_ext(d) else "trustedcoin_confirm_seed"
+                )
             },
-            'trustedcoin_create_ext': {
-                'gui': WCEnterExt,
-                'params': {'icon': icon_path('trustedcoin-wizard.png')},
-                'next': 'trustedcoin_confirm_seed',
+            "trustedcoin_create_ext": {
+                "gui": WCEnterExt,
+                "params": {"icon": icon_path("trustedcoin-wizard.png")},
+                "next": "trustedcoin_confirm_seed",
             },
-            'trustedcoin_confirm_seed': {
-                'next': lambda d: 'trustedcoin_confirm_ext' if wizard.wants_ext(d) else 'trustedcoin_tos_email'
+            "trustedcoin_confirm_seed": {
+                "next": lambda d: (
+                    "trustedcoin_confirm_ext" if wizard.wants_ext(d) else "trustedcoin_tos_email"
+                )
             },
-            'trustedcoin_confirm_ext': {
-                'gui': WCConfirmExt,
-                'params': {'icon': icon_path('trustedcoin-wizard.png')},
-                'next': 'trustedcoin_tos_email',
+            "trustedcoin_confirm_ext": {
+                "gui": WCConfirmExt,
+                "params": {"icon": icon_path("trustedcoin-wizard.png")},
+                "next": "trustedcoin_tos_email",
             },
-            'trustedcoin_have_seed': {
-                'next': lambda d: 'trustedcoin_have_ext' if wizard.wants_ext(d) else 'trustedcoin_keep_disable'
+            "trustedcoin_have_seed": {
+                "next": lambda d: (
+                    "trustedcoin_have_ext" if wizard.wants_ext(d) else "trustedcoin_keep_disable"
+                )
             },
-            'trustedcoin_have_ext': {
-                'gui': WCEnterExt,
-                'params': {'icon': icon_path('trustedcoin-wizard.png')},
-                'next': 'trustedcoin_keep_disable',
+            "trustedcoin_have_ext": {
+                "gui": WCEnterExt,
+                "params": {"icon": icon_path("trustedcoin-wizard.png")},
+                "next": "trustedcoin_keep_disable",
             },
         }
         wizard.navmap_merge(ext)
 
         # insert page offering choice to go online or continue on another system
         ext_online = {
-            'trustedcoin_continue_online': {
-                'gui': WCContinueOnline,
-                'params': {'icon': icon_path('trustedcoin-wizard.png')},
-                'next': lambda d: 'trustedcoin_tos_email' if d['trustedcoin_go_online'] else 'wallet_password',
-                'accept': self.on_continue_online,
-                'last': lambda d: not d['trustedcoin_go_online'] and wizard.is_single_password()
+            "trustedcoin_continue_online": {
+                "gui": WCContinueOnline,
+                "params": {"icon": icon_path("trustedcoin-wizard.png")},
+                "next": lambda d: (
+                    "trustedcoin_tos_email" if d["trustedcoin_go_online"] else "wallet_password"
+                ),
+                "accept": self.on_continue_online,
+                "last": lambda d: not d["trustedcoin_go_online"] and wizard.is_single_password(),
             },
-            'trustedcoin_confirm_seed': {
-                'next': lambda d: 'trustedcoin_confirm_ext' if wizard.wants_ext(d) else 'trustedcoin_continue_online'
+            "trustedcoin_confirm_seed": {
+                "next": lambda d: (
+                    "trustedcoin_confirm_ext"
+                    if wizard.wants_ext(d)
+                    else "trustedcoin_continue_online"
+                )
             },
-            'trustedcoin_confirm_ext': {
-                'next': 'trustedcoin_continue_online',
+            "trustedcoin_confirm_ext": {
+                "next": "trustedcoin_continue_online",
             },
-            'trustedcoin_keep_disable': {
-                'next': lambda d: 'trustedcoin_continue_online' if d['trustedcoin_keepordisable'] != 'disable'
-                else 'wallet_password',
-            }
+            "trustedcoin_keep_disable": {
+                "next": lambda d: (
+                    "trustedcoin_continue_online"
+                    if d["trustedcoin_keepordisable"] != "disable"
+                    else "wallet_password"
+                ),
+            },
         }
         wizard.navmap_merge(ext_online)
 
     def on_continue_online(self, wizard_data):
-        if not wizard_data['trustedcoin_go_online']:
-            self.logger.debug('Staying offline, create keystores here')
+        if not wizard_data["trustedcoin_go_online"]:
+            self.logger.debug("Staying offline, create keystores here")
             xprv1, xpub1, xprv2, xpub2, xpub3, short_id = self.create_keys(wizard_data)
             k1 = keystore.from_xprv(xprv1)
             k2 = keystore.from_xpub(xpub2)
 
-            wizard_data['x1'] = k1.dump()
-            wizard_data['x2'] = k2.dump()
+            wizard_data["x1"] = k1.dump()
+            wizard_data["x2"] = k2.dump()
 
 
 class WCDisclaimer(WizardComponent):
     def __init__(self, parent, wizard):
-        WizardComponent.__init__(self, parent, wizard, title=_('Disclaimer'))
+        WizardComponent.__init__(self, parent, wizard, title=_("Disclaimer"))
 
-        self.layout().addWidget(WWLabel('\n\n'.join(DISCLAIMER)))
+        self.layout().addWidget(WWLabel("\n\n".join(DISCLAIMER)))
         self.layout().addStretch(1)
 
         self._valid = True
@@ -433,11 +509,11 @@ class WCDisclaimer(WizardComponent):
 
 class WCChooseSeed(WizardComponent):
     def __init__(self, parent, wizard):
-        WizardComponent.__init__(self, parent, wizard, title=_('Create or restore'))
-        message = _('Do you want to create a new seed, or restore a wallet using an existing seed?')
+        WizardComponent.__init__(self, parent, wizard, title=_("Create or restore"))
+        message = _("Do you want to create a new seed, or restore a wallet using an existing seed?")
         choices = [
-            ('createseed',  _('Create a new seed')),
-            ('haveseed',    _('I already have a seed')),
+            ("createseed", _("Create a new seed")),
+            ("haveseed", _("I already have a seed")),
         ]
 
         self.choice_w = ChoiceWidget(message=message, choices=choices)
@@ -447,12 +523,12 @@ class WCChooseSeed(WizardComponent):
         self._valid = True
 
     def apply(self):
-        self.wizard_data['keystore_type'] = self.choice_w.selected_item[0]
+        self.wizard_data["keystore_type"] = self.choice_w.selected_item[0]
 
 
 class WCTerms(WizardComponent):
     def __init__(self, parent, wizard):
-        WizardComponent.__init__(self, parent, wizard, title=_('Terms and conditions'))
+        WizardComponent.__init__(self, parent, wizard, title=_("Terms and conditions"))
         self._has_tos = False
 
     def on_ready(self):
@@ -486,27 +562,27 @@ class WCTerms(WizardComponent):
         self.error = error
 
     def validate(self):
-        if self._has_tos and self.email_e.text() != '':
+        if self._has_tos and self.email_e.text() != "":
             self.valid = True
         else:
             self.valid = False
 
     def apply(self):
-        self.wizard_data['2fa_email'] = self.email_e.text()
+        self.wizard_data["2fa_email"] = self.email_e.text()
 
 
 class WCShowConfirmOTP(WizardComponent):
     _logger = get_logger(__name__)
 
     def __init__(self, parent, wizard):
-        WizardComponent.__init__(self, parent, wizard, title=_('Authenticator secret'))
+        WizardComponent.__init__(self, parent, wizard, title=_("Authenticator secret"))
         self._otp_verified = False
 
         self.new_otp = QWidget()
         new_otp_layout = QVBoxLayout()
-        scanlabel = WWLabel(_('Enter or scan into authenticator app. Then authenticate below'))
+        scanlabel = WWLabel(_("Enter or scan into authenticator app. Then authenticate below"))
         new_otp_layout.addWidget(scanlabel)
-        self.qr = QRCodeWidget('')
+        self.qr = QRCodeWidget("")
         new_otp_layout.addWidget(self.qr)
         self.secretlabel = WWLabel()
         new_otp_layout.addWidget(self.secretlabel)
@@ -514,18 +590,22 @@ class WCShowConfirmOTP(WizardComponent):
 
         self.exist_otp = QWidget()
         exist_otp_layout = QVBoxLayout()
-        knownlabel = WWLabel(_('This wallet is already registered with TrustedCoin.'))
+        knownlabel = WWLabel(_("This wallet is already registered with TrustedCoin."))
         exist_otp_layout.addWidget(knownlabel)
-        knownsecretlabel = WWLabel(_('If you still have your OTP secret, then authenticate below to finalize wallet creation'))
+        knownsecretlabel = WWLabel(
+            _(
+                "If you still have your OTP secret, then authenticate below to finalize wallet creation"
+            )
+        )
         exist_otp_layout.addWidget(knownsecretlabel)
         self.exist_otp.setLayout(exist_otp_layout)
 
-        self.authlabelnew = WWLabel(_('Then, enter your Google Authenticator code:'))
-        self.authlabelexist = WWLabel(_('Google Authenticator code:'))
+        self.authlabelnew = WWLabel(_("Then, enter your Google Authenticator code:"))
+        self.authlabelexist = WWLabel(_("Google Authenticator code:"))
 
-        self.spinner = QMovie(icon_path('spinner.gif'))
+        self.spinner = QMovie(icon_path("spinner.gif"))
         self.spinner.setScaledSize(QSize(24, 24))
-        self.spinner.setBackgroundColor(QColor('black'))
+        self.spinner.setBackgroundColor(QColor("black"))
         self.spinner_l = QLabel()
         self.spinner_l.setMargin(5)
         self.spinner_l.setVisible(False)
@@ -535,8 +615,12 @@ class WCShowConfirmOTP(WizardComponent):
         self.otp_status_l.setAlignment(Qt.AlignHCenter)
         self.otp_status_l.setVisible(False)
 
-        self.resetlabel = WWLabel(_('If you have lost your OTP secret, click the button below to request a new secret from the server.'))
-        self.button = QPushButton('Request OTP secret')
+        self.resetlabel = WWLabel(
+            _(
+                "If you have lost your OTP secret, click the button below to request a new secret from the server."
+            )
+        )
+        self.button = QPushButton("Request OTP secret")
         self.button.clicked.connect(self.on_request_otp)
 
         hbox = QHBoxLayout()
@@ -565,10 +649,10 @@ class WCShowConfirmOTP(WizardComponent):
         self.wizard.trustedcoin_qhelper.otpError.connect(self.on_otp_error)
         self.wizard.trustedcoin_qhelper.remoteKeyError.connect(self.on_remote_key_error)
 
-        self.wizard.trustedcoin_qhelper.createKeystore(self.wizard_data['2fa_email'])
+        self.wizard.trustedcoin_qhelper.createKeystore(self.wizard_data["2fa_email"])
 
     def update(self):
-        is_new = bool(self.wizard.trustedcoin_qhelper.remoteKeyState != 'wallet_known')
+        is_new = bool(self.wizard.trustedcoin_qhelper.remoteKeyState != "wallet_known")
         self.new_otp.setVisible(is_new)
         self.exist_otp.setVisible(not is_new)
         self.authlabelnew.setVisible(is_new)
@@ -578,8 +662,10 @@ class WCShowConfirmOTP(WizardComponent):
 
         if self.wizard.trustedcoin_qhelper.otpSecret:
             self.secretlabel.setText(self.wizard.trustedcoin_qhelper.otpSecret)
-            uri = 'otpauth://totp/Electrum 2FA %s?secret=%s&digits=6' % (
-                self.wizard_data['wallet_name'], self.wizard.trustedcoin_qhelper.otpSecret)
+            uri = "otpauth://totp/Electrum 2FA %s?secret=%s&digits=6" % (
+                self.wizard_data["wallet_name"],
+                self.wizard.trustedcoin_qhelper.otpSecret,
+            )
             self.qr.setData(uri)
 
     def on_busy_changed(self):
@@ -599,7 +685,7 @@ class WCShowConfirmOTP(WizardComponent):
 
     def on_otp_success(self):
         self._otp_verified = True
-        self.otp_status_l.setText('Valid!')
+        self.otp_status_l.setText("Valid!")
         self.otp_status_l.setVisible(True)
         self.otp_status_l.setStyleSheet(ColorScheme.GREEN.as_stylesheet(False))
         self.setEnabled(True)
@@ -621,11 +707,13 @@ class WCShowConfirmOTP(WizardComponent):
         text = self.otp_e.text()
         if len(text) == 6:
             # verify otp
-            self.wizard.trustedcoin_qhelper.checkOtp(self.wizard.trustedcoin_qhelper.shortId, int(text))
+            self.wizard.trustedcoin_qhelper.checkOtp(
+                self.wizard.trustedcoin_qhelper.shortId, int(text)
+            )
             self.setEnabled(False)
             self.spinner_l.setVisible(True)
             self.spinner.start()
-            self.otp_e.setText('')
+            self.otp_e.setText("")
 
     def apply(self):
         pass
@@ -633,15 +721,17 @@ class WCShowConfirmOTP(WizardComponent):
 
 class WCKeepDisable(WizardComponent):
     def __init__(self, parent, wizard):
-        WizardComponent.__init__(self, parent, wizard, title=_('Restore 2FA wallet'))
-        message = ' '.join([
-            'You are going to restore a wallet protected with two-factor authentication.',
-            'Do you want to keep using two-factor authentication with this wallet,',
-            'or do you want to disable it, and have two master private keys in your wallet?'
-        ])
+        WizardComponent.__init__(self, parent, wizard, title=_("Restore 2FA wallet"))
+        message = " ".join(
+            [
+                "You are going to restore a wallet protected with two-factor authentication.",
+                "Do you want to keep using two-factor authentication with this wallet,",
+                "or do you want to disable it, and have two master private keys in your wallet?",
+            ]
+        )
         choices = [
-            ('keep',    _('Keep')),
-            ('disable', _('Disable')),
+            ("keep", _("Keep")),
+            ("disable", _("Disable")),
         ]
 
         self.choice_w = ChoiceWidget(message=message, choices=choices)
@@ -651,29 +741,36 @@ class WCKeepDisable(WizardComponent):
         self._valid = True
 
     def apply(self):
-        self.wizard_data['trustedcoin_keepordisable'] = self.choice_w.selected_item[0]
+        self.wizard_data["trustedcoin_keepordisable"] = self.choice_w.selected_item[0]
 
 
 class WCContinueOnline(WizardComponent):
     def __init__(self, parent, wizard):
-        WizardComponent.__init__(self, parent, wizard, title=_('Continue Online'))
+        WizardComponent.__init__(self, parent, wizard, title=_("Continue Online"))
 
     def on_ready(self):
-        path = os.path.join(os.path.dirname(self.wizard._daemon.config.get_wallet_path()), self.wizard_data['wallet_name'])
+        path = os.path.join(
+            os.path.dirname(self.wizard._daemon.config.get_wallet_path()),
+            self.wizard_data["wallet_name"],
+        )
         msg = [
             _("Your wallet file is: {}.").format(path),
-            _("You need to be online in order to complete the creation of "
-              "your wallet. If you want to continue online, keep the checkbox "
-              "checked and press Next."),
-            _("If you want this system to stay offline "
-              "and continue the completion of the wallet on an online system, "
-              "uncheck the checkbox and press Finish.")
+            _(
+                "You need to be online in order to complete the creation of "
+                "your wallet. If you want to continue online, keep the checkbox "
+                "checked and press Next."
+            ),
+            _(
+                "If you want this system to stay offline "
+                "and continue the completion of the wallet on an online system, "
+                "uncheck the checkbox and press Finish."
+            ),
         ]
 
-        self.layout().addWidget(WWLabel('\n\n'.join(msg)))
+        self.layout().addWidget(WWLabel("\n\n".join(msg)))
         self.layout().addStretch(1)
 
-        self.cb_online = QCheckBox(_('Go online to complete wallet creation'))
+        self.cb_online = QCheckBox(_("Go online to complete wallet creation"))
         self.cb_online.setChecked(True)
         self.cb_online.stateChanged.connect(self.on_updated)
         # self.cb_online.setToolTip(_("Check this box to request a new secret. You will need to retype your seed."))
@@ -684,4 +781,4 @@ class WCContinueOnline(WizardComponent):
         self._valid = True
 
     def apply(self):
-        self.wizard_data['trustedcoin_go_online'] = self.cb_online.isChecked()
+        self.wizard_data["trustedcoin_go_online"] = self.cb_online.isChecked()

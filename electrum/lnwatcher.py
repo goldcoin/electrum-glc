@@ -12,7 +12,13 @@ from . import util
 from .sql_db import SqlDB, sql
 from .wallet_db import WalletDB
 from .util import bfh, log_exceptions, ignore_exceptions, TxMinedInfo, random_shuffled_copy
-from .address_synchronizer import AddressSynchronizer, TX_HEIGHT_LOCAL, TX_HEIGHT_UNCONF_PARENT, TX_HEIGHT_UNCONFIRMED, TX_HEIGHT_FUTURE
+from .address_synchronizer import (
+    AddressSynchronizer,
+    TX_HEIGHT_LOCAL,
+    TX_HEIGHT_UNCONF_PARENT,
+    TX_HEIGHT_UNCONFIRMED,
+    TX_HEIGHT_FUTURE,
+)
 from .transaction import Transaction, TxOutpoint
 from .transaction import match_script_against_template
 from .lnutil import WITNESS_TEMPLATE_RECEIVED_HTLC, WITNESS_TEMPLATE_OFFERED_HTLC
@@ -24,21 +30,24 @@ if TYPE_CHECKING:
     from .lnsweep import SweepInfo
     from .lnworker import LNWallet
 
+
 class ListenerItem(NamedTuple):
     # this is triggered when the lnwatcher is all done with the outpoint used as index in LNWatcher.tx_progress
-    all_done : asyncio.Event
+    all_done: asyncio.Event
     # txs we broadcast are put on this queue so that the test can wait for them to get mined
-    tx_queue : asyncio.Queue
+    tx_queue: asyncio.Queue
+
 
 class TxMinedDepth(IntEnum):
-    """ IntEnum because we call min() in get_deepest_tx_mined_depth_for_txids """
+    """IntEnum because we call min() in get_deepest_tx_mined_depth_for_txids"""
+
     DEEP = auto()
     SHALLOW = auto()
     MEMPOOL = auto()
     FREE = auto()
 
 
-create_sweep_txs="""
+create_sweep_txs = """
 CREATE TABLE IF NOT EXISTS sweep_txs (
 funding_outpoint VARCHAR(34) NOT NULL,
 ctn INTEGER NOT NULL,
@@ -46,7 +55,7 @@ prevout VARCHAR(34),
 tx VARCHAR
 )"""
 
-create_channel_info="""
+create_channel_info = """
 CREATE TABLE IF NOT EXISTS channel_info (
 outpoint VARCHAR(34) NOT NULL,
 address VARCHAR(32),
@@ -68,7 +77,10 @@ class SweepStore(SqlDB):
     @sql
     def get_sweep_tx(self, funding_outpoint, prevout):
         c = self.conn.cursor()
-        c.execute("SELECT tx FROM sweep_txs WHERE funding_outpoint=? AND prevout=?", (funding_outpoint, prevout))
+        c.execute(
+            "SELECT tx FROM sweep_txs WHERE funding_outpoint=? AND prevout=?",
+            (funding_outpoint, prevout),
+        )
         return [Transaction(r[0].hex()) for r in c.fetchall()]
 
     @sql
@@ -81,7 +93,10 @@ class SweepStore(SqlDB):
     def add_sweep_tx(self, funding_outpoint, ctn, prevout, raw_tx):
         c = self.conn.cursor()
         assert Transaction(raw_tx).is_complete()
-        c.execute("""INSERT INTO sweep_txs (funding_outpoint, ctn, prevout, tx) VALUES (?,?,?,?)""", (funding_outpoint, ctn, prevout, bfh(raw_tx)))
+        c.execute(
+            """INSERT INTO sweep_txs (funding_outpoint, ctn, prevout, tx) VALUES (?,?,?,?)""",
+            (funding_outpoint, ctn, prevout, bfh(raw_tx)),
+        )
         self.conn.commit()
 
     @sql
@@ -137,16 +152,17 @@ class SweepStore(SqlDB):
 
 from .util import EventListener, event_listener
 
+
 class LNWatcher(Logger, EventListener):
 
-    LOGGING_SHORTCUT = 'W'
+    LOGGING_SHORTCUT = "W"
 
-    def __init__(self, adb: 'AddressSynchronizer', network: 'Network'):
+    def __init__(self, adb: "AddressSynchronizer", network: "Network"):
 
         Logger.__init__(self)
         self.adb = adb
         self.config = network.config
-        self.callbacks = {} # address -> lambda: coroutine
+        self.callbacks = {}  # address -> lambda: coroutine
         self.network = network
         self.register_callbacks()
         # status gets populated when we run
@@ -156,7 +172,7 @@ class LNWatcher(Logger, EventListener):
         self.unregister_callbacks()
 
     def get_channel_status(self, outpoint):
-        return self.channel_status.get(outpoint, 'unknown')
+        return self.channel_status.get(outpoint, "unknown")
 
     def add_channel(self, outpoint: str, address: str) -> None:
         assert isinstance(outpoint, str)
@@ -165,7 +181,7 @@ class LNWatcher(Logger, EventListener):
         self.add_callback(address, cb)
 
     async def unwatch_channel(self, address, funding_outpoint):
-        self.logger.info(f'unwatching {funding_outpoint}')
+        self.logger.info(f"unwatching {funding_outpoint}")
         self.remove_callback(address)
 
     def remove_callback(self, address):
@@ -215,7 +231,7 @@ class LNWatcher(Logger, EventListener):
         # inspect_tx_candidate might have added new addresses, in which case we return early
         if not self.adb.is_up_to_date():
             return
-        funding_txid = funding_outpoint.split(':')[0]
+        funding_txid = funding_outpoint.split(":")[0]
         funding_height = self.adb.get_tx_height(funding_txid)
         closing_txid = spenders.get(funding_outpoint)
         closing_height = self.adb.get_tx_height(closing_txid)
@@ -224,7 +240,9 @@ class LNWatcher(Logger, EventListener):
             if closing_tx:
                 keep_watching = await self.do_breach_remedy(funding_outpoint, closing_tx, spenders)
             else:
-                self.logger.info(f"channel {funding_outpoint} closed by {closing_txid}. still waiting for tx itself...")
+                self.logger.info(
+                    f"channel {funding_outpoint} closed by {closing_txid}. still waiting for tx itself..."
+                )
                 keep_watching = True
         else:
             keep_watching = True
@@ -234,16 +252,24 @@ class LNWatcher(Logger, EventListener):
             funding_height=funding_height,
             closing_txid=closing_txid,
             closing_height=closing_height,
-            keep_watching=keep_watching)
+            keep_watching=keep_watching,
+        )
         if not keep_watching:
             await self.unwatch_channel(address, funding_outpoint)
 
     async def do_breach_remedy(self, funding_outpoint, closing_tx, spenders) -> bool:
         raise NotImplementedError()  # implemented by subclasses
 
-    async def update_channel_state(self, *, funding_outpoint: str, funding_txid: str,
-                                   funding_height: TxMinedInfo, closing_txid: str,
-                                   closing_height: TxMinedInfo, keep_watching: bool) -> None:
+    async def update_channel_state(
+        self,
+        *,
+        funding_outpoint: str,
+        funding_txid: str,
+        funding_height: TxMinedInfo,
+        closing_txid: str,
+        closing_height: TxMinedInfo,
+        keep_watching: bool,
+    ) -> None:
         raise NotImplementedError()  # implemented by subclasses
 
     def inspect_tx_candidate(self, outpoint, n):
@@ -254,16 +280,18 @@ class LNWatcher(Logger, EventListener):
         n==1 => outpoint is a commitment or close output: to_local, to_remote or first-stage htlc
         n==2 => outpoint is a second-stage htlc
         """
-        prev_txid, index = outpoint.split(':')
+        prev_txid, index = outpoint.split(":")
         spender_txid = self.adb.db.get_spent_outpoint(prev_txid, int(index))
-        result = {outpoint:spender_txid}
+        result = {outpoint: spender_txid}
         if n == 0:
             if spender_txid is None:
-                self.channel_status[outpoint] = 'open'
+                self.channel_status[outpoint] = "open"
             elif not self.is_deeply_mined(spender_txid):
-                self.channel_status[outpoint] = 'closed (%d)' % self.adb.get_tx_height(spender_txid).conf
+                self.channel_status[outpoint] = (
+                    "closed (%d)" % self.adb.get_tx_height(spender_txid).conf
+                )
             else:
-                self.channel_status[outpoint] = 'closed (deep)'
+                self.channel_status[outpoint] = "closed (deep)"
         if spender_txid is None:
             return result
         spender_tx = self.adb.get_transaction(spender_txid)
@@ -280,10 +308,10 @@ class LNWatcher(Logger, EventListener):
                 return result
             redeem_script = witness[-1]
             if match_script_against_template(redeem_script, WITNESS_TEMPLATE_OFFERED_HTLC):
-                #self.logger.info(f"input script matches offered htlc {redeem_script.hex()}")
+                # self.logger.info(f"input script matches offered htlc {redeem_script.hex()}")
                 pass
             elif match_script_against_template(redeem_script, WITNESS_TEMPLATE_RECEIVED_HTLC):
-                #self.logger.info(f"input script matches received htlc {redeem_script.hex()}")
+                # self.logger.info(f"input script matches received htlc {redeem_script.hex()}")
                 pass
             else:
                 return result
@@ -293,7 +321,7 @@ class LNWatcher(Logger, EventListener):
             if not self.adb.is_mine(o.address):
                 self.adb.add_address(o.address)
             elif n < 2:
-                r = self.inspect_tx_candidate(spender_txid+':%d'%i, n+1)
+                r = self.inspect_tx_candidate(spender_txid + ":%d" % i, n + 1)
                 result.update(r)
         return result
 
@@ -322,17 +350,21 @@ class LNWatcher(Logger, EventListener):
 
 class WatchTower(LNWatcher):
 
-    LOGGING_SHORTCUT = 'W'
+    LOGGING_SHORTCUT = "W"
 
-    def __init__(self, network: 'Network'):
-        adb = AddressSynchronizer(WalletDB('', storage=None, upgrade=True), network.config, name=self.diagnostic_name())
+    def __init__(self, network: "Network"):
+        adb = AddressSynchronizer(
+            WalletDB("", storage=None, upgrade=True), network.config, name=self.diagnostic_name()
+        )
         adb.start_network(network)
         LNWatcher.__init__(self, adb, network)
         self.network = network
-        self.sweepstore = SweepStore(os.path.join(self.network.config.path, "watchtower_db"), network)
+        self.sweepstore = SweepStore(
+            os.path.join(self.network.config.path, "watchtower_db"), network
+        )
         # this maps funding_outpoints to ListenerItems, which have an event for when the watcher is done,
         # and a queue for seeing which txs are being published
-        self.tx_progress = {} # type: Dict[str, ListenerItem]
+        self.tx_progress = {}  # type: Dict[str, ListenerItem]
 
     async def stop(self):
         await super().stop()
@@ -366,32 +398,39 @@ class WatchTower(LNWatcher):
         try:
             txid = await self.network.broadcast_transaction(tx)
         except Exception as e:
-            self.logger.info(f'broadcast failure: txid={tx.txid()}, funding_outpoint={funding_outpoint}: {repr(e)}')
+            self.logger.info(
+                f"broadcast failure: txid={tx.txid()}, funding_outpoint={funding_outpoint}: {repr(e)}"
+            )
         else:
-            self.logger.info(f'broadcast success: txid={tx.txid()}, funding_outpoint={funding_outpoint}')
+            self.logger.info(
+                f"broadcast success: txid={tx.txid()}, funding_outpoint={funding_outpoint}"
+            )
             if funding_outpoint in self.tx_progress:
                 await self.tx_progress[funding_outpoint].tx_queue.put(tx)
             return txid
 
     async def get_ctn(self, outpoint, addr):
         if addr not in self.callbacks.keys():
-            self.logger.info(f'watching new channel: {outpoint} {addr}')
+            self.logger.info(f"watching new channel: {outpoint} {addr}")
             self.add_channel(outpoint, addr)
         return await self.sweepstore.get_ctn(outpoint, addr)
 
     def get_num_tx(self, outpoint):
         async def f():
             return await self.sweepstore.get_num_tx(outpoint)
+
         return self.network.run_from_another_thread(f())
 
     def list_sweep_tx(self):
         async def f():
             return await self.sweepstore.list_sweep_tx()
+
         return self.network.run_from_another_thread(f())
 
     def list_channels(self):
         async def f():
             return await self.sweepstore.list_channels()
+
         return self.network.run_from_another_thread(f())
 
     async def unwatch_channel(self, address, funding_outpoint):
@@ -405,11 +444,9 @@ class WatchTower(LNWatcher):
         pass
 
 
-
-
 class LNWalletWatcher(LNWatcher):
 
-    def __init__(self, lnworker: 'LNWallet', network: 'Network'):
+    def __init__(self, lnworker: "LNWallet", network: "Network"):
         self.network = network
         self.lnworker = lnworker
         LNWatcher.__init__(self, lnworker.wallet.adb, network)
@@ -419,9 +456,16 @@ class LNWalletWatcher(LNWatcher):
 
     @ignore_exceptions
     @log_exceptions
-    async def update_channel_state(self, *, funding_outpoint: str, funding_txid: str,
-                                   funding_height: TxMinedInfo, closing_txid: str,
-                                   closing_height: TxMinedInfo, keep_watching: bool) -> None:
+    async def update_channel_state(
+        self,
+        *,
+        funding_outpoint: str,
+        funding_txid: str,
+        funding_height: TxMinedInfo,
+        closing_txid: str,
+        closing_height: TxMinedInfo,
+        keep_watching: bool,
+    ) -> None:
         chan = self.lnworker.channel_by_txo(funding_outpoint)
         if not chan:
             return
@@ -430,7 +474,8 @@ class LNWalletWatcher(LNWatcher):
             funding_height=funding_height,
             closing_txid=closing_txid,
             closing_height=closing_height,
-            keep_watching=keep_watching)
+            keep_watching=keep_watching,
+        )
         await self.lnworker.handle_onchain_state(chan)
 
     @log_exceptions
@@ -444,22 +489,24 @@ class LNWalletWatcher(LNWatcher):
         keep_watching = False if sweep_info_dict else not self.is_deeply_mined(closing_tx.txid())
         # create and broadcast transaction
         for prevout, sweep_info in sweep_info_dict.items():
-            name = sweep_info.name + ' ' + chan.get_id_for_log()
+            name = sweep_info.name + " " + chan.get_id_for_log()
             spender_txid = spenders.get(prevout)
             spender_tx = self.adb.get_transaction(spender_txid) if spender_txid else None
             if spender_tx:
                 # the spender might be the remote, revoked or not
                 e_htlc_tx = chan.maybe_sweep_revoked_htlc(closing_tx, spender_tx)
                 if e_htlc_tx:
-                    spender2 = spenders.get(spender_txid+':0')
+                    spender2 = spenders.get(spender_txid + ":0")
                     if spender2:
                         keep_watching |= not self.is_deeply_mined(spender2)
                     else:
                         keep_watching = True
-                    await self.maybe_redeem(spenders, spender_txid+':0', e_htlc_tx, name)
+                    await self.maybe_redeem(spenders, spender_txid + ":0", e_htlc_tx, name)
                 else:
                     keep_watching |= not self.is_deeply_mined(spender_tx.txid())
-                    txin_idx = spender_tx.get_input_idx_that_spent_prevout(TxOutpoint.from_str(prevout))
+                    txin_idx = spender_tx.get_input_idx_that_spent_prevout(
+                        TxOutpoint.from_str(prevout)
+                    )
                     assert txin_idx is not None
                     spender_txin = spender_tx.inputs()[txin_idx]
                     chan.extract_preimage_from_htlc_txin(spender_txin)
@@ -470,7 +517,7 @@ class LNWalletWatcher(LNWatcher):
 
         return keep_watching
 
-    def get_redeem_tx(self, spenders, prevout: str, sweep_info: 'SweepInfo', name: str):
+    def get_redeem_tx(self, spenders, prevout: str, sweep_info: "SweepInfo", name: str):
         # check if redeem tx needs to be updated
         # if it is in the mempool, we need to check fee rise
         txid = spenders.get(prevout)
@@ -482,7 +529,7 @@ class LNWalletWatcher(LNWatcher):
             return old_tx, None
         new_tx = sweep_info.gen_tx()
         if new_tx is None:
-            self.logger.info(f'{name} could not claim output: {prevout}, dust')
+            self.logger.info(f"{name} could not claim output: {prevout}, dust")
             assert old_tx is not None
             return old_tx, None
         if txid is None:
@@ -490,7 +537,7 @@ class LNWalletWatcher(LNWatcher):
         elif tx_depth == TxMinedDepth.MEMPOOL:
             delta = new_tx.get_fee() - self.adb.get_tx_fee(txid)
             if delta > 1:
-                self.logger.info(f'increasing fee of mempool tx {name}: {prevout}')
+                self.logger.info(f"increasing fee of mempool tx {name}: {prevout}")
                 return old_tx, new_tx
             else:
                 assert old_tx is not None
@@ -503,11 +550,11 @@ class LNWalletWatcher(LNWatcher):
             assert old_tx is not None
             return old_tx, None
 
-    async def maybe_redeem(self, spenders, prevout, sweep_info: 'SweepInfo', name: str) -> None:
+    async def maybe_redeem(self, spenders, prevout, sweep_info: "SweepInfo", name: str) -> None:
         old_tx, new_tx = self.get_redeem_tx(spenders, prevout, sweep_info, name)
         if new_tx is None:
             return
-        prev_txid, prev_index = prevout.split(':')
+        prev_txid, prev_index = prevout.split(":")
         can_broadcast = True
         local_height = self.network.get_local_height()
         if sweep_info.cltv_abs:
@@ -527,7 +574,7 @@ class LNWalletWatcher(LNWatcher):
                 #     f"pending redeem for {prevout}. waiting for {name}: CSV "
                 #     f"({local_height=}, {wanted_height=}, {prev_height.height=}, {sweep_info.csv_delay=})")
         if can_broadcast:
-            self.logger.info(f'we can broadcast: {name}')
+            self.logger.info(f"we can broadcast: {name}")
             tx_was_added = await self.network.try_broadcasting(new_tx, name)
         else:
             # we may have a tx with a different fee, in which case it will be replaced
@@ -535,10 +582,12 @@ class LNWalletWatcher(LNWatcher):
                 try:
                     tx_was_added = self.adb.add_transaction(new_tx, is_new=(old_tx is None))
                 except Exception as e:
-                    self.logger.info(f'could not add future tx: {name}. prevout: {prevout} {str(e)}')
+                    self.logger.info(
+                        f"could not add future tx: {name}. prevout: {prevout} {str(e)}"
+                    )
                     tx_was_added = False
                 if tx_was_added:
-                    self.logger.info(f'added redeem tx: {name}. prevout: {prevout}')
+                    self.logger.info(f"added redeem tx: {name}. prevout: {prevout}")
             else:
                 tx_was_added = False
             # set future tx regardless of tx_was_added, because it is not persisted
@@ -548,4 +597,4 @@ class LNWalletWatcher(LNWatcher):
             self.lnworker.wallet.set_label(new_tx.txid(), name)
             if old_tx and old_tx.txid() != new_tx.txid():
                 self.lnworker.wallet.set_label(old_tx.txid(), None)
-            util.trigger_callback('wallet_updated', self.lnworker.wallet)
+            util.trigger_callback("wallet_updated", self.lnworker.wallet)

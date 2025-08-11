@@ -12,8 +12,13 @@ from typing import Optional
 from functools import cached_property
 
 from .crypto import sha256, hmac_oneshot, chacha20_poly1305_encrypt, chacha20_poly1305_decrypt
-from .lnutil import (get_ecdh, privkey_to_pubkey, LightningPeerConnectionClosed,
-                     HandshakeFailed, LNPeerAddr)
+from .lnutil import (
+    get_ecdh,
+    privkey_to_pubkey,
+    LightningPeerConnectionClosed,
+    HandshakeFailed,
+    LNPeerAddr,
+)
 from . import ecc
 from .util import MySocksProxy
 
@@ -34,25 +39,27 @@ class HandshakeState(object):
         self.h = sha256(self.h + data)
         return self.h
 
+
 def get_nonce_bytes(n):
     """BOLT 8 requires the nonce to be 12 bytes, 4 bytes leading
     zeroes and 8 bytes little endian encoded 64 bit integer.
     """
-    return b"\x00"*4 + n.to_bytes(8, 'little')
+    return b"\x00" * 4 + n.to_bytes(8, "little")
+
 
 def aead_encrypt(key: bytes, nonce: int, associated_data: bytes, data: bytes) -> bytes:
     nonce_bytes = get_nonce_bytes(nonce)
-    return chacha20_poly1305_encrypt(key=key,
-                                     nonce=nonce_bytes,
-                                     associated_data=associated_data,
-                                     data=data)
+    return chacha20_poly1305_encrypt(
+        key=key, nonce=nonce_bytes, associated_data=associated_data, data=data
+    )
+
 
 def aead_decrypt(key: bytes, nonce: int, associated_data: bytes, data: bytes) -> bytes:
     nonce_bytes = get_nonce_bytes(nonce)
-    return chacha20_poly1305_decrypt(key=key,
-                                     nonce=nonce_bytes,
-                                     associated_data=associated_data,
-                                     data=data)
+    return chacha20_poly1305_decrypt(
+        key=key, nonce=nonce_bytes, associated_data=associated_data, data=data
+    )
+
 
 def get_bolt8_hkdf(salt, ikm):
     """RFC5869 HKDF instantiated in the specific form
@@ -61,10 +68,10 @@ def get_bolt8_hkdf(salt, ikm):
     with info field set to a zero length string as per BOLT8
     Return as two 32 byte fields.
     """
-    #Extract
+    # Extract
     prk = hmac_oneshot(salt, msg=ikm, digest=hashlib.sha256)
     assert len(prk) == 32
-    #Expand
+    # Expand
     info = b""
     T0 = b""
     T1 = hmac_oneshot(prk, T0 + info + b"\x01", digest=hashlib.sha256)
@@ -72,12 +79,13 @@ def get_bolt8_hkdf(salt, ikm):
     assert len(T1 + T2) == 64
     return T1, T2
 
+
 def act1_initiator_message(hs, epriv, epub):
     ss = get_ecdh(epriv, hs.responder_pub)
     ck2, temp_k1 = get_bolt8_hkdf(hs.ck, ss)
     hs.ck = ck2
     c = aead_encrypt(temp_k1, 0, hs.update(epub), b"")
-    #for next step if we do it
+    # for next step if we do it
     hs.update(c)
     msg = hs.handshake_version + epub + c
     assert len(msg) == 50
@@ -103,16 +111,16 @@ class LNTransportBase:
     @cached_property
     def _id_hash(self) -> str:
         id_int = id(self)
-        id_bytes = id_int.to_bytes((id_int.bit_length() + 7) // 8, byteorder='big')
+        id_bytes = id_int.to_bytes((id_int.bit_length() + 7) // 8, byteorder="big")
         return sha256(id_bytes).hex()
 
     def send_bytes(self, msg: bytes) -> None:
-        l = len(msg).to_bytes(2, 'big')
-        lc = aead_encrypt(self.sk, self.sn(), b'', l)
-        c = aead_encrypt(self.sk, self.sn(), b'', msg)
+        l = len(msg).to_bytes(2, "big")
+        lc = aead_encrypt(self.sk, self.sn(), b"", l)
+        c = aead_encrypt(self.sk, self.sn(), b"", msg)
         assert len(lc) == 18
         assert len(c) == len(msg) + 16
-        self.writer.write(lc+c)
+        self.writer.write(lc + c)
 
     async def read_messages(self):
         buffer = bytearray()
@@ -122,13 +130,13 @@ class LNTransportBase:
             while True:
                 if len(buffer) >= 18:
                     lc = bytes(buffer[:18])
-                    l = aead_decrypt(rk_l, rn_l, b'', lc)
-                    length = int.from_bytes(l, 'big')
+                    l = aead_decrypt(rk_l, rn_l, b"", lc)
+                    length = int.from_bytes(l, "big")
                     offset = 18 + length + 16
                     if len(buffer) >= offset:
                         c = bytes(buffer[18:offset])
                         del buffer[:offset]  # much faster than: buffer=buffer[offset:]
-                        msg = aead_decrypt(rk_m, rn_m, b'', c)
+                        msg = aead_decrypt(rk_m, rn_m, b"", c)
                         yield msg
                         break
                 try:
@@ -184,16 +192,16 @@ class LNResponderTransport(LNTransportBase):
 
     async def handshake(self, **kwargs):
         hs = HandshakeState(privkey_to_pubkey(self.privkey))
-        act1 = b''
+        act1 = b""
         while len(act1) < 50:
             buf = await self.reader.read(50 - len(act1))
             if not buf:
-                raise HandshakeFailed('responder disconnected')
+                raise HandshakeFailed("responder disconnected")
             act1 += buf
         if len(act1) != 50:
-            raise HandshakeFailed('responder: short act 1 read, length is ' + str(len(act1)))
+            raise HandshakeFailed("responder: short act 1 read, length is " + str(len(act1)))
         if bytes([act1[0]]) != HandshakeState.handshake_version:
-            raise HandshakeFailed('responder: bad handshake version in act 1')
+            raise HandshakeFailed("responder: bad handshake version in act 1")
         c = act1[-16:]
         re = act1[1:34]
         h = hs.update(re)
@@ -203,10 +211,10 @@ class LNResponderTransport(LNTransportBase):
         hs.update(c)
 
         # act 2
-        if 'epriv' not in kwargs:
+        if "epriv" not in kwargs:
             epriv, epub = create_ephemeral_key()
         else:
-            epriv = kwargs['epriv']
+            epriv = kwargs["epriv"]
             epub = ecc.ECPrivkey(epriv).get_public_key_bytes()
         hs.ck = ck
         hs.responder_pub = re
@@ -215,23 +223,23 @@ class LNResponderTransport(LNTransportBase):
         self.writer.write(msg)
 
         # act 3
-        act3 = b''
+        act3 = b""
         while len(act3) < 66:
             buf = await self.reader.read(66 - len(act3))
             if not buf:
-                raise HandshakeFailed('responder disconnected')
+                raise HandshakeFailed("responder disconnected")
             act3 += buf
         if len(act3) != 66:
-            raise HandshakeFailed('responder: short act 3 read, length is ' + str(len(act3)))
+            raise HandshakeFailed("responder: short act 3 read, length is " + str(len(act3)))
         if bytes([act3[0]]) != HandshakeState.handshake_version:
-            raise HandshakeFailed('responder: bad handshake version in act 3')
+            raise HandshakeFailed("responder: bad handshake version in act 3")
         c = act3[1:50]
         t = act3[-16:]
         rs = aead_decrypt(temp_k2, 1, hs.h, c)
         ss = get_ecdh(epriv, rs)
         ck, temp_k3 = get_bolt8_hkdf(hs.ck, ss)
         _p = aead_decrypt(temp_k3, 0, hs.update(c), t)
-        self.rk, self.sk = get_bolt8_hkdf(ck, b'')
+        self.rk, self.sk = get_bolt8_hkdf(ck, b"")
         self.init_counters(ck)
         self._pubkey = rs
         return rs
@@ -243,8 +251,7 @@ class LNResponderTransport(LNTransportBase):
 class LNTransport(LNTransportBase):
     """Transport initiated by local party."""
 
-    def __init__(self, privkey: bytes, peer_addr: LNPeerAddr, *,
-                 proxy: Optional[dict]):
+    def __init__(self, privkey: bytes, peer_addr: LNPeerAddr, *, proxy: Optional[dict]):
         LNTransportBase.__init__(self)
         assert type(privkey) is bytes and len(privkey) == 32
         self.privkey = privkey
@@ -253,9 +260,13 @@ class LNTransport(LNTransportBase):
 
     async def handshake(self):
         if not self.proxy:
-            self.reader, self.writer = await asyncio.open_connection(self.peer_addr.host, self.peer_addr.port)
+            self.reader, self.writer = await asyncio.open_connection(
+                self.peer_addr.host, self.peer_addr.port
+            )
         else:
-            self.reader, self.writer = await self.proxy.open_connection(self.peer_addr.host, self.peer_addr.port)
+            self.reader, self.writer = await self.proxy.open_connection(
+                self.peer_addr.host, self.peer_addr.port
+            )
         hs = HandshakeState(self.peer_addr.pubkey)
         # Get a new ephemeral key
         epriv, epub = create_ephemeral_key()
@@ -265,8 +276,10 @@ class LNTransport(LNTransportBase):
         self.writer.write(msg)
         rspns = await self.reader.read(2**10)
         if len(rspns) != 50:
-            raise HandshakeFailed(f"Lightning handshake act 1 response has bad length, "
-                                  f"are you sure this is the right pubkey? {self.peer_addr}")
+            raise HandshakeFailed(
+                f"Lightning handshake act 1 response has bad length, "
+                f"are you sure this is the right pubkey? {self.peer_addr}"
+            )
         hver, alice_epub, tag = rspns[0], rspns[1:34], rspns[34:]
         if bytes([hver]) != hs.handshake_version:
             raise HandshakeFailed("unexpected handshake version: {}".format(hver))
@@ -284,10 +297,10 @@ class LNTransport(LNTransportBase):
         ss = get_ecdh(self.privkey[:32], alice_epub)
         ck, temp_k3 = get_bolt8_hkdf(hs.ck, ss)
         hs.ck = ck
-        t = aead_encrypt(temp_k3, 0, hs.h, b'')
+        t = aead_encrypt(temp_k3, 0, hs.h, b"")
         msg = hs.handshake_version + c + t
         self.writer.write(msg)
-        self.sk, self.rk = get_bolt8_hkdf(hs.ck, b'')
+        self.sk, self.rk = get_bolt8_hkdf(hs.ck, b"")
         self.init_counters(ck)
 
     def remote_pubkey(self) -> Optional[bytes]:

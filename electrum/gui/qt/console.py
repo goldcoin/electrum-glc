@@ -1,4 +1,3 @@
-
 # source: http://stackoverflow.com/questions/2758159/how-to-embed-a-python-interpreter-in-a-pyqt-widget
 
 import sys
@@ -16,12 +15,12 @@ from electrum.i18n import _
 from .util import MONOSPACE_FONT, font_height
 
 # sys.ps1 and sys.ps2 are only declared if an interpreter is in interactive mode.
-sys.ps1 = '>>> '
-sys.ps2 = '... '
+sys.ps1 = ">>> "
+sys.ps2 = "... "
 
 
 class OverlayLabel(QtWidgets.QLabel):
-    STYLESHEET = '''
+    STYLESHEET = """
     QLabel, QLabel link {
         color: rgb(0, 0, 0);
         background-color: rgb(248, 240, 200);
@@ -29,7 +28,8 @@ class OverlayLabel(QtWidgets.QLabel):
         border-color: rgb(255, 114, 47);
         padding: 2px;
     }
-    '''
+    """
+
     def __init__(self, text, parent):
         super().__init__(text, parent)
         self.setMinimumHeight(max(150, 10 * font_height()))
@@ -61,20 +61,24 @@ class Console(QtWidgets.QPlainTextEdit):
         self.setFont(QtGui.QFont(MONOSPACE_FONT, 10, QtGui.QFont.Normal))
         self.newPrompt("")  # make sure there is always a prompt, even before first server.banner
 
-        self.updateNamespace({'run':self.run_script})
+        self.updateNamespace({"run": self.run_script})
         self.set_json(False)
 
         warning_text = "<h1>{}</h1><br>{}<br><br>{}".format(
             _("Warning!"),
-            _("Do not paste code here that you don't understand. Executing the wrong code could lead "
-              "to your coins being irreversibly lost."),
-            _("Click here to hide this message.")
+            _(
+                "Do not paste code here that you don't understand. Executing the wrong code could lead "
+                "to your coins being irreversibly lost."
+            ),
+            _("Click here to hide this message."),
         )
         self.messageOverlay = OverlayLabel(warning_text, self)
 
     def resizeEvent(self, e):
         super().resizeEvent(e)
-        vertical_scrollbar_width = self.verticalScrollBar().width() * self.verticalScrollBar().isVisible()
+        vertical_scrollbar_width = (
+            self.verticalScrollBar().width() * self.verticalScrollBar().isVisible()
+        )
         self.messageOverlay.on_resize(self.width() - vertical_scrollbar_width)
 
     def set_json(self, b):
@@ -96,13 +100,13 @@ class Console(QtWidgets.QPlainTextEdit):
 
     def clear(self):
         curr_line = self.getCommand()
-        self.setPlainText('')
+        self.setPlainText("")
         self.newPrompt(curr_line)
 
     def keyboard_interrupt(self):
         self.construct = []
-        self.appendPlainText('KeyboardInterrupt')
-        self.newPrompt('')
+        self.appendPlainText("KeyboardInterrupt")
+        self.newPrompt("")
 
     def newPrompt(self, curr_line):
         if self.construct:
@@ -121,7 +125,7 @@ class Console(QtWidgets.QPlainTextEdit):
         curr_line = doc.findBlockByLineNumber(doc.lineCount() - 1).text()
         if strip:
             curr_line = curr_line.rstrip()
-        curr_line = curr_line[len(sys.ps1):]
+        curr_line = curr_line[len(sys.ps1) :]
         return curr_line
 
     def setCommand(self, command):
@@ -145,10 +149,10 @@ class Console(QtWidgets.QPlainTextEdit):
         c = self.textCursor()
         c.setPosition(self.completions_pos)
 
-        completions = map(lambda x: x.split('.')[-1], completions)
-        t = '\n' + ' '.join(completions)
+        completions = map(lambda x: x.split(".")[-1], completions)
+        t = "\n" + " ".join(completions)
         if len(t) > 500:
-            t = t[:500] + '...'
+            t = t[:500] + "..."
         c.insertText(t)
         self.completions_end = c.position()
 
@@ -161,7 +165,8 @@ class Console(QtWidgets.QPlainTextEdit):
         c = self.textCursor()
         c.setPosition(self.completions_pos)
         l = self.completions_end - self.completions_pos
-        for x in range(l): c.deleteChar()
+        for x in range(l):
+            c.deleteChar()
 
         self.moveCursor(QtGui.QTextCursor.End)
         self.completions_visible = False
@@ -170,20 +175,20 @@ class Console(QtWidgets.QPlainTextEdit):
         if self.construct:
             self.construct.append(command)
             if not command:
-                ret_val = '\n'.join(self.construct)
+                ret_val = "\n".join(self.construct)
                 self.construct = []
                 return ret_val
             else:
-                return ''
+                return ""
         else:
-            if command and command[-1] == (':'):
+            if command and command[-1] == (":"):
                 self.construct.append(command)
-                return ''
+                return ""
             else:
                 return command
 
     def addToHistory(self, command):
-        if not self.construct and command[0:1] == ' ':
+        if not self.construct and command[0:1] == " ":
             return
 
         if command and (not self.history or self.history[-1] != command):
@@ -196,7 +201,7 @@ class Console(QtWidgets.QPlainTextEdit):
         if self.history:
             self.history_index = max(0, self.history_index - 1)
             return self.history[self.history_index]
-        return ''
+        return ""
 
     def getNextHistoryEntry(self):
         if self.history:
@@ -204,7 +209,7 @@ class Console(QtWidgets.QPlainTextEdit):
             self.history_index = min(hist_len, self.history_index + 1)
             if self.history_index < hist_len:
                 return self.history[self.history_index]
-        return ''
+        return ""
 
     def getCursorPosition(self):
         c = self.textCursor()
@@ -223,13 +228,13 @@ class Console(QtWidgets.QPlainTextEdit):
 
         if command:
             self.exec_command(command)
-        self.newPrompt('')
+        self.newPrompt("")
         self.set_json(False)
 
     def exec_command(self, command):
         tmp_stdout = sys.stdout
 
-        class stdoutProxy():
+        class stdoutProxy:
             def __init__(self, write_func):
                 self.write_func = write_func
                 self.skip = False
@@ -239,14 +244,17 @@ class Console(QtWidgets.QPlainTextEdit):
 
             def write(self, text):
                 if not self.skip:
-                    stripped_text = text.rstrip('\n')
+                    stripped_text = text.rstrip("\n")
                     self.write_func(stripped_text)
                     QtCore.QCoreApplication.processEvents()
                 self.skip = not self.skip
 
-        if type(self.namespace.get(command)) == type(lambda:None):
-            self.appendPlainText("'{}' is a function. Type '{}()' to use it in the Python console."
-                                 .format(command, command))
+        if type(self.namespace.get(command)) == type(lambda: None):
+            self.appendPlainText(
+                "'{}' is a function. Type '{}()' to use it in the Python console.".format(
+                    command, command
+                )
+            )
             return
 
         sys.stdout = stdoutProxy(self.appendPlainText)
@@ -313,12 +321,12 @@ class Console(QtWidgets.QPlainTextEdit):
     def completions(self):
         cmd = self.getCommand()
         # note for regex: new words start after ' ' or '(' or ')'
-        lastword = re.split(r'[ ()]', cmd)[-1]
-        beginning = cmd[0:-len(lastword)]
+        lastword = re.split(r"[ ()]", cmd)[-1]
+        beginning = cmd[0 : -len(lastword)]
 
-        path = lastword.split('.')
-        prefix = '.'.join(path[:-1])
-        prefix = (prefix + '.') if prefix else prefix
+        path = lastword.split(".")
+        prefix = ".".join(path[:-1])
+        prefix = (prefix + ".") if prefix else prefix
         ns = self.namespace.keys()
 
         if len(path) == 1:
@@ -336,9 +344,10 @@ class Console(QtWidgets.QPlainTextEdit):
 
         completions = []
         for name in ns:
-            if name[0] == '_':continue
+            if name[0] == "_":
+                continue
             if name.startswith(path[-1]):
-                completions.append(prefix+name)
+                completions.append(prefix + name)
         completions.sort()
 
         if not completions:
@@ -349,7 +358,7 @@ class Console(QtWidgets.QPlainTextEdit):
         else:
             # find common prefix
             p = os.path.commonprefix(completions)
-            if len(p)>len(lastword):
+            if len(p) > len(lastword):
                 self.hide_completions()
                 self.setCommand(beginning + p)
             else:

@@ -61,7 +61,9 @@ class ElectrumTestCase(unittest.IsolatedAsyncioTestCase):
     def tearDown(self):
         shutil.rmtree(self.electrum_path)
         super().tearDown()
-        util._asyncio_event_loop = None  # cleared here, at the ~last possible moment. asyncTearDown is too early.
+        util._asyncio_event_loop = (
+            None  # cleared here, at the ~last possible moment. asyncTearDown is too early.
+        )
         self._test_lock.release()
 
 
@@ -72,17 +74,21 @@ def as_testnet(func):
     """
     old_net = constants.net
     if asyncio.iscoroutinefunction(func):
+
         async def run_test(*args, **kwargs):
             try:
                 constants.set_testnet()
                 return await func(*args, **kwargs)
             finally:
                 constants.net = old_net
+
     else:
+
         def run_test(*args, **kwargs):
             try:
                 constants.set_testnet()
                 return func(*args, **kwargs)
             finally:
                 constants.net = old_net
+
     return run_test

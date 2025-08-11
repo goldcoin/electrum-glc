@@ -17,25 +17,20 @@ import trezorlib.btc
 import trezorlib.device
 
 MESSAGES = {
-    ButtonRequestType.ConfirmOutput:
-        _("Confirm the transaction output on your {} device"),
-    ButtonRequestType.ResetDevice:
-        _("Complete the initialization process on your {} device"),
-    ButtonRequestType.ConfirmWord:
-        _("Write down the seed word shown on your {}"),
-    ButtonRequestType.WipeDevice:
-        _("Confirm on your {} that you want to wipe it clean"),
-    ButtonRequestType.ProtectCall:
-        _("Confirm on your {} device the message to sign"),
-    ButtonRequestType.SignTx:
-        _("Confirm the total amount spent and the transaction fee on your {} device"),
-    ButtonRequestType.Address:
-        _("Confirm wallet address on your {} device"),
-    ButtonRequestType._Deprecated_ButtonRequest_PassphraseType:
-        _("Choose on your {} device where to enter your passphrase"),
-    ButtonRequestType.PassphraseEntry:
-        _("Please enter your passphrase on the {} device"),
-    'default': _("Check your {} device to continue"),
+    ButtonRequestType.ConfirmOutput: _("Confirm the transaction output on your {} device"),
+    ButtonRequestType.ResetDevice: _("Complete the initialization process on your {} device"),
+    ButtonRequestType.ConfirmWord: _("Write down the seed word shown on your {}"),
+    ButtonRequestType.WipeDevice: _("Confirm on your {} that you want to wipe it clean"),
+    ButtonRequestType.ProtectCall: _("Confirm on your {} device the message to sign"),
+    ButtonRequestType.SignTx: _(
+        "Confirm the total amount spent and the transaction fee on your {} device"
+    ),
+    ButtonRequestType.Address: _("Confirm wallet address on your {} device"),
+    ButtonRequestType._Deprecated_ButtonRequest_PassphraseType: _(
+        "Choose on your {} device where to enter your passphrase"
+    ),
+    ButtonRequestType.PassphraseEntry: _("Please enter your passphrase on the {} device"),
+    "default": _("Check your {} device to continue"),
 }
 
 
@@ -123,29 +118,31 @@ class TrezorClientBase(HardwareClientBase, Logger):
         self.last_operation = time.time()
 
     def prevent_timeouts(self):
-        self.last_operation = float('inf')
+        self.last_operation = float("inf")
 
     @runs_in_hwd_thread
     def timeout(self, cutoff):
-        '''Time out the client if the last operation was before cutoff.'''
+        """Time out the client if the last operation was before cutoff."""
         if self.last_operation < cutoff:
             self.logger.info("timed out")
             self.clear_session()
 
     def i4b(self, x):
-        return pack('>I', x)
+        return pack(">I", x)
 
     @runs_in_hwd_thread
     def get_xpub(self, bip32_path, xtype, creating=False):
         address_n = parse_path(bip32_path)
         with self.run_flow(creating_wallet=creating):
             node = trezorlib.btc.get_public_node(self.client, address_n).node
-        return BIP32Node(xtype=xtype,
-                         eckey=ecc.ECPubkey(node.public_key),
-                         chaincode=node.chain_code,
-                         depth=node.depth,
-                         fingerprint=self.i4b(node.fingerprint),
-                         child_number=self.i4b(node.child_num)).to_xpub()
+        return BIP32Node(
+            xtype=xtype,
+            eckey=ecc.ECPubkey(node.public_key),
+            chaincode=node.chain_code,
+            depth=node.depth,
+            fingerprint=self.i4b(node.fingerprint),
+            child_number=self.i4b(node.child_num),
+        ).to_xpub()
 
     @runs_in_hwd_thread
     def toggle_passphrase(self):
@@ -180,8 +177,8 @@ class TrezorClientBase(HardwareClientBase, Logger):
 
     @runs_in_hwd_thread
     def clear_session(self):
-        '''Clear the session to force pin (and passphrase if enabled)
-        re-entry.  Does not leak exceptions.'''
+        """Clear the session to force pin (and passphrase if enabled)
+        re-entry.  Does not leak exceptions."""
         self.logger.info(f"clear session: {self}")
         self.prevent_timeouts()
         try:
@@ -192,7 +189,7 @@ class TrezorClientBase(HardwareClientBase, Logger):
 
     @runs_in_hwd_thread
     def close(self):
-        '''Called when Our wallet was closed or the device removed.'''
+        """Called when Our wallet was closed or the device removed."""
         self.logger.info("closing client")
         self.clear_session()
 
@@ -208,9 +205,9 @@ class TrezorClientBase(HardwareClientBase, Logger):
 
     def device_model_name(self):
         model = self.get_trezor_model()
-        if model == '1':
+        if model == "1":
             return "Trezor One"
-        elif model == 'T':
+        elif model == "T":
             return "Trezor T"
         return None
 
@@ -225,7 +222,8 @@ class TrezorClientBase(HardwareClientBase, Logger):
                 address_n,
                 show_display=True,
                 script_type=script_type,
-                multisig=multisig)
+                multisig=multisig,
+            )
 
     @runs_in_hwd_thread
     def sign_message(self, address_str, message, *, script_type):
@@ -238,18 +236,16 @@ class TrezorClientBase(HardwareClientBase, Logger):
                 address_n,
                 message,
                 script_type=script_type,
-                no_script_type=True)
+                no_script_type=True,
+            )
 
     @runs_in_hwd_thread
     def recover_device(self, recovery_type, *args, **kwargs):
         input_callback = self.mnemonic_callback(recovery_type)
         with self.run_flow():
             return trezorlib.device.recover(
-                self.client,
-                *args,
-                input_callback=input_callback,
-                type=recovery_type,
-                **kwargs)
+                self.client, *args, input_callback=input_callback, type=recovery_type, **kwargs
+            )
 
     # ========= Unmodified trezorlib methods =========
 
@@ -271,7 +267,7 @@ class TrezorClientBase(HardwareClientBase, Logger):
     # ========= UI methods ==========
 
     def button_request(self, br):
-        message = self.msg or MESSAGES.get(br.code) or MESSAGES['default']
+        message = self.msg or MESSAGES.get(br.code) or MESSAGES["default"]
         self.handler.show_message(message.format(self.device), self.client.cancel)
 
     def get_pin(self, code=None):
@@ -279,8 +275,10 @@ class TrezorClientBase(HardwareClientBase, Logger):
         if code == 2:
             msg = _("Enter a new PIN for your {}:")
         elif code == 3:
-            msg = (_("Re-enter the new PIN for your {}.\n\n"
-                     "NOTE: the positions of the numbers have changed!"))
+            msg = _(
+                "Re-enter the new PIN for your {}.\n\n"
+                "NOTE: the positions of the numbers have changed!"
+            )
         else:
             msg = _("Enter your current {} PIN:")
             show_strength = False
@@ -295,16 +293,18 @@ class TrezorClientBase(HardwareClientBase, Logger):
         elif self.features.model == "T" and (2, 4, 0) <= self.client.version:
             limit = 50
         if len(pin) > limit:
-            self.handler.show_error(_('The PIN cannot be longer than {} characters.').format(limit))
+            self.handler.show_error(_("The PIN cannot be longer than {} characters.").format(limit))
             raise Cancelled
         return pin
 
     def get_passphrase(self, available_on_device):
         if self.creating_wallet:
-            msg = _("Enter a passphrase to generate this wallet.  Each time "
-                    "you use this wallet your {} will prompt you for the "
-                    "passphrase.  If you forget the passphrase you cannot "
-                    "access the bitcoins in the wallet.").format(self.device)
+            msg = _(
+                "Enter a passphrase to generate this wallet.  Each time "
+                "you use this wallet your {} will prompt you for the "
+                "passphrase.  If you forget the passphrase you cannot "
+                "access the bitcoins in the wallet."
+            ).format(self.device)
         else:
             msg = _("Enter the passphrase to unlock this wallet:")
 
@@ -324,7 +324,7 @@ class TrezorClientBase(HardwareClientBase, Logger):
     def _matrix_char(self, matrix_type):
         num = 9 if matrix_type == WordRequestType.Matrix9 else 6
         char = self.handler.get_matrix(num)
-        if char == 'x':
+        if char == "x":
             raise Cancelled
         return char
 
@@ -336,12 +336,16 @@ class TrezorClientBase(HardwareClientBase, Logger):
             return self._matrix_char
 
         step = 0
+
         def word_callback(_ignored):
             nonlocal step
             step += 1
-            msg = _("Step {}/24.  Enter seed word as explained on your {}:").format(step, self.device)
+            msg = _("Step {}/24.  Enter seed word as explained on your {}:").format(
+                step, self.device
+            )
             word = self.handler.get_word(msg)
             if not word:
                 raise Cancelled
             return word
+
         return word_callback

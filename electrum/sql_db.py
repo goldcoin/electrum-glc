@@ -13,11 +13,13 @@ def sql(func):
 
     returns an awaitable asyncio.Future
     """
-    def wrapper(self: 'SqlDB', *args, **kwargs):
+
+    def wrapper(self: "SqlDB", *args, **kwargs):
         assert threading.current_thread() != self.sql_thread
         f = self.asyncio_loop.create_future()
         self.db_requests.put((f, func, args, kwargs))
         return f
+
     return wrapper
 
 

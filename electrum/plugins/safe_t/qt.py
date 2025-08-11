@@ -4,13 +4,35 @@ from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt, pyqtSignal, QRegExp
 from PyQt5.QtGui import QRegExpValidator
-from PyQt5.QtWidgets import (QVBoxLayout, QLabel, QGridLayout, QPushButton,
-                             QHBoxLayout, QButtonGroup, QGroupBox,
-                             QTextEdit, QLineEdit, QRadioButton, QCheckBox, QWidget,
-                             QMessageBox, QFileDialog, QSlider, QTabWidget)
+from PyQt5.QtWidgets import (
+    QVBoxLayout,
+    QLabel,
+    QGridLayout,
+    QPushButton,
+    QHBoxLayout,
+    QButtonGroup,
+    QGroupBox,
+    QTextEdit,
+    QLineEdit,
+    QRadioButton,
+    QCheckBox,
+    QWidget,
+    QMessageBox,
+    QFileDialog,
+    QSlider,
+    QTabWidget,
+)
 
-from electrum.gui.qt.util import (WindowModalDialog, WWLabel, Buttons, CancelButton,
-                                  OkButton, CloseButton, getOpenFileName, ChoiceWidget)
+from electrum.gui.qt.util import (
+    WindowModalDialog,
+    WWLabel,
+    Buttons,
+    CancelButton,
+    OkButton,
+    CloseButton,
+    getOpenFileName,
+    ChoiceWidget,
+)
 from electrum.i18n import _
 from electrum.plugin import hook
 from electrum.logging import Logger
@@ -25,21 +47,29 @@ from electrum.gui.qt.wizard.wizard import WizardComponent
 if TYPE_CHECKING:
     from electrum.gui.qt.wizard.wallet import QENewWalletWizard
 
-PASSPHRASE_HELP_SHORT =_(
+PASSPHRASE_HELP_SHORT = _(
     "Passphrases allow you to access new wallets, each "
-    "hidden behind a particular case-sensitive passphrase.")
-PASSPHRASE_HELP = PASSPHRASE_HELP_SHORT + "  " + _(
-    "You need to create a separate Electrum wallet for each passphrase "
-    "you use as they each generate different addresses.  Changing "
-    "your passphrase does not lose other wallets, each is still "
-    "accessible behind its own passphrase.")
+    "hidden behind a particular case-sensitive passphrase."
+)
+PASSPHRASE_HELP = (
+    PASSPHRASE_HELP_SHORT
+    + "  "
+    + _(
+        "You need to create a separate Electrum wallet for each passphrase "
+        "you use as they each generate different addresses.  Changing "
+        "your passphrase does not lose other wallets, each is still "
+        "accessible behind its own passphrase."
+    )
+)
 RECOMMEND_PIN = _(
     "You should enable PIN protection.  Your PIN is the only protection "
-    "for your bitcoins if your device is lost or stolen.")
+    "for your bitcoins if your device is lost or stolen."
+)
 PASSPHRASE_NOT_PIN = _(
     "If you forget a passphrase you will be unable to access any "
     "bitcoins in the wallet behind it.  A passphrase is not a PIN. "
-    "Only change this if you are sure you understand it.")
+    "Only change this if you are sure you understand it."
+)
 
 
 class QtHandler(QtHandlerBase):
@@ -84,8 +114,10 @@ class QtPlugin(QtPluginBase):
             return
         for keystore in wallet.get_keystores():
             if type(keystore) == self.keystore_class:
+
                 def show_address(keystore=keystore):
                     keystore.thread.add(partial(self.show_address, wallet, addrs[0], keystore))
+
                 device_name = "{} ({})".format(self.device, keystore.label)
                 menu.addAction(_("Show on {}").format(device_name), show_address)
 
@@ -93,19 +125,21 @@ class QtPlugin(QtPluginBase):
         def connect():
             device_id = self.choose_device(window, keystore)
             return device_id
+
         def show_dialog(device_id):
             if device_id:
                 SettingsDialog(window, self, keystore, device_id).exec_()
+
         keystore.thread.add(connect, on_success=show_dialog)
 
 
 def clean_text(widget):
     text = widget.toPlainText().strip()
-    return ' '.join(text.split())
+    return " ".join(text.split())
 
 
 class SafeTInitLayout(QVBoxLayout):
-    validChanged = pyqtSignal([bool], arguments=['valid'])
+    validChanged = pyqtSignal([bool], arguments=["valid"])
 
     def __init__(self, method, device):
         super().__init__()
@@ -134,7 +168,7 @@ class SafeTInitLayout(QVBoxLayout):
                 self.bg.setId(rb, i)
                 hbox1.addWidget(rb)
                 rb.setChecked(True)
-            self.cb_pin = QCheckBox(_('Enable PIN protection'))
+            self.cb_pin = QCheckBox(_("Enable PIN protection"))
             self.cb_pin.setChecked(True)
         else:
             self.text_e = QTextEdit()
@@ -147,13 +181,15 @@ class SafeTInitLayout(QVBoxLayout):
 
                 def set_enabled():
                     from electrum.bip32 import is_xprv
+
                     self.validChanged.emit(is_xprv(clean_text(self.text_e)))
+
                 self.text_e.textChanged.connect(set_enabled)
 
             self.addWidget(QLabel(msg))
             self.addWidget(self.text_e)
             self.pin = QLineEdit()
-            self.pin.setValidator(QRegExpValidator(QRegExp('[1-9]{0,9}')))
+            self.pin.setValidator(QRegExpValidator(QRegExp("[1-9]{0,9}")))
             self.pin.setMaximumWidth(100)
             hbox_pin = QHBoxLayout()
             hbox_pin.addWidget(QLabel(_("Enter your PIN (digits 1-9):")))
@@ -169,7 +205,7 @@ class SafeTInitLayout(QVBoxLayout):
         passphrase_msg = WWLabel(PASSPHRASE_HELP_SHORT)
         passphrase_warning = WWLabel(PASSPHRASE_NOT_PIN)
         passphrase_warning.setStyleSheet("color: red")
-        self.cb_phrase = QCheckBox(_('Enable passphrases'))
+        self.cb_phrase = QCheckBox(_("Enable passphrases"))
         self.cb_phrase.setChecked(False)
         self.addWidget(passphrase_msg)
         self.addWidget(passphrase_warning)
@@ -180,7 +216,7 @@ class SafeTInitLayout(QVBoxLayout):
             item = self.bg.checkedId()
             pin = self.cb_pin.isChecked()
         else:
-            item = ' '.join(str(clean_text(self.text_e)).split())
+            item = " ".join(str(clean_text(self.text_e)).split())
             pin = str(self.pin.text())
 
         return item, self.label_e.text(), pin, self.cb_phrase.isChecked()
@@ -196,30 +232,31 @@ class Plugin(SafeTPlugin, QtPlugin):
     @classmethod
     def pin_matrix_widget_class(self):
         from safetlib.qt.pinmatrix import PinMatrixWidget
+
         return PinMatrixWidget
 
     @hook
-    def init_wallet_wizard(self, wizard: 'QENewWalletWizard'):
+    def init_wallet_wizard(self, wizard: "QENewWalletWizard"):
         self.extend_wizard(wizard)
 
     # insert safe_t pages in new wallet wizard
-    def extend_wizard(self, wizard: 'QENewWalletWizard'):
+    def extend_wizard(self, wizard: "QENewWalletWizard"):
         super().extend_wizard(wizard)
         views = {
-            'safet_start': {'gui': WCScriptAndDerivation},
-            'safet_xpub': {'gui': WCHWXPub},
-            'safet_not_initialized': {'gui': WCSafeTInitMethod},
-            'safet_choose_new_recover': {'gui': WCSafeTInitParams},
-            'safet_do_init': {'gui': WCSafeTInit},
-            'safet_unlock': {'gui': WCHWUnlock}
+            "safet_start": {"gui": WCScriptAndDerivation},
+            "safet_xpub": {"gui": WCHWXPub},
+            "safet_not_initialized": {"gui": WCSafeTInitMethod},
+            "safet_choose_new_recover": {"gui": WCSafeTInitParams},
+            "safet_do_init": {"gui": WCSafeTInit},
+            "safet_unlock": {"gui": WCHWUnlock},
         }
         wizard.navmap_merge(views)
 
 
 class SettingsDialog(WindowModalDialog):
-    '''This dialog doesn't require a device be paired with a wallet.
+    """This dialog doesn't require a device be paired with a wallet.
     We want users to be able to wipe a device even if they've forgotten
-    their PIN.'''
+    their PIN."""
 
     def __init__(self, window, plugin, keystore, device_id):
         title = _("{} Settings").format(plugin.device)
@@ -233,7 +270,7 @@ class SettingsDialog(WindowModalDialog):
         hs_cols, hs_rows = (128, 64)
 
         def invoke_client(method, *args, **kw_args):
-            unpair_after = kw_args.pop('unpair_after', False)
+            unpair_after = kw_args.pop("unpair_after", False)
 
             def task():
                 client = devmgr.client_by_id(device_id)
@@ -260,9 +297,11 @@ class SettingsDialog(WindowModalDialog):
             disen = [_("Disabled"), _("Enabled")]
             setchange = [_("Set a PIN"), _("Change PIN")]
 
-            version = "%d.%d.%d" % (features.major_version,
-                                    features.minor_version,
-                                    features.patch_version)
+            version = "%d.%d.%d" % (
+                features.major_version,
+                features.minor_version,
+                features.patch_version,
+            )
 
             device_label.setText(features.label)
             pin_set_label.setText(noyes[features.pin_protection])
@@ -283,27 +322,31 @@ class SettingsDialog(WindowModalDialog):
             label_apply.setEnabled(label_edit.text() != self.features.label)
 
         def rename():
-            invoke_client('change_label', label_edit.text())
+            invoke_client("change_label", label_edit.text())
 
         def toggle_passphrase():
             title = _("Confirm Toggle Passphrase Protection")
             currently_enabled = self.features.passphrase_protection
             if currently_enabled:
-                msg = _("After disabling passphrases, you can only pair this "
-                        "Electrum wallet if it had an empty passphrase.  "
-                        "If its passphrase was not empty, you will need to "
-                        "create a new wallet.  You can use this wallet again "
-                        "at any time by re-enabling passphrases and entering "
-                        "its passphrase.")
+                msg = _(
+                    "After disabling passphrases, you can only pair this "
+                    "Electrum wallet if it had an empty passphrase.  "
+                    "If its passphrase was not empty, you will need to "
+                    "create a new wallet.  You can use this wallet again "
+                    "at any time by re-enabling passphrases and entering "
+                    "its passphrase."
+                )
             else:
-                msg = _("Your current Electrum wallet can only be used with "
-                        "an empty passphrase.  You must create a separate "
-                        "wallet for other passphrases as each one generates "
-                        "a new set of addresses.")
+                msg = _(
+                    "Your current Electrum wallet can only be used with "
+                    "an empty passphrase.  You must create a separate "
+                    "wallet for other passphrases as each one generates "
+                    "a new set of addresses."
+                )
             msg += "\n\n" + _("Are you sure you want to proceed?")
             if not self.question(msg, title=title):
                 return
-            invoke_client('toggle_passphrase', unpair_after=currently_enabled)
+            invoke_client("toggle_passphrase", unpair_after=currently_enabled)
 
         def change_homescreen():
             filename = getOpenFileName(
@@ -314,47 +357,49 @@ class SettingsDialog(WindowModalDialog):
             if not filename:
                 return  # user cancelled
 
-            if filename.endswith('.toif'):
-                img = open(filename, 'rb').read()
-                if img[:8] != b'TOIf\x90\x00\x90\x00':
-                    handler.show_error('File is not a TOIF file with size of 144x144')
+            if filename.endswith(".toif"):
+                img = open(filename, "rb").read()
+                if img[:8] != b"TOIf\x90\x00\x90\x00":
+                    handler.show_error("File is not a TOIF file with size of 144x144")
                     return
             else:
-                from PIL import Image # FIXME
+                from PIL import Image  # FIXME
+
                 im = Image.open(filename)
                 if im.size != (128, 64):
-                    handler.show_error('Image must be 128 x 64 pixels')
+                    handler.show_error("Image must be 128 x 64 pixels")
                     return
-                im = im.convert('1')
+                im = im.convert("1")
                 pix = im.load()
                 img = bytearray(1024)
                 for j in range(64):
                     for i in range(128):
                         if pix[i, j]:
-                            o = (i + j * 128)
-                            img[o // 8] |= (1 << (7 - o % 8))
+                            o = i + j * 128
+                            img[o // 8] |= 1 << (7 - o % 8)
                 img = bytes(img)
-            invoke_client('change_homescreen', img)
+            invoke_client("change_homescreen", img)
 
         def clear_homescreen():
-            invoke_client('change_homescreen', b'\x00')
+            invoke_client("change_homescreen", b"\x00")
 
         def set_pin():
-            invoke_client('set_pin', remove=False)
+            invoke_client("set_pin", remove=False)
 
         def clear_pin():
-            invoke_client('set_pin', remove=True)
+            invoke_client("set_pin", remove=True)
 
         def wipe_device():
             wallet = window.wallet
             if wallet and sum(wallet.get_balance()):
                 title = _("Confirm Device Wipe")
-                msg = _("Are you SURE you want to wipe the device?\n"
-                        "Your wallet still has bitcoins in it!")
-                if not self.question(msg, title=title,
-                                     icon=QMessageBox.Critical):
+                msg = _(
+                    "Are you SURE you want to wipe the device?\n"
+                    "Your wallet still has bitcoins in it!"
+                )
+                if not self.question(msg, title=title, icon=QMessageBox.Critical):
                     return
-            invoke_client('wipe_device', unpair_after=True)
+            invoke_client("wipe_device", unpair_after=True)
 
         def slider_moved():
             mins = timeout_slider.sliderPosition()
@@ -398,9 +443,11 @@ class SettingsDialog(WindowModalDialog):
         settings_glayout = QGridLayout()
 
         # Settings tab - Label
-        label_msg = QLabel(_("Name this {}.  If you have multiple devices "
-                             "their labels help distinguish them.")
-                           .format(plugin.device))
+        label_msg = QLabel(
+            _(
+                "Name this {}.  If you have multiple devices " "their labels help distinguish them."
+            ).format(plugin.device)
+        )
         label_msg.setWordWrap(True)
         label_label = QLabel(_("Device Label"))
         label_edit = QLineEdit()
@@ -420,10 +467,14 @@ class SettingsDialog(WindowModalDialog):
         pin_button.clicked.connect(set_pin)
         settings_glayout.addWidget(pin_label, 2, 0)
         settings_glayout.addWidget(pin_button, 2, 1)
-        pin_msg = QLabel(_("PIN protection is strongly recommended.  "
-                           "A PIN is your only protection against someone "
-                           "stealing your bitcoins if they obtain physical "
-                           "access to your {}.").format(plugin.device))
+        pin_msg = QLabel(
+            _(
+                "PIN protection is strongly recommended.  "
+                "A PIN is your only protection against someone "
+                "stealing your bitcoins if they obtain physical "
+                "access to your {}."
+            ).format(plugin.device)
+        )
         pin_msg.setWordWrap(True)
         pin_msg.setStyleSheet("color: red")
         settings_glayout.addWidget(pin_msg, 3, 1, 1, -1)
@@ -441,10 +492,14 @@ class SettingsDialog(WindowModalDialog):
                 _("Required package 'PIL' is not available - Please install it.")
             )
         homescreen_clear_button.clicked.connect(clear_homescreen)
-        homescreen_msg = QLabel(_("You can set the homescreen on your "
-                                  "device to personalize it.  You must "
-                                  "choose a {} x {} monochrome black and "
-                                  "white image.").format(hs_cols, hs_rows))
+        homescreen_msg = QLabel(
+            _(
+                "You can set the homescreen on your "
+                "device to personalize it.  You must "
+                "choose a {} x {} monochrome black and "
+                "white image."
+            ).format(hs_cols, hs_rows)
+        )
         homescreen_msg.setWordWrap(True)
         settings_glayout.addWidget(homescreen_label, 4, 0)
         settings_glayout.addWidget(homescreen_change_button, 4, 1)
@@ -461,10 +516,13 @@ class SettingsDialog(WindowModalDialog):
         timeout_slider.setTickPosition(QSlider.TicksBelow)
         timeout_slider.setTracking(True)
         timeout_msg = QLabel(
-            _("Clear the session after the specified period "
-              "of inactivity.  Once a session has timed out, "
-              "your PIN and passphrase (if enabled) must be "
-              "re-entered to use the device."))
+            _(
+                "Clear the session after the specified period "
+                "of inactivity.  Once a session has timed out, "
+                "your PIN and passphrase (if enabled) must be "
+                "re-entered to use the device."
+            )
+        )
         timeout_msg.setWordWrap(True)
         timeout_slider.setSliderPosition(config.get_session_timeout() // 60)
         slider_moved()
@@ -486,8 +544,11 @@ class SettingsDialog(WindowModalDialog):
         clear_pin_button = QPushButton(_("Disable PIN"))
         clear_pin_button.clicked.connect(clear_pin)
         clear_pin_warning = QLabel(
-            _("If you disable your PIN, anyone with physical access to your "
-              "{} device can spend your bitcoins.").format(plugin.device))
+            _(
+                "If you disable your PIN, anyone with physical access to your "
+                "{} device can spend your bitcoins."
+            ).format(plugin.device)
+        )
         clear_pin_warning.setWordWrap(True)
         clear_pin_warning.setStyleSheet("color: red")
         advanced_glayout.addWidget(clear_pin_button, 0, 2)
@@ -507,13 +568,16 @@ class SettingsDialog(WindowModalDialog):
         wipe_device_button = QPushButton(_("Wipe Device"))
         wipe_device_button.clicked.connect(wipe_device)
         wipe_device_msg = QLabel(
-            _("Wipe the device, removing all data from it.  The firmware "
-              "is left unchanged."))
+            _("Wipe the device, removing all data from it.  The firmware " "is left unchanged.")
+        )
         wipe_device_msg.setWordWrap(True)
         wipe_device_warning = QLabel(
-            _("Only wipe a device if you have the recovery seed written down "
-              "and the device wallet(s) are empty, otherwise the bitcoins "
-              "will be lost forever."))
+            _(
+                "Only wipe a device if you have the recovery seed written down "
+                "and the device wallet(s) are empty, otherwise the bitcoins "
+                "will be lost forever."
+            )
+        )
         wipe_device_warning.setWordWrap(True)
         wipe_device_warning.setStyleSheet("color: red")
         advanced_glayout.addWidget(wipe_device_button, 6, 2)
@@ -536,24 +600,25 @@ class SettingsDialog(WindowModalDialog):
 
 class WCSafeTInitMethod(WizardComponent):
     def __init__(self, parent, wizard):
-        WizardComponent.__init__(self, parent, wizard, title=_('HW Setup'))
+        WizardComponent.__init__(self, parent, wizard, title=_("HW Setup"))
 
     def on_ready(self):
-        _name, _info = self.wizard_data['hardware_device']
-        msg = _("Choose how you want to initialize your {}.\n\n"
-                "The first two methods are secure as no secret information "
-                "is entered into your computer.\n\n"
-                "For the last two methods you input secrets on your keyboard "
-                "and upload them to your {}, and so you should "
-                "only do those on a computer you know to be trustworthy "
-                "and free of malware."
-                ).format(_info.model_name, _info.model_name)
+        _name, _info = self.wizard_data["hardware_device"]
+        msg = _(
+            "Choose how you want to initialize your {}.\n\n"
+            "The first two methods are secure as no secret information "
+            "is entered into your computer.\n\n"
+            "For the last two methods you input secrets on your keyboard "
+            "and upload them to your {}, and so you should "
+            "only do those on a computer you know to be trustworthy "
+            "and free of malware."
+        ).format(_info.model_name, _info.model_name)
         choices = [
             # Must be short as QT doesn't word-wrap radio button text
             (TIM_NEW, _("Let the device generate a completely new seed randomly")),
             (TIM_RECOVER, _("Recover from a seed you have previously written down")),
             (TIM_MNEMONIC, _("Upload a BIP39 mnemonic to generate the seed")),
-            (TIM_PRIVKEY, _("Upload a master private key"))
+            (TIM_PRIVKEY, _("Upload a master private key")),
         ]
         self.choice_w = ChoiceWidget(message=msg, choices=choices)
         self.layout().addWidget(self.choice_w)
@@ -562,47 +627,47 @@ class WCSafeTInitMethod(WizardComponent):
         self._valid = True
 
     def apply(self):
-        self.wizard_data['safe_t_init'] = self.choice_w.selected_item[0]
+        self.wizard_data["safe_t_init"] = self.choice_w.selected_item[0]
 
 
 class WCSafeTInitParams(WizardComponent):
     def __init__(self, parent, wizard):
-        WizardComponent.__init__(self, parent, wizard, title=_('Set-up safe-t'))
+        WizardComponent.__init__(self, parent, wizard, title=_("Set-up safe-t"))
         self.plugins = wizard.plugins
         self._busy = True
 
     def on_ready(self):
-        _name, _info = self.wizard_data['hardware_device']
-        self.settings_layout = SafeTInitLayout(self.wizard_data['safe_t_init'], _info.device.id_)
+        _name, _info = self.wizard_data["hardware_device"]
+        self.settings_layout = SafeTInitLayout(self.wizard_data["safe_t_init"], _info.device.id_)
         self.settings_layout.validChanged.connect(self.on_settings_valid_changed)
         self.layout().addLayout(self.settings_layout)
         self.layout().addStretch(1)
 
-        self.valid = self.wizard_data['safe_t_init'] != TIM_PRIVKEY
+        self.valid = self.wizard_data["safe_t_init"] != TIM_PRIVKEY
         self.busy = False
 
     def on_settings_valid_changed(self, is_valid: bool):
         self.valid = is_valid
 
     def apply(self):
-        self.wizard_data['safe_t_settings'] = self.settings_layout.get_settings()
+        self.wizard_data["safe_t_settings"] = self.settings_layout.get_settings()
 
 
 class WCSafeTInit(WizardComponent, Logger):
     def __init__(self, parent, wizard):
-        WizardComponent.__init__(self, parent, wizard, title=_('Set-up safe-t'))
+        WizardComponent.__init__(self, parent, wizard, title=_("Set-up safe-t"))
         Logger.__init__(self)
         self.plugins = wizard.plugins
-        self.plugin = self.plugins.get_plugin('safe_t')
+        self.plugin = self.plugins.get_plugin("safe_t")
 
-        self.layout().addWidget(WWLabel('Done'))
+        self.layout().addWidget(WWLabel("Done"))
 
         self._busy = True
 
     def on_ready(self):
-        settings = self.wizard_data['safe_t_settings']
-        method = self.wizard_data['safe_t_init']
-        _name, _info = self.wizard_data['hardware_device']
+        settings = self.wizard_data["safe_t_settings"]
+        method = self.wizard_data["safe_t_init"]
+        _name, _info = self.wizard_data["hardware_device"]
         device_id = _info.device.id_
         client = self.plugins.device_manager.client_by_id(device_id, scan_now=False)
         client.handler = self.plugin.create_handler(self.wizard)
@@ -610,7 +675,7 @@ class WCSafeTInit(WizardComponent, Logger):
         def initialize_device_task(settings, method, device_id, handler):
             try:
                 self.plugin._initialize_device(settings, method, device_id, handler)
-                self.logger.info('Done initialize device')
+                self.logger.info("Done initialize device")
                 self.valid = True
                 self.wizard.requestNext.emit()  # triggers Next GUI thread from event loop
             except Exception as e:
@@ -622,7 +687,8 @@ class WCSafeTInit(WizardComponent, Logger):
         t = threading.Thread(
             target=initialize_device_task,
             args=(settings, method, device_id, client.handler),
-            daemon=True)
+            daemon=True,
+        )
         t.start()
 
     def apply(self):

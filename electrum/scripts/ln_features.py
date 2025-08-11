@@ -25,7 +25,7 @@ IS_TESTNET = False
 TIMEOUT = 5  # for Lightning peer connections
 WORKERS = 30  # number of workers that concurrently fetch results for feature comparison
 NODES_PER_WORKER = 50
-VERBOSITY = ''  # for debugging set '*', otherwise ''
+VERBOSITY = ""  # for debugging set '*', otherwise ''
 FLAG = LnFeatures.OPTION_UPFRONT_SHUTDOWN_SCRIPT_OPT  # chose the 'opt' flag
 PRESYNC = False  # should we sync the graph or take it from an already synced database?
 
@@ -68,7 +68,7 @@ async def worker(work_queue: asyncio.Queue, results_queue: asyncio.Queue, flag):
 
         # only check non-onion addresses
         addr = None
-        for a in work['addrs']:
+        for a in work["addrs"]:
             if "onion" not in a[0]:
                 addr = a
         if not addr:
@@ -76,7 +76,7 @@ async def worker(work_queue: asyncio.Queue, results_queue: asyncio.Queue, flag):
             continue
 
         # handle ipv4/ipv6
-        if ':' in addr[0]:
+        if ":" in addr[0]:
             connect_str = f"{work['pk'].hex()}@[{addr.host}]:{addr.port}"
         else:
             connect_str = f"{work['pk'].hex()}@{addr.host}:{addr.port}"
@@ -86,7 +86,7 @@ async def worker(work_queue: asyncio.Queue, results_queue: asyncio.Queue, flag):
             peer = await wallet.lnworker.add_peer(connect_str)
             res = await util.wait_for2(peer.initialized, TIMEOUT)
             if res:
-                if peer.features & flag == work['features'] & flag:
+                if peer.features & flag == work["features"] & flag:
                     await results_queue.put(True)
                 else:
                     await results_queue.put(False)
@@ -142,8 +142,8 @@ async def node_flag_stats(opt_flag: LnFeatures, presync: False):
 
         # analyze numbers
         print(
-            f"opt: {n_opt} ({100 * n_opt/len(nodes)}%) "
-            f"req: {n_req} ({100 * n_req/len(nodes)}%)")
+            f"opt: {n_opt} ({100 * n_opt/len(nodes)}%) " f"req: {n_req} ({100 * n_req/len(nodes)}%)"
+        )
 
         # 2. compare announced and actual feature set
         # put nodes into a work queue
@@ -153,8 +153,10 @@ async def node_flag_stats(opt_flag: LnFeatures, presync: False):
         # fill up work
         for n, nv in nodes.items():
             addrs = wallet.lnworker.channel_db._addresses[n]
-            await work_queue.put({'pk': n, 'addrs': addrs, 'features': nv.features})
-        tasks = [asyncio.create_task(worker(work_queue, results_queue, opt_flag)) for i in range(WORKERS)]
+            await work_queue.put({"pk": n, "addrs": addrs, "features": nv.features})
+        tasks = [
+            asyncio.create_task(worker(work_queue, results_queue, opt_flag)) for i in range(WORKERS)
+        ]
         try:
             await asyncio.gather(*tasks)
         except Exception as e:
@@ -175,5 +177,5 @@ async def node_flag_stats(opt_flag: LnFeatures, presync: False):
     finally:
         stopping_fut.set_result(1)
 
-asyncio.run_coroutine_threadsafe(
-    node_flag_stats(FLAG, presync=PRESYNC), loop)
+
+asyncio.run_coroutine_threadsafe(node_flag_stats(FLAG, presync=PRESYNC), loop)

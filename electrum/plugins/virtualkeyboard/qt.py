@@ -1,6 +1,6 @@
 import random
 
-from PyQt5.QtWidgets import (QVBoxLayout, QGridLayout, QPushButton)
+from PyQt5.QtWidgets import QVBoxLayout, QGridLayout, QPushButton
 from PyQt5.QtGui import QFontMetrics
 
 from electrum.plugin import BasePlugin, hook
@@ -31,11 +31,11 @@ class Plugin(BasePlugin):
     def virtual_keyboard(self, i, pw):
         i = i % 3
         if i == 0:
-            chars = 'abcdefghijklmnopqrstuvwxyz '
+            chars = "abcdefghijklmnopqrstuvwxyz "
         elif i == 1:
-            chars = 'ABCDEFGHIJKLMNOPQRTSUVWXYZ '
+            chars = "ABCDEFGHIJKLMNOPQRTSUVWXYZ "
         elif i == 2:
-            chars = '1234567890!?.,;:/%&()[]{}+-'
+            chars = "1234567890!?.,;:/%&()[]{}+-"
 
         n = len(chars)
         s = []

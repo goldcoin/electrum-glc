@@ -35,17 +35,21 @@ from .logging import Logger
 if TYPE_CHECKING:
     from .storage import WalletStorage
 
+
 def modifier(func):
     def wrapper(self, *args, **kwargs):
         with self.lock:
             self._modified = True
             return func(self, *args, **kwargs)
+
     return wrapper
+
 
 def locked(func):
     def wrapper(self, *args, **kwargs):
         with self.lock:
             return func(self, *args, **kwargs)
+
     return wrapper
 
 
@@ -54,30 +58,40 @@ registered_dicts = {}
 registered_dict_keys = {}
 registered_parent_keys = {}
 
+
 def register_dict(name, method, _type):
     registered_dicts[name] = method, _type
+
 
 def register_name(name, method, _type):
     registered_names[name] = method, _type
 
+
 def register_dict_key(name, method):
     registered_dict_keys[name] = method
+
 
 def register_parent_key(name, method):
     registered_parent_keys[name] = method
 
+
 def stored_as(name, _type=dict):
-    """ decorator that indicates the storage key of a stored object"""
+    """decorator that indicates the storage key of a stored object"""
+
     def decorator(func):
         registered_names[name] = func, _type
         return func
+
     return decorator
 
+
 def stored_in(name, _type=dict):
-    """ decorator that indicates the storage key of an element in a StoredDict"""
+    """decorator that indicates the storage key of an element in a StoredDict"""
+
     def decorator(func):
         registered_dicts[name] = func, _type
         return func
+
     return decorator
 
 
@@ -88,7 +102,8 @@ def key_path(path, key):
         else:
             assert isinstance(x, str)
             return x
-    return '/' + '/'.join([to_str(x) for x in path + [to_str(key)]])
+
+    return "/" + "/".join([to_str(x) for x in path + [to_str(key)]])
 
 
 class StoredObject:
@@ -97,9 +112,11 @@ class StoredObject:
     path = None
 
     def __setattr__(self, key, value):
-        if self.db and key not in ['path', 'db'] and not key.startswith('_'):
+        if self.db and key not in ["path", "db"] and not key.startswith("_"):
             if value != getattr(self, key):
-                self.db.add_patch({'op': 'replace', 'path': key_path(self.path, key), 'value': value})
+                self.db.add_patch(
+                    {"op": "replace", "path": key_path(self.path, key), "value": value}
+                )
         object.__setattr__(self, key, value)
 
     def set_db(self, db, path):
@@ -108,15 +125,15 @@ class StoredObject:
 
     def to_json(self):
         d = dict(vars(self))
-        d.pop('db', None)
-        d.pop('path', None)
+        d.pop("db", None)
+        d.pop("path", None)
         # don't expose/store private stuff
-        d = {k: v for k, v in d.items()
-             if not k.startswith('_')}
+        d = {k: v for k, v in d.items() if not k.startswith("_")}
         return d
 
 
-_RaiseKeyError = object() # singleton for no-default behavior
+_RaiseKeyError = object()  # singleton for no-default behavior
+
 
 class StoredDict(dict):
 
@@ -133,11 +150,13 @@ class StoredDict(dict):
         is_new = key not in self
         # early return to prevent unnecessary disk writes
         if not is_new and patch:
-            if self.db and json.dumps(v, cls=self.db.encoder) == json.dumps(self[key], cls=self.db.encoder):
+            if self.db and json.dumps(v, cls=self.db.encoder) == json.dumps(
+                self[key], cls=self.db.encoder
+            ):
                 return
         # recursively set db and path
         if isinstance(v, StoredDict):
-            #assert v.db is None
+            # assert v.db is None
             v.db = self.db
             v.path = self.path + [key]
             for k, vv in v.items():
@@ -162,14 +181,14 @@ class StoredDict(dict):
         # set item
         dict.__setitem__(self, key, v)
         if self.db and patch:
-            op = 'add' if is_new else 'replace'
-            self.db.add_patch({'op': op, 'path': key_path(self.path, key), 'value': v})
+            op = "add" if is_new else "replace"
+            self.db.add_patch({"op": op, "path": key_path(self.path, key), "value": v})
 
     @locked
     def __delitem__(self, key):
         dict.__delitem__(self, key)
         if self.db:
-            self.db.add_patch({'op': 'remove', 'path': key_path(self.path, key)})
+            self.db.add_patch({"op": "remove", "path": key_path(self.path, key)})
 
     @locked
     def pop(self, key, v=_RaiseKeyError):
@@ -180,7 +199,7 @@ class StoredDict(dict):
                 return v
         r = dict.pop(self, key)
         if self.db:
-            self.db.add_patch({'op': 'remove', 'path': key_path(self.path, key)})
+            self.db.add_patch({"op": "remove", "path": key_path(self.path, key)})
         return r
 
 
@@ -197,15 +216,14 @@ class StoredList(list):
         n = len(self)
         list.append(self, item)
         if self.db:
-            self.db.add_patch({'op': 'add', 'path': key_path(self.path, '%d'%n), 'value':item})
+            self.db.add_patch({"op": "add", "path": key_path(self.path, "%d" % n), "value": item})
 
     @locked
     def remove(self, item):
         n = self.index(item)
         list.remove(self, item)
         if self.db:
-            self.db.add_patch({'op': 'remove', 'path': key_path(self.path, '%d'%n)})
-
+            self.db.add_patch({"op": "remove", "path": key_path(self.path, "%d" % n)})
 
 
 class JsonDB(Logger):
@@ -228,12 +246,12 @@ class JsonDB(Logger):
         if self.storage and self.storage.file_exists():
             self.write_and_force_consolidation()
 
-    def load_data(self, s:str) -> dict:
-        """ overloaded in wallet_db """
-        if s == '':
+    def load_data(self, s: str) -> dict:
+        """overloaded in wallet_db"""
+        if s == "":
             return {}
         try:
-            data = json.loads('[' + s + ']')
+            data = json.loads("[" + s + "]")
             data, patches = data[0], data[1:]
         except Exception:
             if r := self.maybe_load_ast_data(s):
@@ -246,18 +264,19 @@ class JsonDB(Logger):
             raise WalletFileException("Malformed wallet file (not dict)")
         if patches:
             # apply patches
-            self.logger.info('found %d patches'%len(patches))
+            self.logger.info("found %d patches" % len(patches))
             patch = jsonpatch.JsonPatch(patches)
             data = patch.apply(data)
             self.set_modified(True)
         return data
 
     def maybe_load_ast_data(self, s):
-        """ for old wallets """
+        """for old wallets"""
         try:
             import ast
+
             d = ast.literal_eval(s)
-            labels = d.get('labels', {})
+            labels = d.get("labels", {})
         except Exception as e:
             return
         data = {}
@@ -266,24 +285,24 @@ class JsonDB(Logger):
                 json.dumps(key)
                 json.dumps(value)
             except Exception:
-                self.logger.info(f'Failed to convert label to json format: {key}')
+                self.logger.info(f"Failed to convert label to json format: {key}")
                 continue
             data[key] = value
         return data
 
     def maybe_load_incomplete_data(self, s):
-        n = s.count('{') - s.count('}')
+        n = s.count("{") - s.count("}")
         i = len(s)
         while n > 0 and i > 0:
             i = i - 1
-            if s[i] == '{':
+            if s[i] == "{":
                 n = n - 1
-            if s[i] == '}':
+            if s[i] == "}":
                 n = n + 1
             if n == 0:
                 s = s[0:i]
-                assert s[-2:] == ',\n'
-                self.logger.info('found incomplete data {s[i:]}')
+                assert s[-2:] == ",\n"
+                self.logger.info("found incomplete data {s[i:]}")
                 return self.load_data(s[0:-2])
 
     def set_modified(self, b):
@@ -381,9 +400,11 @@ class JsonDB(Logger):
 
     @locked
     def write(self):
-        if (not self.storage.file_exists()
-                or self.storage.is_encrypted()
-                or self.storage.needs_consolidation()):
+        if (
+            not self.storage.file_exists()
+            or self.storage.is_encrypted()
+            or self.storage.needs_consolidation()
+        ):
             self.write_and_force_consolidation()
         else:
             self._append_pending_changes()
@@ -391,12 +412,12 @@ class JsonDB(Logger):
     @locked
     def _append_pending_changes(self):
         if threading.current_thread().daemon:
-            raise Exception('daemon thread cannot write db')
+            raise Exception("daemon thread cannot write db")
         if not self.pending_changes:
-            self.logger.info('no pending changes')
+            self.logger.info("no pending changes")
             return
-        self.logger.info(f'appending {len(self.pending_changes)} pending changes')
-        s = ''.join([',\n' + x for x in self.pending_changes])
+        self.logger.info(f"appending {len(self.pending_changes)} pending changes")
+        s = "".join([",\n" + x for x in self.pending_changes])
         self.storage.append(s)
         self.pending_changes = []
 
@@ -404,7 +425,7 @@ class JsonDB(Logger):
     @profiler
     def write_and_force_consolidation(self):
         if threading.current_thread().daemon:
-            raise Exception('daemon thread cannot write db')
+            raise Exception("daemon thread cannot write db")
         if not self.modified():
             return
         json_str = self.dump(human_readable=not self.storage.is_encrypted())

@@ -60,19 +60,22 @@ class RequestList(MyTreeView):
         LN_RHASH = enum.auto()
 
     headers = {
-        Columns.DATE: _('Date'),
-        Columns.DESCRIPTION: _('Description'),
-        Columns.AMOUNT: _('Amount'),
-        Columns.STATUS: _('Status'),
-        Columns.ADDRESS: _('Address'),
-        Columns.LN_RHASH: 'LN RHASH',
+        Columns.DATE: _("Date"),
+        Columns.DESCRIPTION: _("Description"),
+        Columns.AMOUNT: _("Amount"),
+        Columns.STATUS: _("Status"),
+        Columns.ADDRESS: _("Address"),
+        Columns.LN_RHASH: "LN RHASH",
     }
     filter_columns = [
-        Columns.DATE, Columns.DESCRIPTION, Columns.AMOUNT,
-        Columns.ADDRESS, Columns.LN_RHASH,
+        Columns.DATE,
+        Columns.DESCRIPTION,
+        Columns.AMOUNT,
+        Columns.ADDRESS,
+        Columns.LN_RHASH,
     ]
 
-    def __init__(self, receive_tab: 'ReceiveTab'):
+    def __init__(self, receive_tab: "ReceiveTab"):
         window = receive_tab.window
         super().__init__(
             main_window=window,
@@ -93,7 +96,9 @@ class RequestList(MyTreeView):
             item = self.model().index(i, self.Columns.DATE)
             row_key = item.data(ROLE_KEY)
             if key == row_key:
-                self.selectionModel().setCurrentIndex(item, QItemSelectionModel.SelectCurrent | QItemSelectionModel.Rows)
+                self.selectionModel().setCurrentIndex(
+                    item, QItemSelectionModel.SelectCurrent | QItemSelectionModel.Rows
+                )
                 break
 
     def get_current_key(self):
@@ -145,7 +150,9 @@ class RequestList(MyTreeView):
             message = req.get_message()
             date = format_time(timestamp)
             amount_str = self.main_window.format_amount(amount) if amount else ""
-            amount_str_nots = self.main_window.format_amount(amount, add_thousands_sep=False) if amount else ""
+            amount_str_nots = (
+                self.main_window.format_amount(amount, add_thousands_sep=False) if amount else ""
+            )
             labels = [""] * len(self.Columns)
             labels[self.Columns.DATE] = date
             labels[self.Columns.DESCRIPTION] = message
@@ -155,7 +162,7 @@ class RequestList(MyTreeView):
             labels[self.Columns.LN_RHASH] = req.rhash if req.is_lightning() else ""
             items = [QStandardItem(e) for e in labels]
             self.set_editability(items)
-            #items[self.Columns.DATE].setData(request_type, ROLE_REQUEST_TYPE)
+            # items[self.Columns.DATE].setData(request_type, ROLE_REQUEST_TYPE)
             items[self.Columns.DATE].setData(key, ROLE_KEY)
             items[self.Columns.DATE].setData(timestamp, ROLE_SORT_ORDER)
             items[self.Columns.AMOUNT].setData(amount_str_nots.strip(), self.ROLE_CLIPBOARD_DATA)
@@ -179,8 +186,8 @@ class RequestList(MyTreeView):
 
     def create_menu(self, position):
         items = self.selected_in_column(0)
-        if len(items)>1:
-            keys = [item.data(ROLE_KEY)  for item in items]
+        if len(items) > 1:
+            keys = [item.data(ROLE_KEY) for item in items]
             menu = QMenu(self)
             menu.addAction(_("Delete requests"), lambda: self.delete_requests(keys))
             menu.exec_(self.viewport().mapToGlobal(position))
@@ -198,15 +205,25 @@ class RequestList(MyTreeView):
         menu = QMenu(self)
         copy_menu = self.add_copy_menu(menu, idx)
         if req.get_address():
-            copy_menu.addAction(_("Address"), lambda: self.main_window.do_copy(req.get_address(), title='Goldcoin Address'))
+            copy_menu.addAction(
+                _("Address"),
+                lambda: self.main_window.do_copy(req.get_address(), title="Goldcoin Address"),
+            )
         if URI := self.wallet.get_request_URI(req):
-            copy_menu.addAction(_("Goldcoin URI"), lambda: self.main_window.do_copy(URI, title='Goldcoin URI'))
+            copy_menu.addAction(
+                _("Goldcoin URI"), lambda: self.main_window.do_copy(URI, title="Goldcoin URI")
+            )
         if req.is_lightning():
-            copy_menu.addAction(_("Lightning Request"), lambda: self.main_window.do_copy(self.wallet.get_bolt11_invoice(req), title='Lightning Request'))
-        #if 'view_url' in req:
+            copy_menu.addAction(
+                _("Lightning Request"),
+                lambda: self.main_window.do_copy(
+                    self.wallet.get_bolt11_invoice(req), title="Lightning Request"
+                ),
+            )
+        # if 'view_url' in req:
         #    menu.addAction(_("View in web browser"), lambda: webopen(req['view_url']))
         menu.addAction(_("Delete"), lambda: self.delete_requests([key]))
-        run_hook('receive_list_menu', self.main_window, menu, key)
+        run_hook("receive_list_menu", self.main_window, menu, key)
         menu.exec_(self.viewport().mapToGlobal(position))
 
     def delete_requests(self, keys):
@@ -222,5 +239,6 @@ class RequestList(MyTreeView):
     def set_visibility_of_columns(self):
         def set_visible(col: int, b: bool):
             self.showColumn(col) if b else self.hideColumn(col)
+
         set_visible(self.Columns.ADDRESS, False)
         set_visible(self.Columns.LN_RHASH, False)

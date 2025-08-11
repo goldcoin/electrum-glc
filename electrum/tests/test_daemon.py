@@ -10,11 +10,11 @@ from . import ElectrumTestCase, as_testnet
 
 
 class TestUnifiedPassword(ElectrumTestCase):
-    config: 'SimpleConfig'
+    config: "SimpleConfig"
 
     def setUp(self):
         super().setUp()
-        self.config = SimpleConfig({'electrum_path': self.electrum_path})
+        self.config = SimpleConfig({"electrum_path": self.electrum_path})
         self.config.WALLET_USE_SINGLE_PASSWORD = True
         self.config.NETWORK_OFFLINE = True
 
@@ -30,7 +30,9 @@ class TestUnifiedPassword(ElectrumTestCase):
         await self.daemon.stop()
         await super().asyncTearDown()
 
-    def _restore_wallet_from_text(self, text, *, password: Optional[str], encrypt_file: bool = None) -> str:
+    def _restore_wallet_from_text(
+        self, text, *, password: Optional[str], encrypt_file: bool = None
+    ) -> str:
         """Returns path for created wallet."""
         basename = util.get_new_wallet_name(self.wallet_dir)
         path = os.path.join(self.wallet_dir, basename)
@@ -58,22 +60,28 @@ class TestUnifiedPassword(ElectrumTestCase):
                 self.assertTrue(w.has_keystore_encryption())
             if w.has_seed():
                 self.assertIsInstance(w.get_seed(password), str)
-        can_be_unified, is_unified = self.daemon._check_password_for_directory(old_password=password, wallet_dir=self.wallet_dir)
+        can_be_unified, is_unified = self.daemon._check_password_for_directory(
+            old_password=password, wallet_dir=self.wallet_dir
+        )
         self.assertEqual((True, True), (can_be_unified, is_unified))
 
     # "cannot unify pw" tests --->
 
     async def test_cannot_unify_two_std_wallets_both_have_ks_and_sto_enc(self):
         path1 = self._restore_wallet_from_text("9dk", password="123456", encrypt_file=True)
-        path2 = self._restore_wallet_from_text("x8",  password="asdasd", encrypt_file=True)
+        path2 = self._restore_wallet_from_text("x8", password="asdasd", encrypt_file=True)
         with open(path1, "rb") as f:
             raw1_before = f.read()
         with open(path2, "rb") as f:
             raw2_before = f.read()
 
-        can_be_unified, is_unified = self.daemon._check_password_for_directory(old_password="123456", wallet_dir=self.wallet_dir)
+        can_be_unified, is_unified = self.daemon._check_password_for_directory(
+            old_password="123456", wallet_dir=self.wallet_dir
+        )
         self.assertEqual((False, False), (can_be_unified, is_unified))
-        is_unified = self.daemon.update_password_for_directory(old_password="123456", new_password="123456")
+        is_unified = self.daemon.update_password_for_directory(
+            old_password="123456", new_password="123456"
+        )
         self.assertFalse(is_unified)
         # verify that files on disk haven't changed:
         with open(path1, "rb") as f:
@@ -85,8 +93,8 @@ class TestUnifiedPassword(ElectrumTestCase):
 
     async def test_cannot_unify_mixed_wallets(self):
         path1 = self._restore_wallet_from_text("9dk", password="123456", encrypt_file=True)
-        path2 = self._restore_wallet_from_text("9dk",  password="asdasd", encrypt_file=False)
-        path3 = self._restore_wallet_from_text("9dk",  password=None)
+        path2 = self._restore_wallet_from_text("9dk", password="asdasd", encrypt_file=False)
+        path3 = self._restore_wallet_from_text("9dk", password=None)
         with open(path1, "rb") as f:
             raw1_before = f.read()
         with open(path2, "rb") as f:
@@ -94,9 +102,13 @@ class TestUnifiedPassword(ElectrumTestCase):
         with open(path3, "rb") as f:
             raw3_before = f.read()
 
-        can_be_unified, is_unified = self.daemon._check_password_for_directory(old_password="123456", wallet_dir=self.wallet_dir)
+        can_be_unified, is_unified = self.daemon._check_password_for_directory(
+            old_password="123456", wallet_dir=self.wallet_dir
+        )
         self.assertEqual((False, False), (can_be_unified, is_unified))
-        is_unified = self.daemon.update_password_for_directory(old_password="123456", new_password="123456")
+        is_unified = self.daemon.update_password_for_directory(
+            old_password="123456", new_password="123456"
+        )
         self.assertFalse(is_unified)
         # verify that files on disk haven't changed:
         with open(path1, "rb") as f:
@@ -113,22 +125,30 @@ class TestUnifiedPassword(ElectrumTestCase):
 
     async def test_can_unify_two_std_wallets_both_have_ks_and_sto_enc(self):
         path1 = self._restore_wallet_from_text("9dk", password="123456", encrypt_file=True)
-        path2 = self._restore_wallet_from_text("x8",  password="123456", encrypt_file=True)
-        can_be_unified, is_unified = self.daemon._check_password_for_directory(old_password="123456", wallet_dir=self.wallet_dir)
+        path2 = self._restore_wallet_from_text("x8", password="123456", encrypt_file=True)
+        can_be_unified, is_unified = self.daemon._check_password_for_directory(
+            old_password="123456", wallet_dir=self.wallet_dir
+        )
         self.assertEqual((True, True), (can_be_unified, is_unified))
-        is_unified = self.daemon.update_password_for_directory(old_password="123456", new_password="123456")
+        is_unified = self.daemon.update_password_for_directory(
+            old_password="123456", new_password="123456"
+        )
         self.assertTrue(is_unified)
         self._run_post_unif_sanity_checks([path1, path2], password="123456")
 
     async def test_can_unify_two_std_wallets_one_has_ks_enc_other_has_both_enc(self):
         path1 = self._restore_wallet_from_text("9dk", password="123456", encrypt_file=True)
-        path2 = self._restore_wallet_from_text("x8",  password="123456", encrypt_file=False)
+        path2 = self._restore_wallet_from_text("x8", password="123456", encrypt_file=False)
         with open(path2, "rb") as f:
             raw2_before = f.read()
 
-        can_be_unified, is_unified = self.daemon._check_password_for_directory(old_password="123456", wallet_dir=self.wallet_dir)
+        can_be_unified, is_unified = self.daemon._check_password_for_directory(
+            old_password="123456", wallet_dir=self.wallet_dir
+        )
         self.assertEqual((True, False), (can_be_unified, is_unified))
-        is_unified = self.daemon.update_password_for_directory(old_password="123456", new_password="123456")
+        is_unified = self.daemon.update_password_for_directory(
+            old_password="123456", new_password="123456"
+        )
         self.assertTrue(is_unified)
         self._run_post_unif_sanity_checks([path1, path2], password="123456")
         # verify that file at path2 changed:
@@ -138,10 +158,14 @@ class TestUnifiedPassword(ElectrumTestCase):
 
     async def test_can_unify_two_std_wallets_one_without_password(self):
         path1 = self._restore_wallet_from_text("9dk", password=None)
-        path2 = self._restore_wallet_from_text("x8",  password="123456", encrypt_file=True)
-        can_be_unified, is_unified = self.daemon._check_password_for_directory(old_password="123456", wallet_dir=self.wallet_dir)
+        path2 = self._restore_wallet_from_text("x8", password="123456", encrypt_file=True)
+        can_be_unified, is_unified = self.daemon._check_password_for_directory(
+            old_password="123456", wallet_dir=self.wallet_dir
+        )
         self.assertEqual((True, False), (can_be_unified, is_unified))
-        is_unified = self.daemon.update_password_for_directory(old_password="123456", new_password="123456")
+        is_unified = self.daemon.update_password_for_directory(
+            old_password="123456", new_password="123456"
+        )
         self.assertTrue(is_unified)
         self._run_post_unif_sanity_checks([path1, path2], password="123456")
 
@@ -163,18 +187,24 @@ class TestUnifiedPassword(ElectrumTestCase):
         paths.append(self._restore_wallet_from_text(xprv, password="123456", encrypt_file=False))
         paths.append(self._restore_wallet_from_text(xprv, password=None))
         # WIFs
-        wifs= "p2wpkh:cRyfp9nJ8soK1bBUJAcWbMrsJZxKJpe7HBSxz5uXVbwydvUxz9zT p2wpkh:cV6J6T2AG4oXAXdYHAV6dbzR41QnGumDSVvWrmj2yYpos81RtyBK"
+        wifs = "p2wpkh:cRyfp9nJ8soK1bBUJAcWbMrsJZxKJpe7HBSxz5uXVbwydvUxz9zT p2wpkh:cV6J6T2AG4oXAXdYHAV6dbzR41QnGumDSVvWrmj2yYpos81RtyBK"
         paths.append(self._restore_wallet_from_text(wifs, password="123456", encrypt_file=True))
         paths.append(self._restore_wallet_from_text(wifs, password="123456", encrypt_file=False))
         paths.append(self._restore_wallet_from_text(wifs, password=None))
         # addrs
-        addrs = "tb1qq2tmmcngng78nllq2pvrkchcdukemtj5s6l0zu tb1qm7ckcjsed98zhvhv3dr56a22w3fehlkxyh4wgd"
+        addrs = (
+            "tb1qq2tmmcngng78nllq2pvrkchcdukemtj5s6l0zu tb1qm7ckcjsed98zhvhv3dr56a22w3fehlkxyh4wgd"
+        )
         paths.append(self._restore_wallet_from_text(addrs, password="123456", encrypt_file=True))
         paths.append(self._restore_wallet_from_text(addrs, password="123456", encrypt_file=False))
         paths.append(self._restore_wallet_from_text(addrs, password=None))
         # do unification
-        can_be_unified, is_unified = self.daemon._check_password_for_directory(old_password="123456", wallet_dir=self.wallet_dir)
+        can_be_unified, is_unified = self.daemon._check_password_for_directory(
+            old_password="123456", wallet_dir=self.wallet_dir
+        )
         self.assertEqual((True, False), (can_be_unified, is_unified))
-        is_unified = self.daemon.update_password_for_directory(old_password="123456", new_password="123456")
+        is_unified = self.daemon.update_password_for_directory(
+            old_password="123456", new_password="123456"
+        )
         self.assertTrue(is_unified)
         self._run_post_unif_sanity_checks(paths, password="123456")

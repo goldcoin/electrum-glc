@@ -17,8 +17,8 @@ from .jade_serial import JadeSerialImpl
 from .jade_tcp import JadeTCPImpl
 
 # 'jade' logger
-logger = logging.getLogger('jade')
-device_logger = logging.getLogger('jade-device')
+logger = logging.getLogger("jade")
+device_logger = logging.getLogger("jade-device")
 
 # BLE comms backend is optional
 # It relies on the BLE dependencies being available
@@ -26,16 +26,16 @@ try:
     from .jade_ble import JadeBleImpl
 except ImportError as e:
     logger.warn(e)
-    logger.warn('BLE scanning/connectivity will not be available')
+    logger.warn("BLE scanning/connectivity will not be available")
 
 
 # Default serial connection
-DEFAULT_SERIAL_DEVICE = '/dev/ttyUSB0'
+DEFAULT_SERIAL_DEVICE = "/dev/ttyUSB0"
 DEFAULT_BAUD_RATE = 115200
 DEFAULT_SERIAL_TIMEOUT = 120
 
 # Default BLE connection
-DEFAULT_BLE_DEVICE_NAME = 'Jade'
+DEFAULT_BLE_DEVICE_NAME = "Jade"
 DEFAULT_BLE_SERIAL_NUMBER = None
 DEFAULT_BLE_SCAN_TIMEOUT = 60
 
@@ -63,6 +63,7 @@ def _hexlify(data):
         return {k: _hexlify(v) for k, v in data.items()}
     else:
         return data
+
 
 # NOTE: Removed entirely for electrum - so it is not used silently as a fallback.
 # (hard error preferred in that case)
@@ -117,6 +118,7 @@ def _hexlify(data):
 #     logger.warn('Default _http_requests() function will not be available')
 #
 
+
 class JadeAPI:
     """
     High-Level Jade Client API
@@ -143,7 +145,7 @@ class JadeAPI:
         return self
 
     def __exit__(self, exc_type, exc, tb):
-        if (exc_type):
+        if exc_type:
             logger.error("Exception causing JadeAPI context exit.")
             logger.error(exc_type)
             logger.error(exc)
@@ -180,8 +182,7 @@ class JadeAPI:
         return JadeAPI(impl)
 
     @staticmethod
-    def create_ble(device_name=None, serial_number=None,
-                   scan_timeout=None, loop=None):
+    def create_ble(device_name=None, serial_number=None, scan_timeout=None, loop=None):
         """
         Create a JadeAPI object using the BLE interface described.
         NOTE: raises JadeError if BLE dependencies not installed.
@@ -217,8 +218,7 @@ class JadeAPI:
         ------
         JadeError if BLE backend not available (ie. BLE dependencies not installed)
         """
-        impl = JadeInterface.create_ble(device_name, serial_number,
-                                        scan_timeout, loop)
+        impl = JadeInterface.create_ble(device_name, serial_number, scan_timeout, loop)
         return JadeAPI(impl)
 
     def connect(self):
@@ -268,11 +268,11 @@ class JadeAPI:
         JadeError
             If the reply represented an error, including all details received.
         """
-        if 'error' in reply:
-            e = reply['error']
-            raise JadeError(e.get('code'), e.get('message'), e.get('data'))
+        if "error" in reply:
+            e = reply["error"]
+            raise JadeError(e.get("code"), e.get("message"), e.get("data"))
 
-        return reply['result']
+        return reply["result"]
 
     def _jadeRpc(self, method, params=None, inputid=None, http_request_fn=None, long_timeout=False):
         """
@@ -325,18 +325,19 @@ class JadeAPI:
         # forwards the response back to the Jade.
         # Note: the function called to make the http-request can be passed in,
         # or it can default to the simple _http_request() function above, if available.
-        if isinstance(result, collections.abc.Mapping) and 'http_request' in result:
+        if isinstance(result, collections.abc.Mapping) and "http_request" in result:
             this_module = sys.modules[__name__]
-            make_http_request = http_request_fn or getattr(this_module, '_http_request', None)
-            assert make_http_request, 'Default _http_request() function not available'
+            make_http_request = http_request_fn or getattr(this_module, "_http_request", None)
+            assert make_http_request, "Default _http_request() function not available"
 
-            http_request = result['http_request']
-            http_response = make_http_request(http_request['params'])
+            http_request = result["http_request"]
+            http_response = make_http_request(http_request["params"])
             return self._jadeRpc(
-                http_request['on-reply'],
-                http_response['body'],
+                http_request["on-reply"],
+                http_response["body"],
                 http_request_fn=make_http_request,
-                long_timeout=long_timeout)
+                long_timeout=long_timeout,
+            )
 
         return result
 
@@ -349,7 +350,7 @@ class JadeAPI:
         dict
             Contains keys for various info describing the hw and running fw
         """
-        return self._jadeRpc('get_version_info')
+        return self._jadeRpc("get_version_info")
 
     def add_entropy(self, entropy):
         """
@@ -365,8 +366,8 @@ class JadeAPI:
         bool
             True on success
         """
-        params = {'entropy': entropy}
-        return self._jadeRpc('add_entropy', params)
+        params = {"entropy": entropy}
+        return self._jadeRpc("add_entropy", params)
 
     def set_epoch(self, epoch=None):
         """
@@ -384,8 +385,8 @@ class JadeAPI:
         bool
             True on success
         """
-        params = {'epoch': epoch if epoch is not None else int(time.time())}
-        return self._jadeRpc('set_epoch', params)
+        params = {"epoch": epoch if epoch is not None else int(time.time())}
+        return self._jadeRpc("set_epoch", params)
 
     def ota_update(self, fwcmp, fwlen, chunksize, patchlen=None, cb=None):
         """
@@ -429,14 +430,12 @@ class JadeAPI:
         cmplen = len(fwcmp)
 
         # Initiate OTA
-        ota_method = 'ota'
-        params = {'fwsize': fwlen,
-                  'cmpsize': cmplen,
-                  'cmphash': cmphash}
+        ota_method = "ota"
+        params = {"fwsize": fwlen, "cmpsize": cmplen, "cmphash": cmphash}
 
         if patchlen is not None:
-            ota_method = 'ota_delta'
-            params['patchsize'] = patchlen
+            ota_method = "ota_delta"
+            params["patchsize"] = patchlen
 
         result = self._jadeRpc(ota_method, params)
         assert result is True
@@ -446,16 +445,16 @@ class JadeAPI:
         while written < cmplen:
             remaining = cmplen - written
             length = min(remaining, chunksize)
-            chunk = bytes(fwcmp[written:written + length])
-            result = self._jadeRpc('ota_data', chunk)
+            chunk = bytes(fwcmp[written : written + length])
+            result = self._jadeRpc("ota_data", chunk)
             assert result is True
             written += length
 
-            if (cb):
+            if cb:
                 cb(written, cmplen)
 
         # All binary data uploaded
-        return self._jadeRpc('ota_complete')
+        return self._jadeRpc("ota_complete")
 
     def run_remote_selfcheck(self):
         """
@@ -467,7 +466,7 @@ class JadeAPI:
         bool
             True on success.
         """
-        return self._jadeRpc('debug_selfcheck', long_timeout=True)
+        return self._jadeRpc("debug_selfcheck", long_timeout=True)
 
     def clean_reset(self):
         """
@@ -479,7 +478,7 @@ class JadeAPI:
         bool
             True on success.
         """
-        return self._jadeRpc('debug_clean_reset')
+        return self._jadeRpc("debug_clean_reset")
 
     def set_mnemonic(self, mnemonic, passphrase=None, temporary_wallet=False):
         """
@@ -506,9 +505,12 @@ class JadeAPI:
         bool
             True on success.
         """
-        params = {'mnemonic': mnemonic, 'passphrase': passphrase,
-                  'temporary_wallet': temporary_wallet}
-        return self._jadeRpc('debug_set_mnemonic', params)
+        params = {
+            "mnemonic": mnemonic,
+            "passphrase": passphrase,
+            "temporary_wallet": temporary_wallet,
+        }
+        return self._jadeRpc("debug_set_mnemonic", params)
 
     def set_seed(self, seed):
         """
@@ -526,8 +528,8 @@ class JadeAPI:
         bool
             True on success.
         """
-        params = {'seed': seed}
-        return self._jadeRpc('debug_set_mnemonic', params)
+        params = {"seed": seed}
+        return self._jadeRpc("debug_set_mnemonic", params)
 
     def set_pinserver(self, urlA=None, urlB=None, pubkey=None, cert=None):
         """
@@ -557,13 +559,13 @@ class JadeAPI:
         """
         params = {}
         if urlA is not None or urlB is not None:
-            params['urlA'] = urlA
-            params['urlB'] = urlB
+            params["urlA"] = urlA
+            params["urlB"] = urlB
         if pubkey is not None:
-            params['pubkey'] = pubkey
+            params["pubkey"] = pubkey
         if cert is not None:
-            params['certificate'] = cert
-        return self._jadeRpc('update_pinserver', params)
+            params["certificate"] = cert
+        return self._jadeRpc("update_pinserver", params)
 
     def reset_pinserver(self, reset_details, reset_certificate):
         """
@@ -582,9 +584,8 @@ class JadeAPI:
         bool
             True on success.
         """
-        params = {'reset_details': reset_details,
-                  'reset_certificate': reset_certificate}
-        return self._jadeRpc('update_pinserver', params)
+        params = {"reset_details": reset_details, "reset_certificate": reset_certificate}
+        return self._jadeRpc("update_pinserver", params)
 
     def auth_user(self, network, http_request_fn=None, epoch=None):
         """
@@ -613,10 +614,10 @@ class JadeAPI:
             True if the PIN is entered and verified with the remote blind pinserver.
             False if the PIN entered was incorrect.
         """
-        params = {'network': network, 'epoch': epoch if epoch is not None else int(time.time())}
-        return self._jadeRpc('auth_user', params,
-                             http_request_fn=http_request_fn,
-                             long_timeout=True)
+        params = {"network": network, "epoch": epoch if epoch is not None else int(time.time())}
+        return self._jadeRpc(
+            "auth_user", params, http_request_fn=http_request_fn, long_timeout=True
+        )
 
     def register_otp(self, otp_name, otp_uri):
         """
@@ -635,8 +636,8 @@ class JadeAPI:
         bool
             True if the OTP uri was validated and persisted on the hw
         """
-        params = {'name': otp_name, 'uri': otp_uri}
-        return self._jadeRpc('register_otp', params)
+        params = {"name": otp_name, "uri": otp_uri}
+        return self._jadeRpc("register_otp", params)
 
     def get_otp_code(self, otp_name, value_override=None):
         """
@@ -656,10 +657,10 @@ class JadeAPI:
         bool
             True if the OTP uri was validated and persisted on the hw
         """
-        params = {'name': otp_name}
+        params = {"name": otp_name}
         if value_override is not None:
-            params['override'] = value_override
-        return self._jadeRpc('get_otp_code', params)
+            params["override"] = value_override
+        return self._jadeRpc("get_otp_code", params)
 
     def get_xpub(self, network, path):
         """
@@ -678,8 +679,8 @@ class JadeAPI:
         str
             base58 encoded xpub
         """
-        params = {'network': network, 'path': path}
-        return self._jadeRpc('get_xpub', params)
+        params = {"network": network, "path": path}
+        return self._jadeRpc("get_xpub", params)
 
     def get_registered_multisigs(self):
         """
@@ -696,10 +697,18 @@ class JadeAPI:
                 num_signers - total number of signatories, M
                 master_blinding_key - 32-bytes, any liquid master blinding key for this wallet
         """
-        return self._jadeRpc('get_registered_multisigs')
+        return self._jadeRpc("get_registered_multisigs")
 
-    def register_multisig(self, network, multisig_name, variant, sorted_keys, threshold, signers,
-                          master_blinding_key=None):
+    def register_multisig(
+        self,
+        network,
+        multisig_name,
+        variant,
+        sorted_keys,
+        threshold,
+        signers,
+        master_blinding_key=None,
+    ):
         """
         RPC call to register a new multisig wallet, which must contain the hw signer.
         A registration name is provided - if it already exists that record is overwritten.
@@ -742,14 +751,28 @@ class JadeAPI:
         bool
             True on success, implying the mutisig wallet can now be used.
         """
-        params = {'network': network, 'multisig_name': multisig_name,
-                  'descriptor': {'variant': variant, 'sorted': sorted_keys,
-                                 'threshold': threshold, 'signers': signers,
-                                 'master_blinding_key': master_blinding_key}}
-        return self._jadeRpc('register_multisig', params)
+        params = {
+            "network": network,
+            "multisig_name": multisig_name,
+            "descriptor": {
+                "variant": variant,
+                "sorted": sorted_keys,
+                "threshold": threshold,
+                "signers": signers,
+                "master_blinding_key": master_blinding_key,
+            },
+        }
+        return self._jadeRpc("register_multisig", params)
 
-    def get_receive_address(self, *args, recovery_xpub=None, csv_blocks=0,
-                            variant=None, multisig_name=None, confidential=None):
+    def get_receive_address(
+        self,
+        *args,
+        recovery_xpub=None,
+        csv_blocks=0,
+        variant=None,
+        multisig_name=None,
+        confidential=None,
+    ):
         """
         RPC call to generate, show, and return an address for the given path.
         The call has three forms.
@@ -803,25 +826,26 @@ class JadeAPI:
         """
         if multisig_name is not None:
             assert len(args) == 2
-            keys = ['network', 'paths', 'multisig_name']
+            keys = ["network", "paths", "multisig_name"]
             args += (multisig_name,)
         elif variant is not None:
             assert len(args) == 2
-            keys = ['network', 'path', 'variant']
+            keys = ["network", "path", "variant"]
             args += (variant,)
         else:
             assert len(args) == 4
-            keys = ['network', 'subaccount', 'branch', 'pointer', 'recovery_xpub', 'csv_blocks']
+            keys = ["network", "subaccount", "branch", "pointer", "recovery_xpub", "csv_blocks"]
             args += (recovery_xpub, csv_blocks)
 
         params = dict(zip(keys, args))
         if confidential is not None:
-            params['confidential'] = confidential
+            params["confidential"] = confidential
 
-        return self._jadeRpc('get_receive_address', params)
+        return self._jadeRpc("get_receive_address", params)
 
-    def sign_message(self, path, message, use_ae_signatures=False,
-                     ae_host_commitment=None, ae_host_entropy=None):
+    def sign_message(
+        self, path, message, use_ae_signatures=False, ae_host_commitment=None, ae_host_entropy=None
+    ):
         """
         RPC call to format and sign the given message, using the given bip32 path.
         Supports RFC6979 and anti-exfil signatures.
@@ -855,15 +879,15 @@ class JadeAPI:
             # We send the signing request and receive the signer-commitment in
             # reply once the user confirms.
             # We can then request the actual signature passing the ae-entropy.
-            params = {'path': path, 'message': message, 'ae_host_commitment': ae_host_commitment}
-            signer_commitment = self._jadeRpc('sign_message', params)
-            params = {'ae_host_entropy': ae_host_entropy}
-            signature = self._jadeRpc('get_signature', params)
+            params = {"path": path, "message": message, "ae_host_commitment": ae_host_commitment}
+            signer_commitment = self._jadeRpc("sign_message", params)
+            params = {"ae_host_entropy": ae_host_entropy}
+            signature = self._jadeRpc("get_signature", params)
             return signer_commitment, signature
         else:
             # Standard EC signature, simple case
-            params = {'path': path, 'message': message}
-            return self._jadeRpc('sign_message', params)
+            params = {"path": path, "message": message}
+            return self._jadeRpc("sign_message", params)
 
     def get_identity_pubkey(self, identity, curve, key_type, index=0):
         """
@@ -894,8 +918,8 @@ class JadeAPI:
             'key_type'.
 
         """
-        params = {'identity': identity, 'curve': curve, 'type': key_type, 'index': index}
-        return self._jadeRpc('get_identity_pubkey', params)
+        params = {"identity": identity, "curve": curve, "type": key_type, "index": index}
+        return self._jadeRpc("get_identity_pubkey", params)
 
     def get_identity_shared_key(self, identity, curve, their_pubkey, index=0):
         """
@@ -923,9 +947,13 @@ class JadeAPI:
             The shared ecdh key for the given identity and cpty public key
             Consistent with 'get_identity_pubkey' with 'key_type=slip-0017'
         """
-        params = {'identity': identity, 'curve': curve, 'index': index,
-                  'their_pubkey': their_pubkey}
-        return self._jadeRpc('get_identity_shared_key', params)
+        params = {
+            "identity": identity,
+            "curve": curve,
+            "index": index,
+            "their_pubkey": their_pubkey,
+        }
+        return self._jadeRpc("get_identity_shared_key", params)
 
     def sign_identity(self, identity, curve, challenge, index=0):
         """
@@ -957,8 +985,8 @@ class JadeAPI:
             'get_identity_pubkey' with 'key_type=slip-0013'
             signature - 65-bytes, RFC6979 deterministic signature, prefixed with 0x00
         """
-        params = {'identity': identity, 'curve': curve, 'index': index, 'challenge': challenge}
-        return self._jadeRpc('sign_identity', params)
+        params = {"identity": identity, "curve": curve, "index": index, "challenge": challenge}
+        return self._jadeRpc("sign_identity", params)
 
     def get_master_blinding_key(self):
         """
@@ -971,7 +999,7 @@ class JadeAPI:
         32-bytes
             SLIP-077 master blinding key
         """
-        return self._jadeRpc('get_master_blinding_key')
+        return self._jadeRpc("get_master_blinding_key")
 
     def get_blinding_key(self, script, multisig_name=None):
         """
@@ -991,8 +1019,8 @@ class JadeAPI:
         33-bytes
             Public blinding key for the passed script.
         """
-        params = {'script': script, 'multisig_name': multisig_name}
-        return self._jadeRpc('get_blinding_key', params)
+        params = {"script": script, "multisig_name": multisig_name}
+        return self._jadeRpc("get_blinding_key", params)
 
     def get_shared_nonce(self, script, their_pubkey, include_pubkey=False, multisig_name=None):
         """
@@ -1028,9 +1056,13 @@ class JadeAPI:
             shared_nonce - 32-bytes, public blinding nonce for the passed script as above.
             blinding_key - 33-bytes, public blinding key for the passed script.
         """
-        params = {'script': script, 'their_pubkey': their_pubkey,
-                  'include_pubkey': include_pubkey, 'multisig_name': multisig_name}
-        return self._jadeRpc('get_shared_nonce', params)
+        params = {
+            "script": script,
+            "their_pubkey": their_pubkey,
+            "include_pubkey": include_pubkey,
+            "multisig_name": multisig_name,
+        }
+        return self._jadeRpc("get_shared_nonce", params)
 
     def get_blinding_factor(self, hash_prevouts, output_index, bftype, multisig_name=None):
         """
@@ -1064,19 +1096,17 @@ class JadeAPI:
         32-bytes
             The requested blinding factor
         """
-        params = {'hash_prevouts': hash_prevouts,
-                  'output_index': output_index,
-                  'type': bftype,
-                  'multisig_name': multisig_name}
-        return self._jadeRpc('get_blinding_factor', params)
+        params = {
+            "hash_prevouts": hash_prevouts,
+            "output_index": output_index,
+            "type": bftype,
+            "multisig_name": multisig_name,
+        }
+        return self._jadeRpc("get_blinding_factor", params)
 
-    def get_commitments(self,
-                        asset_id,
-                        value,
-                        hash_prevouts,
-                        output_index,
-                        vbf=None,
-                        multisig_name=None):
+    def get_commitments(
+        self, asset_id, value, hash_prevouts, output_index, vbf=None, multisig_name=None
+    ):
         """
         RPC call to generate deterministic blinding factors and commitments for a given output.
         Can optionally get a "custom" VBF, normally used for the last input where the vbf is not
@@ -1111,13 +1141,15 @@ class JadeAPI:
         dict
             Containing the following the blinding factors and output commitments.
         """
-        params = {'asset_id': asset_id,
-                  'value': value,
-                  'hash_prevouts': hash_prevouts,
-                  'output_index': output_index,
-                  'vbf': vbf,
-                  'multisig_name': multisig_name}
-        return self._jadeRpc('get_commitments', params)
+        params = {
+            "asset_id": asset_id,
+            "value": value,
+            "hash_prevouts": hash_prevouts,
+            "output_index": output_index,
+            "vbf": vbf,
+            "multisig_name": multisig_name,
+        }
+        return self._jadeRpc("get_commitments", params)
 
     def _send_tx_inputs(self, base_id, inputs, use_ae_signatures):
         """
@@ -1162,20 +1194,20 @@ class JadeAPI:
             for txinput in inputs:
                 # ae-protocol - do not send the host entropy immediately
                 txinput = txinput.copy()  # shallow copy
-                host_ae_entropy_values.append(txinput.pop('ae_host_entropy', None))
+                host_ae_entropy_values.append(txinput.pop("ae_host_entropy", None))
 
                 base_id += 1
                 input_id = str(base_id)
-                reply = self._jadeRpc('tx_input', txinput, input_id)
+                reply = self._jadeRpc("tx_input", txinput, input_id)
                 signer_commitments.append(reply)
 
             # Request the signatures one at a time, sending the entropy
             signatures = []
-            for (i, host_ae_entropy) in enumerate(host_ae_entropy_values, 1):
+            for i, host_ae_entropy in enumerate(host_ae_entropy_values, 1):
                 base_id += 1
                 sig_id = str(base_id)
-                params = {'ae_host_entropy': host_ae_entropy}
-                reply = self._jadeRpc('get_signature', params, sig_id)
+                params = {"ae_host_entropy": host_ae_entropy}
+                reply = self._jadeRpc("get_signature", params, sig_id)
                 signatures.append(reply)
 
             assert len(signatures) == len(inputs)
@@ -1195,7 +1227,7 @@ class JadeAPI:
             for txinput in inputs:
                 base_id += 1
                 msg_id = str(base_id)
-                request = self.jade.build_request(msg_id, 'tx_input', txinput)
+                request = self.jade.build_request(msg_id, "tx_input", txinput)
                 self.jade.write_request(request)
                 requests.append(request)
                 time.sleep(0.1)
@@ -1211,8 +1243,9 @@ class JadeAPI:
             assert len(signatures) == len(inputs)
             return signatures
 
-    def sign_liquid_tx(self, network, txn, inputs, commitments, change, use_ae_signatures=False,
-                       asset_info=None):
+    def sign_liquid_tx(
+        self, network, txn, inputs, commitments, change, use_ae_signatures=False, asset_info=None
+    ):
         """
         RPC call to sign a liquid transaction.
 
@@ -1280,15 +1313,17 @@ class JadeAPI:
         # 1st message contains txn and number of inputs we are going to send.
         # Reply ok if that corresponds to the expected number of inputs (n).
         base_id = 100 * random.randint(1000, 9999)
-        params = {'network': network,
-                  'txn': txn,
-                  'num_inputs': len(inputs),
-                  'trusted_commitments': commitments,
-                  'use_ae_signatures': use_ae_signatures,
-                  'change': change,
-                  'asset_info': asset_info}
+        params = {
+            "network": network,
+            "txn": txn,
+            "num_inputs": len(inputs),
+            "trusted_commitments": commitments,
+            "use_ae_signatures": use_ae_signatures,
+            "change": change,
+            "asset_info": asset_info,
+        }
 
-        reply = self._jadeRpc('sign_liquid_tx', params, str(base_id))
+        reply = self._jadeRpc("sign_liquid_tx", params, str(base_id))
         assert reply
 
         # Send inputs and receive signatures
@@ -1350,13 +1385,15 @@ class JadeAPI:
         # 1st message contains txn and number of inputs we are going to send.
         # Reply ok if that corresponds to the expected number of inputs (n).
         base_id = 100 * random.randint(1000, 9999)
-        params = {'network': network,
-                  'txn': txn,
-                  'num_inputs': len(inputs),
-                  'use_ae_signatures': use_ae_signatures,
-                  'change': change}
+        params = {
+            "network": network,
+            "txn": txn,
+            "num_inputs": len(inputs),
+            "use_ae_signatures": use_ae_signatures,
+            "change": change,
+        }
 
-        reply = self._jadeRpc('sign_tx', params, str(base_id))
+        reply = self._jadeRpc("sign_tx", params, str(base_id))
         assert reply
 
         # Send inputs and receive signatures
@@ -1393,7 +1430,7 @@ class JadeInterface:
         return self
 
     def __exit__(self, exc_type, exc, tb):
-        if (exc_type):
+        if exc_type:
             logger.error("Exception causing JadeInterface context exit.")
             logger.error(exc_type)
             logger.error(exc)
@@ -1429,14 +1466,15 @@ class JadeInterface:
         if device and JadeTCPImpl.isSupportedDevice(device):
             impl = JadeTCPImpl(device)
         else:
-            impl = JadeSerialImpl(device or DEFAULT_SERIAL_DEVICE,
-                                  baud or DEFAULT_BAUD_RATE,
-                                  timeout or DEFAULT_SERIAL_TIMEOUT)
+            impl = JadeSerialImpl(
+                device or DEFAULT_SERIAL_DEVICE,
+                baud or DEFAULT_BAUD_RATE,
+                timeout or DEFAULT_SERIAL_TIMEOUT,
+            )
         return JadeInterface(impl)
 
     @staticmethod
-    def create_ble(device_name=None, serial_number=None,
-                   scan_timeout=None, loop=None):
+    def create_ble(device_name=None, serial_number=None, scan_timeout=None, loop=None):
         """
         Create a JadeInterface object using the BLE interface described.
         NOTE: raises JadeError if BLE dependencies not installed.
@@ -1476,10 +1514,12 @@ class JadeInterface:
         if not hasattr(this_module, "JadeBleImpl"):
             raise JadeError(1, "BLE support not installed", None)
 
-        impl = JadeBleImpl(device_name or DEFAULT_BLE_DEVICE_NAME,
-                           serial_number or DEFAULT_BLE_SERIAL_NUMBER,
-                           scan_timeout or DEFAULT_BLE_SCAN_TIMEOUT,
-                           loop=loop)
+        impl = JadeBleImpl(
+            device_name or DEFAULT_BLE_DEVICE_NAME,
+            serial_number or DEFAULT_BLE_SERIAL_NUMBER,
+            scan_timeout or DEFAULT_BLE_SCAN_TIMEOUT,
+            loop=loop,
+        )
         return JadeInterface(impl)
 
     def connect(self):
@@ -1517,11 +1557,11 @@ class JadeInterface:
         while not finished:
             byte_ = self.impl.read(1)
             drained.extend(byte_)
-            finished = byte_ == b''
+            finished = byte_ == b""
 
-            if finished or byte_ == b'\n' or len(drained) > 256:
+            if finished or byte_ == b"\n" or len(drained) > 256:
                 try:
-                    device_logger.warn(drained.decode('utf-8'))
+                    device_logger.warn(drained.decode("utf-8"))
                 except Exception as e:
                     # Dump the bytes raw and as hex if decoding as utf-8 failed
                     device_logger.warn("Raw:")
@@ -1577,11 +1617,11 @@ class JadeInterface:
         """
         dump = cbor.dumps(request)
         len_dump = len(dump)
-        if 'method' in request and 'ota_data' in request['method']:
-            msg = 'Sending ota_data message {} as cbor of size {}'.format(request['id'], len_dump)
+        if "method" in request and "ota_data" in request["method"]:
+            msg = "Sending ota_data message {} as cbor of size {}".format(request["id"], len_dump)
             logger.info(msg)
         else:
-            logger.info('Sending: {} as cbor of size {}'.format(_hexlify(request), len_dump))
+            logger.info("Sending: {} as cbor of size {}".format(_hexlify(request), len_dump))
         return dump
 
     def write(self, bytes_):
@@ -1650,29 +1690,29 @@ class JadeInterface:
 
             if isinstance(message, collections.abc.Mapping):
                 # A message response (to a prior request)
-                if 'id' in message:
+                if "id" in message:
                     logger.info("Received msg: {}".format(_hexlify(message)))
                     return message
 
                 # A log message - handle as normal
-                if 'log' in message:
-                    response = message['log']
+                if "log" in message:
+                    response = message["log"]
                     log_method = device_logger.error
                     try:
-                        response = message['log'].decode("utf-8")
+                        response = message["log"].decode("utf-8")
                         log_methods = {
-                            'E': device_logger.error,
-                            'W': device_logger.warn,
-                            'I': device_logger.info,
-                            'D': device_logger.debug,
-                            'V': device_logger.debug,
+                            "E": device_logger.error,
+                            "W": device_logger.warn,
+                            "I": device_logger.info,
+                            "D": device_logger.debug,
+                            "V": device_logger.debug,
                         }
-                        if len(response) > 1 and response[1] == ' ':
+                        if len(response) > 1 and response[1] == " ":
                             lvl = response[0]
                             log_method = log_methods.get(lvl, device_logger.error)
                     except Exception as e:
-                        logger.error('Error processing log message: {}'.format(e))
-                    log_method('>> {}'.format(response))
+                        logger.error("Error processing log message: {}".format(e))
+                    log_method(">> {}".format(response))
                     continue
 
             # Unknown/unhandled/unexpected message
@@ -1710,10 +1750,9 @@ class JadeInterface:
         Helper to minimally validate a reply message, in the context of a request.
         Asserts if the reply does contain the expected minimal fields.
         """
-        assert isinstance(reply, dict) and 'id' in reply
-        assert ('result' in reply) != ('error' in reply)
-        assert reply['id'] == request['id'] or \
-            reply['id'] == '00' and 'error' in reply
+        assert isinstance(reply, dict) and "id" in reply
+        assert ("result" in reply) != ("error" in reply)
+        assert reply["id"] == request["id"] or reply["id"] == "00" and "error" in reply
 
     def make_rpc_call(self, request, long_timeout=False):
         """
@@ -1735,9 +1774,9 @@ class JadeInterface:
         """
         # Write outgoing request message
         assert isinstance(request, dict)
-        assert 'id' in request and len(request['id']) > 0
-        assert 'method' in request and len(request['method']) > 0
-        assert len(request['id']) < 16 and len(request['method']) < 32
+        assert "id" in request and len(request["id"]) > 0
+        assert "method" in request and len(request["method"]) > 0
+        assert len(request["id"]) < 16 and len(request["method"]) < 32
         self.write_request(request)
 
         # Read and validate incoming message

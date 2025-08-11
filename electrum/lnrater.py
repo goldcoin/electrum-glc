@@ -65,11 +65,11 @@ def weighted_sum(numbers: List[float], weights: List[float]) -> float:
     running_sum = 0.0
     for n, w in zip(numbers, weights):
         running_sum += n * w
-    return running_sum/sum(weights)
+    return running_sum / sum(weights)
 
 
 class LNRater(Logger):
-    def __init__(self, lnworker: 'LNWallet', network: 'Network'):
+    def __init__(self, lnworker: "LNWallet", network: "Network"):
         """LNRater can be used to suggest nodes to open up channels with.
 
         The graph is analyzed and some heuristics are applied to sort out nodes
@@ -81,7 +81,9 @@ class LNRater(Logger):
 
         self._node_stats: Dict[bytes, NodeStats] = {}  # node_id -> NodeStats
         self._node_ratings: Dict[bytes, float] = {}  # node_id -> float
-        self._policies_by_nodes: Dict[bytes, List[Tuple[ShortChannelID, Policy]]] = defaultdict(list)  # node_id -> (short_channel_id, policy)
+        self._policies_by_nodes: Dict[bytes, List[Tuple[ShortChannelID, Policy]]] = defaultdict(
+            list
+        )  # node_id -> (short_channel_id, policy)
         self._last_analyzed = 0  # timestamp
         self._last_progress_percent = 0
 
@@ -101,7 +103,9 @@ class LNRater(Logger):
         """Analyzes the graph when in early sync stage (>30%) or when caching
         time expires."""
         # gather information about graph sync status
-        current_channels, total, progress_percent = self.network.lngossip.get_sync_progress_estimate()
+        current_channels, total, progress_percent = (
+            self.network.lngossip.get_sync_progress_estimate()
+        )
 
         # gossip sync progress state could be None when not started, but channel
         # db already knows something about the graph, which is why we allow to
@@ -111,8 +115,11 @@ class LNRater(Logger):
             now = time.time()
             # graph should have changed significantly during the sync progress
             # or last analysis was a long time ago
-            if (30 <= progress_percent and progress_percent - self._last_progress_percent >= 10 or
-                    self._last_analyzed + RATER_UPDATE_TIME_SEC < now):
+            if (
+                30 <= progress_percent
+                and progress_percent - self._last_progress_percent >= 10
+                or self._last_analyzed + RATER_UPDATE_TIME_SEC < now
+            ):
                 await self._analyze_graph()
                 self._last_progress_percent = progress_percent
                 self._last_analyzed = now
@@ -172,10 +179,13 @@ class LNRater(Logger):
                 median_capacity = median(capacities)
 
                 # analyze fees
-                effective_fee_rates = [fee_for_edge_msat(
-                    FEE_AMOUNT_MSAT,
-                    p[1].fee_base_msat,
-                    p[1].fee_proportional_millionths) / FEE_AMOUNT_MSAT for p in channel_policies]
+                effective_fee_rates = [
+                    fee_for_edge_msat(
+                        FEE_AMOUNT_MSAT, p[1].fee_base_msat, p[1].fee_proportional_millionths
+                    )
+                    / FEE_AMOUNT_MSAT
+                    for p in channel_policies
+                ]
                 mean_fees_rate = mean(effective_fee_rates)
                 if mean_fees_rate > EXCLUDE_EFFECTIVE_FEE_RATE:
                     continue
@@ -188,24 +198,26 @@ class LNRater(Logger):
                     node_age_block_height=node_age_bh,
                     mean_channel_age_block_height=mean_channel_age_bh,
                     blocks_since_last_channel=blocks_since_last_channel,
-                    mean_fee_rate=mean_fees_rate
+                    mean_fee_rate=mean_fees_rate,
                 )
 
             except Exception as e:
-                self.logger.exception("Could not use channel policies for "
-                                      "calculating statistics.")
+                self.logger.exception(
+                    "Could not use channel policies for " "calculating statistics."
+                )
                 self.logger.debug(pformat(channel_policies))
                 continue
 
-        self.logger.info(f"node statistics done, calculated statistics"
-                         f"for {len(self._node_stats)} nodes")
+        self.logger.info(
+            f"node statistics done, calculated statistics" f"for {len(self._node_stats)} nodes"
+        )
 
     def _rate_nodes(self):
         """Rate nodes by collected statistics."""
 
         max_capacity = 0
         max_num_chan = 0
-        min_fee_rate = float('inf')
+        min_fee_rate = float("inf")
         for stats in self._node_stats.values():
             max_capacity = max(max_capacity, stats.total_capacity_msat)
             max_num_chan = max(max_num_chan, stats.number_channels)
@@ -228,7 +240,7 @@ class LNRater(Logger):
             heuristics.append(stats.total_capacity_msat / max_capacity)
             heuristics_weights.append(0.8)
             # inverse fees
-            fees = min(1E-6, min_fee_rate) / max(1E-10, stats.mean_fee_rate)
+            fees = min(1e-6, min_fee_rate) / max(1e-10, stats.mean_fee_rate)
             heuristics.append(fees)
             heuristics_weights.append(1.0)
 
@@ -260,10 +272,11 @@ class LNRater(Logger):
                 continue
             break
 
-        alias = node_info.alias if node_info else 'unknown node alias'
+        alias = node_info.alias if node_info else "unknown node alias"
         self.logger.info(
             f"node rating for {alias}:\n"
-            f"{pformat(self._node_stats[pk])} (score {self._node_ratings[pk]})")
+            f"{pformat(self._node_stats[pk])} (score {self._node_ratings[pk]})"
+        )
 
         return pk, self._node_stats[pk]
 

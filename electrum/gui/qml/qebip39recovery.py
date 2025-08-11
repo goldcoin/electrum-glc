@@ -29,9 +29,9 @@ class QEBip39RecoveryListModel(QAbstractListModel):
     stateChanged = pyqtSignal()
 
     # define listmodel rolemap
-    _ROLE_NAMES=('description', 'derivation_path', 'script_type')
+    _ROLE_NAMES = ("description", "derivation_path", "script_type")
     _ROLE_KEYS = range(Qt.ItemDataRole.UserRole, Qt.ItemDataRole.UserRole + len(_ROLE_NAMES))
-    _ROLE_MAP  = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES]))
+    _ROLE_MAP = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES]))
 
     def __init__(self, config, parent=None):
         super().__init__(parent)
@@ -75,7 +75,7 @@ class QEBip39RecoveryListModel(QAbstractListModel):
         if not seed or not wallet_type:
             return
 
-        assert wallet_type == 'standard'
+        assert wallet_type == "standard"
 
         self._root_seed = keystore.bip39_to_seed(seed, seed_extra_words)
 
@@ -94,7 +94,7 @@ class QEBip39RecoveryListModel(QAbstractListModel):
         )
 
     def addAccount(self, account):
-        self._logger.debug(f'addAccount {account!r}')
+        self._logger.debug(f"addAccount {account!r}")
         self.beginInsertRows(QModelIndex(), len(self._accounts), len(self._accounts))
         self._accounts.append(account)
         self.endInsertRows()
@@ -112,12 +112,12 @@ class QEBip39RecoveryListModel(QAbstractListModel):
         if isinstance(e, concurrent.futures.CancelledError):
             self.state = QEBip39RecoveryListModel.State.Cancelled
             return
-        self._logger.error(f'recovery error', exc_info=exc_info)
+        self._logger.error(f"recovery error", exc_info=exc_info)
         self.state = QEBip39RecoveryListModel.State.Failed
         self._thread.stop()
 
     def get_account_xpub(self, account_path):
-        root_node = BIP32Node.from_rootseed(self._root_seed, xtype='standard')
+        root_node = BIP32Node.from_rootseed(self._root_seed, xtype="standard")
         account_node = root_node.subkey_at_private_derivation(account_path)
         account_xpub = account_node.to_xpub()
         return account_xpub

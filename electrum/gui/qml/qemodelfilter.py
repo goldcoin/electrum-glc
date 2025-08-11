@@ -12,6 +12,7 @@ class QEFilterProxyModel(QSortFilterProxyModel):
         self.setSourceModel(parent_model)
 
     countChanged = pyqtSignal()
+
     @pyqtProperty(int, notify=countChanged)
     def count(self):
         return self.rowCount(QModelIndex())

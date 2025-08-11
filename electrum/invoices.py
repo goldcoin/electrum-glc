@@ -22,57 +22,59 @@ if TYPE_CHECKING:
 # convention: 'invoices' = outgoing , 'request' = incoming
 
 # status of payment requests
-PR_UNPAID   = 0     # if onchain: invoice amt not reached by txs in mempool+chain. if LN: invoice not paid.
-PR_EXPIRED  = 1     # invoice is unpaid and expiry time reached
-PR_UNKNOWN  = 2     # e.g. invoice not found
-PR_PAID     = 3     # if onchain: paid and mined (1 conf). if LN: invoice is paid.
-PR_INFLIGHT = 4     # only for LN. payment attempt in progress
-PR_FAILED   = 5     # only for LN. we attempted to pay it, but all attempts failed
-PR_ROUTING  = 6     # only for LN. *unused* atm.
+PR_UNPAID = (
+    0  # if onchain: invoice amt not reached by txs in mempool+chain. if LN: invoice not paid.
+)
+PR_EXPIRED = 1  # invoice is unpaid and expiry time reached
+PR_UNKNOWN = 2  # e.g. invoice not found
+PR_PAID = 3  # if onchain: paid and mined (1 conf). if LN: invoice is paid.
+PR_INFLIGHT = 4  # only for LN. payment attempt in progress
+PR_FAILED = 5  # only for LN. we attempted to pay it, but all attempts failed
+PR_ROUTING = 6  # only for LN. *unused* atm.
 PR_UNCONFIRMED = 7  # only onchain. invoice is satisfied but tx is not mined yet.
-PR_BROADCASTING = 8    # onchain, tx is being broadcast
-PR_BROADCAST    = 9    # onchain, tx was broadcast, is not yet in our history
+PR_BROADCASTING = 8  # onchain, tx is being broadcast
+PR_BROADCAST = 9  # onchain, tx was broadcast, is not yet in our history
 
 pr_color = {
-    PR_UNPAID:   (.7, .7, .7, 1),
-    PR_PAID:     (.2, .9, .2, 1),
-    PR_UNKNOWN:  (.7, .7, .7, 1),
-    PR_EXPIRED:  (.9, .2, .2, 1),
-    PR_INFLIGHT: (.9, .6, .3, 1),
-    PR_FAILED:   (.9, .2, .2, 1),
-    PR_ROUTING:  (.9, .6, .3, 1),
-    PR_BROADCASTING:  (.9, .6, .3, 1),
-    PR_BROADCAST:  (.9, .6, .3, 1),
-    PR_UNCONFIRMED: (.9, .6, .3, 1),
+    PR_UNPAID: (0.7, 0.7, 0.7, 1),
+    PR_PAID: (0.2, 0.9, 0.2, 1),
+    PR_UNKNOWN: (0.7, 0.7, 0.7, 1),
+    PR_EXPIRED: (0.9, 0.2, 0.2, 1),
+    PR_INFLIGHT: (0.9, 0.6, 0.3, 1),
+    PR_FAILED: (0.9, 0.2, 0.2, 1),
+    PR_ROUTING: (0.9, 0.6, 0.3, 1),
+    PR_BROADCASTING: (0.9, 0.6, 0.3, 1),
+    PR_BROADCAST: (0.9, 0.6, 0.3, 1),
+    PR_UNCONFIRMED: (0.9, 0.6, 0.3, 1),
 }
 
 
 def pr_tooltips():
     return {
-        PR_UNPAID: _('Unpaid'),
-        PR_PAID: _('Paid'),
-        PR_UNKNOWN: _('Unknown'),
-        PR_EXPIRED: _('Expired'),
-        PR_INFLIGHT: _('In progress'),
-        PR_BROADCASTING: _('Broadcasting'),
-        PR_BROADCAST: _('Broadcast successfully'),
-        PR_FAILED: _('Failed'),
-        PR_ROUTING: _('Computing route...'),
-        PR_UNCONFIRMED: _('Unconfirmed'),
+        PR_UNPAID: _("Unpaid"),
+        PR_PAID: _("Paid"),
+        PR_UNKNOWN: _("Unknown"),
+        PR_EXPIRED: _("Expired"),
+        PR_INFLIGHT: _("In progress"),
+        PR_BROADCASTING: _("Broadcasting"),
+        PR_BROADCAST: _("Broadcast successfully"),
+        PR_FAILED: _("Failed"),
+        PR_ROUTING: _("Computing route..."),
+        PR_UNCONFIRMED: _("Unconfirmed"),
     }
 
 
 def pr_expiration_values():
     return {
-        0: _('Never'),
-        10*60: _('10 minutes'),
-        60*60: _('1 hour'),
-        24*60*60: _('1 day'),
-        7*24*60*60: _('1 week'),
+        0: _("Never"),
+        10 * 60: _("10 minutes"),
+        60 * 60: _("1 hour"),
+        24 * 60 * 60: _("1 day"),
+        7 * 24 * 60 * 60: _("1 week"),
     }
 
 
-PR_DEFAULT_EXPIRATION_WHEN_CREATING = 24*60*60  # 1 day
+PR_DEFAULT_EXPIRATION_WHEN_CREATING = 24 * 60 * 60  # 1 day
 assert PR_DEFAULT_EXPIRATION_WHEN_CREATING in pr_expiration_values()
 
 
@@ -105,23 +107,38 @@ class BaseInvoice(StoredObject):
 
     # mandatory fields
     amount_msat = attr.ib(  # can be '!' or None
-        kw_only=True, on_setattr=attr.setters.validate)  # type: Optional[Union[int, str]]
+        kw_only=True, on_setattr=attr.setters.validate
+    )  # type: Optional[Union[int, str]]
     message = attr.ib(type=str, kw_only=True)
     time = attr.ib(  # timestamp of the invoice
-        type=int, kw_only=True, validator=attr.validators.instance_of(int), on_setattr=attr.setters.validate)
+        type=int,
+        kw_only=True,
+        validator=attr.validators.instance_of(int),
+        on_setattr=attr.setters.validate,
+    )
     exp = attr.ib(  # expiration delay (relative). 0 means never
-        type=int, kw_only=True, validator=attr.validators.instance_of(int), on_setattr=attr.setters.validate)
+        type=int,
+        kw_only=True,
+        validator=attr.validators.instance_of(int),
+        on_setattr=attr.setters.validate,
+    )
 
     # optional fields.
     # an request (incoming) can be satisfied onchain, using lightning or using a swap
     # an invoice (outgoing) is constructed from a source: bip21, bip70, lnaddr
 
     # onchain only
-    outputs = attr.ib(kw_only=True, converter=_decode_outputs)  # type: Optional[List[PartialTxOutput]]
+    outputs = attr.ib(
+        kw_only=True, converter=_decode_outputs
+    )  # type: Optional[List[PartialTxOutput]]
     height = attr.ib(  # only for receiving
-        type=int, kw_only=True, validator=attr.validators.instance_of(int), on_setattr=attr.setters.validate)
+        type=int,
+        kw_only=True,
+        validator=attr.validators.instance_of(int),
+        on_setattr=attr.setters.validate,
+    )
     bip70 = attr.ib(type=str, kw_only=True)  # type: Optional[str]
-    #bip70_requestor = attr.ib(type=str, kw_only=True)  # type: Optional[str]
+    # bip70_requestor = attr.ib(type=str, kw_only=True)  # type: Optional[str]
 
     def is_lightning(self) -> bool:
         raise NotImplementedError()
@@ -139,7 +156,7 @@ class BaseInvoice(StoredObject):
         if status == PR_UNPAID:
             if self.exp > 0 and self.exp != LN_EXPIRY_NEVER:
                 expiration = self.get_expiration_date()
-                status_str = _('Expires') + ' ' + age(expiration, include_seconds=True)
+                status_str = _("Expires") + " " + age(expiration, include_seconds=True)
         return status_str
 
     def get_outputs(self) -> Sequence[PartialTxOutput]:
@@ -203,13 +220,13 @@ class BaseInvoice(StoredObject):
             if not (0 <= value <= TOTAL_COIN_SUPPLY_LIMIT_IN_BTC * COIN * 1000):
                 raise InvoiceError(f"amount is out-of-bounds: {value!r} msat")
         elif isinstance(value, str):
-            if value != '!':
+            if value != "!":
                 raise InvoiceError(f"unexpected amount: {value!r}")
         else:
             raise InvoiceError(f"unexpected amount: {value!r}")
 
     @classmethod
-    def from_bech32(cls, invoice: str) -> 'Invoice':
+    def from_bech32(cls, invoice: str) -> "Invoice":
         """Constructs Invoice object from BOLT-11 string.
         Might raise InvoiceError.
         """
@@ -233,9 +250,9 @@ class BaseInvoice(StoredObject):
         )
 
     @classmethod
-    def from_bip70_payreq(cls, pr: 'PaymentRequest', *, height: int = 0) -> 'Invoice':
+    def from_bip70_payreq(cls, pr: "PaymentRequest", *, height: int = 0) -> "Invoice":
         return Invoice(
-            amount_msat=pr.get_amount()*1000,
+            amount_msat=pr.get_amount() * 1000,
             message=pr.get_memo(),
             time=pr.get_time(),
             exp=pr.get_expiration_date() - pr.get_time(),
@@ -253,27 +270,27 @@ class BaseInvoice(StoredObject):
 
     def as_dict(self, status):
         d = {
-            'is_lightning': self.is_lightning(),
-            'amount_BTC': format_satoshis(self.get_amount_sat()),
-            'message': self.message,
-            'timestamp': self.get_time(),
-            'expiry': self.exp,
-            'status': status,
-            'status_str': self.get_status_str(status),
-            'id': self.get_id(),
-            'amount_sat': self.get_amount_sat(),
+            "is_lightning": self.is_lightning(),
+            "amount_BTC": format_satoshis(self.get_amount_sat()),
+            "message": self.message,
+            "timestamp": self.get_time(),
+            "expiry": self.exp,
+            "status": status,
+            "status_str": self.get_status_str(status),
+            "id": self.get_id(),
+            "amount_sat": self.get_amount_sat(),
         }
         if self.is_lightning():
-            d['amount_msat'] = self.get_amount_msat()
+            d["amount_msat"] = self.get_amount_msat()
         return d
 
 
-@stored_in('invoices')
+@stored_in("invoices")
 @attr.s
 class Invoice(BaseInvoice):
     lightning_invoice = attr.ib(type=str, kw_only=True)  # type: Optional[str]
     __lnaddr = None
-    _broadcasting_status = None # can be None or PR_BROADCASTING or PR_BROADCAST
+    _broadcasting_status = None  # can be None or PR_BROADCASTING or PR_BROADCAST
 
     def is_lightning(self):
         return self.lightning_invoice is not None
@@ -304,7 +321,7 @@ class Invoice(BaseInvoice):
     def _validate_invoice_str(self, attribute, value):
         if value is not None:
             lnaddr = lndecode(value)  # this checks the str can be decoded
-            self.__lnaddr = lnaddr    # save it, just to avoid having to recompute later
+            self.__lnaddr = lnaddr  # save it, just to avoid having to recompute later
 
     def can_be_paid_onchain(self) -> bool:
         if self.is_lightning():
@@ -318,10 +335,12 @@ class Invoice(BaseInvoice):
         return d
 
 
-@stored_in('payment_requests')
+@stored_in("payment_requests")
 @attr.s
 class Request(BaseInvoice):
-    payment_hash = attr.ib(type=bytes, kw_only=True, converter=hex_to_bytes)  # type: Optional[bytes]
+    payment_hash = attr.ib(
+        type=bytes, kw_only=True, converter=hex_to_bytes
+    )  # type: Optional[bytes]
 
     def is_lightning(self):
         return self.payment_hash is not None
@@ -349,12 +368,12 @@ class Request(BaseInvoice):
         message = self.message
         extra = {}
         if self.time and self.exp:
-            extra['time'] = str(int(self.time))
-            extra['exp'] = str(int(self.exp))
+            extra["time"] = str(int(self.time))
+            extra["exp"] = str(int(self.exp))
         if lightning_invoice:
-            extra['lightning'] = lightning_invoice
+            extra["lightning"] = lightning_invoice
         if not addr and lightning_invoice:
-            return "goldcoin:?lightning="+lightning_invoice
+            return "goldcoin:?lightning=" + lightning_invoice
         if not addr and not lightning_invoice:
             return None
         uri = create_bip21_uri(addr, amount, message, extra_query_params=extra)

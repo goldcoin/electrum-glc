@@ -6,7 +6,7 @@ from PyQt5 import QtCore, QtWidgets
 
 class CustomNode:
 
-    def __init__(self, model: 'CustomModel', data):
+    def __init__(self, model: "CustomModel", data):
         self.model = model
         self._data = data
         self._children = []
@@ -37,7 +37,6 @@ class CustomNode:
         child._parent = self
         child._row = len(self._children)
         self._children.append(child)
-
 
 
 class CustomModel(QtCore.QAbstractItemModel):

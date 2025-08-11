@@ -65,8 +65,9 @@ class QrReaderVideoOverlay(QWidget):
         self.bg_rect_pen.setStyle(Qt.DotLine)
         self.bg_rect_fill = QColor(255, 255, 255, int(255 * self.BG_RECT_OPACITY))
 
-    def set_results(self, results: List[QrCodeResult], flip_x: bool,
-                    validator_results: QrReaderValidatorResult):
+    def set_results(
+        self, results: List[QrCodeResult], flip_x: bool, validator_results: QrReaderValidatorResult
+    ):
         self.results = results
         self.flip_x = flip_x
         self.validator_results = validator_results
@@ -88,8 +89,9 @@ class QrReaderVideoOverlay(QWidget):
         transform = painter.worldTransform()
 
         # Set scaling transform
-        transform = transform.scale(self.width() / self.resolution.width(),
-                                    self.height() / self.resolution.height())
+        transform = transform.scale(
+            self.width() / self.resolution.width(), self.height() / self.resolution.height()
+        )
 
         # Compute the transform to flip the coordinate system on the x axis
         transform_flip = QTransform()

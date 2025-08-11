@@ -34,14 +34,25 @@ wallet.start_network(network)
 # you can use ~CLI commands by accessing command_runner
 command_runner = Commands(config=config, daemon=daemon, network=network)
 print("balance", network.run_from_another_thread(command_runner.getbalance(wallet=wallet)))
-print("addr",    network.run_from_another_thread(command_runner.getunusedaddress(wallet=wallet)))
-print("gettx",   network.run_from_another_thread(
-    command_runner.gettransaction("bd3a700b2822e10a034d110c11a596ee7481732533eb6aca7f9ca02911c70a4f")))
+print("addr", network.run_from_another_thread(command_runner.getunusedaddress(wallet=wallet)))
+print(
+    "gettx",
+    network.run_from_another_thread(
+        command_runner.gettransaction(
+            "bd3a700b2822e10a034d110c11a596ee7481732533eb6aca7f9ca02911c70a4f"
+        )
+    ),
+)
 
 
 # but you might as well interact with the underlying methods directly
 print("balance", wallet.get_balance())
-print("addr",    wallet.get_unused_address())
-print("gettx",   network.run_from_another_thread(network.get_transaction("bd3a700b2822e10a034d110c11a596ee7481732533eb6aca7f9ca02911c70a4f")))
+print("addr", wallet.get_unused_address())
+print(
+    "gettx",
+    network.run_from_another_thread(
+        network.get_transaction("bd3a700b2822e10a034d110c11a596ee7481732533eb6aca7f9ca02911c70a4f")
+    ),
+)
 
 stopping_fut.set_result(1)  # to stop event loop

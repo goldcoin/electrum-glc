@@ -66,11 +66,15 @@ def stacktraces():
             if line:
                 code.append("  %s" % (line.strip()))
 
-    return highlight("\n".join(code), PythonLexer(), HtmlFormatter(
-        full=False,
-        # style="native",
-        noclasses=True,
-    ))
+    return highlight(
+        "\n".join(code),
+        PythonLexer(),
+        HtmlFormatter(
+            full=False,
+            # style="native",
+            noclasses=True,
+        ),
+    )
 
 
 class TraceDumper(threading.Thread):
@@ -87,7 +91,7 @@ class TraceDumper(threading.Thread):
             (Then delete the file to force update.)
         @param interval: In seconds: how often to update the trace file.
         """
-        assert (interval > 0.1)
+        assert interval > 0.1
         self.auto = auto
         self.interval = interval
         self.fpath = os.path.abspath(fpath)

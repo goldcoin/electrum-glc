@@ -6,7 +6,13 @@ from typing import Mapping, DefaultDict, Tuple, Optional, Dict, List, Iterable, 
 
 from .lnutil import LnFeatures, PaymentFeeBudget
 from .lnonion import calc_hops_data_for_payment, new_onion_packet, OnionPacket
-from .lnrouter import RouteEdge, TrampolineEdge, LNPaymentRoute, is_route_within_budget, LNPaymentTRoute
+from .lnrouter import (
+    RouteEdge,
+    TrampolineEdge,
+    LNPaymentRoute,
+    is_route_within_budget,
+    LNPaymentTRoute,
+)
 from .lnutil import NoPathFound, LNPeerAddr
 from . import constants
 from .logging import get_logger
@@ -17,61 +23,90 @@ _logger = get_logger(__name__)
 # trampoline nodes are supposed to advertise their fee and cltv in node_update message
 TRAMPOLINE_FEES = [
     {
-        'fee_base_msat': 0,
-        'fee_proportional_millionths': 0,
-        'cltv_expiry_delta': 576,
+        "fee_base_msat": 0,
+        "fee_proportional_millionths": 0,
+        "cltv_expiry_delta": 576,
     },
     {
-        'fee_base_msat': 1000,
-        'fee_proportional_millionths': 100,
-        'cltv_expiry_delta': 576,
+        "fee_base_msat": 1000,
+        "fee_proportional_millionths": 100,
+        "cltv_expiry_delta": 576,
     },
     {
-        'fee_base_msat': 3000,
-        'fee_proportional_millionths': 100,
-        'cltv_expiry_delta': 576,
+        "fee_base_msat": 3000,
+        "fee_proportional_millionths": 100,
+        "cltv_expiry_delta": 576,
     },
     {
-        'fee_base_msat': 5000,
-        'fee_proportional_millionths': 500,
-        'cltv_expiry_delta': 576,
+        "fee_base_msat": 5000,
+        "fee_proportional_millionths": 500,
+        "cltv_expiry_delta": 576,
     },
     {
-        'fee_base_msat': 7000,
-        'fee_proportional_millionths': 1000,
-        'cltv_expiry_delta': 576,
+        "fee_base_msat": 7000,
+        "fee_proportional_millionths": 1000,
+        "cltv_expiry_delta": 576,
     },
     {
-        'fee_base_msat': 12000,
-        'fee_proportional_millionths': 3000,
-        'cltv_expiry_delta': 576,
+        "fee_base_msat": 12000,
+        "fee_proportional_millionths": 3000,
+        "cltv_expiry_delta": 576,
     },
     {
-        'fee_base_msat': 100000,
-        'fee_proportional_millionths': 3000,
-        'cltv_expiry_delta': 576,
+        "fee_base_msat": 100000,
+        "fee_proportional_millionths": 3000,
+        "cltv_expiry_delta": 576,
     },
 ]
 
 # hardcoded list
 # TODO for some pubkeys, there are multiple network addresses we could try
 TRAMPOLINE_NODES_MAINNET = {
-    'ACINQ':                  LNPeerAddr(host='node.acinq.co',           port=9735, pubkey=bytes.fromhex('03864ef025fde8fb587d989186ce6a4a186895ee44a926bfc370e2c366597a3f8f')),
-    'Electrum trampoline':    LNPeerAddr(host='lightning.electrum.org',  port=9740, pubkey=bytes.fromhex('03ecef675be448b615e6176424070673ef8284e0fd19d8be062a6cb5b130a0a0d1')),
-    'trampoline hodlisterco': LNPeerAddr(host='trampoline.hodlister.co', port=9740, pubkey=bytes.fromhex('02ce014625788a61411398f83c945375663972716029ef9d8916719141dc109a1c')),
+    "ACINQ": LNPeerAddr(
+        host="node.acinq.co",
+        port=9735,
+        pubkey=bytes.fromhex("03864ef025fde8fb587d989186ce6a4a186895ee44a926bfc370e2c366597a3f8f"),
+    ),
+    "Electrum trampoline": LNPeerAddr(
+        host="lightning.electrum.org",
+        port=9740,
+        pubkey=bytes.fromhex("03ecef675be448b615e6176424070673ef8284e0fd19d8be062a6cb5b130a0a0d1"),
+    ),
+    "trampoline hodlisterco": LNPeerAddr(
+        host="trampoline.hodlister.co",
+        port=9740,
+        pubkey=bytes.fromhex("02ce014625788a61411398f83c945375663972716029ef9d8916719141dc109a1c"),
+    ),
 }
 
 TRAMPOLINE_NODES_TESTNET = {
-    'endurance': LNPeerAddr(host='34.250.234.192', port=9735, pubkey=bytes.fromhex('03933884aaf1d6b108397e5efe5c86bcf2d8ca8d2f700eda99db9214fc2712b134')),
-    'Electrum trampoline': LNPeerAddr(host='lightning.electrum.org', port=9739, pubkey=bytes.fromhex('02bf82e22f99dcd7ac1de4aad5152ce48f0694c46ec582567f379e0adbf81e2d0f')),
+    "endurance": LNPeerAddr(
+        host="34.250.234.192",
+        port=9735,
+        pubkey=bytes.fromhex("03933884aaf1d6b108397e5efe5c86bcf2d8ca8d2f700eda99db9214fc2712b134"),
+    ),
+    "Electrum trampoline": LNPeerAddr(
+        host="lightning.electrum.org",
+        port=9739,
+        pubkey=bytes.fromhex("02bf82e22f99dcd7ac1de4aad5152ce48f0694c46ec582567f379e0adbf81e2d0f"),
+    ),
 }
 
 TRAMPOLINE_NODES_SIGNET = {
-    'lnd wakiyamap.dev': LNPeerAddr(host='signet-electrumx.wakiyamap.dev', port=9735, pubkey=bytes.fromhex('02dadf6c28f3284d591cd2a4189d1530c1ff82c07059ebea150a33ab76e7364b4a')),
-    'eclair wakiyamap.dev': LNPeerAddr(host='signet-eclair.wakiyamap.dev', port=9735, pubkey=bytes.fromhex('0271cf3881e6eadad960f47125434342e57e65b98a78afa99f9b4191c02dd7ab3b')),
+    "lnd wakiyamap.dev": LNPeerAddr(
+        host="signet-electrumx.wakiyamap.dev",
+        port=9735,
+        pubkey=bytes.fromhex("02dadf6c28f3284d591cd2a4189d1530c1ff82c07059ebea150a33ab76e7364b4a"),
+    ),
+    "eclair wakiyamap.dev": LNPeerAddr(
+        host="signet-eclair.wakiyamap.dev",
+        port=9735,
+        pubkey=bytes.fromhex("0271cf3881e6eadad960f47125434342e57e65b98a78afa99f9b4191c02dd7ab3b"),
+    ),
 }
 
 _TRAMPOLINE_NODES_UNITTESTS = {}  # used in unit tests
+
 
 def hardcoded_trampoline_nodes() -> Mapping[str, LNPeerAddr]:
     if _TRAMPOLINE_NODES_UNITTESTS:
@@ -85,49 +120,54 @@ def hardcoded_trampoline_nodes() -> Mapping[str, LNPeerAddr]:
     else:
         return {}
 
+
 def trampolines_by_id():
     return dict([(x.pubkey, x) for x in hardcoded_trampoline_nodes().values()])
+
 
 def is_hardcoded_trampoline(node_id: bytes) -> bool:
     return node_id in trampolines_by_id()
 
+
 def encode_routing_info(r_tags):
     result = bitstring.BitArray()
     for route in r_tags:
-        result.append(bitstring.pack('uint:8', len(route)))
+        result.append(bitstring.pack("uint:8", len(route)))
         for step in route:
             pubkey, scid, feebase, feerate, cltv = step
             result.append(
-                bitstring.BitArray(pubkey) \
-                + bitstring.BitArray(scid)\
-                + bitstring.pack('intbe:32', feebase)\
-                + bitstring.pack('intbe:32', feerate)\
-                + bitstring.pack('intbe:16', cltv))
+                bitstring.BitArray(pubkey)
+                + bitstring.BitArray(scid)
+                + bitstring.pack("intbe:32", feebase)
+                + bitstring.pack("intbe:32", feerate)
+                + bitstring.pack("intbe:16", cltv)
+            )
     return result.tobytes()
+
 
 def decode_routing_info(s: bytes):
     s = bitstring.BitArray(s)
     r_tags = []
-    n = 8*(33 + 8 + 4 + 4 + 2)
+    n = 8 * (33 + 8 + 4 + 4 + 2)
     while s:
         route = []
         length, s = s[0:8], s[8:]
-        length = length.unpack('uint:8')[0]
+        length = length.unpack("uint:8")[0]
         for i in range(length):
             chunk, s = s[0:n], s[n:]
-            item = chunk.unpack('bytes:33, bytes:8, intbe:32, intbe:32, intbe:16')
+            item = chunk.unpack("bytes:33, bytes:8, intbe:32, intbe:32, intbe:16")
             route.append(item)
         r_tags.append(route)
     return r_tags
 
 
 def is_legacy_relay(invoice_features, r_tags) -> Tuple[bool, Set[bytes]]:
-    """Returns if we deal with a legacy payment and the list of trampoline pubkeys in the invoice.
-    """
+    """Returns if we deal with a legacy payment and the list of trampoline pubkeys in the invoice."""
     invoice_features = LnFeatures(invoice_features)
     # trampoline-supporting wallets:
-    if invoice_features.supports(LnFeatures.OPTION_TRAMPOLINE_ROUTING_OPT_ECLAIR)\
-       or invoice_features.supports(LnFeatures.OPTION_TRAMPOLINE_ROUTING_OPT_ELECTRUM):
+    if invoice_features.supports(
+        LnFeatures.OPTION_TRAMPOLINE_ROUTING_OPT_ECLAIR
+    ) or invoice_features.supports(LnFeatures.OPTION_TRAMPOLINE_ROUTING_OPT_ELECTRUM):
         # If there are no r_tags (routing hints) included, the wallet doesn't have
         # private channels and is probably directly connected to a trampoline node.
         # Any trampoline node should be able to figure out a path to the receiver and
@@ -153,7 +193,7 @@ def is_legacy_relay(invoice_features, r_tags) -> Tuple[bool, Set[bytes]]:
 
 
 def trampoline_policy(
-        trampoline_fee_level: int,
+    trampoline_fee_level: int,
 ) -> Dict:
     """Return the fee policy for all trampoline nodes.
 
@@ -168,12 +208,12 @@ def trampoline_policy(
 
 
 def _extend_trampoline_route(
-        route: List[TrampolineEdge],
-        *,
-        start_node: bytes = None,
-        end_node: bytes,
-        trampoline_fee_level: int,
-        pay_fees: bool = True,
+    route: List[TrampolineEdge],
+    *,
+    start_node: bytes = None,
+    end_node: bytes,
+    trampoline_fee_level: int,
+    pay_fees: bool = True,
 ):
     """Extends the route and modifies it in place."""
     if start_node is None:
@@ -186,10 +226,12 @@ def _extend_trampoline_route(
         TrampolineEdge(
             start_node=start_node,
             end_node=end_node,
-            fee_base_msat=policy['fee_base_msat'] if pay_fees else 0,
-            fee_proportional_millionths=policy['fee_proportional_millionths'] if pay_fees else 0,
-            cltv_delta=policy['cltv_expiry_delta'] if pay_fees else 0,
-            node_features=trampoline_features))
+            fee_base_msat=policy["fee_base_msat"] if pay_fees else 0,
+            fee_proportional_millionths=policy["fee_proportional_millionths"] if pay_fees else 0,
+            cltv_delta=policy["cltv_expiry_delta"] if pay_fees else 0,
+            node_features=trampoline_features,
+        )
+    )
 
 
 def _choose_second_trampoline(
@@ -206,23 +248,23 @@ def _choose_second_trampoline(
             if t2 in trampolines:
                 trampolines.discard(t2)
     if not trampolines:
-        raise NoPathFound('all routes have failed')
+        raise NoPathFound("all routes have failed")
     return random.choice(list(trampolines))
 
 
 def create_trampoline_route(
-        *,
-        amount_msat: int,
-        min_final_cltv_delta: int,
-        invoice_pubkey: bytes,
-        invoice_features: int,
-        my_pubkey: bytes,
-        my_trampoline: bytes,  # the first trampoline in the path; which we are directly connected to
-        r_tags,
-        trampoline_fee_level: int,
-        use_two_trampolines: bool,
-        failed_routes: Iterable[Sequence[str]],
-        budget: PaymentFeeBudget,
+    *,
+    amount_msat: int,
+    min_final_cltv_delta: int,
+    invoice_pubkey: bytes,
+    invoice_features: int,
+    my_pubkey: bytes,
+    my_trampoline: bytes,  # the first trampoline in the path; which we are directly connected to
+    r_tags,
+    trampoline_fee_level: int,
+    use_two_trampolines: bool,
+    failed_routes: Iterable[Sequence[str]],
+    budget: PaymentFeeBudget,
 ) -> LNPaymentTRoute:
     # we decide whether to convert to a legacy payment
     is_legacy, invoice_trampolines = is_legacy_relay(invoice_features, r_tags)
@@ -232,22 +274,31 @@ def create_trampoline_route(
 
     # our first trampoline hop is decided by the channel we use
     _extend_trampoline_route(
-        route, start_node=my_pubkey, end_node=my_trampoline,
-        trampoline_fee_level=trampoline_fee_level, pay_fees=False,
+        route,
+        start_node=my_pubkey,
+        end_node=my_trampoline,
+        trampoline_fee_level=trampoline_fee_level,
+        pay_fees=False,
     )
 
     if is_legacy:
         # we add another different trampoline hop for privacy
         if use_two_trampolines:
             trampolines = trampolines_by_id()
-            second_trampoline = _choose_second_trampoline(my_trampoline, list(trampolines.keys()), failed_routes)
-            _extend_trampoline_route(route, end_node=second_trampoline, trampoline_fee_level=trampoline_fee_level)
+            second_trampoline = _choose_second_trampoline(
+                my_trampoline, list(trampolines.keys()), failed_routes
+            )
+            _extend_trampoline_route(
+                route, end_node=second_trampoline, trampoline_fee_level=trampoline_fee_level
+            )
         # the last trampoline onion must contain routing hints for the last trampoline
         # node to find the recipient
         invoice_routing_info = encode_routing_info(r_tags)
-        assert invoice_routing_info == encode_routing_info(decode_routing_info(invoice_routing_info))
+        assert invoice_routing_info == encode_routing_info(
+            decode_routing_info(invoice_routing_info)
+        )
         # lnwire invoice_features for trampoline is u64
-        invoice_features = invoice_features & 0xffffffffffffffff
+        invoice_features = invoice_features & 0xFFFFFFFFFFFFFFFF
         route[-1].invoice_routing_info = invoice_routing_info
         route[-1].invoice_features = invoice_features
         route[-1].outgoing_node_id = invoice_pubkey
@@ -262,12 +313,18 @@ def create_trampoline_route(
             else:
                 add_trampoline = True
             if add_trampoline:
-                second_trampoline = _choose_second_trampoline(my_trampoline, invoice_trampolines, failed_routes)
-                _extend_trampoline_route(route, end_node=second_trampoline, trampoline_fee_level=trampoline_fee_level)
+                second_trampoline = _choose_second_trampoline(
+                    my_trampoline, invoice_trampolines, failed_routes
+                )
+                _extend_trampoline_route(
+                    route, end_node=second_trampoline, trampoline_fee_level=trampoline_fee_level
+                )
 
     # Add final edge. note: eclair requires an encrypted t-onion blob even in legacy case.
     # Also needed for fees for last TF!
-    _extend_trampoline_route(route, end_node=invoice_pubkey, trampoline_fee_level=trampoline_fee_level)
+    _extend_trampoline_route(
+        route, end_node=invoice_pubkey, trampoline_fee_level=trampoline_fee_level
+    )
     # check that we can pay amount and fees
     if not is_route_within_budget(
         route=route,
@@ -294,7 +351,8 @@ def create_trampoline_onion(
         amount_msat,
         final_cltv_abs=final_cltv_abs,
         total_msat=total_msat,
-        payment_secret=payment_secret)
+        payment_secret=payment_secret,
+    )
     # detect trampoline hops.
     payment_path_pubkeys = [x.node_id for x in route]
     num_hops = len(payment_path_pubkeys)
@@ -303,48 +361,50 @@ def create_trampoline_onion(
         assert route_edge.is_trampoline()
         payload = hops_data[i].payload
         if i < num_hops - 1:
-            payload.pop('short_channel_id')
-            next_edge = route[i+1]
+            payload.pop("short_channel_id")
+            next_edge = route[i + 1]
             assert next_edge.is_trampoline()
-            hops_data[i].payload["outgoing_node_id"] = {"outgoing_node_id":next_edge.node_id}
+            hops_data[i].payload["outgoing_node_id"] = {"outgoing_node_id": next_edge.node_id}
         # only for final
         if i == num_hops - 1:
-            payload["payment_data"] = {
-                "payment_secret": payment_secret,
-                "total_msat": total_msat
-            }
+            payload["payment_data"] = {"payment_secret": payment_secret, "total_msat": total_msat}
         # legacy
         if i == num_hops - 2 and route_edge.invoice_features:
-            payload["invoice_features"] = {"invoice_features":route_edge.invoice_features}
-            payload["invoice_routing_info"] = {"invoice_routing_info":route_edge.invoice_routing_info}
-            payload["payment_data"] = {
-                "payment_secret": payment_secret,
-                "total_msat": total_msat
+            payload["invoice_features"] = {"invoice_features": route_edge.invoice_features}
+            payload["invoice_routing_info"] = {
+                "invoice_routing_info": route_edge.invoice_routing_info
             }
+            payload["payment_data"] = {"payment_secret": payment_secret, "total_msat": total_msat}
     trampoline_session_key = os.urandom(32)
-    trampoline_onion = new_onion_packet(payment_path_pubkeys, trampoline_session_key, hops_data, associated_data=payment_hash, trampoline=True)
+    trampoline_onion = new_onion_packet(
+        payment_path_pubkeys,
+        trampoline_session_key,
+        hops_data,
+        associated_data=payment_hash,
+        trampoline=True,
+    )
     trampoline_onion._debug_hops_data = hops_data
     trampoline_onion._debug_route = route
     return trampoline_onion, amount_msat, cltv_abs
 
 
 def create_trampoline_route_and_onion(
-        *,
-        amount_msat: int,  # that final receiver gets
-        total_msat: int,
-        min_final_cltv_delta: int,
-        invoice_pubkey: bytes,
-        invoice_features,
-        my_pubkey: bytes,
-        node_id: bytes,
-        r_tags,
-        payment_hash: bytes,
-        payment_secret: bytes,
-        local_height: int,
-        trampoline_fee_level: int,
-        use_two_trampolines: bool,
-        failed_routes: Iterable[Sequence[str]],
-        budget: PaymentFeeBudget,
+    *,
+    amount_msat: int,  # that final receiver gets
+    total_msat: int,
+    min_final_cltv_delta: int,
+    invoice_pubkey: bytes,
+    invoice_features,
+    my_pubkey: bytes,
+    node_id: bytes,
+    r_tags,
+    payment_hash: bytes,
+    payment_secret: bytes,
+    local_height: int,
+    trampoline_fee_level: int,
+    use_two_trampolines: bool,
+    failed_routes: Iterable[Sequence[str]],
+    budget: PaymentFeeBudget,
 ) -> Tuple[LNPaymentTRoute, OnionPacket, int, int]:
     # create route for the trampoline_onion
     trampoline_route = create_trampoline_route(
@@ -368,6 +428,7 @@ def create_trampoline_route_and_onion(
         final_cltv_abs=final_cltv_abs,
         total_msat=total_msat,
         payment_hash=payment_hash,
-        payment_secret=payment_secret)
+        payment_secret=payment_secret,
+    )
     bucket_cltv_delta = bucket_cltv_abs - local_height
     return trampoline_route, trampoline_onion, amount_with_fees, bucket_cltv_delta

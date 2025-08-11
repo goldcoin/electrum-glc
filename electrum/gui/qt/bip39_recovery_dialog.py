@@ -27,15 +27,15 @@ class Bip39RecoveryDialog(WindowModalDialog):
     def __init__(self, parent: QWidget, get_account_xpub, on_account_select):
         self.get_account_xpub = get_account_xpub
         self.on_account_select = on_account_select
-        WindowModalDialog.__init__(self, parent, _('BIP39 Recovery'))
+        WindowModalDialog.__init__(self, parent, _("BIP39 Recovery"))
         self.setMinimumWidth(400)
         vbox = QVBoxLayout(self)
         self.content = QVBoxLayout()
-        self.content.addWidget(QLabel(_('Scanning common paths for existing accounts...')))
+        self.content.addWidget(QLabel(_("Scanning common paths for existing accounts...")))
         vbox.addLayout(self.content)
 
         self.thread = TaskThread(self)
-        self.thread.finished.connect(self.deleteLater) # see #3956
+        self.thread.finished.connect(self.deleteLater)  # see #3956
         network = Network.get_instance()
         coro = account_discovery(network, self.get_account_xpub)
         fut = asyncio.run_coroutine_threadsafe(coro, get_asyncio_loop())
@@ -66,12 +66,12 @@ class Bip39RecoveryDialog(WindowModalDialog):
     def on_recovery_success(self, accounts):
         self.clear_content()
         if len(accounts) == 0:
-            self.content.addWidget(QLabel(_('No existing accounts found.')))
+            self.content.addWidget(QLabel(_("No existing accounts found.")))
             return
-        self.content.addWidget(QLabel(_('Choose an account to restore.')))
+        self.content.addWidget(QLabel(_("Choose an account to restore.")))
         self.list = QListWidget()
         for account in accounts:
-            item = QListWidgetItem(account['description'])
+            item = QListWidgetItem(account["description"])
             item.setData(self.ROLE_ACCOUNT, account)
             self.list.addItem(item)
         self.list.clicked.connect(lambda: self.ok_button.setEnabled(True))
@@ -82,7 +82,7 @@ class Bip39RecoveryDialog(WindowModalDialog):
         if isinstance(e, concurrent.futures.CancelledError):
             return
         self.clear_content()
-        msg = _('Error: Account discovery failed.')
+        msg = _("Error: Account discovery failed.")
         if isinstance(e, UserFacingException):
             msg += f"\n{e}"
         else:

@@ -19,11 +19,12 @@ if TYPE_CHECKING:
 class QEConfig(AuthMixin, QObject):
     _logger = get_logger(__name__)
 
-    def __init__(self, config: 'SimpleConfig', parent=None):
+    def __init__(self, config: "SimpleConfig", parent=None):
         super().__init__(parent)
         self.config = config
 
     languageChanged = pyqtSignal()
+
     @pyqtProperty(str, notify=languageChanged)
     def language(self):
         return self.config.LOCALIZATION_LANGUAGE
@@ -38,16 +39,21 @@ class QEConfig(AuthMixin, QObject):
             self.languageChanged.emit()
 
     languagesChanged = pyqtSignal()
-    @pyqtProperty('QVariantList', notify=languagesChanged)
+
+    @pyqtProperty("QVariantList", notify=languagesChanged)
     def languagesAvailable(self):
         # sort on translated languages, then re-add Default on top
         langs = copy.deepcopy(languages)
-        default = langs.pop('')
-        langs_sorted = sorted(list(map(lambda x: {'value': x[0], 'text': x[1]}, langs.items())), key=lambda x: x['text'])
-        langs_sorted.insert(0, {'value': '', 'text': default})
+        default = langs.pop("")
+        langs_sorted = sorted(
+            list(map(lambda x: {"value": x[0], "text": x[1]}, langs.items())),
+            key=lambda x: x["text"],
+        )
+        langs_sorted.insert(0, {"value": "", "text": default})
         return langs_sorted
 
     autoConnectChanged = pyqtSignal()
+
     @pyqtProperty(bool, notify=autoConnectChanged)
     def autoConnect(self):
         return self.config.NETWORK_AUTO_CONNECT
@@ -63,6 +69,7 @@ class QEConfig(AuthMixin, QObject):
         return self.config.cv.NETWORK_AUTO_CONNECT.is_set()
 
     baseUnitChanged = pyqtSignal()
+
     @pyqtProperty(str, notify=baseUnitChanged)
     def baseUnit(self):
         return self.config.get_base_unit()
@@ -72,19 +79,20 @@ class QEConfig(AuthMixin, QObject):
         self.config.set_base_unit(unit)
         self.baseUnitChanged.emit()
 
-    @pyqtProperty('QRegularExpression', notify=baseUnitChanged)
+    @pyqtProperty("QRegularExpression", notify=baseUnitChanged)
     def btcAmountRegex(self):
         decimal_point = base_unit_name_to_decimal_point(self.config.get_base_unit())
-        max_digits_before_dp = (
-            len(str(TOTAL_COIN_SUPPLY_LIMIT_IN_BTC))
-            + (base_unit_name_to_decimal_point("BTC") - decimal_point))
-        exp = '[0-9]{0,%d}' % max_digits_before_dp
+        max_digits_before_dp = len(str(TOTAL_COIN_SUPPLY_LIMIT_IN_BTC)) + (
+            base_unit_name_to_decimal_point("BTC") - decimal_point
+        )
+        exp = "[0-9]{0,%d}" % max_digits_before_dp
         if decimal_point > 0:
-            exp += '\\.'
-            exp += '[0-9]{0,%d}' % decimal_point
+            exp += "\\."
+            exp += "[0-9]{0,%d}" % decimal_point
         return QRegularExpression(exp)
 
     thousandsSeparatorChanged = pyqtSignal()
+
     @pyqtProperty(bool, notify=thousandsSeparatorChanged)
     def thousandsSeparator(self):
         return self.config.BTC_AMOUNTS_ADD_THOUSANDS_SEP
@@ -96,6 +104,7 @@ class QEConfig(AuthMixin, QObject):
         self.thousandsSeparatorChanged.emit()
 
     spendUnconfirmedChanged = pyqtSignal()
+
     @pyqtProperty(bool, notify=spendUnconfirmedChanged)
     def spendUnconfirmed(self):
         return not self.config.WALLET_SPEND_CONFIRMED_ONLY
@@ -106,6 +115,7 @@ class QEConfig(AuthMixin, QObject):
         self.spendUnconfirmedChanged.emit()
 
     requestExpiryChanged = pyqtSignal()
+
     @pyqtProperty(int, notify=requestExpiryChanged)
     def requestExpiry(self):
         return self.config.WALLET_PAYREQ_EXPIRY_SECONDS
@@ -116,24 +126,26 @@ class QEConfig(AuthMixin, QObject):
         self.requestExpiryChanged.emit()
 
     pinCodeChanged = pyqtSignal()
+
     @pyqtProperty(str, notify=pinCodeChanged)
     def pinCode(self):
         return self.config.CONFIG_PIN_CODE or ""
 
     @pinCode.setter
     def pinCode(self, pin_code):
-        if pin_code == '':
+        if pin_code == "":
             self.pinCodeRemoveAuth()
         else:
             self.config.CONFIG_PIN_CODE = pin_code
             self.pinCodeChanged.emit()
 
-    @auth_protect(method='wallet')
+    @auth_protect(method="wallet")
     def pinCodeRemoveAuth(self):
         self.config.CONFIG_PIN_CODE = ""
         self.pinCodeChanged.emit()
 
     useGossipChanged = pyqtSignal()
+
     @pyqtProperty(bool, notify=useGossipChanged)
     def useGossip(self):
         return self.config.LIGHTNING_USE_GOSSIP
@@ -144,6 +156,7 @@ class QEConfig(AuthMixin, QObject):
         self.useGossipChanged.emit()
 
     useFallbackAddressChanged = pyqtSignal()
+
     @pyqtProperty(bool, notify=useFallbackAddressChanged)
     def useFallbackAddress(self):
         return self.config.WALLET_BOLT11_FALLBACK
@@ -154,15 +167,16 @@ class QEConfig(AuthMixin, QObject):
         self.useFallbackAddressChanged.emit()
 
     enableDebugLogsChanged = pyqtSignal()
+
     @pyqtProperty(bool, notify=enableDebugLogsChanged)
     def enableDebugLogs(self):
         gui_setting = self.config.GUI_ENABLE_DEBUG_LOGS
-        return gui_setting or bool(self.config.get('verbosity'))
+        return gui_setting or bool(self.config.get("verbosity"))
 
     @pyqtProperty(bool, notify=enableDebugLogsChanged)
     def canToggleDebugLogs(self):
         gui_setting = self.config.GUI_ENABLE_DEBUG_LOGS
-        return not self.config.get('verbosity') or gui_setting
+        return not self.config.get("verbosity") or gui_setting
 
     @enableDebugLogs.setter
     def enableDebugLogs(self, enable):
@@ -170,6 +184,7 @@ class QEConfig(AuthMixin, QObject):
         self.enableDebugLogsChanged.emit()
 
     useRecoverableChannelsChanged = pyqtSignal()
+
     @pyqtProperty(bool, notify=useRecoverableChannelsChanged)
     def useRecoverableChannels(self):
         return self.config.LIGHTNING_USE_RECOVERABLE_CHANNELS
@@ -180,6 +195,7 @@ class QEConfig(AuthMixin, QObject):
         self.useRecoverableChannelsChanged.emit()
 
     trustedcoinPrepayChanged = pyqtSignal()
+
     @pyqtProperty(int, notify=trustedcoinPrepayChanged)
     def trustedcoinPrepay(self):
         return self.config.PLUGIN_TRUSTEDCOIN_NUM_PREPAY
@@ -191,6 +207,7 @@ class QEConfig(AuthMixin, QObject):
             self.trustedcoinPrepayChanged.emit()
 
     preferredRequestTypeChanged = pyqtSignal()
+
     @pyqtProperty(str, notify=preferredRequestTypeChanged)
     def preferredRequestType(self):
         return self.config.GUI_QML_PREFERRED_REQUEST_TYPE
@@ -202,6 +219,7 @@ class QEConfig(AuthMixin, QObject):
             self.preferredRequestTypeChanged.emit()
 
     userKnowsPressAndHoldChanged = pyqtSignal()
+
     @pyqtProperty(bool, notify=userKnowsPressAndHoldChanged)
     def userKnowsPressAndHold(self):
         return self.config.GUI_QML_USER_KNOWS_PRESS_AND_HOLD
@@ -213,6 +231,7 @@ class QEConfig(AuthMixin, QObject):
             self.userKnowsPressAndHoldChanged.emit()
 
     addresslistShowTypeChanged = pyqtSignal()
+
     @pyqtProperty(int, notify=addresslistShowTypeChanged)
     def addresslistShowType(self):
         return self.config.GUI_QML_ADDRESS_LIST_SHOW_TYPE
@@ -224,6 +243,7 @@ class QEConfig(AuthMixin, QObject):
             self.addresslistShowTypeChanged.emit()
 
     addresslistShowUsedChanged = pyqtSignal()
+
     @pyqtProperty(bool, notify=addresslistShowUsedChanged)
     def addresslistShowUsed(self):
         return self.config.GUI_QML_ADDRESS_LIST_SHOW_USED
@@ -234,7 +254,7 @@ class QEConfig(AuthMixin, QObject):
             self.config.GUI_QML_ADDRESS_LIST_SHOW_USED = addresslistShowUsed
             self.addresslistShowUsedChanged.emit()
 
-    @pyqtSlot('qint64', result=str)
+    @pyqtSlot("qint64", result=str)
     @pyqtSlot(QEAmount, result=str)
     def formatSatsForEditing(self, satoshis):
         if isinstance(satoshis, QEAmount):
@@ -244,8 +264,8 @@ class QEConfig(AuthMixin, QObject):
             add_thousands_sep=False,
         )
 
-    @pyqtSlot('qint64', result=str)
-    @pyqtSlot('qint64', bool, result=str)
+    @pyqtSlot("qint64", result=str)
+    @pyqtSlot("qint64", bool, result=str)
     @pyqtSlot(QEAmount, result=str)
     @pyqtSlot(QEAmount, bool, result=str)
     def formatSats(self, satoshis, with_unit=False):
@@ -262,12 +282,12 @@ class QEConfig(AuthMixin, QObject):
         if isinstance(amount, QEAmount):
             msats = amount.msatsInt
         else:
-            return '---'
+            return "---"
         precision = 3  # config.amt_precision_post_satoshi is not exposed in preferences
         if with_unit:
-            return self.config.format_amount_and_units(msats/1000, precision=precision)
+            return self.config.format_amount_and_units(msats / 1000, precision=precision)
         else:
-            return self.config.format_amount(msats/1000, precision=precision)
+            return self.config.format_amount(msats / 1000, precision=precision)
 
     # TODO delegate all this to config.py/util.py
     def decimal_point(self):
@@ -290,12 +310,12 @@ class QEConfig(AuthMixin, QObject):
         if self.max_precision() == self.decimal_point():
             self._amount = QEAmount(amount_sat=max_prec_amount)
             return self._amount
-        self._logger.debug('fallthrough')
+        self._logger.debug("fallthrough")
         # otherwise, scale it back to the expected unit
-        #amount = Decimal(max_prec_amount) / Decimal(pow(10, self.max_precision()-self.decimal_point()))
-        #return int(amount) #Decimal(amount) if not self.is_int else int(amount)
+        # amount = Decimal(max_prec_amount) / Decimal(pow(10, self.max_precision()-self.decimal_point()))
+        # return int(amount) #Decimal(amount) if not self.is_int else int(amount)
         return self._amount
 
-    @pyqtSlot('quint64', result=float)
+    @pyqtSlot("quint64", result=float)
     def satsToUnits(self, satoshis):
         return satoshis / pow(10, self.config.decimal_point)

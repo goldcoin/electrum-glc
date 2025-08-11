@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING
 
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QPersistentModelIndex, QModelIndex
-from PyQt5.QtWidgets import (QAbstractItemView, QMenu)
+from PyQt5.QtWidgets import QAbstractItemView, QMenu
 
 from electrum.i18n import _
 from electrum.bitcoin import is_address
@@ -49,15 +49,15 @@ class ContactList(MyTreeView):
         ADDRESS = enum.auto()
 
     headers = {
-        Columns.NAME: _('Name'),
-        Columns.ADDRESS: _('Address'),
+        Columns.NAME: _("Name"),
+        Columns.ADDRESS: _("Address"),
     }
     filter_columns = [Columns.NAME, Columns.ADDRESS]
 
     ROLE_CONTACT_KEY = Qt.UserRole + 1000
     key_role = ROLE_CONTACT_KEY
 
-    def __init__(self, main_window: 'ElectrumWindow'):
+    def __init__(self, main_window: "ElectrumWindow"):
         super().__init__(
             main_window=main_window,
             stretch_column=self.Columns.NAME,
@@ -84,28 +84,41 @@ class ContactList(MyTreeView):
             selected_keys.append(sel_key)
         if selected_keys and idx.isValid():
             column_title = self.model().horizontalHeaderItem(column).text()
-            column_data = '\n'.join(self.model().itemFromIndex(s_idx).text()
-                                    for s_idx in self.selected_in_column(column))
-            menu.addAction(_("Copy {}").format(column_title), lambda: self.place_text_on_clipboard(column_data, title=column_title))
+            column_data = "\n".join(
+                self.model().itemFromIndex(s_idx).text()
+                for s_idx in self.selected_in_column(column)
+            )
+            menu.addAction(
+                _("Copy {}").format(column_title),
+                lambda: self.place_text_on_clipboard(column_data, title=column_title),
+            )
             if column in self.editable_columns:
                 item = self.model().itemFromIndex(idx)
                 if item.isEditable():
                     # would not be editable if openalias
                     persistent = QPersistentModelIndex(idx)
-                    menu.addAction(_("Edit {}").format(column_title), lambda p=persistent: self.edit(QModelIndex(p)))
+                    menu.addAction(
+                        _("Edit {}").format(column_title),
+                        lambda p=persistent: self.edit(QModelIndex(p)),
+                    )
             menu.addAction(_("Pay to"), lambda: self.main_window.payto_contacts(selected_keys))
             menu.addAction(_("Delete"), lambda: self.main_window.delete_contacts(selected_keys))
-            URLs = [block_explorer_URL(self.config, 'addr', key) for key in filter(is_address, selected_keys)]
+            URLs = [
+                block_explorer_URL(self.config, "addr", key)
+                for key in filter(is_address, selected_keys)
+            ]
             if URLs:
                 menu.addAction(_("View on block explorer"), lambda: [webopen(u) for u in URLs])
 
-        run_hook('create_contact_menu', menu, selected_keys)
+        run_hook("create_contact_menu", menu, selected_keys)
         menu.exec_(self.viewport().mapToGlobal(position))
 
     def update(self):
         if self.maybe_defer_update():
             return
-        current_key = self.get_role_data_for_current_item(col=self.Columns.NAME, role=self.ROLE_CONTACT_KEY)
+        current_key = self.get_role_data_for_current_item(
+            col=self.Columns.NAME, role=self.ROLE_CONTACT_KEY
+        )
         self.model().clear()
         self.update_headers(self.__class__.headers)
         set_current = None
@@ -115,7 +128,7 @@ class ContactList(MyTreeView):
             labels[self.Columns.NAME] = name
             labels[self.Columns.ADDRESS] = key
             items = [QStandardItem(x) for x in labels]
-            items[self.Columns.NAME].setEditable(contact_type != 'openalias')
+            items[self.Columns.NAME].setEditable(contact_type != "openalias")
             items[self.Columns.ADDRESS].setEditable(False)
             items[self.Columns.NAME].setData(key, self.ROLE_CONTACT_KEY)
             row_count = self.model().rowCount()
@@ -127,7 +140,7 @@ class ContactList(MyTreeView):
         # FIXME refresh loses sort order; so set "default" here:
         self.sortByColumn(self.Columns.NAME, Qt.AscendingOrder)
         self.filter()
-        run_hook('update_contacts_tab', self)
+        run_hook("update_contacts_tab", self)
 
     def refresh_row(self, key, row):
         # nothing to update here
@@ -139,7 +152,7 @@ class ContactList(MyTreeView):
         return self.get_role_data_from_coordinate(row, col, role=self.ROLE_CONTACT_KEY)
 
     def create_toolbar(self, config):
-        toolbar, menu = self.create_toolbar_with_menu('')
+        toolbar, menu = self.create_toolbar_with_menu("")
         menu.addAction(_("&New contact"), self.main_window.new_contact_dialog)
         menu.addAction(_("Import"), lambda: self.main_window.import_contacts())
         menu.addAction(_("Export"), lambda: self.main_window.export_contacts())

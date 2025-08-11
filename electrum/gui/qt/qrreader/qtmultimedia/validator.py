@@ -35,7 +35,7 @@ from electrum.qrreader import QrCodeResult
 from electrum.gui.qt.util import ColorScheme, QColorLerp
 
 
-class QrReaderValidatorResult():
+class QrReaderValidatorResult:
     """
     Result of a QR code validator
     """
@@ -46,7 +46,7 @@ class QrReaderValidatorResult():
         self.message: str = None
         self.message_color: QColor = None
 
-        self.simple_result : str = None
+        self.simple_result: str = None
 
         self.result_usable: Dict[QrCodeResult, bool] = {}
         self.result_colors: Dict[QrCodeResult, QColor] = {}
@@ -65,6 +65,7 @@ class AbstractQrReaderValidator(ABC):
         """
         Checks a list of QR code results for usable codes.
         """
+
 
 class QrReaderValidatorCounting(AbstractQrReaderValidator):
     """
@@ -95,6 +96,7 @@ class QrReaderValidatorCounting(AbstractQrReaderValidator):
 
         return res
 
+
 class QrReaderValidatorColorizing(QrReaderValidatorCounting):
     """
     This QR code result validator doesn't directly accept any results but colorizes the results
@@ -121,6 +123,7 @@ class QrReaderValidatorColorizing(QrReaderValidatorCounting):
 
         return res
 
+
 class QrReaderValidatorStrong(QrReaderValidatorColorizing):
     """
     This QR code result validator doesn't directly accept any results but passes every strong
@@ -136,6 +139,7 @@ class QrReaderValidatorStrong(QrReaderValidatorColorizing):
                 break
 
         return res
+
 
 class QrReaderValidatorCounted(QrReaderValidatorStrong):
     """
@@ -154,13 +158,15 @@ class QrReaderValidatorCounted(QrReaderValidatorStrong):
         num_results = len(res.selected_results)
         if num_results < self.minimum:
             if num_results > 0:
-                res.message = _('Too few QR codes detected.')
+                res.message = _("Too few QR codes detected.")
                 res.message_color = ColorScheme.RED.as_color()
         elif num_results > self.maximum:
-            res.message = _('Too many QR codes detected.')
+            res.message = _("Too many QR codes detected.")
             res.message_color = ColorScheme.RED.as_color()
         else:
             res.accepted = True
-            res.simple_result = (results and results[0].data) or ''  # hack added by calin just to take the first one
+            res.simple_result = (
+                results and results[0].data
+            ) or ""  # hack added by calin just to take the first one
 
         return res

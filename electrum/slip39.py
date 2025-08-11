@@ -165,7 +165,7 @@ class EncryptedSeed:
         here, because passphrase function is symmetric in SLIP-39. We are using the terms
         "encrypt" and "decrypt" instead.
         """
-        passphrase = (passphrase or '').encode('utf-8')
+        passphrase = (passphrase or "").encode("utf-8")
         ems_len = len(self.encrypted_master_secret)
         l = self.encrypted_master_secret[: ems_len // 2]
         r = self.encrypted_master_secret[ems_len // 2 :]
@@ -197,7 +197,9 @@ def recover_ems(mnemonics: List[str]) -> EncryptedSeed:
     ) = _decode_mnemonics(mnemonics)
 
     # Use only groups that have at least the threshold number of shares.
-    groups = {group_index: group for group_index, group in groups.items() if len(group[1]) >= group[0]}
+    groups = {
+        group_index: group for group_index, group in groups.items() if len(group[1]) >= group[0]
+    }
 
     if len(groups) < group_threshold:
         raise Slip39Error(
@@ -221,21 +223,19 @@ def decode_mnemonic(mnemonic: str) -> Share:
     mnemonic_data = tuple(_mnemonic_to_indices(mnemonic))
 
     if len(mnemonic_data) < _MIN_MNEMONIC_LENGTH_WORDS:
-        raise Slip39Error(_('Too short.'))
+        raise Slip39Error(_("Too short."))
 
     padding_len = (_RADIX_BITS * (len(mnemonic_data) - _METADATA_LENGTH_WORDS)) % 16
     if padding_len > 8:
-        raise Slip39Error(_('Invalid length.'))
+        raise Slip39Error(_("Invalid length."))
 
     if not _rs1024_verify_checksum(mnemonic_data):
-        raise Slip39Error(_('Invalid mnemonic checksum.'))
+        raise Slip39Error(_("Invalid mnemonic checksum."))
 
     id_exp_int = _int_from_indices(mnemonic_data[:_ID_EXP_LENGTH_WORDS])
     identifier = id_exp_int >> _ITERATION_EXP_LENGTH_BITS
     iteration_exponent = id_exp_int & ((1 << _ITERATION_EXP_LENGTH_BITS) - 1)
-    tmp = _int_from_indices(
-        mnemonic_data[_ID_EXP_LENGTH_WORDS : _ID_EXP_LENGTH_WORDS + 2]
-    )
+    tmp = _int_from_indices(mnemonic_data[_ID_EXP_LENGTH_WORDS : _ID_EXP_LENGTH_WORDS + 2])
     (
         group_index,
         group_threshold,
@@ -246,12 +246,12 @@ def decode_mnemonic(mnemonic: str) -> Share:
     value_data = mnemonic_data[_ID_EXP_LENGTH_WORDS + 2 : -_CHECKSUM_LENGTH_WORDS]
 
     if group_count < group_threshold:
-        raise Slip39Error(_('Invalid mnemonic group threshold.'))
+        raise Slip39Error(_("Invalid mnemonic group threshold."))
 
     value_byte_count = _bits_to_bytes(_RADIX_BITS * len(value_data) - padding_len)
     value_int = _int_from_indices(value_data)
     if value_data[0] >= 1 << (_RADIX_BITS - padding_len):
-        raise Slip39Error(_('Invalid mnemonic padding.'))
+        raise Slip39Error(_("Invalid mnemonic padding."))
     value = value_int.to_bytes(value_byte_count, "big")
 
     return Share(
@@ -267,7 +267,7 @@ def decode_mnemonic(mnemonic: str) -> Share:
 
 
 def get_wordlist() -> Wordlist:
-    wordlist = Wordlist.from_file('slip39.txt')
+    wordlist = Wordlist.from_file("slip39.txt")
 
     required_words = 2**_RADIX_BITS
     if len(wordlist) != required_words:
@@ -290,7 +290,7 @@ def process_mnemonics(mnemonics: List[str]) -> Tuple[Optional[EncryptedSeed], st
             pass
 
     if not shares:
-        return None, _('No valid shares.')
+        return None, _("No valid shares.")
 
     # Sort shares into groups.
     groups: Dict[int, Set[Share]] = defaultdict(set)  # group idx : shares
@@ -301,7 +301,9 @@ def process_mnemonics(mnemonics: List[str]) -> Tuple[Optional[EncryptedSeed], st
             return None, _ERROR_STYLE % error_text
         for other in groups[share.group_index]:
             if share.member_index == other.member_index:
-                error_text = _("Share #{} is a duplicate of share #{}.").format(share.index, other.index)
+                error_text = _("Share #{} is a duplicate of share #{}.").format(
+                    share.index, other.index
+                )
                 return None, _ERROR_STYLE % error_text
         groups[share.group_index].add(share)
 
@@ -317,22 +319,26 @@ def process_mnemonics(mnemonics: List[str]) -> Tuple[Optional[EncryptedSeed], st
     iteration_exponent = shares[0].iteration_exponent
     group_threshold = shares[0].group_threshold
     group_count = shares[0].group_count
-    status = ''
+    status = ""
     if group_count > 1:
-        status += _('Completed {} of {} groups needed').format(f"<b>{groups_completed}</b>", f"<b>{group_threshold}</b>")
+        status += _("Completed {} of {} groups needed").format(
+            f"<b>{groups_completed}</b>", f"<b>{group_threshold}</b>"
+        )
         status += ":<br/>"
 
     for group_index in range(group_count):
-        group_prefix = _make_group_prefix(identifier, iteration_exponent, group_index, group_threshold, group_count)
+        group_prefix = _make_group_prefix(
+            identifier, iteration_exponent, group_index, group_threshold, group_count
+        )
         status += _group_status(groups[group_index], group_prefix)
 
     if groups_completed >= group_threshold:
         if len(mnemonics) > len(shares):
-            status += _ERROR_STYLE % _('Some shares are invalid.')
+            status += _ERROR_STYLE % _("Some shares are invalid.")
         else:
             try:
                 encrypted_seed = recover_ems(mnemonics)
-                status += '<b>' + _('The set is complete!') + '</b>'
+                status += "<b>" + _("The set is complete!") + "</b>"
             except Slip39Error as e:
                 encrypted_seed = None
                 status = _ERROR_STYLE % str(e)
@@ -348,7 +354,8 @@ def process_mnemonics(mnemonics: List[str]) -> Tuple[Optional[EncryptedSeed], st
 _FINISHED = '<span style="color:green;">&#x2714;</span>'
 _EMPTY = '<span style="color:red;">&#x2715;</span>'
 _INPROGRESS = '<span style="color:orange;">&#x26ab;</span>'
-_ERROR_STYLE = '<span style="color:red; font-weight:bold;">' + _('Error') + ': %s</span>'
+_ERROR_STYLE = '<span style="color:red; font-weight:bold;">' + _("Error") + ": %s</span>"
+
 
 def _make_group_prefix(identifier, iteration_exponent, group_index, group_threshold, group_count):
     wordlist = get_wordlist()
@@ -362,18 +369,30 @@ def _make_group_prefix(identifier, iteration_exponent, group_index, group_thresh
     val <<= 4
     val += group_count - 1
     val >>= 2
-    prefix = ' '.join(wordlist[idx] for idx in _int_to_indices(val, _GROUP_PREFIX_LENGTH_WORDS, _RADIX_BITS))
+    prefix = " ".join(
+        wordlist[idx] for idx in _int_to_indices(val, _GROUP_PREFIX_LENGTH_WORDS, _RADIX_BITS)
+    )
     return prefix
 
 
 def _group_status(group: Set[Share], group_prefix) -> str:
     len(group)
     if not group:
-        return _EMPTY + _('{} shares from group {}').format('<b>0</b> ', f'<b>{group_prefix}</b>') + f'.<br/>'
+        return (
+            _EMPTY
+            + _("{} shares from group {}").format("<b>0</b> ", f"<b>{group_prefix}</b>")
+            + f".<br/>"
+        )
     else:
         share = next(iter(group))
         icon = _FINISHED if len(group) >= share.member_threshold else _INPROGRESS
-        return icon + _('{} of {} shares needed from group {}').format(f'<b>{len(group)}</b>', f'<b>{share.member_threshold}</b>', f'<b>{group_prefix}</b>') + f'.<br/>'
+        return (
+            icon
+            + _("{} of {} shares needed from group {}").format(
+                f"<b>{len(group)}</b>", f"<b>{share.member_threshold}</b>", f"<b>{group_prefix}</b>"
+            )
+            + f".<br/>"
+        )
 
 
 """
@@ -403,8 +422,8 @@ def _mnemonic_to_indices(mnemonic: str) -> List[int]:
             indices.append(wordlist.index(word.lower()))
         except ValueError:
             if len(word) > 8:
-                word = word[:8] + '...'
-            raise Slip39Error(_('Invalid mnemonic word') + ' "%s".' % word) from None
+                word = word[:8] + "..."
+            raise Slip39Error(_("Invalid mnemonic word") + ' "%s".' % word) from None
     return indices
 
 
@@ -487,9 +506,7 @@ def _interpolate(shares, x) -> bytes:
 
     share_value_lengths = set(len(share[1]) for share in shares)
     if len(share_value_lengths) != 1:
-        raise Slip39Error(
-            "Invalid set of shares. All share values must have the same length."
-        )
+        raise Slip39Error("Invalid set of shares. All share values must have the same length.")
 
     if x in x_coordinates:
         for share in shares:
@@ -510,11 +527,7 @@ def _interpolate(shares, x) -> bytes:
 
         result = bytes(
             intermediate_sum
-            ^ (
-                _EXP_TABLE[(_LOG_TABLE[share_val] + log_basis_eval) % 255]
-                if share_val != 0
-                else 0
-            )
+            ^ (_EXP_TABLE[(_LOG_TABLE[share_val] + log_basis_eval) % 255] if share_val != 0 else 0)
             for share_val, intermediate_sum in zip(share[1], result)
         )
 
@@ -533,9 +546,7 @@ def _round_function(i: int, passphrase: bytes, e: int, salt: bytes, r: bytes) ->
 
 
 def _get_salt(identifier: int) -> bytes:
-    return _CUSTOMIZATION_STRING + identifier.to_bytes(
-        _bits_to_bytes(_ID_LENGTH_BITS), "big"
-    )
+    return _CUSTOMIZATION_STRING + identifier.to_bytes(_bits_to_bytes(_ID_LENGTH_BITS), "big")
 
 
 def _create_digest(random_data: bytes, shared_secret: bytes) -> bytes:
@@ -594,15 +605,11 @@ def _decode_mnemonics(
         )
 
     if len(group_counts) != 1:
-        raise Slip39Error(
-            "Invalid set of mnemonics. All mnemonics must have the same group count."
-        )
+        raise Slip39Error("Invalid set of mnemonics. All mnemonics must have the same group count.")
 
     for group_index, group in groups.items():
         if len(set(share[0] for share in group[1])) != len(group[1]):
-            raise Slip39Error(
-                "Invalid set of shares. Member indices in each group must be unique."
-            )
+            raise Slip39Error("Invalid set of shares. Member indices in each group must be unique.")
 
     return (
         identifiers.pop(),

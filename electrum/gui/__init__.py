@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class BaseElectrumGui:
-    def __init__(self, *, config: 'SimpleConfig', daemon: 'Daemon', plugins: 'Plugins'):
+    def __init__(self, *, config: "SimpleConfig", daemon: "Daemon", plugins: "Plugins"):
         self.config = config
         self.daemon = daemon
         self.plugins = plugins

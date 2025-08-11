@@ -31,7 +31,14 @@ import hashlib
 import hmac
 from typing import Union, Mapping, Optional
 
-from .util import assert_bytes, InvalidPassword, to_bytes, to_string, WalletFileException, versiontuple
+from .util import (
+    assert_bytes,
+    InvalidPassword,
+    to_bytes,
+    to_string,
+    WalletFileException,
+    versiontuple,
+)
 from .i18n import _
 from .logging import get_logger
 
@@ -51,8 +58,11 @@ HAS_CRYPTODOME = False
 MIN_CRYPTODOME_VERSION = "3.7"
 try:
     import Cryptodome
+
     if versiontuple(Cryptodome.__version__) < versiontuple(MIN_CRYPTODOME_VERSION):
-        _logger.warning(f"found module 'Cryptodome' but it is too old: {Cryptodome.__version__}<{MIN_CRYPTODOME_VERSION}")
+        _logger.warning(
+            f"found module 'Cryptodome' but it is too old: {Cryptodome.__version__}<{MIN_CRYPTODOME_VERSION}"
+        )
         raise Exception()
     from Cryptodome.Cipher import ChaCha20_Poly1305 as CD_ChaCha20_Poly1305
     from Cryptodome.Cipher import ChaCha20 as CD_ChaCha20
@@ -66,8 +76,11 @@ HAS_CRYPTOGRAPHY = False
 MIN_CRYPTOGRAPHY_VERSION = "2.1"
 try:
     import cryptography
+
     if versiontuple(cryptography.__version__) < versiontuple(MIN_CRYPTOGRAPHY_VERSION):
-        _logger.warning(f"found module 'cryptography' but it is too old: {cryptography.__version__}<{MIN_CRYPTOGRAPHY_VERSION}")
+        _logger.warning(
+            f"found module 'cryptography' but it is too old: {cryptography.__version__}<{MIN_CRYPTOGRAPHY_VERSION}"
+        )
         raise Exception()
     from cryptography import exceptions
     from cryptography.hazmat.primitives.ciphers import Cipher as CG_Cipher
@@ -187,7 +200,10 @@ def DecodeAES_bytes(secret: bytes, ciphertext: bytes) -> bytes:
 
 
 PW_HASH_VERSION_LATEST = 1
-KNOWN_PW_HASH_VERSIONS = (1, 2,)
+KNOWN_PW_HASH_VERSIONS = (
+    1,
+    2,
+)
 SUPPORTED_PW_HASH_VERSIONS = (1,)
 assert PW_HASH_VERSION_LATEST in KNOWN_PW_HASH_VERSIONS
 assert PW_HASH_VERSION_LATEST in SUPPORTED_PW_HASH_VERSIONS
@@ -201,7 +217,10 @@ class UnexpectedPasswordHashVersion(InvalidPassword, WalletFileException):
         return "{unexpected}: {version}\n{instruction}".format(
             unexpected=_("Unexpected password hash version"),
             version=self.version,
-            instruction=_('You are most likely using an outdated version of Electrum. Please update.'))
+            instruction=_(
+                "You are most likely using an outdated version of Electrum. Please update."
+            ),
+        )
 
 
 class UnsupportedPasswordHashVersion(InvalidPassword, WalletFileException):
@@ -213,11 +232,12 @@ class UnsupportedPasswordHashVersion(InvalidPassword, WalletFileException):
             unsupported=_("Unsupported password hash version"),
             version=self.version,
             instruction=f"To open this wallet, try 'git checkout password_v{self.version}'.\n"
-                        "Alternatively, restore from seed.")
+            "Alternatively, restore from seed.",
+        )
 
 
 def _hash_password(password: Union[bytes, str], *, version: int) -> bytes:
-    pw = to_bytes(password, 'utf8')
+    pw = to_bytes(password, "utf8")
     if version not in SUPPORTED_PW_HASH_VERSIONS:
         raise UnsupportedPasswordHashVersion(version)
     if version == 1:
@@ -254,10 +274,10 @@ def pw_encode_bytes(data: bytes, password: Union[bytes, str], *, version: int) -
     """plaintext bytes -> base64 ciphertext"""
     ciphertext = _pw_encode_raw(data, password, version=version)
     ciphertext_b64 = base64.b64encode(ciphertext)
-    return ciphertext_b64.decode('utf8')
+    return ciphertext_b64.decode("utf8")
 
 
-def pw_decode_bytes(data: str, password: Union[bytes, str], *, version:int) -> bytes:
+def pw_decode_bytes(data: str, password: Union[bytes, str], *, version: int) -> bytes:
     """base64 ciphertext -> plaintext bytes"""
     if version not in KNOWN_PW_HASH_VERSIONS:
         raise UnexpectedPasswordHashVersion(version)
@@ -276,7 +296,7 @@ def pw_encode_with_version_and_mac(data: bytes, password: Union[bytes, str]) -> 
     mac = sha256(data)[0:4]
     ciphertext = _pw_encode_raw(data, password, version=version)
     ciphertext_b64 = base64.b64encode(bytes([version]) + ciphertext + mac)
-    return ciphertext_b64.decode('utf8')
+    return ciphertext_b64.decode("utf8")
 
 
 def pw_decode_with_version_and_mac(data: str, password: Union[bytes, str]) -> bytes:
@@ -317,12 +337,12 @@ def pw_decode(data: str, password: Union[bytes, str, None], *, version: int) -> 
 
 
 def sha256(x: Union[bytes, str]) -> bytes:
-    x = to_bytes(x, 'utf8')
+    x = to_bytes(x, "utf8")
     return bytes(hashlib.sha256(x).digest())
 
 
 def sha256d(x: Union[bytes, str]) -> bytes:
-    x = to_bytes(x, 'utf8')
+    x = to_bytes(x, "utf8")
     out = bytes(sha256(sha256(x)))
     return out
 
@@ -330,9 +350,10 @@ def sha256d(x: Union[bytes, str]) -> bytes:
 def hash_160(x: bytes) -> bytes:
     return ripemd(sha256(x))
 
+
 def ripemd(x: bytes) -> bytes:
     try:
-        md = hashlib.new('ripemd160')
+        md = hashlib.new("ripemd160")
         md.update(x)
         return md.digest()
     except BaseException:
@@ -341,11 +362,13 @@ def ripemd(x: bytes) -> bytes:
         # see https://github.com/spesmilo/electrum/issues/7093
         # We bundle a pure python implementation as fallback that gets used now:
         from . import ripemd
+
         md = ripemd.new(x)
         return md.digest()
 
+
 def hmac_oneshot(key: bytes, msg: bytes, digest) -> bytes:
-    if hasattr(hmac, 'digest'):
+    if hasattr(hmac, "digest"):
         # requires python 3.7+; faster
         return hmac.digest(key, msg, digest)
     else:
@@ -353,11 +376,7 @@ def hmac_oneshot(key: bytes, msg: bytes, digest) -> bytes:
 
 
 def chacha20_poly1305_encrypt(
-        *,
-        key: bytes,
-        nonce: bytes,
-        associated_data: bytes = None,
-        data: bytes
+    *, key: bytes, nonce: bytes, associated_data: bytes = None, data: bytes
 ) -> bytes:
     assert isinstance(key, (bytes, bytearray))
     assert isinstance(nonce, (bytes, bytearray))
@@ -378,11 +397,7 @@ def chacha20_poly1305_encrypt(
 
 
 def chacha20_poly1305_decrypt(
-        *,
-        key: bytes,
-        nonce: bytes,
-        associated_data: bytes = None,
-        data: bytes
+    *, key: bytes, nonce: bytes, associated_data: bytes = None, data: bytes
 ) -> bytes:
     assert isinstance(key, (bytes, bytearray))
     assert isinstance(nonce, (bytes, bytearray))

@@ -24,7 +24,6 @@
 # SOFTWARE.
 
 
-
 # Note: The deserialization code originally comes from ABE.
 
 import struct
@@ -32,8 +31,19 @@ import traceback
 import sys
 import io
 import base64
-from typing import (Sequence, Union, NamedTuple, Tuple, Optional, Iterable,
-                    Callable, List, Dict, Set, TYPE_CHECKING)
+from typing import (
+    Sequence,
+    Union,
+    NamedTuple,
+    Tuple,
+    Optional,
+    Iterable,
+    Callable,
+    List,
+    Dict,
+    Set,
+    TYPE_CHECKING,
+)
 from collections import defaultdict
 from enum import IntEnum
 import itertools
@@ -44,12 +54,26 @@ from . import ecc, bitcoin, constants, segwit_addr, bip32
 from .bip32 import BIP32Node
 from .i18n import _
 from .util import profiler, to_bytes, bfh, chunks, is_hex_str, parse_max_spend
-from .bitcoin import (TYPE_ADDRESS, TYPE_SCRIPT, hash_160,
-                      hash160_to_p2sh, hash160_to_p2pkh, hash_to_segwit_addr,
-                      var_int, TOTAL_COIN_SUPPLY_LIMIT_IN_BTC, COIN,
-                      int_to_hex, push_script, b58_address_to_hash160,
-                      opcodes, add_number_to_script, base_decode,
-                      base_encode, construct_witness, construct_script)
+from .bitcoin import (
+    TYPE_ADDRESS,
+    TYPE_SCRIPT,
+    hash_160,
+    hash160_to_p2sh,
+    hash160_to_p2pkh,
+    hash_to_segwit_addr,
+    var_int,
+    TOTAL_COIN_SUPPLY_LIMIT_IN_BTC,
+    COIN,
+    int_to_hex,
+    push_script,
+    b58_address_to_hash160,
+    opcodes,
+    add_number_to_script,
+    base_decode,
+    base_encode,
+    construct_witness,
+    construct_script,
+)
 from .crypto import sha256d
 from .logging import get_logger
 from .util import ShortID, OldTaskGroup
@@ -71,7 +95,7 @@ _NEEDS_RECALC = ...  # sentinel value
 
 
 class SerializationError(Exception):
-    """ Thrown when there's a problem deserializing or serializing """
+    """Thrown when there's a problem deserializing or serializing"""
 
 
 class UnknownTxinType(Exception):
@@ -117,7 +141,7 @@ class Sighash(IntEnum):
     def is_valid(cls, sighash: int) -> bool:
         for flag in Sighash:
             for base_flag in [Sighash.ALL, Sighash.NONE, Sighash.SINGLE]:
-                if (flag & ~0x1f | base_flag) == sighash:
+                if (flag & ~0x1F | base_flag) == sighash:
                     return True
         return False
 
@@ -137,9 +161,10 @@ class TxOutput:
         self.value = value  # int in satoshis; or spend-max-like str
 
     @classmethod
-    def from_address_and_value(cls, address: str, value: Union[int, str]) -> Union['TxOutput', 'PartialTxOutput']:
-        return cls(scriptpubkey=bfh(bitcoin.address_to_script(address)),
-                   value=value)
+    def from_address_and_value(
+        cls, address: str, value: Union[int, str]
+    ) -> Union["TxOutput", "PartialTxOutput"]:
+        return cls(scriptpubkey=bfh(bitcoin.address_to_script(address)), value=value)
 
     def serialize_to_network(self) -> bytes:
         buf = int.to_bytes(self.value, 8, byteorder="little", signed=False)
@@ -149,12 +174,12 @@ class TxOutput:
         return buf
 
     @classmethod
-    def from_network_bytes(cls, raw: bytes) -> 'TxOutput':
+    def from_network_bytes(cls, raw: bytes) -> "TxOutput":
         vds = BCDataStream()
         vds.write(raw)
         txout = parse_output(vds)
         if vds.can_read_more():
-            raise SerializationError('extra junk at the end of TxOutput bytes')
+            raise SerializationError("extra junk at the end of TxOutput bytes")
         return txout
 
     def to_legacy_tuple(self) -> Tuple[int, str, Union[int, str]]:
@@ -163,7 +188,9 @@ class TxOutput:
         return TYPE_SCRIPT, self.scriptpubkey.hex(), self.value
 
     @classmethod
-    def from_legacy_tuple(cls, _type: int, addr: str, val: Union[int, str]) -> Union['TxOutput', 'PartialTxOutput']:
+    def from_legacy_tuple(
+        cls, _type: int, addr: str, val: Union[int, str]
+    ) -> Union["TxOutput", "PartialTxOutput"]:
         if _type == TYPE_ADDRESS:
             return cls.from_address_and_value(addr, val)
         if _type == TYPE_SCRIPT:
@@ -192,7 +219,9 @@ class TxOutput:
         return f"SCRIPT {self.scriptpubkey.hex()}"
 
     def __repr__(self):
-        return f"<TxOutput script={self.scriptpubkey.hex()} address={self.address} value={self.value}>"
+        return (
+            f"<TxOutput script={self.scriptpubkey.hex()} address={self.address} value={self.value}>"
+        )
 
     def __eq__(self, other):
         if not isinstance(other, TxOutput):
@@ -204,9 +233,9 @@ class TxOutput:
 
     def to_json(self):
         d = {
-            'scriptpubkey': self.scriptpubkey.hex(),
-            'address': self.address,
-            'value_sats': self.value,
+            "scriptpubkey": self.scriptpubkey.hex(),
+            "address": self.address,
+            "value_sats": self.value,
         }
         return d
 
@@ -222,11 +251,10 @@ class TxOutpoint(NamedTuple):
     out_idx: int
 
     @classmethod
-    def from_str(cls, s: str) -> 'TxOutpoint':
-        hash_str, idx_str = s.split(':')
+    def from_str(cls, s: str) -> "TxOutpoint":
+        hash_str, idx_str = s.split(":")
         assert len(hash_str) == 64, f"{hash_str} should be a sha256 hash"
-        return TxOutpoint(txid=bfh(hash_str),
-                          out_idx=int(idx_str))
+        return TxOutpoint(txid=bfh(hash_str), out_idx=int(idx_str))
 
     def __str__(self) -> str:
         return f"""TxOutpoint("{self.to_str()}")"""
@@ -257,20 +285,27 @@ class TxInput:
     witness: Optional[bytes]
     _is_coinbase_output: bool
 
-    def __init__(self, *,
-                 prevout: TxOutpoint,
-                 script_sig: bytes = None,
-                 nsequence: int = 0xffffffff - 1,
-                 witness: bytes = None,
-                 is_coinbase_output: bool = False):
+    def __init__(
+        self,
+        *,
+        prevout: TxOutpoint,
+        script_sig: bytes = None,
+        nsequence: int = 0xFFFFFFFF - 1,
+        witness: bytes = None,
+        is_coinbase_output: bool = False,
+    ):
         self.prevout = prevout
         self.script_sig = script_sig
         self.nsequence = nsequence
         self.witness = witness
         self._is_coinbase_output = is_coinbase_output
         # blockchain fields
-        self.block_height = None  # type: Optional[int]  # height at which the TXO is mined; None means unknown. not SPV-ed.
-        self.block_txpos = None  # type: Optional[int]  # position of tx in block, if TXO is mined; otherwise None or -1
+        self.block_height = (
+            None
+        )  # type: Optional[int]  # height at which the TXO is mined; None means unknown. not SPV-ed.
+        self.block_txpos = (
+            None
+        )  # type: Optional[int]  # position of tx in block, if TXO is mined; otherwise None or -1
         self.spent_height = None  # type: Optional[int]  # height at which the TXO got spent
         self.spent_txid = None  # type: Optional[str]  # txid of the spender
         self._utxo = None  # type: Optional[Transaction]
@@ -281,7 +316,9 @@ class TxInput:
     @property
     def short_id(self):
         if self.block_txpos is not None and self.block_txpos >= 0:
-            return ShortID.from_components(self.block_height, self.block_txpos, self.prevout.out_idx)
+            return ShortID.from_components(
+                self.block_height, self.block_txpos, self.prevout.out_idx
+            )
         else:
             return self.prevout.short_name()
 
@@ -290,7 +327,7 @@ class TxInput:
         return self._utxo
 
     @utxo.setter
-    def utxo(self, tx: Optional['Transaction']):
+    def utxo(self, tx: Optional["Transaction"]):
         if tx is None:
             return
         # note that tx might be a PartialTransaction
@@ -307,12 +344,14 @@ class TxInput:
         self.__address = _NEEDS_RECALC
         self.__value_sats = self._utxo.outputs()[out_idx].value
 
-    def validate_data(self, *, utxo: Optional['Transaction'] = None, **kwargs) -> None:
+    def validate_data(self, *, utxo: Optional["Transaction"] = None, **kwargs) -> None:
         utxo = utxo or self.utxo
         if utxo:
             if self.prevout.txid.hex() != utxo.txid():
-                raise PSBTInputConsistencyFailure(f"PSBT input validation: "
-                                                  f"If a non-witness UTXO is provided, its hash must match the hash specified in the prevout")
+                raise PSBTInputConsistencyFailure(
+                    f"PSBT input validation: "
+                    f"If a non-witness UTXO is provided, its hash must match the hash specified in the prevout"
+                )
 
     def is_coinbase_input(self) -> bool:
         """Whether this is the input of a coinbase tx."""
@@ -339,15 +378,15 @@ class TxInput:
 
     def to_json(self):
         d = {
-            'prevout_hash': self.prevout.txid.hex(),
-            'prevout_n': self.prevout.out_idx,
-            'coinbase': self.is_coinbase_output(),
-            'nsequence': self.nsequence,
+            "prevout_hash": self.prevout.txid.hex(),
+            "prevout_n": self.prevout.out_idx,
+            "coinbase": self.is_coinbase_output(),
+            "nsequence": self.nsequence,
         }
         if self.script_sig is not None:
-            d['scriptSig'] = self.script_sig.hex()
+            d["scriptSig"] = self.script_sig.hex()
         if self.witness is not None:
-            d['witness'] = self.witness.hex()
+            d["witness"] = self.witness.hex()
         return d
 
     def serialize_to_network(self, *, script_sig: bytes = None) -> bytes:
@@ -370,33 +409,36 @@ class TxInput:
         return list(vds.read_bytes(vds.read_compact_size()) for i in range(n))
 
     def is_segwit(self, *, guess_for_address=False) -> bool:
-        if self.witness not in (b'\x00', b'', None):
+        if self.witness not in (b"\x00", b"", None):
             return True
         return False
 
     async def add_info_from_network(
-            self,
-            network: Optional['Network'],
-            *,
-            ignore_network_issues: bool = True,
-            timeout=None,
+        self,
+        network: Optional["Network"],
+        *,
+        ignore_network_issues: bool = True,
+        timeout=None,
     ) -> bool:
         """Returns True iff successful."""
         from .network import NetworkException
+
         async def fetch_from_network(txid) -> Optional[Transaction]:
             tx = None
             if network and network.has_internet_connection():
                 try:
                     raw_tx = await network.get_transaction(txid, timeout=timeout)
                 except NetworkException as e:
-                    _logger.info(f'got network error getting input txn. err: {repr(e)}. txid: {txid}. '
-                                 f'if you are intentionally offline, consider using the --offline flag')
+                    _logger.info(
+                        f"got network error getting input txn. err: {repr(e)}. txid: {txid}. "
+                        f"if you are intentionally offline, consider using the --offline flag"
+                    )
                     if not ignore_network_issues:
                         raise e
                 else:
                     tx = Transaction(raw_tx)
             if not tx and not ignore_network_issues:
-                raise NetworkException('failed to get prev tx from network')
+                raise NetworkException("failed to get prev tx from network")
             return tx
 
         if self.utxo is None:
@@ -422,7 +464,7 @@ class BCDataStream(object):
         else:
             self.input += bytearray(_bytes)
 
-    def read_string(self, encoding='ascii'):
+    def read_string(self, encoding="ascii"):
         # Strings are encoded depending on length:
         # 0 to 252 :  1-byte-length followed by bytes (if any)
         # 253 to 65,535 : byte'253' 2-byte-length followed by bytes
@@ -437,7 +479,7 @@ class BCDataStream(object):
 
         return self.read_bytes(length).decode(encoding)
 
-    def write_string(self, string, encoding='ascii'):
+    def write_string(self, string, encoding="ascii"):
         string = to_bytes(string, encoding)
         # Length-encoded as with read-string
         self.write_compact_size(len(string))
@@ -455,7 +497,7 @@ class BCDataStream(object):
             self.read_cursor += length
             return bytes(result)
         else:
-            raise SerializationError('attempt to read past end of buffer')
+            raise SerializationError("attempt to read past end of buffer")
 
     def write_bytes(self, _bytes: Union[bytes, bytearray], length: int):
         assert len(_bytes) == length, len(_bytes)
@@ -466,32 +508,58 @@ class BCDataStream(object):
             return False
         return self.read_cursor < len(self.input)
 
-    def read_boolean(self) -> bool: return self.read_bytes(1) != b'\x00'
-    def read_int16(self): return self._read_num('<h')
-    def read_uint16(self): return self._read_num('<H')
-    def read_int32(self): return self._read_num('<i')
-    def read_uint32(self): return self._read_num('<I')
-    def read_int64(self): return self._read_num('<q')
-    def read_uint64(self): return self._read_num('<Q')
+    def read_boolean(self) -> bool:
+        return self.read_bytes(1) != b"\x00"
 
-    def write_boolean(self, val): return self.write(b'\x01' if val else b'\x00')
-    def write_int16(self, val): return self._write_num('<h', val)
-    def write_uint16(self, val): return self._write_num('<H', val)
-    def write_int32(self, val): return self._write_num('<i', val)
-    def write_uint32(self, val): return self._write_num('<I', val)
-    def write_int64(self, val): return self._write_num('<q', val)
-    def write_uint64(self, val): return self._write_num('<Q', val)
+    def read_int16(self):
+        return self._read_num("<h")
+
+    def read_uint16(self):
+        return self._read_num("<H")
+
+    def read_int32(self):
+        return self._read_num("<i")
+
+    def read_uint32(self):
+        return self._read_num("<I")
+
+    def read_int64(self):
+        return self._read_num("<q")
+
+    def read_uint64(self):
+        return self._read_num("<Q")
+
+    def write_boolean(self, val):
+        return self.write(b"\x01" if val else b"\x00")
+
+    def write_int16(self, val):
+        return self._write_num("<h", val)
+
+    def write_uint16(self, val):
+        return self._write_num("<H", val)
+
+    def write_int32(self, val):
+        return self._write_num("<i", val)
+
+    def write_uint32(self, val):
+        return self._write_num("<I", val)
+
+    def write_int64(self, val):
+        return self._write_num("<q", val)
+
+    def write_uint64(self, val):
+        return self._write_num("<Q", val)
 
     def read_compact_size(self):
         try:
             size = self.input[self.read_cursor]
             self.read_cursor += 1
             if size == 253:
-                size = self._read_num('<H')
+                size = self._read_num("<H")
             elif size == 254:
-                size = self._read_num('<I')
+                size = self._read_num("<I")
             elif size == 255:
-                size = self._read_num('<Q')
+                size = self._read_num("<Q")
             return size
         except IndexError as e:
             raise SerializationError("attempt to read past end of buffer") from e
@@ -502,14 +570,14 @@ class BCDataStream(object):
         elif size < 253:
             self.write(bytes([size]))
         elif size < 2**16:
-            self.write(b'\xfd')
-            self._write_num('<H', size)
+            self.write(b"\xfd")
+            self._write_num("<H", size)
         elif size < 2**32:
-            self.write(b'\xfe')
-            self._write_num('<I', size)
+            self.write(b"\xfe")
+            self._write_num("<I", size)
         elif size < 2**64:
-            self.write(b'\xff')
-            self._write_num('<Q', size)
+            self.write(b"\xff")
+            self._write_num("<Q", size)
         else:
             raise Exception(f"size {size} too large for compact_size")
 
@@ -526,7 +594,7 @@ class BCDataStream(object):
         self.write(s)
 
 
-def script_GetOp(_bytes : bytes):
+def script_GetOp(_bytes: bytes):
     i = 0
     while i < len(_bytes):
         vch = None
@@ -536,25 +604,31 @@ def script_GetOp(_bytes : bytes):
         if opcode <= opcodes.OP_PUSHDATA4:
             nSize = opcode
             if opcode == opcodes.OP_PUSHDATA1:
-                try: nSize = _bytes[i]
-                except IndexError: raise MalformedBitcoinScript()
+                try:
+                    nSize = _bytes[i]
+                except IndexError:
+                    raise MalformedBitcoinScript()
                 i += 1
             elif opcode == opcodes.OP_PUSHDATA2:
-                try: (nSize,) = struct.unpack_from('<H', _bytes, i)
-                except struct.error: raise MalformedBitcoinScript()
+                try:
+                    (nSize,) = struct.unpack_from("<H", _bytes, i)
+                except struct.error:
+                    raise MalformedBitcoinScript()
                 i += 2
             elif opcode == opcodes.OP_PUSHDATA4:
-                try: (nSize,) = struct.unpack_from('<I', _bytes, i)
-                except struct.error: raise MalformedBitcoinScript()
+                try:
+                    (nSize,) = struct.unpack_from("<I", _bytes, i)
+                except struct.error:
+                    raise MalformedBitcoinScript()
                 i += 4
-            vch = _bytes[i:i + nSize]
+            vch = _bytes[i : i + nSize]
             i += nSize
 
         yield opcode, vch, i
 
 
 class OPPushDataGeneric:
-    def __init__(self, pushlen: Callable=None):
+    def __init__(self, pushlen: Callable = None):
         if pushlen is not None:
             self.check_data_len = pushlen
 
@@ -567,12 +641,11 @@ class OPPushDataGeneric:
     def is_instance(cls, item):
         # accept objects that are instances of this class
         # or other classes that are subclasses
-        return isinstance(item, cls) \
-               or (isinstance(item, type) and issubclass(item, cls))
+        return isinstance(item, cls) or (isinstance(item, type) and issubclass(item, cls))
 
 
 class OPGeneric:
-    def __init__(self, matcher: Callable=None):
+    def __init__(self, matcher: Callable = None):
         if matcher is not None:
             self.matcher = matcher
 
@@ -583,20 +656,31 @@ class OPGeneric:
     def is_instance(cls, item):
         # accept objects that are instances of this class
         # or other classes that are subclasses
-        return isinstance(item, cls) \
-               or (isinstance(item, type) and issubclass(item, cls))
+        return isinstance(item, cls) or (isinstance(item, type) and issubclass(item, cls))
+
 
 OPPushDataPubkey = OPPushDataGeneric(lambda x: x in (33, 65))
 OP_ANYSEGWIT_VERSION = OPGeneric(lambda x: x in list(range(opcodes.OP_1, opcodes.OP_16 + 1)))
 
-SCRIPTPUBKEY_TEMPLATE_P2PKH = [opcodes.OP_DUP, opcodes.OP_HASH160,
-                               OPPushDataGeneric(lambda x: x == 20),
-                               opcodes.OP_EQUALVERIFY, opcodes.OP_CHECKSIG]
-SCRIPTPUBKEY_TEMPLATE_P2SH = [opcodes.OP_HASH160, OPPushDataGeneric(lambda x: x == 20), opcodes.OP_EQUAL]
+SCRIPTPUBKEY_TEMPLATE_P2PKH = [
+    opcodes.OP_DUP,
+    opcodes.OP_HASH160,
+    OPPushDataGeneric(lambda x: x == 20),
+    opcodes.OP_EQUALVERIFY,
+    opcodes.OP_CHECKSIG,
+]
+SCRIPTPUBKEY_TEMPLATE_P2SH = [
+    opcodes.OP_HASH160,
+    OPPushDataGeneric(lambda x: x == 20),
+    opcodes.OP_EQUAL,
+]
 SCRIPTPUBKEY_TEMPLATE_WITNESS_V0 = [opcodes.OP_0, OPPushDataGeneric(lambda x: x in (20, 32))]
 SCRIPTPUBKEY_TEMPLATE_P2WPKH = [opcodes.OP_0, OPPushDataGeneric(lambda x: x == 20)]
 SCRIPTPUBKEY_TEMPLATE_P2WSH = [opcodes.OP_0, OPPushDataGeneric(lambda x: x == 32)]
-SCRIPTPUBKEY_TEMPLATE_ANYSEGWIT = [OP_ANYSEGWIT_VERSION, OPPushDataGeneric(lambda x: x in list(range(2, 40 + 1)))]
+SCRIPTPUBKEY_TEMPLATE_ANYSEGWIT = [
+    OP_ANYSEGWIT_VERSION,
+    OPPushDataGeneric(lambda x: x in list(range(2, 40 + 1))),
+]
 
 
 def check_scriptpubkey_template_and_dust(scriptpubkey, amount: Optional[int]):
@@ -611,11 +695,14 @@ def check_scriptpubkey_template_and_dust(scriptpubkey, amount: Optional[int]):
     elif match_script_against_template(scriptpubkey, SCRIPTPUBKEY_TEMPLATE_ANYSEGWIT):
         dust_limit = bitcoin.DUST_LIMIT_UNKNOWN_SEGWIT
     else:
-        raise Exception(f'scriptpubkey does not conform to any template: {scriptpubkey.hex()}')
+        raise Exception(f"scriptpubkey does not conform to any template: {scriptpubkey.hex()}")
     if amount < dust_limit:
-        raise Exception(f'amount ({amount}) is below dust limit for scriptpubkey type ({dust_limit})')
+        raise Exception(
+            f"amount ({amount}) is below dust limit for scriptpubkey type ({dust_limit})"
+        )
 
-def merge_duplicate_tx_outputs(outputs: Iterable['PartialTxOutput']) -> List['PartialTxOutput']:
+
+def merge_duplicate_tx_outputs(outputs: Iterable["PartialTxOutput"]) -> List["PartialTxOutput"]:
     """Merges outputs that are paying to the same address by replacing them with a single larger output."""
     output_dict = {}
     for output in outputs:
@@ -625,6 +712,7 @@ def merge_duplicate_tx_outputs(outputs: Iterable['PartialTxOutput']) -> List['Pa
         else:
             output_dict[output.scriptpubkey] = copy.copy(output)
     return list(output_dict.values())
+
 
 def match_script_against_template(script, template, debug=False) -> bool:
     """Returns whether 'script' matches 'template'."""
@@ -647,7 +735,9 @@ def match_script_against_template(script, template, debug=False) -> bool:
     for i in range(len(script)):
         template_item = template[i]
         script_item = script[i]
-        if OPPushDataGeneric.is_instance(template_item) and template_item.check_data_len(script_item[0]):
+        if OPPushDataGeneric.is_instance(template_item) and template_item.check_data_len(
+            script_item[0]
+        ):
             continue
         if OPGeneric.is_instance(template_item) and template_item.match(script_item[0]):
             continue
@@ -657,6 +747,7 @@ def match_script_against_template(script, template, debug=False) -> bool:
             return False
     return True
 
+
 def get_script_type_from_output_script(_bytes: bytes) -> Optional[str]:
     if _bytes is None:
         return None
@@ -665,14 +756,15 @@ def get_script_type_from_output_script(_bytes: bytes) -> Optional[str]:
     except MalformedBitcoinScript:
         return None
     if match_script_against_template(decoded, SCRIPTPUBKEY_TEMPLATE_P2PKH):
-        return 'p2pkh'
+        return "p2pkh"
     if match_script_against_template(decoded, SCRIPTPUBKEY_TEMPLATE_P2SH):
-        return 'p2sh'
+        return "p2sh"
     if match_script_against_template(decoded, SCRIPTPUBKEY_TEMPLATE_P2WPKH):
-        return 'p2wpkh'
+        return "p2wpkh"
     if match_script_against_template(decoded, SCRIPTPUBKEY_TEMPLATE_P2WSH):
-        return 'p2wsh'
+        return "p2wsh"
     return None
+
 
 def get_address_from_output_script(_bytes: bytes, *, net=None) -> Optional[str]:
     try:
@@ -720,21 +812,20 @@ def parse_witness(vds: BCDataStream, txin: TxInput) -> None:
 def parse_output(vds: BCDataStream) -> TxOutput:
     value = vds.read_int64()
     if value > TOTAL_COIN_SUPPLY_LIMIT_IN_BTC * COIN:
-        raise SerializationError('invalid output amount (too large)')
+        raise SerializationError("invalid output amount (too large)")
     if value < 0:
-        raise SerializationError('invalid output amount (negative)')
+        raise SerializationError("invalid output amount (negative)")
     scriptpubkey = vds.read_bytes(vds.read_compact_size())
     return TxOutput(value=value, scriptpubkey=scriptpubkey)
 
 
 # pay & redeem scripts
 
+
 def multisig_script(public_keys: Sequence[str], m: int) -> str:
     n = len(public_keys)
-    assert 1 <= m <= n <= 15, f'm {m}, n {n}'
+    assert 1 <= m <= n <= 15, f"m {m}, n {n}"
     return construct_script([m, *public_keys, n, opcodes.OP_CHECKMULTISIG])
-
-
 
 
 class Transaction:
@@ -783,10 +874,10 @@ class Transaction:
 
     def to_json(self) -> dict:
         d = {
-            'version': self.version,
-            'locktime': self.locktime,
-            'inputs': [txin.to_json() for txin in self.inputs()],
-            'outputs': [txout.to_json() for txout in self.outputs()],
+            "version": self.version,
+            "locktime": self.locktime,
+            "inputs": [txin.to_json() for txin in self.inputs()],
+            "outputs": [txout.to_json() for txout in self.outputs()],
         }
         return d
 
@@ -811,18 +902,18 @@ class Transaction:
         vds.write(raw_bytes)
         self._version = vds.read_int32()
         n_vin = vds.read_compact_size()
-        is_segwit = (n_vin == 0)
+        is_segwit = n_vin == 0
         if is_segwit:
             marker = vds.read_bytes(1)
-            if marker != b'\x01':
-                raise SerializationError('invalid txn marker byte: {}'.format(marker))
+            if marker != b"\x01":
+                raise SerializationError("invalid txn marker byte: {}".format(marker))
             n_vin = vds.read_compact_size()
         if n_vin < 1:
-            raise SerializationError('tx needs to have at least 1 input')
+            raise SerializationError("tx needs to have at least 1 input")
         txins = [parse_input(vds) for i in range(n_vin)]
         n_vout = vds.read_compact_size()
         if n_vout < 1:
-            raise SerializationError('tx needs to have at least 1 output')
+            raise SerializationError("tx needs to have at least 1 output")
         self._outputs = [parse_output(vds) for i in range(n_vout)]
         if is_segwit:
             for txin in txins:
@@ -830,21 +921,21 @@ class Transaction:
         self._inputs = txins  # only expose field after witness is parsed, for sanity
         self._locktime = vds.read_uint32()
         if vds.can_read_more():
-            raise SerializationError('extra junk at the end')
+            raise SerializationError("extra junk at the end")
 
     @classmethod
     def serialize_witness(cls, txin: TxInput, *, estimate_size=False) -> str:
         if txin.witness is not None:
             return txin.witness.hex()
         if txin.is_coinbase_input():
-            return ''
+            return ""
         assert isinstance(txin, PartialTxInput)
 
         if not txin.is_segwit():
             return construct_witness([])
 
         if estimate_size and txin.witness_sizehint is not None:
-            return '00' * txin.witness_sizehint
+            return "00" * txin.witness_sizehint
 
         dummy_desc = None
         if estimate_size:
@@ -861,13 +952,13 @@ class Transaction:
         if txin.script_sig is not None:
             return txin.script_sig.hex()
         if txin.is_coinbase_input():
-            return ''
+            return ""
         assert isinstance(txin, PartialTxInput)
 
         if txin.is_p2sh_segwit() and txin.redeem_script:
             return construct_script([txin.redeem_script])
         if txin.is_native_segwit():
-            return ''
+            return ""
 
         dummy_desc = None
         if estimate_size:
@@ -884,14 +975,14 @@ class Transaction:
         raise UnknownTxinType("cannot construct scriptSig")
 
     @classmethod
-    def get_preimage_script(cls, txin: 'PartialTxInput') -> str:
+    def get_preimage_script(cls, txin: "PartialTxInput") -> str:
         if txin.witness_script:
             if opcodes.OP_CODESEPARATOR in [x[0] for x in script_GetOp(txin.witness_script)]:
-                raise Exception('OP_CODESEPARATOR black magic is not supported')
+                raise Exception("OP_CODESEPARATOR black magic is not supported")
             return txin.witness_script.hex()
         if not txin.is_segwit() and txin.redeem_script:
             if opcodes.OP_CODESEPARATOR in [x[0] for x in script_GetOp(txin.redeem_script)]:
-                raise Exception('OP_CODESEPARATOR black magic is not supported')
+                raise Exception("OP_CODESEPARATOR black magic is not supported")
             return txin.redeem_script.hex()
 
         if desc := txin.script_descriptor:
@@ -899,21 +990,22 @@ class Transaction:
             if script := sc.scriptcode_for_sighash:
                 return script.hex()
             raise Exception(f"don't know scriptcode for descriptor: {desc.to_string()}")
-        raise UnknownTxinType(f'cannot construct preimage_script')
+        raise UnknownTxinType(f"cannot construct preimage_script")
 
     def _calc_bip143_shared_txdigest_fields(self) -> BIP143SharedTxDigestFields:
         inputs = self.inputs()
         outputs = self.outputs()
-        hashPrevouts = sha256d(b''.join(txin.prevout.serialize_to_network() for txin in inputs)).hex()
-        hashSequence = sha256d(bfh(''.join(int_to_hex(txin.nsequence, 4) for txin in inputs))).hex()
-        hashOutputs = sha256d(bfh(''.join(o.serialize_to_network().hex() for o in outputs))).hex()
-        return BIP143SharedTxDigestFields(hashPrevouts=hashPrevouts,
-                                          hashSequence=hashSequence,
-                                          hashOutputs=hashOutputs)
+        hashPrevouts = sha256d(
+            b"".join(txin.prevout.serialize_to_network() for txin in inputs)
+        ).hex()
+        hashSequence = sha256d(bfh("".join(int_to_hex(txin.nsequence, 4) for txin in inputs))).hex()
+        hashOutputs = sha256d(bfh("".join(o.serialize_to_network().hex() for o in outputs))).hex()
+        return BIP143SharedTxDigestFields(
+            hashPrevouts=hashPrevouts, hashSequence=hashSequence, hashOutputs=hashOutputs
+        )
 
     def is_segwit(self, *, guess_for_address=False):
-        return any(txin.is_segwit(guess_for_address=guess_for_address)
-                   for txin in self.inputs())
+        return any(txin.is_segwit(guess_for_address=guess_for_address) for txin in self.inputs())
 
     def invalidate_ser_cache(self):
         self._cached_network_ser = None
@@ -921,13 +1013,17 @@ class Transaction:
 
     def serialize(self) -> str:
         if not self._cached_network_ser:
-            self._cached_network_ser = self.serialize_to_network(estimate_size=False, include_sigs=True)
+            self._cached_network_ser = self.serialize_to_network(
+                estimate_size=False, include_sigs=True
+            )
         return self._cached_network_ser
 
     def serialize_as_bytes(self) -> bytes:
         return bfh(self.serialize())
 
-    def serialize_to_network(self, *, estimate_size=False, include_sigs=True, force_legacy=False) -> str:
+    def serialize_to_network(
+        self, *, estimate_size=False, include_sigs=True, force_legacy=False
+    ) -> str:
         """Serialize the transaction as used on the Bitcoin network, into hex.
         `include_sigs` signals whether to include scriptSigs and witnesses.
         `force_legacy` signals to use the pre-segwit format
@@ -944,17 +1040,21 @@ class Transaction:
                 script_sig = self.input_script(txin, estimate_size=estimate_size)
                 return bytes.fromhex(script_sig)
             return b""
-        txins = var_int(len(inputs)) + ''.join(txin.serialize_to_network(script_sig=create_script_sig(txin)).hex()
-                                               for txin in inputs)
-        txouts = var_int(len(outputs)) + ''.join(o.serialize_to_network().hex() for o in outputs)
+
+        txins = var_int(len(inputs)) + "".join(
+            txin.serialize_to_network(script_sig=create_script_sig(txin)).hex() for txin in inputs
+        )
+        txouts = var_int(len(outputs)) + "".join(o.serialize_to_network().hex() for o in outputs)
 
         use_segwit_ser_for_estimate_size = estimate_size and self.is_segwit(guess_for_address=True)
         use_segwit_ser_for_actual_use = not estimate_size and self.is_segwit()
         use_segwit_ser = use_segwit_ser_for_estimate_size or use_segwit_ser_for_actual_use
         if include_sigs and not force_legacy and use_segwit_ser:
-            marker = '00'
-            flag = '01'
-            witness = ''.join(self.serialize_witness(x, estimate_size=estimate_size) for x in inputs)
+            marker = "00"
+            flag = "01"
+            witness = "".join(
+                self.serialize_witness(x, estimate_size=estimate_size) for x in inputs
+            )
             return nVersion + marker + flag + txins + txouts + witness + nLocktime
         else:
             return nVersion + txins + txouts + nLocktime
@@ -998,14 +1098,14 @@ class Transaction:
             return None
         return sha256d(bfh(ser))[::-1].hex()
 
-    def add_info_from_wallet(self, wallet: 'Abstract_Wallet', **kwargs) -> None:
+    def add_info_from_wallet(self, wallet: "Abstract_Wallet", **kwargs) -> None:
         # populate prev_txs
         for txin in self.inputs():
             wallet.add_input_info(txin)
 
     async def add_info_from_network(
         self,
-        network: Optional['Network'],
+        network: Optional["Network"],
         *,
         ignore_network_issues: bool = True,
         progress_cb: Callable[[TxinDataFetchProgress], None] = None,
@@ -1020,9 +1120,12 @@ class Transaction:
         num_tasks_total = 0
         has_errored = False
         has_finished = False
+
         async def add_info_to_txin(txin: TxInput):
             nonlocal num_tasks_done, has_errored
-            progress_cb(TxinDataFetchProgress(num_tasks_done, num_tasks_total, has_errored, has_finished))
+            progress_cb(
+                TxinDataFetchProgress(num_tasks_done, num_tasks_total, has_errored, has_finished)
+            )
             success = await txin.add_info_from_network(
                 network=network,
                 ignore_network_issues=ignore_network_issues,
@@ -1032,7 +1135,10 @@ class Transaction:
                 num_tasks_done += 1
             else:
                 has_errored = True
-            progress_cb(TxinDataFetchProgress(num_tasks_done, num_tasks_total, has_errored, has_finished))
+            progress_cb(
+                TxinDataFetchProgress(num_tasks_done, num_tasks_total, has_errored, has_finished)
+            )
+
         # schedule a network task for each txin
         try:
             async with OldTaskGroup() as group:
@@ -1045,13 +1151,18 @@ class Transaction:
             _logger.error(f"tx.add_info_from_network() got exc: {e!r}")
         finally:
             has_finished = True
-            progress_cb(TxinDataFetchProgress(num_tasks_done, num_tasks_total, has_errored, has_finished))
+            progress_cb(
+                TxinDataFetchProgress(num_tasks_done, num_tasks_total, has_errored, has_finished)
+            )
 
     def is_missing_info_from_network(self) -> bool:
         return any(txin.utxo is None for txin in self.inputs())
 
     def add_info_from_wallet_and_network(
-        self, *, wallet: 'Abstract_Wallet', show_error: Callable[[str], None],
+        self,
+        *,
+        wallet: "Abstract_Wallet",
+        show_error: Callable[[str], None],
     ) -> bool:
         """Returns whether successful.
         note: This is sort of a legacy hack... doing network requests in non-async code.
@@ -1059,11 +1170,13 @@ class Transaction:
         """
         # note side-effect: tx is being mutated
         from .network import NetworkException, Network
+
         self.add_info_from_wallet(wallet)
         try:
             if self.is_missing_info_from_network():
                 Network.run_from_another_thread(
-                    self.add_info_from_network(wallet.network, ignore_network_issues=False))
+                    self.add_info_from_network(wallet.network, ignore_network_issues=False)
+                )
         except NetworkException as e:
             show_error(repr(e))
             return False
@@ -1071,7 +1184,7 @@ class Transaction:
 
     def is_final(self) -> bool:
         """Whether RBF is disabled."""
-        return not any([txin.nsequence < 0xffffffff - 1 for txin in self.inputs()])
+        return not any([txin.nsequence < 0xFFFFFFFF - 1 for txin in self.inputs()])
 
     def estimated_size(self):
         """Return an estimated virtual tx size in vbytes.
@@ -1085,7 +1198,7 @@ class Transaction:
 
     @classmethod
     def estimated_input_weight(cls, txin: TxInput, is_segwit_tx: bool):
-        '''Return an estimate of serialized input weight in weight units.'''
+        """Return an estimate of serialized input weight in weight units."""
         script_sig = cls.input_script(txin, estimate_size=True)
         input_size = len(txin.serialize_to_network(script_sig=bytes.fromhex(script_sig)))
 
@@ -1132,7 +1245,7 @@ class Transaction:
         if not self.is_segwit(guess_for_address=estimate):
             return 0
         inputs = self.inputs()
-        witness = ''.join(self.serialize_witness(x, estimate_size=estimate) for x in inputs)
+        witness = "".join(self.serialize_witness(x, estimate_size=estimate) for x in inputs)
         witness_size = len(witness) // 2 + 2  # include marker and flag
         return witness_size
 
@@ -1155,7 +1268,7 @@ class Transaction:
         # build cache if there isn't one yet
         # note: can become stale and return incorrect data
         #       if the tx is modified later; that's out of scope.
-        if not hasattr(self, '_script_to_output_idx'):
+        if not hasattr(self, "_script_to_output_idx"):
             d = defaultdict(set)
             for output_idx, o in enumerate(self.outputs()):
                 o_script = o.scriptpubkey.hex()
@@ -1176,10 +1289,10 @@ class Transaction:
         old_output = PartialTxOutput.from_address_and_value(old_address, amount)
         self._outputs.remove(old_output)
         self.add_outputs([funding_output])
-        delattr(self, '_script_to_output_idx')
+        delattr(self, "_script_to_output_idx")
 
     def get_change_outputs(self):
-        return  [o for o in self._outputs if o.is_change]
+        return [o for o in self._outputs if o.is_change]
 
     def has_dummy_output(self, dummy_addr: str) -> bool:
         return len(self.get_output_idxs_from_address(dummy_addr)) == 1
@@ -1190,7 +1303,7 @@ class Transaction:
             if o.address == addr:
                 return o.value
         else:
-            raise Exception('output not found', addr)
+            raise Exception("output not found", addr)
 
     def input_value(self) -> int:
         input_values = [txin.value_sats() for txin in self.inputs()]
@@ -1211,7 +1324,7 @@ class Transaction:
         # build cache if there isn't one yet
         # note: can become stale and return incorrect data
         #       if the tx is modified later; that's out of scope.
-        if not hasattr(self, '_prevout_to_input_idx'):
+        if not hasattr(self, "_prevout_to_input_idx"):
             d = {}  # type: Dict[TxOutpoint, int]
             for i, txin in enumerate(self.inputs()):
                 d[txin.prevout] = i
@@ -1240,7 +1353,7 @@ def convert_raw_tx_to_hex(raw: Union[str, bytes]) -> str:
     except Exception:
         pass
     # try base64
-    if raw[0:6] in ('cHNidP', b'cHNidP'):  # base64 psbt
+    if raw[0:6] in ("cHNidP", b"cHNidP"):  # base64 psbt
         try:
             return base64.b64decode(raw).hex()
         except Exception:
@@ -1251,26 +1364,30 @@ def convert_raw_tx_to_hex(raw: Union[str, bytes]) -> str:
     raise ValueError(f"failed to recognize transaction encoding for txt: {raw[:30]}...")
 
 
-def tx_from_any(raw: Union[str, bytes], *,
-                deserialize: bool = True) -> Union['PartialTransaction', 'Transaction']:
+def tx_from_any(
+    raw: Union[str, bytes], *, deserialize: bool = True
+) -> Union["PartialTransaction", "Transaction"]:
     if isinstance(raw, bytearray):
         raw = bytes(raw)
     raw = convert_raw_tx_to_hex(raw)
     try:
         return PartialTransaction.from_raw_psbt(raw)
     except BadHeaderMagic:
-        if raw[:10] == b'EPTF\xff'.hex():
-            raise SerializationError("Partial transactions generated with old Electrum versions "
-                                     "(< 4.0) are no longer supported. Please upgrade Electrum on "
-                                     "the other machine where this transaction was created.")
+        if raw[:10] == b"EPTF\xff".hex():
+            raise SerializationError(
+                "Partial transactions generated with old Electrum versions "
+                "(< 4.0) are no longer supported. Please upgrade Electrum on "
+                "the other machine where this transaction was created."
+            )
     try:
         tx = Transaction(raw)
         if deserialize:
             tx.deserialize()
         return tx
     except Exception as e:
-        raise SerializationError(f"Failed to recognise tx encoding, or to parse transaction. "
-                                 f"raw: {raw[:30]}...") from e
+        raise SerializationError(
+            f"Failed to recognise tx encoding, or to parse transaction. " f"raw: {raw[:30]}..."
+        ) from e
 
 
 class PSBTGlobalType(IntEnum):
@@ -1302,7 +1419,7 @@ def deser_compact_size(f) -> Optional[int]:
     try:
         nit = f.read(1)[0]
     except IndexError:
-        return None     # end of file
+        return None  # end of file
 
     if nit == 253:
         nit = struct.unpack("<H", f.read(2))[0]
@@ -1316,7 +1433,8 @@ def deser_compact_size(f) -> Optional[int]:
 class PSBTSection:
 
     def _populate_psbt_fields_from_fd(self, fd=None):
-        if not fd: return
+        if not fd:
+            return
 
         while True:
             try:
@@ -1337,26 +1455,29 @@ class PSBTSection:
         key_type, key = cls.get_keytype_and_key_from_fullkey(full_key)
 
         val_size = deser_compact_size(fd)
-        if val_size is None: raise UnexpectedEndOfStream()
+        if val_size is None:
+            raise UnexpectedEndOfStream()
         val = fd.read(val_size)
 
         return key_type, key, val
 
     @classmethod
     def create_psbt_writer(cls, fd):
-        def wr(key_type: int, val: bytes, key: bytes = b''):
+        def wr(key_type: int, val: bytes, key: bytes = b""):
             full_key = cls.get_fullkey_from_keytype_and_key(key_type, key)
             fd.write(bytes.fromhex(var_int(len(full_key))))  # key_size
             fd.write(full_key)  # key
             fd.write(bytes.fromhex(var_int(len(val))))  # val_size
             fd.write(val)  # val
+
         return wr
 
     @classmethod
     def get_keytype_and_key_from_fullkey(cls, full_key: bytes) -> Tuple[int, bytes]:
         with io.BytesIO(full_key) as key_stream:
             key_type = deser_compact_size(key_stream)
-            if key_type is None: raise UnexpectedEndOfStream()
+            if key_type is None:
+                raise UnexpectedEndOfStream()
             key = key_stream.read()
         return key_type, key
 
@@ -1368,7 +1489,7 @@ class PSBTSection:
     def _serialize_psbt_section(self, fd):
         wr = self.create_psbt_writer(fd)
         self.serialize_psbt_section_kvs(wr)
-        fd.write(b'\x00')  # section-separator
+        fd.write(b"\x00")  # section-separator
 
     def parse_psbt_section_kv(self, kt: int, key: bytes, val: bytes) -> None:
         raise NotImplementedError()  # implemented by subclasses
@@ -1383,7 +1504,9 @@ class PartialTxInput(TxInput, PSBTSection):
         self._witness_utxo = None  # type: Optional[TxOutput]
         self.part_sigs = {}  # type: Dict[bytes, bytes]  # pubkey -> sig
         self.sighash = None  # type: Optional[int]
-        self.bip32_paths = {}  # type: Dict[bytes, Tuple[bytes, Sequence[int]]]  # pubkey -> (xpub_fingerprint, path)
+        self.bip32_paths = (
+            {}
+        )  # type: Dict[bytes, Tuple[bytes, Sequence[int]]]  # pubkey -> (xpub_fingerprint, path)
         self.redeem_script = None  # type: Optional[bytes]
         self.witness_script = None  # type: Optional[bytes]
         self._unknown = {}  # type: Dict[bytes, bytes]
@@ -1393,7 +1516,9 @@ class PartialTxInput(TxInput, PSBTSection):
         self._trusted_address = None  # type: Optional[str]
         self._is_p2sh_segwit = None  # type: Optional[bool]  # None means unknown
         self._is_native_segwit = None  # type: Optional[bool]  # None means unknown
-        self.witness_sizehint = None  # type: Optional[int]  # byte size of serialized complete witness, for tx size est
+        self.witness_sizehint = (
+            None
+        )  # type: Optional[int]  # byte size of serialized complete witness, for tx size est
 
     @property
     def witness_utxo(self):
@@ -1425,34 +1550,42 @@ class PartialTxInput(TxInput, PSBTSection):
 
     def to_json(self):
         d = super().to_json()
-        d.update({
-            'height': self.block_height,
-            'value_sats': self.value_sats(),
-            'address': self.address,
-            'desc': self.script_descriptor.to_string() if self.script_descriptor else None,
-            'utxo': str(self.utxo) if self.utxo else None,
-            'witness_utxo': self.witness_utxo.serialize_to_network().hex() if self.witness_utxo else None,
-            'sighash': self.sighash,
-            'redeem_script': self.redeem_script.hex() if self.redeem_script else None,
-            'witness_script': self.witness_script.hex() if self.witness_script else None,
-            'part_sigs': {pubkey.hex(): sig.hex() for pubkey, sig in self.part_sigs.items()},
-            'bip32_paths': {pubkey.hex(): (xfp.hex(), bip32.convert_bip32_intpath_to_strpath(path))
-                            for pubkey, (xfp, path) in self.bip32_paths.items()},
-            'unknown_psbt_fields': {key.hex(): val.hex() for key, val in self._unknown.items()},
-        })
+        d.update(
+            {
+                "height": self.block_height,
+                "value_sats": self.value_sats(),
+                "address": self.address,
+                "desc": self.script_descriptor.to_string() if self.script_descriptor else None,
+                "utxo": str(self.utxo) if self.utxo else None,
+                "witness_utxo": (
+                    self.witness_utxo.serialize_to_network().hex() if self.witness_utxo else None
+                ),
+                "sighash": self.sighash,
+                "redeem_script": self.redeem_script.hex() if self.redeem_script else None,
+                "witness_script": self.witness_script.hex() if self.witness_script else None,
+                "part_sigs": {pubkey.hex(): sig.hex() for pubkey, sig in self.part_sigs.items()},
+                "bip32_paths": {
+                    pubkey.hex(): (xfp.hex(), bip32.convert_bip32_intpath_to_strpath(path))
+                    for pubkey, (xfp, path) in self.bip32_paths.items()
+                },
+                "unknown_psbt_fields": {key.hex(): val.hex() for key, val in self._unknown.items()},
+            }
+        )
         return d
 
     @classmethod
-    def from_txin(cls, txin: TxInput, *, strip_witness: bool = True) -> 'PartialTxInput':
+    def from_txin(cls, txin: TxInput, *, strip_witness: bool = True) -> "PartialTxInput":
         # FIXME: if strip_witness is True, res.is_segwit() will return False,
         # and res.estimated_size() will return an incorrect value. These methods
         # will return the correct values after we call add_input_info(). (see dscancel and bump_fee)
         # This is very fragile: the value returned by estimate_size() depends on the calling order.
-        res = PartialTxInput(prevout=txin.prevout,
-                             script_sig=None if strip_witness else txin.script_sig,
-                             nsequence=txin.nsequence,
-                             witness=None if strip_witness else txin.witness,
-                             is_coinbase_output=txin.is_coinbase_output())
+        res = PartialTxInput(
+            prevout=txin.prevout,
+            script_sig=None if strip_witness else txin.script_sig,
+            nsequence=txin.nsequence,
+            witness=None if strip_witness else txin.witness,
+            is_coinbase_output=txin.is_coinbase_output(),
+        )
         res.utxo = txin.utxo
         return res
 
@@ -1468,55 +1601,75 @@ class PartialTxInput(TxInput, PSBTSection):
         witness_utxo = witness_utxo or self.witness_utxo
         if utxo:
             if self.prevout.txid.hex() != utxo.txid():
-                raise PSBTInputConsistencyFailure(f"PSBT input validation: "
-                                                  f"If a non-witness UTXO is provided, its hash must match the hash specified in the prevout")
+                raise PSBTInputConsistencyFailure(
+                    f"PSBT input validation: "
+                    f"If a non-witness UTXO is provided, its hash must match the hash specified in the prevout"
+                )
             if witness_utxo:
                 if utxo.outputs()[self.prevout.out_idx] != witness_utxo:
-                    raise PSBTInputConsistencyFailure(f"PSBT input validation: "
-                                                      f"If both non-witness UTXO and witness UTXO are provided, they must be consistent")
+                    raise PSBTInputConsistencyFailure(
+                        f"PSBT input validation: "
+                        f"If both non-witness UTXO and witness UTXO are provided, they must be consistent"
+                    )
         # The following test is disabled, so we are willing to sign non-segwit inputs
         # without verifying the input amount. This means, given a maliciously modified PSBT,
         # for non-segwit inputs, we might end up burning coins as miner fees.
         if for_signing and False:
             if not self.is_segwit() and witness_utxo:
-                raise PSBTInputConsistencyFailure(f"PSBT input validation: "
-                                                  f"If a witness UTXO is provided, no non-witness signature may be created")
+                raise PSBTInputConsistencyFailure(
+                    f"PSBT input validation: "
+                    f"If a witness UTXO is provided, no non-witness signature may be created"
+                )
         if self.redeem_script and self.address:
             addr = hash160_to_p2sh(hash_160(self.redeem_script))
             if self.address != addr:
-                raise PSBTInputConsistencyFailure(f"PSBT input validation: "
-                                                  f"If a redeemScript is provided, the scriptPubKey must be for that redeemScript")
+                raise PSBTInputConsistencyFailure(
+                    f"PSBT input validation: "
+                    f"If a redeemScript is provided, the scriptPubKey must be for that redeemScript"
+                )
         if self.witness_script:
             if self.redeem_script:
-                if self.redeem_script != bfh(bitcoin.p2wsh_nested_script(self.witness_script.hex())):
-                    raise PSBTInputConsistencyFailure(f"PSBT input validation: "
-                                                      f"If a witnessScript is provided, the redeemScript must be for that witnessScript")
+                if self.redeem_script != bfh(
+                    bitcoin.p2wsh_nested_script(self.witness_script.hex())
+                ):
+                    raise PSBTInputConsistencyFailure(
+                        f"PSBT input validation: "
+                        f"If a witnessScript is provided, the redeemScript must be for that witnessScript"
+                    )
             elif self.address:
                 if self.address != bitcoin.script_to_p2wsh(self.witness_script.hex()):
-                    raise PSBTInputConsistencyFailure(f"PSBT input validation: "
-                                                      f"If a witnessScript is provided, the scriptPubKey must be for that witnessScript")
+                    raise PSBTInputConsistencyFailure(
+                        f"PSBT input validation: "
+                        f"If a witnessScript is provided, the scriptPubKey must be for that witnessScript"
+                    )
 
     def parse_psbt_section_kv(self, kt, key, val):
         try:
             kt = PSBTInputType(kt)
         except ValueError:
             pass  # unknown type
-        if DEBUG_PSBT_PARSING: print(f"{repr(kt)} {key.hex()} {val.hex()}")
+        if DEBUG_PSBT_PARSING:
+            print(f"{repr(kt)} {key.hex()} {val.hex()}")
         if kt == PSBTInputType.NON_WITNESS_UTXO:
             if self.utxo is not None:
                 raise SerializationError(f"duplicate key: {repr(kt)}")
             self.utxo = Transaction(val)
             self.utxo.deserialize()
-            if key: raise SerializationError(f"key for {repr(kt)} must be empty")
+            if key:
+                raise SerializationError(f"key for {repr(kt)} must be empty")
         elif kt == PSBTInputType.WITNESS_UTXO:
             if self.witness_utxo is not None:
                 raise SerializationError(f"duplicate key: {repr(kt)}")
             self.witness_utxo = TxOutput.from_network_bytes(val)
-            if key: raise SerializationError(f"key for {repr(kt)} must be empty")
+            if key:
+                raise SerializationError(f"key for {repr(kt)} must be empty")
         elif kt == PSBTInputType.PARTIAL_SIG:
             if key in self.part_sigs:
                 raise SerializationError(f"duplicate key: {repr(kt)}")
-            if len(key) not in (33, 65):  # TODO also allow 32? one of the tests in the BIP is "supposed to" fail with len==32...
+            if len(key) not in (
+                33,
+                65,
+            ):  # TODO also allow 32? one of the tests in the BIP is "supposed to" fail with len==32...
                 raise SerializationError(f"key for {repr(kt)} has unexpected length: {len(key)}")
             self.part_sigs[key] = val
         elif kt == PSBTInputType.SIGHASH_TYPE:
@@ -1525,48 +1678,61 @@ class PartialTxInput(TxInput, PSBTSection):
             if len(val) != 4:
                 raise SerializationError(f"value for {repr(kt)} has unexpected length: {len(val)}")
             self.sighash = struct.unpack("<I", val)[0]
-            if key: raise SerializationError(f"key for {repr(kt)} must be empty")
+            if key:
+                raise SerializationError(f"key for {repr(kt)} must be empty")
         elif kt == PSBTInputType.BIP32_DERIVATION:
             if key in self.bip32_paths:
                 raise SerializationError(f"duplicate key: {repr(kt)}")
-            if len(key) not in (33, 65):  # TODO also allow 32? one of the tests in the BIP is "supposed to" fail with len==32...
+            if len(key) not in (
+                33,
+                65,
+            ):  # TODO also allow 32? one of the tests in the BIP is "supposed to" fail with len==32...
                 raise SerializationError(f"key for {repr(kt)} has unexpected length: {len(key)}")
             self.bip32_paths[key] = unpack_bip32_root_fingerprint_and_int_path(val)
         elif kt == PSBTInputType.REDEEM_SCRIPT:
             if self.redeem_script is not None:
                 raise SerializationError(f"duplicate key: {repr(kt)}")
             self.redeem_script = val
-            if key: raise SerializationError(f"key for {repr(kt)} must be empty")
+            if key:
+                raise SerializationError(f"key for {repr(kt)} must be empty")
         elif kt == PSBTInputType.WITNESS_SCRIPT:
             if self.witness_script is not None:
                 raise SerializationError(f"duplicate key: {repr(kt)}")
             self.witness_script = val
-            if key: raise SerializationError(f"key for {repr(kt)} must be empty")
+            if key:
+                raise SerializationError(f"key for {repr(kt)} must be empty")
         elif kt == PSBTInputType.FINAL_SCRIPTSIG:
             if self.script_sig is not None:
                 raise SerializationError(f"duplicate key: {repr(kt)}")
             self.script_sig = val
-            if key: raise SerializationError(f"key for {repr(kt)} must be empty")
+            if key:
+                raise SerializationError(f"key for {repr(kt)} must be empty")
         elif kt == PSBTInputType.FINAL_SCRIPTWITNESS:
             if self.witness is not None:
                 raise SerializationError(f"duplicate key: {repr(kt)}")
             self.witness = val
-            if key: raise SerializationError(f"key for {repr(kt)} must be empty")
+            if key:
+                raise SerializationError(f"key for {repr(kt)} must be empty")
         else:
             full_key = self.get_fullkey_from_keytype_and_key(kt, key)
             if full_key in self._unknown:
-                raise SerializationError(f'duplicate key. PSBT input key for unknown type: {full_key}')
+                raise SerializationError(
+                    f"duplicate key. PSBT input key for unknown type: {full_key}"
+                )
             self._unknown[full_key] = val
 
     def serialize_psbt_section_kvs(self, wr):
         if self.witness_utxo:
             wr(PSBTInputType.WITNESS_UTXO, self.witness_utxo.serialize_to_network())
         if self.utxo:
-            wr(PSBTInputType.NON_WITNESS_UTXO, bfh(self.utxo.serialize_to_network(include_sigs=True)))
+            wr(
+                PSBTInputType.NON_WITNESS_UTXO,
+                bfh(self.utxo.serialize_to_network(include_sigs=True)),
+            )
         for pk, val in sorted(self.part_sigs.items()):
             wr(PSBTInputType.PARTIAL_SIG, val, pk)
         if self.sighash is not None:
-            wr(PSBTInputType.SIGHASH_TYPE, struct.pack('<I', self.sighash))
+            wr(PSBTInputType.SIGHASH_TYPE, struct.pack("<I", self.sighash))
         if self.redeem_script is not None:
             wr(PSBTInputType.REDEEM_SCRIPT, self.redeem_script)
         if self.witness_script is not None:
@@ -1650,7 +1816,7 @@ class PartialTxInput(TxInput, PSBTSection):
             self.witness = bfh(Transaction.serialize_witness(self))
             clear_fields_when_finalized()
 
-    def combine_with_other_txin(self, other_txin: 'TxInput') -> None:
+    def combine_with_other_txin(self, other_txin: "TxInput") -> None:
         assert self.prevout == other_txin.prevout
         if other_txin.script_sig is not None:
             self.script_sig = other_txin.script_sig
@@ -1689,6 +1855,7 @@ class PartialTxInput(TxInput, PSBTSection):
     def is_p2sh_segwit(self) -> Optional[bool]:
         """Whether this input is p2sh-embedded-segwit. None means inconclusive."""
         if self._is_p2sh_segwit is None:
+
             def calc_if_p2sh_segwit_now():
                 if not (self.address and self.redeem_script):
                     return None
@@ -1731,9 +1898,7 @@ class PartialTxInput(TxInput, PSBTSection):
 
     def already_has_some_signatures(self) -> bool:
         """Returns whether progress has been made towards completing this input."""
-        return (self.part_sigs
-                or self.script_sig is not None
-                or self.witness is not None)
+        return self.part_sigs or self.script_sig is not None or self.witness is not None
 
 
 class PartialTxOutput(TxOutput, PSBTSection):
@@ -1741,7 +1906,9 @@ class PartialTxOutput(TxOutput, PSBTSection):
         TxOutput.__init__(self, *args, **kwargs)
         self.redeem_script = None  # type: Optional[bytes]
         self.witness_script = None  # type: Optional[bytes]
-        self.bip32_paths = {}  # type: Dict[bytes, Tuple[bytes, Sequence[int]]]  # pubkey -> (xpub_fingerprint, path)
+        self.bip32_paths = (
+            {}
+        )  # type: Dict[bytes, Tuple[bytes, Sequence[int]]]  # pubkey -> (xpub_fingerprint, path)
         self._unknown = {}  # type: Dict[bytes, bytes]
 
         self._script_descriptor = None  # type: Optional[Descriptor]
@@ -1769,20 +1936,23 @@ class PartialTxOutput(TxOutput, PSBTSection):
 
     def to_json(self):
         d = super().to_json()
-        d.update({
-            'desc': self.script_descriptor.to_string() if self.script_descriptor else None,
-            'redeem_script': self.redeem_script.hex() if self.redeem_script else None,
-            'witness_script': self.witness_script.hex() if self.witness_script else None,
-            'bip32_paths': {pubkey.hex(): (xfp.hex(), bip32.convert_bip32_intpath_to_strpath(path))
-                            for pubkey, (xfp, path) in self.bip32_paths.items()},
-            'unknown_psbt_fields': {key.hex(): val.hex() for key, val in self._unknown.items()},
-        })
+        d.update(
+            {
+                "desc": self.script_descriptor.to_string() if self.script_descriptor else None,
+                "redeem_script": self.redeem_script.hex() if self.redeem_script else None,
+                "witness_script": self.witness_script.hex() if self.witness_script else None,
+                "bip32_paths": {
+                    pubkey.hex(): (xfp.hex(), bip32.convert_bip32_intpath_to_strpath(path))
+                    for pubkey, (xfp, path) in self.bip32_paths.items()
+                },
+                "unknown_psbt_fields": {key.hex(): val.hex() for key, val in self._unknown.items()},
+            }
+        )
         return d
 
     @classmethod
-    def from_txout(cls, txout: TxOutput) -> 'PartialTxOutput':
-        res = PartialTxOutput(scriptpubkey=txout.scriptpubkey,
-                              value=txout.value)
+    def from_txout(cls, txout: TxOutput) -> "PartialTxOutput":
+        res = PartialTxOutput(scriptpubkey=txout.scriptpubkey, value=txout.value)
         return res
 
     def parse_psbt_section_kv(self, kt, key, val):
@@ -1790,27 +1960,35 @@ class PartialTxOutput(TxOutput, PSBTSection):
             kt = PSBTOutputType(kt)
         except ValueError:
             pass  # unknown type
-        if DEBUG_PSBT_PARSING: print(f"{repr(kt)} {key.hex()} {val.hex()}")
+        if DEBUG_PSBT_PARSING:
+            print(f"{repr(kt)} {key.hex()} {val.hex()}")
         if kt == PSBTOutputType.REDEEM_SCRIPT:
             if self.redeem_script is not None:
                 raise SerializationError(f"duplicate key: {repr(kt)}")
             self.redeem_script = val
-            if key: raise SerializationError(f"key for {repr(kt)} must be empty")
+            if key:
+                raise SerializationError(f"key for {repr(kt)} must be empty")
         elif kt == PSBTOutputType.WITNESS_SCRIPT:
             if self.witness_script is not None:
                 raise SerializationError(f"duplicate key: {repr(kt)}")
             self.witness_script = val
-            if key: raise SerializationError(f"key for {repr(kt)} must be empty")
+            if key:
+                raise SerializationError(f"key for {repr(kt)} must be empty")
         elif kt == PSBTOutputType.BIP32_DERIVATION:
             if key in self.bip32_paths:
                 raise SerializationError(f"duplicate key: {repr(kt)}")
-            if len(key) not in (33, 65):  # TODO also allow 32? one of the tests in the BIP is "supposed to" fail with len==32...
+            if len(key) not in (
+                33,
+                65,
+            ):  # TODO also allow 32? one of the tests in the BIP is "supposed to" fail with len==32...
                 raise SerializationError(f"key for {repr(kt)} has unexpected length: {len(key)}")
             self.bip32_paths[key] = unpack_bip32_root_fingerprint_and_int_path(val)
         else:
             full_key = self.get_fullkey_from_keytype_and_key(kt, key)
             if full_key in self._unknown:
-                raise SerializationError(f'duplicate key. PSBT output key for unknown type: {full_key}')
+                raise SerializationError(
+                    f"duplicate key. PSBT output key for unknown type: {full_key}"
+                )
             self._unknown[full_key] = val
 
     def serialize_psbt_section_kvs(self, wr):
@@ -1825,7 +2003,7 @@ class PartialTxOutput(TxOutput, PSBTSection):
             key_type, key = self.get_keytype_and_key_from_fullkey(full_key)
             wr(key_type, val, key=key)
 
-    def combine_with_other_txout(self, other_txout: 'TxOutput') -> None:
+    def combine_with_other_txout(self, other_txout: "TxOutput") -> None:
         assert self.scriptpubkey == other_txout.scriptpubkey
         if not isinstance(other_txout, PartialTxOutput):
             return
@@ -1841,7 +2019,9 @@ class PartialTransaction(Transaction):
 
     def __init__(self):
         Transaction.__init__(self, None)
-        self.xpubs = {}  # type: Dict[BIP32Node, Tuple[bytes, Sequence[int]]]  # intermediate bip32node -> (xfp, der_prefix)
+        self.xpubs = (
+            {}
+        )  # type: Dict[BIP32Node, Tuple[bytes, Sequence[int]]]  # intermediate bip32node -> (xfp, der_prefix)
         self._inputs = []  # type: List[PartialTxInput]
         self._outputs = []  # type: List[PartialTxOutput]
         self._unknown = {}  # type: Dict[bytes, bytes]
@@ -1849,31 +2029,34 @@ class PartialTransaction(Transaction):
 
     def to_json(self) -> dict:
         d = super().to_json()
-        d.update({
-            'xpubs': {bip32node.to_xpub(): (xfp.hex(), bip32.convert_bip32_intpath_to_strpath(path))
-                      for bip32node, (xfp, path) in self.xpubs.items()},
-            'unknown_psbt_fields': {key.hex(): val.hex() for key, val in self._unknown.items()},
-        })
+        d.update(
+            {
+                "xpubs": {
+                    bip32node.to_xpub(): (xfp.hex(), bip32.convert_bip32_intpath_to_strpath(path))
+                    for bip32node, (xfp, path) in self.xpubs.items()
+                },
+                "unknown_psbt_fields": {key.hex(): val.hex() for key, val in self._unknown.items()},
+            }
+        )
         return d
 
     @classmethod
-    def from_tx(cls, tx: Transaction) -> 'PartialTransaction':
+    def from_tx(cls, tx: Transaction) -> "PartialTransaction":
         res = cls()
-        res._inputs = [PartialTxInput.from_txin(txin, strip_witness=True)
-                       for txin in tx.inputs()]
+        res._inputs = [PartialTxInput.from_txin(txin, strip_witness=True) for txin in tx.inputs()]
         res._outputs = [PartialTxOutput.from_txout(txout) for txout in tx.outputs()]
         res.version = tx.version
         res.locktime = tx.locktime
         return res
 
     @classmethod
-    def from_raw_psbt(cls, raw) -> 'PartialTransaction':
+    def from_raw_psbt(cls, raw) -> "PartialTransaction":
         # auto-detect and decode Base64 and Hex.
-        if raw[0:10].lower() in (b'70736274ff', '70736274ff'):  # hex
+        if raw[0:10].lower() in (b"70736274ff", "70736274ff"):  # hex
             raw = bytes.fromhex(raw)
-        elif raw[0:6] in (b'cHNidP', 'cHNidP'):  # base64
+        elif raw[0:6] in (b"cHNidP", "cHNidP"):  # base64
             raw = base64.b64decode(raw)
-        if not isinstance(raw, (bytes, bytearray)) or raw[0:5] != b'psbt\xff':
+        if not isinstance(raw, (bytes, bytearray)) or raw[0:5] != b"psbt\xff":
             raise BadHeaderMagic("bad magic")
 
         tx = None  # type: Optional[PartialTransaction]
@@ -1894,15 +2077,20 @@ class PartialTransaction(Transaction):
                 if kt == PSBTGlobalType.UNSIGNED_TX:
                     if tx is not None:
                         raise SerializationError(f"duplicate key: {repr(kt)}")
-                    if key: raise SerializationError(f"key for {repr(kt)} must be empty")
+                    if key:
+                        raise SerializationError(f"key for {repr(kt)} must be empty")
                     unsigned_tx = Transaction(val.hex())
                     for txin in unsigned_tx.inputs():
                         if txin.script_sig or txin.witness:
-                            raise SerializationError(f"PSBT {repr(kt)} must have empty scriptSigs and witnesses")
+                            raise SerializationError(
+                                f"PSBT {repr(kt)} must have empty scriptSigs and witnesses"
+                            )
                     tx = PartialTransaction.from_tx(unsigned_tx)
 
         if tx is None:
-            raise SerializationError(f"PSBT missing required global section PSBT_GLOBAL_UNSIGNED_TX")
+            raise SerializationError(
+                f"PSBT missing required global section PSBT_GLOBAL_UNSIGNED_TX"
+            )
 
         with io.BytesIO(raw[5:]) as fd:  # parsing "second pass"
             # global section
@@ -1915,7 +2103,8 @@ class PartialTransaction(Transaction):
                     kt = PSBTGlobalType(kt)
                 except ValueError:
                     pass  # unknown type
-                if DEBUG_PSBT_PARSING: print(f"{repr(kt)} {key.hex()} {val.hex()}")
+                if DEBUG_PSBT_PARSING:
+                    print(f"{repr(kt)} {key.hex()} {val.hex()}")
                 if kt == PSBTGlobalType.UNSIGNED_TX:
                     pass  # already handled during "first" parsing pass
                 elif kt == PSBTGlobalType.XPUB:
@@ -1924,38 +2113,55 @@ class PartialTransaction(Transaction):
                         raise SerializationError(f"duplicate key: {repr(kt)}")
                     xfp, path = unpack_bip32_root_fingerprint_and_int_path(val)
                     if bip32node.depth != len(path):
-                        raise SerializationError(f"PSBT global xpub has mismatching depth ({bip32node.depth}) "
-                                                 f"and derivation prefix len ({len(path)})")
-                    child_number_of_xpub = int.from_bytes(bip32node.child_number, 'big')
-                    if not ((bip32node.depth == 0 and child_number_of_xpub == 0)
-                            or (bip32node.depth != 0 and child_number_of_xpub == path[-1])):
-                        raise SerializationError(f"PSBT global xpub has inconsistent child_number and derivation prefix")
+                        raise SerializationError(
+                            f"PSBT global xpub has mismatching depth ({bip32node.depth}) "
+                            f"and derivation prefix len ({len(path)})"
+                        )
+                    child_number_of_xpub = int.from_bytes(bip32node.child_number, "big")
+                    if not (
+                        (bip32node.depth == 0 and child_number_of_xpub == 0)
+                        or (bip32node.depth != 0 and child_number_of_xpub == path[-1])
+                    ):
+                        raise SerializationError(
+                            f"PSBT global xpub has inconsistent child_number and derivation prefix"
+                        )
                     tx.xpubs[bip32node] = xfp, path
                 elif kt == PSBTGlobalType.VERSION:
                     if len(val) > 4:
-                        raise SerializationError(f"value for {repr(kt)} has unexpected length: {len(val)} > 4")
-                    psbt_version = int.from_bytes(val, byteorder='little', signed=False)
+                        raise SerializationError(
+                            f"value for {repr(kt)} has unexpected length: {len(val)} > 4"
+                        )
+                    psbt_version = int.from_bytes(val, byteorder="little", signed=False)
                     if psbt_version > 0:
-                        raise SerializationError(f"Only PSBTs with version 0 are supported. Found version: {psbt_version}")
-                    if key: raise SerializationError(f"key for {repr(kt)} must be empty")
+                        raise SerializationError(
+                            f"Only PSBTs with version 0 are supported. Found version: {psbt_version}"
+                        )
+                    if key:
+                        raise SerializationError(f"key for {repr(kt)} must be empty")
                 else:
                     full_key = PSBTSection.get_fullkey_from_keytype_and_key(kt, key)
                     if full_key in tx._unknown:
-                        raise SerializationError(f'duplicate key. PSBT global key for unknown type: {full_key}')
+                        raise SerializationError(
+                            f"duplicate key. PSBT global key for unknown type: {full_key}"
+                        )
                     tx._unknown[full_key] = val
             try:
                 # inputs sections
                 for txin in tx.inputs():
-                    if DEBUG_PSBT_PARSING: print("-> new input starts")
+                    if DEBUG_PSBT_PARSING:
+                        print("-> new input starts")
                     txin._populate_psbt_fields_from_fd(fd)
                 # outputs sections
                 for txout in tx.outputs():
-                    if DEBUG_PSBT_PARSING: print("-> new output starts")
+                    if DEBUG_PSBT_PARSING:
+                        print("-> new output starts")
                     txout._populate_psbt_fields_from_fd(fd)
             except UnexpectedEndOfStream:
-                raise UnexpectedEndOfStream('Unexpected end of stream. Num input and output maps provided does not match unsigned tx.') from None
+                raise UnexpectedEndOfStream(
+                    "Unexpected end of stream. Num input and output maps provided does not match unsigned tx."
+                ) from None
 
-            if fd.read(1) != b'':
+            if fd.read(1) != b"":
                 raise SerializationError("extra junk at the end of PSBT")
 
         for txin in tx.inputs():
@@ -1964,8 +2170,15 @@ class PartialTransaction(Transaction):
         return tx
 
     @classmethod
-    def from_io(cls, inputs: Sequence[PartialTxInput], outputs: Sequence[PartialTxOutput], *,
-                locktime: int = None, version: int = None, BIP69_sort: bool = True):
+    def from_io(
+        cls,
+        inputs: Sequence[PartialTxInput],
+        outputs: Sequence[PartialTxOutput],
+        *,
+        locktime: int = None,
+        version: int = None,
+        BIP69_sort: bool = True,
+    ):
         self = cls()
         self._inputs = list(inputs)
         self._outputs = list(outputs)
@@ -1979,7 +2192,7 @@ class PartialTransaction(Transaction):
 
     def _serialize_psbt(self, fd) -> None:
         wr = PSBTSection.create_psbt_writer(fd)
-        fd.write(b'psbt\xff')
+        fd.write(b"psbt\xff")
         # global section
         wr(PSBTGlobalType.UNSIGNED_TX, bfh(self.serialize_to_network(include_sigs=False)))
         for bip32node, (xfp, path) in sorted(self.xpubs.items()):
@@ -1988,7 +2201,7 @@ class PartialTransaction(Transaction):
         for full_key, val in sorted(self._unknown.items()):
             key_type, key = PSBTSection.get_keytype_and_key_from_fullkey(full_key)
             wr(key_type, val, key=key)
-        fd.write(b'\x00')  # section-separator
+        fd.write(b"\x00")  # section-separator
         # input sections
         for inp in self._inputs:
             inp._serialize_psbt_section(fd)
@@ -2000,12 +2213,14 @@ class PartialTransaction(Transaction):
         for txin in self.inputs():
             txin.finalize()
 
-    def combine_with_other_psbt(self, other_tx: 'Transaction') -> None:
+    def combine_with_other_psbt(self, other_tx: "Transaction") -> None:
         """Pulls in all data from other_tx we don't yet have (e.g. signatures).
         other_tx must be concerning the same unsigned tx.
         """
-        if self.serialize_to_network(include_sigs=False) != other_tx.serialize_to_network(include_sigs=False):
-            raise Exception('A Combiner must not combine two different PSBTs.')
+        if self.serialize_to_network(include_sigs=False) != other_tx.serialize_to_network(
+            include_sigs=False
+        ):
+            raise Exception("A Combiner must not combine two different PSBTs.")
         # BIP-174: "The resulting PSBT must contain all of the key-value pairs from each of the PSBTs.
         #           The Combiner must remove any duplicate key-value pairs, in accordance with the specification."
         # global section
@@ -2020,24 +2235,30 @@ class PartialTransaction(Transaction):
             txout.combine_with_other_txout(other_txout)
         self.invalidate_ser_cache()
 
-    def join_with_other_psbt(self, other_tx: 'PartialTransaction', *, config: 'SimpleConfig') -> None:
+    def join_with_other_psbt(
+        self, other_tx: "PartialTransaction", *, config: "SimpleConfig"
+    ) -> None:
         """Adds inputs and outputs from other_tx into this one."""
         if not isinstance(other_tx, PartialTransaction):
-            raise Exception('Can only join partial transactions.')
+            raise Exception("Can only join partial transactions.")
         # make sure there are no duplicate prevouts
         prevouts = set()
         for txin in itertools.chain(self.inputs(), other_tx.inputs()):
             prevout_str = txin.prevout.to_str()
             if prevout_str in prevouts:
-                raise Exception(f"Duplicate inputs! "
-                                f"Transactions that spend the same prevout cannot be joined.")
+                raise Exception(
+                    f"Duplicate inputs! "
+                    f"Transactions that spend the same prevout cannot be joined."
+                )
             prevouts.add(prevout_str)
         # copy global PSBT section
         self.xpubs.update(other_tx.xpubs)
         self._unknown.update(other_tx._unknown)
         # copy and add inputs and outputs
         self.add_inputs(list(other_tx.inputs()))
-        self.add_outputs(list(other_tx.outputs()), merge_duplicates=config.WALLET_MERGE_DUPLICATE_OUTPUTS)
+        self.add_outputs(
+            list(other_tx.outputs()), merge_duplicates=config.WALLET_MERGE_DUPLICATE_OUTPUTS
+        )
         self.remove_signatures()
         self.invalidate_ser_cache()
 
@@ -2052,7 +2273,9 @@ class PartialTransaction(Transaction):
         self.BIP69_sort(outputs=False)
         self.invalidate_ser_cache()
 
-    def add_outputs(self, outputs: List[PartialTxOutput], *, merge_duplicates: bool = False) -> None:
+    def add_outputs(
+        self, outputs: List[PartialTxOutput], *, merge_duplicates: bool = False
+    ) -> None:
         self._outputs.extend(outputs)
         if merge_duplicates:
             self._outputs = merge_duplicate_tx_outputs(self._outputs)
@@ -2060,7 +2283,7 @@ class PartialTransaction(Transaction):
         self.invalidate_ser_cache()
 
     def set_rbf(self, rbf: bool) -> None:
-        nSequence = 0xffffffff - (2 if rbf else 1)
+        nSequence = 0xFFFFFFFF - (2 if rbf else 1)
         for txin in self.inputs():
             txin.nsequence = nSequence
         self.invalidate_ser_cache()
@@ -2068,13 +2291,14 @@ class PartialTransaction(Transaction):
     def BIP69_sort(self, inputs=True, outputs=True):
         # NOTE: other parts of the code rely on these sorts being *stable* sorts
         if inputs:
-            self._inputs.sort(key = lambda i: (i.prevout.txid, i.prevout.out_idx))
+            self._inputs.sort(key=lambda i: (i.prevout.txid, i.prevout.out_idx))
         if outputs:
-            self._outputs.sort(key = lambda o: (o.value, o.scriptpubkey))
+            self._outputs.sort(key=lambda o: (o.value, o.scriptpubkey))
         self.invalidate_ser_cache()
 
-    def serialize_preimage(self, txin_index: int, *,
-                           bip143_shared_txdigest_fields: BIP143SharedTxDigestFields = None) -> str:
+    def serialize_preimage(
+        self, txin_index: int, *, bip143_shared_txdigest_fields: BIP143SharedTxDigestFields = None
+    ) -> str:
         nVersion = int_to_hex(self.version, 4)
         nLocktime = int_to_hex(self.locktime, 4)
         inputs = self.inputs()
@@ -2091,28 +2315,49 @@ class PartialTransaction(Transaction):
             if not (sighash & Sighash.ANYONECANPAY):
                 hashPrevouts = bip143_shared_txdigest_fields.hashPrevouts
             else:
-                hashPrevouts = '00' * 32
-            if not (sighash & Sighash.ANYONECANPAY) and (sighash & 0x1f) != Sighash.SINGLE and (sighash & 0x1f) != Sighash.NONE:
+                hashPrevouts = "00" * 32
+            if (
+                not (sighash & Sighash.ANYONECANPAY)
+                and (sighash & 0x1F) != Sighash.SINGLE
+                and (sighash & 0x1F) != Sighash.NONE
+            ):
                 hashSequence = bip143_shared_txdigest_fields.hashSequence
             else:
-                hashSequence = '00' * 32
-            if (sighash & 0x1f) != Sighash.SINGLE and (sighash & 0x1f) != Sighash.NONE:
+                hashSequence = "00" * 32
+            if (sighash & 0x1F) != Sighash.SINGLE and (sighash & 0x1F) != Sighash.NONE:
                 hashOutputs = bip143_shared_txdigest_fields.hashOutputs
-            elif (sighash & 0x1f) == Sighash.SINGLE and txin_index < len(outputs):
+            elif (sighash & 0x1F) == Sighash.SINGLE and txin_index < len(outputs):
                 hashOutputs = sha256d(outputs[txin_index].serialize_to_network()).hex()
             else:
-                hashOutputs = '00' * 32
+                hashOutputs = "00" * 32
             outpoint = txin.prevout.serialize_to_network().hex()
             scriptCode = var_int(len(preimage_script) // 2) + preimage_script
             amount = int_to_hex(txin.value_sats(), 8)
             nSequence = int_to_hex(txin.nsequence, 4)
-            preimage = nVersion + hashPrevouts + hashSequence + outpoint + scriptCode + amount + nSequence + hashOutputs + nLocktime + nHashType
+            preimage = (
+                nVersion
+                + hashPrevouts
+                + hashSequence
+                + outpoint
+                + scriptCode
+                + amount
+                + nSequence
+                + hashOutputs
+                + nLocktime
+                + nHashType
+            )
         else:
             if sighash != Sighash.ALL:
                 raise Exception(f"SIGHASH_FLAG ({sighash}) not supported! (for legacy sighash)")
-            txins = var_int(len(inputs)) + ''.join(txin.serialize_to_network(script_sig=bfh(preimage_script) if txin_index==k else b"").hex()
-                                                   for k, txin in enumerate(inputs))
-            txouts = var_int(len(outputs)) + ''.join(o.serialize_to_network().hex() for o in outputs)
+            txins = var_int(len(inputs)) + "".join(
+                txin.serialize_to_network(
+                    script_sig=bfh(preimage_script) if txin_index == k else b""
+                ).hex()
+                for k, txin in enumerate(inputs)
+            )
+            txouts = var_int(len(outputs)) + "".join(
+                o.serialize_to_network().hex() for o in outputs
+            )
             preimage = nVersion + txins + txouts + nLocktime + nHashType
         return preimage
 
@@ -2126,9 +2371,13 @@ class PartialTransaction(Transaction):
                     break
                 if pubkey not in keypairs:
                     continue
-                _logger.info(f"adding signature for {pubkey}. spending utxo {txin.prevout.to_str()}")
+                _logger.info(
+                    f"adding signature for {pubkey}. spending utxo {txin.prevout.to_str()}"
+                )
                 sec, compressed = keypairs[pubkey]
-                sig = self.sign_txin(i, sec, bip143_shared_txdigest_fields=bip143_shared_txdigest_fields)
+                sig = self.sign_txin(
+                    i, sec, bip143_shared_txdigest_fields=bip143_shared_txdigest_fields
+                )
                 self.add_signature_to_txin(txin_idx=i, signing_pubkey=pubkey, sig=sig)
 
         _logger.debug(f"is_complete {self.is_complete()}")
@@ -2138,8 +2387,13 @@ class PartialTransaction(Transaction):
         txin = self.inputs()[txin_index]
         txin.validate_data(for_signing=True)
         sighash = txin.sighash if txin.sighash is not None else Sighash.ALL
-        pre_hash = sha256d(bfh(self.serialize_preimage(txin_index,
-                                                       bip143_shared_txdigest_fields=bip143_shared_txdigest_fields)))
+        pre_hash = sha256d(
+            bfh(
+                self.serialize_preimage(
+                    txin_index, bip143_shared_txdigest_fields=bip143_shared_txdigest_fields
+                )
+            )
+        )
         privkey = ecc.ECPrivkey(privkey_bytes)
         sig = privkey.sign_transaction(pre_hash)
         sig = sig.hex() + Sighash.to_sigbytes(sighash).hex()
@@ -2175,7 +2429,7 @@ class PartialTransaction(Transaction):
 
     def _serialize_as_base64(self) -> str:
         raw_bytes = self.serialize_as_bytes()
-        return base64.b64encode(raw_bytes).decode('ascii')
+        return base64.b64encode(raw_bytes).decode("ascii")
 
     def update_signatures(self, signatures: Sequence[Union[str, None]]):
         """Add new signatures to a transaction
@@ -2187,7 +2441,9 @@ class PartialTransaction(Transaction):
         if self.is_complete():
             return
         if len(self.inputs()) != len(signatures):
-            raise Exception('expected {} signatures; got {}'.format(len(self.inputs()), len(signatures)))
+            raise Exception(
+                "expected {} signatures; got {}".format(len(self.inputs()), len(signatures))
+            )
         for i, txin in enumerate(self.inputs()):
             pubkeys = [pk.hex() for pk in txin.pubkeys]
             sig = signatures[i]
@@ -2207,7 +2463,9 @@ class PartialTransaction(Transaction):
                 if pubkey_hex in pubkeys:
                     if not public_key.verify_message_hash(sig_string, pre_hash):
                         continue
-                    _logger.info(f"adding sig: txin_idx={i}, signing_pubkey={pubkey_hex}, sig={sig}")
+                    _logger.info(
+                        f"adding sig: txin_idx={i}, signing_pubkey={pubkey_hex}, sig={sig}"
+                    )
                     self.add_signature_to_txin(txin_idx=i, signing_pubkey=pubkey_hex, sig=sig)
                     break
         # redo raw
@@ -2222,10 +2480,10 @@ class PartialTransaction(Transaction):
         self.invalidate_ser_cache()
 
     def add_info_from_wallet(
-            self,
-            wallet: 'Abstract_Wallet',
-            *,
-            include_xpubs: bool = False,
+        self,
+        wallet: "Abstract_Wallet",
+        *,
+        include_xpubs: bool = False,
     ) -> None:
         if self.is_complete():
             return
@@ -2234,12 +2492,15 @@ class PartialTransaction(Transaction):
         #       inputs are assumed to be multisig... https://github.com/spesmilo/electrum/pull/5440#issuecomment-549504761
         # note: trezor plugin needs xpubs included, if there are multisig inputs/change_outputs
         from .wallet import Multisig_Wallet
+
         if include_xpubs and isinstance(wallet, Multisig_Wallet):
             from .keystore import Xpub
+
             for ks in wallet.get_keystores():
                 if isinstance(ks, Xpub):
                     fp_bytes, der_full = ks.get_fp_and_derivation_to_be_used_in_partial_tx(
-                        der_suffix=[], only_der_suffix=False)
+                        der_suffix=[], only_der_suffix=False
+                    )
                     xpub = ks.get_xpub_to_be_used_in_partial_tx(only_der_suffix=False)
                     bip32node = BIP32Node.from_xkey(xpub)
                     self.xpubs[bip32node] = (fp_bytes, der_full)
@@ -2276,17 +2537,22 @@ class PartialTransaction(Transaction):
             txout.bip32_paths.clear()
             txout._unknown.clear()
 
-    async def prepare_for_export_for_hardware_device(self, wallet: 'Abstract_Wallet') -> None:
+    async def prepare_for_export_for_hardware_device(self, wallet: "Abstract_Wallet") -> None:
         self.add_info_from_wallet(wallet, include_xpubs=True)
         await self.add_info_from_network(wallet.network)
         # log warning if PSBT_*_BIP32_DERIVATION fields cannot be filled with full path due to missing info
         from .keystore import Xpub
+
         def is_ks_missing_info(ks):
-            return (isinstance(ks, Xpub) and (ks.get_root_fingerprint() is None
-                                              or ks.get_derivation_prefix() is None))
+            return isinstance(ks, Xpub) and (
+                ks.get_root_fingerprint() is None or ks.get_derivation_prefix() is None
+            )
+
         if any([is_ks_missing_info(ks) for ks in wallet.get_keystores()]):
-            _logger.warning('PSBT was requested to be filled with full bip32 paths but '
-                            'some keystores lacked either the derivation prefix or the root fingerprint')
+            _logger.warning(
+                "PSBT was requested to be filled with full bip32 paths but "
+                "some keystores lacked either the derivation prefix or the root fingerprint"
+            )
 
     def convert_all_utxos_to_witness_utxos(self) -> None:
         """Replaces all NON-WITNESS-UTXOs with WITNESS-UTXOs.
@@ -2307,13 +2573,13 @@ class PartialTransaction(Transaction):
 
 def pack_bip32_root_fingerprint_and_int_path(xfp: bytes, path: Sequence[int]) -> bytes:
     if len(xfp) != 4:
-        raise Exception(f'unexpected xfp length. xfp={xfp}')
-    return xfp + b''.join(i.to_bytes(4, byteorder='little', signed=False) for i in path)
+        raise Exception(f"unexpected xfp length. xfp={xfp}")
+    return xfp + b"".join(i.to_bytes(4, byteorder="little", signed=False) for i in path)
 
 
 def unpack_bip32_root_fingerprint_and_int_path(path: bytes) -> Tuple[bytes, Sequence[int]]:
     if len(path) % 4 != 0:
-        raise Exception(f'unexpected packed path length. path={path.hex()}')
+        raise Exception(f"unexpected packed path length. path={path.hex()}")
     xfp = path[0:4]
-    int_path = [int.from_bytes(b, byteorder='little', signed=False) for b in chunks(path[4:], 4)]
+    int_path = [int.from_bytes(b, byteorder="little", signed=False) for b in chunks(path[4:], 4)]
     return xfp, int_path

@@ -23,18 +23,22 @@ config = SimpleConfig()
 network = Network(config)
 network.start()
 
+
 @log_exceptions
 async def f():
     try:
+
         def get_account_xpub(account_path):
             root_seed = bip39_to_seed(mnemonic, passphrase)
             root_node = BIP32Node.from_rootseed(root_seed, xtype="standard")
             account_node = root_node.subkey_at_private_derivation(account_path)
             account_xpub = account_node.to_xpub()
             return account_xpub
+
         active_accounts = await account_discovery(network, get_account_xpub)
         print_msg(json_encode(active_accounts))
     finally:
         stopping_fut.set_result(1)
+
 
 asyncio.run_coroutine_threadsafe(f(), loop)

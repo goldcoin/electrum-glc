@@ -46,6 +46,7 @@ _logger = get_logger(__name__)
 
 try:
     import hid
+
     DIGIBOX = True
 except ImportError as e:
     DIGIBOX = False
@@ -54,25 +55,26 @@ except ImportError as e:
 class DeviceErased(UserFacingException):
     pass
 
+
 # ----------------------------------------------------------------------------------
 # USB HID interface
 #
 
 
 def to_hexstr(s):
-    return binascii.hexlify(s).decode('ascii')
+    return binascii.hexlify(s).decode("ascii")
 
 
 def derive_keys(x):
     h = sha256d(x)
     h = hashlib.sha512(h).digest()
-    return (h[:32],h[32:])
+    return (h[:32], h[32:])
 
 
 MIN_MAJOR_VERSION = 5
 
-ENCRYPTION_PRIVKEY_KEY = 'encryptionprivkey'
-CHANNEL_ID_KEY = 'comserverchannelid'
+ENCRYPTION_PRIVKEY_KEY = "encryptionprivkey"
+CHANNEL_ID_KEY = "comserverchannelid"
 
 
 class DigitalBitbox_Client(HardwareClientBase):
@@ -86,7 +88,7 @@ class DigitalBitbox_Client(HardwareClientBase):
         self.usbReportSize = 64  # firmware > v2.0.0
 
     def device_model_name(self) -> Optional[str]:
-        return 'Digital BitBox'
+        return "Digital BitBox"
 
     @runs_in_hwd_thread
     def close(self):
@@ -116,40 +118,44 @@ class DigitalBitbox_Client(HardwareClientBase):
     def _get_xpub(self, bip32_path: str):
         bip32_path = normalize_bip32_derivation(bip32_path, hardened_char="'")
         if self.check_device_dialog():
-            return self.hid_send_encrypt(('{"xpub": "%s"}' % bip32_path).encode('utf8'))
+            return self.hid_send_encrypt(('{"xpub": "%s"}' % bip32_path).encode("utf8"))
 
     def get_xpub(self, bip32_path, xtype):
         assert xtype in self.plugin.SUPPORTED_XTYPES
 
         if is_all_public_derivation(bip32_path):
-            raise UserFacingException(_('This device does not reveal xpubs corresponding to non-hardened paths'))
+            raise UserFacingException(
+                _("This device does not reveal xpubs corresponding to non-hardened paths")
+            )
 
         reply = self._get_xpub(bip32_path)
         if reply:
-            xpub = reply['xpub']
+            xpub = reply["xpub"]
             # Change type of xpub to the requested type. The firmware
             # only ever returns the mainnet standard type, but it is agnostic
             # to the type when signing.
-            if xtype != 'standard' or constants.net.TESTNET:
+            if xtype != "standard" or constants.net.TESTNET:
                 node = BIP32Node.from_xkey(xpub, net=constants.BitcoinMainnet)
                 xpub = node._replace(xtype=xtype).to_xpub()
             return xpub
         else:
-            raise Exception('no reply')
+            raise Exception("no reply")
 
     def get_soft_device_id(self):
         return None
 
     def dbb_has_password(self):
         reply = self.hid_send_plain(b'{"ping":""}')
-        if 'ping' not in reply:
-            raise UserFacingException(_('Device communication error. Please unplug and replug your Digital Bitbox.'))
-        if reply['ping'] == 'password':
+        if "ping" not in reply:
+            raise UserFacingException(
+                _("Device communication error. Please unplug and replug your Digital Bitbox.")
+            )
+        if reply["ping"] == "password":
             return True
         return False
 
     def stretch_key(self, key: bytes):
-        return to_hexstr(hashlib.pbkdf2_hmac('sha512', key, b'Digital Bitbox', iterations = 20480))
+        return to_hexstr(hashlib.pbkdf2_hmac("sha512", key, b"Digital Bitbox", iterations=20480))
 
     def backup_password_dialog(self):
         msg = _("Enter the password used when the backup was created:")
@@ -158,13 +164,13 @@ class DigitalBitbox_Client(HardwareClientBase):
             if password is None:
                 return None
             if len(password) < 4:
-                msg = _("Password must have at least 4 characters.") \
-                      + "\n\n" + _("Enter password:")
+                msg = _("Password must have at least 4 characters.") + "\n\n" + _("Enter password:")
             elif len(password) > 64:
-                msg = _("Password must have less than 64 characters.") \
-                      + "\n\n" + _("Enter password:")
+                msg = (
+                    _("Password must have less than 64 characters.") + "\n\n" + _("Enter password:")
+                )
             else:
-                return password.encode('utf8')
+                return password.encode("utf8")
 
     def password_dialog(self, msg):
         while True:
@@ -172,35 +178,44 @@ class DigitalBitbox_Client(HardwareClientBase):
             if password is None:
                 return False
             if len(password) < 4:
-                msg = _("Password must have at least 4 characters.") + \
-                      "\n\n" + _("Enter password:")
+                msg = _("Password must have at least 4 characters.") + "\n\n" + _("Enter password:")
             elif len(password) > 64:
-                msg = _("Password must have less than 64 characters.") + \
-                      "\n\n" + _("Enter password:")
+                msg = (
+                    _("Password must have less than 64 characters.") + "\n\n" + _("Enter password:")
+                )
             else:
-                self.password = password.encode('utf8')
+                self.password = password.encode("utf8")
                 return True
 
     def check_firmware_version(self):
-        match = re.search(r'v([0-9])+\.[0-9]+\.[0-9]+',
-                          run_in_hwd_thread(self.dbb_hid.get_serial_number_string))
+        match = re.search(
+            r"v([0-9])+\.[0-9]+\.[0-9]+", run_in_hwd_thread(self.dbb_hid.get_serial_number_string)
+        )
         if match is None:
             raise Exception("error detecting firmware version")
         major_version = int(match.group(1))
         if major_version < MIN_MAJOR_VERSION:
-            raise Exception("Please upgrade to the newest firmware using the BitBox Desktop app: https://shiftcrypto.ch/start")
+            raise Exception(
+                "Please upgrade to the newest firmware using the BitBox Desktop app: https://shiftcrypto.ch/start"
+            )
 
     def check_device_dialog(self):
         self.check_firmware_version()
         # Set password if fresh device
         if self.password is None and not self.dbb_has_password():
             if not self.setupRunning:
-                return False # A fresh device cannot connect to an existing wallet
-            msg = _("An uninitialized Digital Bitbox is detected.") + " " + \
-                  _("Enter a new password below.") + "\n\n" + \
-                  _("REMEMBER THE PASSWORD!") + "\n\n" + \
-                  _("You cannot access your coins or a backup without the password.") + "\n" + \
-                  _("A backup is saved automatically when generating a new wallet.")
+                return False  # A fresh device cannot connect to an existing wallet
+            msg = (
+                _("An uninitialized Digital Bitbox is detected.")
+                + " "
+                + _("Enter a new password below.")
+                + "\n\n"
+                + _("REMEMBER THE PASSWORD!")
+                + "\n\n"
+                + _("You cannot access your coins or a backup without the password.")
+                + "\n"
+                + _("A backup is saved automatically when generating a new wallet.")
+            )
             if self.password_dialog(msg):
                 reply = self.hid_send_plain(b'{"password":"' + self.password + b'"}')
             else:
@@ -212,53 +227,57 @@ class DigitalBitbox_Client(HardwareClientBase):
             if not self.password_dialog(msg):
                 raise UserCancelled()
             reply = self.hid_send_encrypt(b'{"led":"blink"}')
-            if 'error' in reply:
+            if "error" in reply:
                 self.password = None
-                if reply['error']['code'] == 109:
-                    msg = _("Incorrect password entered.") + "\n\n" + \
-                          reply['error']['message'] + "\n\n" + \
-                          _("Enter your Digital Bitbox password:")
+                if reply["error"]["code"] == 109:
+                    msg = (
+                        _("Incorrect password entered.")
+                        + "\n\n"
+                        + reply["error"]["message"]
+                        + "\n\n"
+                        + _("Enter your Digital Bitbox password:")
+                    )
                 else:
                     # Should never occur
-                    msg = _("Unexpected error occurred.") + "\n\n" + \
-                          reply['error']['message'] + "\n\n" + \
-                          _("Enter your Digital Bitbox password:")
+                    msg = (
+                        _("Unexpected error occurred.")
+                        + "\n\n"
+                        + reply["error"]["message"]
+                        + "\n\n"
+                        + _("Enter your Digital Bitbox password:")
+                    )
 
         # Initialize device if not yet initialized
         if not self.setupRunning:
-            self.isInitialized = True # Wallet exists. Electrum code later checks if the device matches the wallet
+            self.isInitialized = (
+                True  # Wallet exists. Electrum code later checks if the device matches the wallet
+            )
         elif not self.isInitialized:
             reply = self.hid_send_encrypt(b'{"device":"info"}')
-            if reply['device']['id'] != "":
-                self.recover_or_erase_dialog() # Already seeded
+            if reply["device"]["id"] != "":
+                self.recover_or_erase_dialog()  # Already seeded
             else:
-                self.seed_device_dialog() # Seed if not initialized
+                self.seed_device_dialog()  # Seed if not initialized
             self.mobile_pairing_dialog()
         return self.isInitialized
 
     def recover_or_erase_dialog(self):
         msg = _("The Digital Bitbox is already seeded. Choose an option:") + "\n"
-        choices = [
-            (_("Create a wallet using the current seed")),
-            (_("Erase the Digital Bitbox"))
-        ]
+        choices = [(_("Create a wallet using the current seed")), (_("Erase the Digital Bitbox"))]
         reply = self.handler.query_choice(msg, choices)
         if reply is None:
             raise UserCancelled()
         if reply == 1:
             self.dbb_erase()
         else:
-            if self.hid_send_encrypt(b'{"device":"info"}')['device']['lock']:
+            if self.hid_send_encrypt(b'{"device":"info"}')["device"]["lock"]:
                 raise UserFacingException(_("Full 2FA enabled. This is not supported yet."))
             # Use existing seed
         self.isInitialized = True
 
     def seed_device_dialog(self):
         msg = _("Choose how to initialize your Digital Bitbox:") + "\n"
-        choices = [
-            (_("Generate a new random wallet")),
-            (_("Load a wallet from the micro SD card"))
-        ]
+        choices = [(_("Generate a new random wallet")), (_("Load a wallet from the micro SD card"))]
         reply = self.handler.query_choice(msg, choices)
         if reply is None:
             raise UserCancelled()
@@ -271,9 +290,11 @@ class DigitalBitbox_Client(HardwareClientBase):
 
     def mobile_pairing_dialog(self):
         dbb_user_dir = None
-        if sys.platform == 'darwin':
-            dbb_user_dir = os.path.join(os.environ.get("HOME", ""), "Library", "Application Support", "DBB")
-        elif sys.platform == 'win32':
+        if sys.platform == "darwin":
+            dbb_user_dir = os.path.join(
+                os.environ.get("HOME", ""), "Library", "Application Support", "DBB"
+            )
+        elif sys.platform == "win32":
             dbb_user_dir = os.path.join(os.environ["APPDATA"], "DBB")
         else:
             dbb_user_dir = os.path.join(os.environ["HOME"], ".dbb")
@@ -296,10 +317,10 @@ class DigitalBitbox_Client(HardwareClientBase):
             return
 
         choices = [
-            _('Do not pair'),
-            _('Import pairing from the Digital Bitbox desktop app'),
+            _("Do not pair"),
+            _("Import pairing from the Digital Bitbox desktop app"),
         ]
-        reply = self.handler.query_choice(_('Mobile pairing options'), choices)
+        reply = self.handler.query_choice(_("Mobile pairing options"), choices)
         if reply is None:
             raise UserCancelled()
 
@@ -309,54 +330,70 @@ class DigitalBitbox_Client(HardwareClientBase):
                 del self.plugin.digitalbitbox_config[CHANNEL_ID_KEY]
         elif reply == 1:
             # import pairing from dbb app
-            self.plugin.digitalbitbox_config[ENCRYPTION_PRIVKEY_KEY] = dbb_config[ENCRYPTION_PRIVKEY_KEY]
+            self.plugin.digitalbitbox_config[ENCRYPTION_PRIVKEY_KEY] = dbb_config[
+                ENCRYPTION_PRIVKEY_KEY
+            ]
             self.plugin.digitalbitbox_config[CHANNEL_ID_KEY] = dbb_config[CHANNEL_ID_KEY]
-        self.plugin.config.set_key('digitalbitbox', self.plugin.digitalbitbox_config)
+        self.plugin.config.set_key("digitalbitbox", self.plugin.digitalbitbox_config)
 
     def dbb_generate_wallet(self):
         key = self.stretch_key(self.password)
-        filename = ("Electrum-" + time.strftime("%Y-%m-%d-%H-%M-%S") + ".pdf")
-        msg = ('{"seed":{"source": "create", "key": "%s", "filename": "%s", "entropy": "%s"}}' % (key, filename, to_hexstr(os.urandom(32)))).encode('utf8')
+        filename = "Electrum-" + time.strftime("%Y-%m-%d-%H-%M-%S") + ".pdf"
+        msg = (
+            '{"seed":{"source": "create", "key": "%s", "filename": "%s", "entropy": "%s"}}'
+            % (key, filename, to_hexstr(os.urandom(32)))
+        ).encode("utf8")
         reply = self.hid_send_encrypt(msg)
-        if 'error' in reply:
-            raise UserFacingException(reply['error']['message'])
+        if "error" in reply:
+            raise UserFacingException(reply["error"]["message"])
 
     def dbb_erase(self):
-        self.handler.show_message(_("Are you sure you want to erase the Digital Bitbox?") + "\n\n" +
-                                  _("To continue, touch the Digital Bitbox's light for 3 seconds.") + "\n\n" +
-                                  _("To cancel, briefly touch the light or wait for the timeout."))
+        self.handler.show_message(
+            _("Are you sure you want to erase the Digital Bitbox?")
+            + "\n\n"
+            + _("To continue, touch the Digital Bitbox's light for 3 seconds.")
+            + "\n\n"
+            + _("To cancel, briefly touch the light or wait for the timeout.")
+        )
         hid_reply = self.hid_send_encrypt(b'{"reset":"__ERASE__"}')
         self.handler.finished()
-        if 'error' in hid_reply:
-            if hid_reply['error'].get('code') in (600, 601):
+        if "error" in hid_reply:
+            if hid_reply["error"].get("code") in (600, 601):
                 raise OperationCancelled()
-            raise UserFacingException(hid_reply['error']['message'])
+            raise UserFacingException(hid_reply["error"]["message"])
         else:
             self.password = None
-            raise DeviceErased('Device erased')
+            raise DeviceErased("Device erased")
 
     def dbb_load_backup(self, show_msg=True):
         backups = self.hid_send_encrypt(b'{"backup":"list"}')
-        if 'error' in backups:
-            raise UserFacingException(backups['error']['message'])
-        f = self.handler.query_choice(_("Choose a backup file:"), backups['backup'])
+        if "error" in backups:
+            raise UserFacingException(backups["error"]["message"])
+        f = self.handler.query_choice(_("Choose a backup file:"), backups["backup"])
         if f is None:
             raise UserCancelled()
         key = self.backup_password_dialog()
         if key is None:
-            raise UserCancelled('No backup password provided')
+            raise UserCancelled("No backup password provided")
         key = self.stretch_key(key)
         if show_msg:
-            self.handler.show_message(_("Loading backup...") + "\n\n" +
-                                      _("To continue, touch the Digital Bitbox's light for 3 seconds.") + "\n\n" +
-                                      _("To cancel, briefly touch the light or wait for the timeout."))
-        msg = ('{"seed":{"source": "backup", "key": "%s", "filename": "%s"}}' % (key, backups['backup'][f])).encode('utf8')
+            self.handler.show_message(
+                _("Loading backup...")
+                + "\n\n"
+                + _("To continue, touch the Digital Bitbox's light for 3 seconds.")
+                + "\n\n"
+                + _("To cancel, briefly touch the light or wait for the timeout.")
+            )
+        msg = (
+            '{"seed":{"source": "backup", "key": "%s", "filename": "%s"}}'
+            % (key, backups["backup"][f])
+        ).encode("utf8")
         hid_reply = self.hid_send_encrypt(msg)
         self.handler.finished()
-        if 'error' in hid_reply:
-            if hid_reply['error'].get('code') in (600, 601):
+        if "error" in hid_reply:
+            if hid_reply["error"].get("code") in (600, 601):
                 raise OperationCancelled()
-            raise UserFacingException(hid_reply['error']['message'])
+            raise UserFacingException(hid_reply["error"]["message"])
         return True
 
     @runs_in_hwd_thread
@@ -371,11 +408,21 @@ class DigitalBitbox_Client(HardwareClientBase):
             if idx == 0:
                 # INIT frame
                 write = data[idx : idx + min(data_len, self.usbReportSize - 7)]
-                self.dbb_hid.write(b'\0' + struct.pack(">IBH", HWW_CID, HWW_CMD, data_len & 0xFFFF) + write + b'\xEE' * (self.usbReportSize - 7 - len(write)))
+                self.dbb_hid.write(
+                    b"\0"
+                    + struct.pack(">IBH", HWW_CID, HWW_CMD, data_len & 0xFFFF)
+                    + write
+                    + b"\xEE" * (self.usbReportSize - 7 - len(write))
+                )
             else:
                 # CONT frame
                 write = data[idx : idx + min(data_len, self.usbReportSize - 5)]
-                self.dbb_hid.write(b'\0' + struct.pack(">IB", HWW_CID, seq) + write + b'\xEE' * (self.usbReportSize - 5 - len(write)))
+                self.dbb_hid.write(
+                    b"\0"
+                    + struct.pack(">IB", HWW_CID, seq)
+                    + write
+                    + b"\xEE" * (self.usbReportSize - 5 - len(write))
+                )
                 seq += 1
             idx += len(write)
 
@@ -402,19 +449,19 @@ class DigitalBitbox_Client(HardwareClientBase):
             serial_number = self.dbb_hid.get_serial_number_string()
             if "v2.0." in serial_number or "v1." in serial_number:
                 hidBufSize = 4096
-                self.dbb_hid.write('\0' + msg + '\0' * (hidBufSize - len(msg)))
+                self.dbb_hid.write("\0" + msg + "\0" * (hidBufSize - len(msg)))
                 r = bytearray()
                 while len(r) < hidBufSize:
                     r += bytearray(self.dbb_hid.read(hidBufSize))
             else:
                 self.hid_send_frame(msg)
                 r = self.hid_read_frame()
-            r = r.rstrip(b' \t\r\n\0')
-            r = r.replace(b"\0", b'')
-            r = to_string(r, 'utf8')
+            r = r.rstrip(b" \t\r\n\0")
+            r = r.replace(b"\0", b"")
+            r = to_string(r, "utf8")
             reply = json.loads(r)
         except Exception as e:
-            _logger.info(f'Exception caught {repr(e)}')
+            _logger.info(f"Exception caught {repr(e)}")
         return reply
 
     @runs_in_hwd_thread
@@ -427,56 +474,60 @@ class DigitalBitbox_Client(HardwareClientBase):
             hmac_digest = hmac_oneshot(authentication_key, msg, hashlib.sha256)
             authenticated_msg = base64.b64encode(msg + hmac_digest)
             reply = self.hid_send_plain(authenticated_msg)
-            if 'ciphertext' in reply:
-                b64_unencoded = bytes(base64.b64decode(''.join(reply["ciphertext"])))
+            if "ciphertext" in reply:
+                b64_unencoded = bytes(base64.b64decode("".join(reply["ciphertext"])))
                 reply_hmac = b64_unencoded[-sha256_byte_len:]
-                hmac_calculated = hmac_oneshot(authentication_key, b64_unencoded[:-sha256_byte_len], hashlib.sha256)
+                hmac_calculated = hmac_oneshot(
+                    authentication_key, b64_unencoded[:-sha256_byte_len], hashlib.sha256
+                )
                 if not hmac.compare_digest(reply_hmac, hmac_calculated):
                     raise Exception("Failed to validate HMAC")
                 reply = DecodeAES_bytes(encryption_key, b64_unencoded[:-sha256_byte_len])
-                reply = to_string(reply, 'utf8')
+                reply = to_string(reply, "utf8")
                 reply = json.loads(reply)
-            if 'error' in reply:
+            if "error" in reply:
                 self.password = None
         except Exception as e:
-            _logger.info(f'Exception caught {repr(e)}')
+            _logger.info(f"Exception caught {repr(e)}")
         return reply
-
 
 
 # ----------------------------------------------------------------------------------
 #
 #
 
-class DigitalBitbox_KeyStore(Hardware_KeyStore):
-    hw_type = 'digitalbitbox'
-    device = 'DigitalBitbox'
 
-    plugin: 'DigitalBitboxPlugin'
+class DigitalBitbox_KeyStore(Hardware_KeyStore):
+    hw_type = "digitalbitbox"
+    device = "DigitalBitbox"
+
+    plugin: "DigitalBitboxPlugin"
 
     def __init__(self, d):
         Hardware_KeyStore.__init__(self, d)
-        self.maxInputs = 14 # maximum inputs per single sign command
+        self.maxInputs = 14  # maximum inputs per single sign command
 
     def give_error(self, message):
         raise Exception(message)
 
     def decrypt_message(self, pubkey, message, password):
-        raise RuntimeError(_('Encryption and decryption are currently not supported for {}').format(self.device))
+        raise RuntimeError(
+            _("Encryption and decryption are currently not supported for {}").format(self.device)
+        )
 
     def sign_message(self, sequence, message, password, *, script_type=None):
         sig = None
         try:
-            message = message.encode('utf8')
+            message = message.encode("utf8")
             inputPath = self.get_derivation_prefix() + "/%d/%d" % sequence
             inputPath = normalize_bip32_derivation(inputPath, hardened_char="'")
             msg_hash = sha256d(msg_magic(message))
             inputHash = to_hexstr(msg_hash)
             hasharray = []
-            hasharray.append({'hash': inputHash, 'keypath': inputPath})
+            hasharray.append({"hash": inputHash, "keypath": inputPath})
             hasharray = json.dumps(hasharray)
 
-            msg = ('{"sign":{"meta":"sign message", "data":%s}}' % hasharray).encode('utf8')
+            msg = ('{"sign":{"meta":"sign message", "data":%s}}' % hasharray).encode("utf8")
 
             dbb_client = self.plugin.get_client(self)
 
@@ -484,34 +535,40 @@ class DigitalBitbox_KeyStore(Hardware_KeyStore):
                 raise Exception(_("Could not sign message."))
 
             reply = dbb_client.hid_send_encrypt(msg)
-            self.handler.show_message(_("Signing message ...") + "\n\n" +
-                                      _("To continue, touch the Digital Bitbox's blinking light for 3 seconds.") + "\n\n" +
-                                      _("To cancel, briefly touch the blinking light or wait for the timeout."))
-            reply = dbb_client.hid_send_encrypt(msg) # Send twice, first returns an echo for smart verification (not implemented)
+            self.handler.show_message(
+                _("Signing message ...")
+                + "\n\n"
+                + _("To continue, touch the Digital Bitbox's blinking light for 3 seconds.")
+                + "\n\n"
+                + _("To cancel, briefly touch the blinking light or wait for the timeout.")
+            )
+            reply = dbb_client.hid_send_encrypt(
+                msg
+            )  # Send twice, first returns an echo for smart verification (not implemented)
             self.handler.finished()
 
-            if 'error' in reply:
-                raise Exception(reply['error']['message'])
+            if "error" in reply:
+                raise Exception(reply["error"]["message"])
 
-            if 'sign' not in reply:
+            if "sign" not in reply:
                 raise Exception(_("Could not sign message."))
 
-            if 'recid' in reply['sign'][0]:
+            if "recid" in reply["sign"][0]:
                 # firmware > v2.1.1
-                sig_string = binascii.unhexlify(reply['sign'][0]['sig'])
-                recid = int(reply['sign'][0]['recid'], 16)
+                sig_string = binascii.unhexlify(reply["sign"][0]["sig"])
+                recid = int(reply["sign"][0]["recid"], 16)
                 sig = ecc.construct_sig65(sig_string, recid, True)
                 pubkey, compressed, txin_type_guess = ecc.ECPubkey.from_signature65(sig, msg_hash)
                 addr = public_key_to_p2pkh(pubkey.get_public_key_bytes(compressed=compressed))
                 if ecc.verify_message_with_address(addr, sig, message) is False:
                     raise Exception(_("Could not sign message"))
-            elif 'pubkey' in reply['sign'][0]:
+            elif "pubkey" in reply["sign"][0]:
                 # firmware <= v2.1.1
                 for recid in range(4):
-                    sig_string = binascii.unhexlify(reply['sign'][0]['sig'])
+                    sig_string = binascii.unhexlify(reply["sign"][0]["sig"])
                     sig = ecc.construct_sig65(sig_string, recid, True)
                     try:
-                        addr = public_key_to_p2pkh(binascii.unhexlify(reply['sign'][0]['pubkey']))
+                        addr = public_key_to_p2pkh(binascii.unhexlify(reply["sign"][0]["pubkey"]))
                         if ecc.verify_message_with_address(addr, sig, message):
                             break
                     except Exception:
@@ -536,19 +593,21 @@ class DigitalBitbox_KeyStore(Hardware_KeyStore):
             # Build hasharray from inputs
             for i, txin in enumerate(tx.inputs()):
                 if txin.is_coinbase_input():
-                    self.give_error("Coinbase not supported") # should never happen
+                    self.give_error("Coinbase not supported")  # should never happen
 
                 desc = txin.script_descriptor
                 assert desc
-                if desc.to_legacy_electrum_script_type() != 'p2pkh':
+                if desc.to_legacy_electrum_script_type() != "p2pkh":
                     p2pkhTransaction = False
 
                 my_pubkey, inputPath = self.find_my_pubkey_in_txinout(txin)
                 if not inputPath:
-                    self.give_error("No matching pubkey for sign_transaction")  # should never happen
+                    self.give_error(
+                        "No matching pubkey for sign_transaction"
+                    )  # should never happen
                 inputPath = convert_bip32_intpath_to_strpath(inputPath)
                 inputHash = sha256d(bfh(tx.serialize_preimage(i)))
-                hasharray_i = {'hash': to_hexstr(inputHash), 'keypath': inputPath}
+                hasharray_i = {"hash": to_hexstr(inputHash), "keypath": inputPath}
                 hasharray.append(hasharray_i)
                 inputhasharray.append(inputHash)
 
@@ -560,7 +619,7 @@ class DigitalBitbox_KeyStore(Hardware_KeyStore):
                     assert changePath
                     changePath = convert_bip32_intpath_to_strpath(changePath)
                     changePubkey = changePubkey.hex()
-                    pubkeyarray_i = {'pubkey': changePubkey, 'keypath': changePath}
+                    pubkeyarray_i = {"pubkey": changePubkey, "keypath": changePath}
                     pubkeyarray.append(pubkeyarray_i)
 
             # Special serialization of the unsigned transaction for
@@ -568,12 +627,16 @@ class DigitalBitbox_KeyStore(Hardware_KeyStore):
             # At the moment, verification only works for p2pkh transactions.
             if p2pkhTransaction:
                 tx_copy = copy.deepcopy(tx)
+
                 # monkey-patch method of tx_copy instance to change serialization
                 def input_script(self, txin: PartialTxInput, *, estimate_size=False):
                     desc = txin.script_descriptor
                     if isinstance(desc, descriptor.PKHDescriptor):
                         return Transaction.get_preimage_script(txin)
-                    raise Exception(f"unsupported txin type. only p2pkh is supported. got: {desc.to_string()[:10]}")
+                    raise Exception(
+                        f"unsupported txin type. only p2pkh is supported. got: {desc.to_string()[:10]}"
+                    )
+
                 tx_copy.input_script = input_script.__get__(tx_copy, PartialTransaction)
                 tx_dbb_serialized = tx_copy.serialize_to_network()
             else:
@@ -594,70 +657,80 @@ class DigitalBitbox_KeyStore(Hardware_KeyStore):
                 }
                 if tx_dbb_serialized is not None:
                     msg["sign"]["meta"] = to_hexstr(sha256d(tx_dbb_serialized))
-                msg = json.dumps(msg).encode('ascii')
+                msg = json.dumps(msg).encode("ascii")
                 dbb_client = self.plugin.get_client(self)
 
                 if not dbb_client.is_paired():
                     raise Exception("Could not sign transaction.")
 
                 reply = dbb_client.hid_send_encrypt(msg)
-                if 'error' in reply:
-                    raise Exception(reply['error']['message'])
+                if "error" in reply:
+                    raise Exception(reply["error"]["message"])
 
-                if 'echo' not in reply:
+                if "echo" not in reply:
                     raise Exception("Could not sign transaction.")
 
                 if self.plugin.is_mobile_paired() and tx_dbb_serialized is not None:
-                    reply['tx'] = tx_dbb_serialized
+                    reply["tx"] = tx_dbb_serialized
                     self.plugin.comserver_post_notification(reply, handler=self.handler)
 
                 if steps > 1:
-                    self.handler.show_message(_("Signing large transaction. Please be patient ...") + "\n\n" +
-                                              _("To continue, touch the Digital Bitbox's blinking light for 3 seconds.") + " " +
-                                              _("(Touch {} of {})").format((step + 1), steps) + "\n\n" +
-                                              _("To cancel, briefly touch the blinking light or wait for the timeout.") + "\n\n")
+                    self.handler.show_message(
+                        _("Signing large transaction. Please be patient ...")
+                        + "\n\n"
+                        + _("To continue, touch the Digital Bitbox's blinking light for 3 seconds.")
+                        + " "
+                        + _("(Touch {} of {})").format((step + 1), steps)
+                        + "\n\n"
+                        + _("To cancel, briefly touch the blinking light or wait for the timeout.")
+                        + "\n\n"
+                    )
                 else:
-                    self.handler.show_message(_("Signing transaction...") + "\n\n" +
-                                              _("To continue, touch the Digital Bitbox's blinking light for 3 seconds.") + "\n\n" +
-                                              _("To cancel, briefly touch the blinking light or wait for the timeout."))
+                    self.handler.show_message(
+                        _("Signing transaction...")
+                        + "\n\n"
+                        + _("To continue, touch the Digital Bitbox's blinking light for 3 seconds.")
+                        + "\n\n"
+                        + _("To cancel, briefly touch the blinking light or wait for the timeout.")
+                    )
 
                 # Send twice, first returns an echo for smart verification
                 reply = dbb_client.hid_send_encrypt(msg)
                 self.handler.finished()
 
-                if 'error' in reply:
-                    if reply["error"].get('code') in (600, 601):
+                if "error" in reply:
+                    if reply["error"].get("code") in (600, 601):
                         # aborted via LED short touch or timeout
                         raise UserCancelled()
-                    raise Exception(reply['error']['message'])
+                    raise Exception(reply["error"]["message"])
 
-                if 'sign' not in reply:
+                if "sign" not in reply:
                     raise Exception("Could not sign transaction.")
 
-                dbb_signatures.extend(reply['sign'])
+                dbb_signatures.extend(reply["sign"])
 
             # Fill signatures
             if len(dbb_signatures) != len(tx.inputs()):
-                raise Exception("Incorrect number of transactions signed.") # Should never occur
+                raise Exception("Incorrect number of transactions signed.")  # Should never occur
             for i, txin in enumerate(tx.inputs()):
                 for pubkey_bytes in txin.pubkeys:
                     if txin.is_complete():
                         break
                     signed = dbb_signatures[i]
-                    if 'recid' in signed:
+                    if "recid" in signed:
                         # firmware > v2.1.1
-                        recid = int(signed['recid'], 16)
-                        s = binascii.unhexlify(signed['sig'])
+                        recid = int(signed["recid"], 16)
+                        s = binascii.unhexlify(signed["sig"])
                         h = inputhasharray[i]
                         pk = ecc.ECPubkey.from_sig_string(s, recid, h)
                         pk = pk.get_public_key_hex(compressed=True)
-                    elif 'pubkey' in signed:
+                    elif "pubkey" in signed:
                         # firmware <= v2.1.1
-                        pk = signed['pubkey']
+                        pk = signed["pubkey"]
                     if pk != pubkey_bytes.hex():
                         continue
-                    sig_r = int(signed['sig'][:64], 16)
-                    sig_s = int(signed['sig'][64:], 16)
+                    sig_r = int(signed["sig"][:64], 16)
+                    sig_s = int(signed["sig"][64:], 16)
                     sig = ecc.der_sig_from_r_and_s(sig_r, sig_s)
                     sig = to_hexstr(sig) + Sighash.to_sigbytes(Sighash.ALL).hex()
                     tx.add_signature_to_txin(txin_idx=i, signing_pubkey=pubkey_bytes.hex(), sig=sig)
@@ -673,17 +746,15 @@ class DigitalBitboxPlugin(HW_PluginBase):
 
     libraries_available = DIGIBOX
     keystore_class = DigitalBitbox_KeyStore
-    DEVICE_IDS = [
-                   (0x03eb, 0x2402) # Digital Bitbox
-                 ]
-    SUPPORTED_XTYPES = ('standard', 'p2wpkh-p2sh', 'p2wpkh', 'p2wsh-p2sh', 'p2wsh')
+    DEVICE_IDS = [(0x03EB, 0x2402)]  # Digital Bitbox
+    SUPPORTED_XTYPES = ("standard", "p2wpkh-p2sh", "p2wpkh", "p2wsh-p2sh", "p2wsh")
 
     def __init__(self, parent, config, name):
         HW_PluginBase.__init__(self, parent, config, name)
         if self.libraries_available:
             self.device_manager().register_devices(self.DEVICE_IDS, plugin=self)
 
-        self.digitalbitbox_config = self.config.get('digitalbitbox', {})
+        self.digitalbitbox_config = self.config.get("digitalbitbox", {})
 
     @runs_in_hwd_thread
     def get_dbb_device(self, device):
@@ -692,7 +763,7 @@ class DigitalBitboxPlugin(HW_PluginBase):
         return dev
 
     def create_client(self, device, handler):
-        if device.interface_number == 0 or device.usage_page == 0xffff:
+        if device.interface_number == 0 or device.usage_page == 0xFFFF:
             client = self.get_dbb_device(device)
             if client is not None:
                 client = DigitalBitbox_Client(self, client)
@@ -703,27 +774,31 @@ class DigitalBitboxPlugin(HW_PluginBase):
     def is_mobile_paired(self):
         return ENCRYPTION_PRIVKEY_KEY in self.digitalbitbox_config
 
-    def comserver_post_notification(self, payload, *, handler: 'HardwareHandlerBase'):
+    def comserver_post_notification(self, payload, *, handler: "HardwareHandlerBase"):
         assert self.is_mobile_paired(), "unexpected mobile pairing error"
-        url = 'https://digitalbitbox.com/smartverification/index.php'
+        url = "https://digitalbitbox.com/smartverification/index.php"
         key_s = base64.b64decode(self.digitalbitbox_config[ENCRYPTION_PRIVKEY_KEY])
-        ciphertext = EncodeAES_bytes(key_s, json.dumps(payload).encode('ascii'))
-        args = 'c=data&s=0&dt=0&uuid=%s&pl=%s' % (
+        ciphertext = EncodeAES_bytes(key_s, json.dumps(payload).encode("ascii"))
+        args = "c=data&s=0&dt=0&uuid=%s&pl=%s" % (
             self.digitalbitbox_config[CHANNEL_ID_KEY],
-            base64.b64encode(ciphertext).decode('ascii'),
+            base64.b64encode(ciphertext).decode("ascii"),
         )
         try:
-            text = Network.send_http_on_proxy('post', url, body=args.encode('ascii'), headers={'content-type': 'application/x-www-form-urlencoded'})
-            _logger.info(f'digitalbitbox reply from server {text}')
+            text = Network.send_http_on_proxy(
+                "post",
+                url,
+                body=args.encode("ascii"),
+                headers={"content-type": "application/x-www-form-urlencoded"},
+            )
+            _logger.info(f"digitalbitbox reply from server {text}")
         except Exception as e:
             _logger.exception("")
             handler.show_error(repr(e))  # repr because str(Exception()) == ''
 
-    def get_client(self, keystore, force_pair=True, *,
-                   devices=None, allow_user_interaction=True):
-        client = super().get_client(keystore, force_pair,
-                                    devices=devices,
-                                    allow_user_interaction=allow_user_interaction)
+    def get_client(self, keystore, force_pair=True, *, devices=None, allow_user_interaction=True):
+        client = super().get_client(
+            keystore, force_pair, devices=devices, allow_user_interaction=allow_user_interaction
+        )
         if client is not None:
             client.check_device_dialog()
         return client
@@ -734,42 +809,56 @@ class DigitalBitboxPlugin(HW_PluginBase):
         if not self.show_address_helper(wallet, address, keystore):
             return
         if type(wallet) is not Standard_Wallet:
-            keystore.handler.show_error(_('This function is only available for standard wallets when using {}.').format(self.device))
+            keystore.handler.show_error(
+                _("This function is only available for standard wallets when using {}.").format(
+                    self.device
+                )
+            )
             return
         if not self.is_mobile_paired():
-            keystore.handler.show_error(_('This function is only available after pairing your {} with a mobile device.').format(self.device))
+            keystore.handler.show_error(
+                _(
+                    "This function is only available after pairing your {} with a mobile device."
+                ).format(self.device)
+            )
             return
-        if wallet.get_txin_type(address) != 'p2pkh':
-            keystore.handler.show_error(_('This function is only available for p2pkh keystores when using {}.').format(self.device))
+        if wallet.get_txin_type(address) != "p2pkh":
+            keystore.handler.show_error(
+                _("This function is only available for p2pkh keystores when using {}.").format(
+                    self.device
+                )
+            )
             return
         change, index = wallet.get_address_index(address)
-        keypath = '%s/%d/%d' % (keystore.get_derivation_prefix(), change, index)
+        keypath = "%s/%d/%d" % (keystore.get_derivation_prefix(), change, index)
         xpub = self.get_client(keystore)._get_xpub(keypath)
         verify_request_payload = {
-            "type": 'p2pkh',
-            "echo": xpub['echo'],
+            "type": "p2pkh",
+            "echo": xpub["echo"],
         }
         self.comserver_post_notification(verify_request_payload, handler=keystore.handler)
 
-    def wizard_entry_for_device(self, device_info: 'DeviceInfo', *, new_wallet=True) -> str:
+    def wizard_entry_for_device(self, device_info: "DeviceInfo", *, new_wallet=True) -> str:
         if new_wallet:
-            return 'dbitbox_start'
+            return "dbitbox_start"
         else:
-            return 'dbitbox_unlock'
+            return "dbitbox_unlock"
 
     # insert digitalbitbox pages in new wallet wizard
-    def extend_wizard(self, wizard: 'NewWalletWizard'):
+    def extend_wizard(self, wizard: "NewWalletWizard"):
         views = {
-            'dbitbox_start': {
-                'next': 'dbitbox_xpub',
+            "dbitbox_start": {
+                "next": "dbitbox_xpub",
             },
-            'dbitbox_xpub': {
-                'next': lambda d: wizard.wallet_password_view(d) if wizard.last_cosigner(d) else 'multisig_cosigner_keystore',
-                'accept': wizard.maybe_master_pubkey,
-                'last': lambda d: wizard.is_single_password() and wizard.last_cosigner(d)
+            "dbitbox_xpub": {
+                "next": lambda d: (
+                    wizard.wallet_password_view(d)
+                    if wizard.last_cosigner(d)
+                    else "multisig_cosigner_keystore"
+                ),
+                "accept": wizard.maybe_master_pubkey,
+                "last": lambda d: wizard.is_single_password() and wizard.last_cosigner(d),
             },
-            'dbitbox_unlock': {
-                'last': True
-            },
+            "dbitbox_unlock": {"last": True},
         }
         wizard.navmap_merge(views)

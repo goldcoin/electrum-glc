@@ -2,7 +2,7 @@ import serial
 import logging
 
 
-logger = logging.getLogger('jade.serial')
+logger = logging.getLogger("jade.serial")
 
 
 #
@@ -28,10 +28,10 @@ class JadeSerialImpl:
     def connect(self):
         assert self.ser is None
 
-        logger.info('Connecting to {} at {}'.format(self.device, self.baud))
-        self.ser = serial.Serial(self.device, self.baud,
-                                 timeout=self.timeout,
-                                 write_timeout=self.timeout)
+        logger.info("Connecting to {} at {}".format(self.device, self.baud))
+        self.ser = serial.Serial(
+            self.device, self.baud, timeout=self.timeout, write_timeout=self.timeout
+        )
         assert self.ser is not None
 
         if not self.ser.is_open:
@@ -41,7 +41,7 @@ class JadeSerialImpl:
         self.ser.setRTS(False)
         self.ser.setDTR(False)
 
-        logger.info('Connected')
+        logger.info("Connected")
 
     def disconnect(self):
         assert self.ser is not None

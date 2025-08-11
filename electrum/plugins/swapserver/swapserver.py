@@ -39,13 +39,13 @@ if TYPE_CHECKING:
 
 class SwapServerPlugin(BasePlugin):
 
-    def __init__(self, parent, config: 'SimpleConfig', name):
+    def __init__(self, parent, config: "SimpleConfig", name):
         BasePlugin.__init__(self, parent, config, name)
         self.config = config
         self.server = None
 
     @hook
-    def daemon_wallet_loaded(self, daemon: 'Daemon', wallet: 'Abstract_Wallet'):
+    def daemon_wallet_loaded(self, daemon: "Daemon", wallet: "Abstract_Wallet"):
         # we use the first wallet loaded
         if self.server is not None:
             return

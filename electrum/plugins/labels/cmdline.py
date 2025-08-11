@@ -1,6 +1,7 @@
 from .labels import LabelsPlugin
 from electrum.plugin import hook
 
+
 class Plugin(LabelsPlugin):
 
     @hook
@@ -8,4 +9,4 @@ class Plugin(LabelsPlugin):
         self.start_wallet(wallet)
 
     def on_pulled(self, wallet):
-        self.logger.info('labels pulled from server')
+        self.logger.info("labels pulled from server")

@@ -1,6 +1,6 @@
 from electrum.i18n import _
 
-fullname = _('SwapServer')
+fullname = _("SwapServer")
 description = """
 Submarine swap server for an Electrum daemon.
 
@@ -12,4 +12,4 @@ Example setup:
 
 """
 
-available_for = ['cmdline']
+available_for = ["cmdline"]

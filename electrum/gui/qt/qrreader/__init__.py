@@ -43,14 +43,16 @@ _logger = get_logger(__name__)
 
 
 def scan_qrcode(
-        *,
-        parent: Optional[QWidget],
-        config: 'SimpleConfig',
-        callback: Callable[[bool, str, Optional[str]], None],
+    *,
+    parent: Optional[QWidget],
+    config: "SimpleConfig",
+    callback: Callable[[bool, str, Optional[str]], None],
 ) -> None:
     """Scans QR code using camera."""
-    assert parent is None or isinstance(parent, QWidget), f"parent should be a QWidget, not {parent!r}"
-    if sys.platform == 'darwin' or sys.platform in ('windows', 'win32'):
+    assert parent is None or isinstance(
+        parent, QWidget
+    ), f"parent should be a QWidget, not {parent!r}"
+    if sys.platform == "darwin" or sys.platform in ("windows", "win32"):
         _scan_qrcode_using_qtmultimedia(parent=parent, config=config, callback=callback)
     else:  # desktop Linux and similar
         _scan_qrcode_using_zbar(parent=parent, config=config, callback=callback)
@@ -61,17 +63,18 @@ def scan_qr_from_image(image: QImage) -> Sequence[QrCodeResult]:
     qr_reader = get_qr_reader()
     image_y800 = image.convertToFormat(QImage.Format_Grayscale8)
     res = qr_reader.read_qr_code(
-        image_y800.constBits().__int__(), image_y800.byteCount(),
+        image_y800.constBits().__int__(),
+        image_y800.byteCount(),
         image_y800.bytesPerLine(),
         image_y800.width(),
-        image_y800.height()
+        image_y800.height(),
     )
     return res
 
 
 def find_system_cameras() -> Mapping[str, str]:
     """Returns a camera_description -> camera_path map."""
-    if sys.platform == 'darwin' or sys.platform in ('windows', 'win32'):
+    if sys.platform == "darwin" or sys.platform in ("windows", "win32"):
         try:
             from .qtmultimedia import find_system_cameras
         except ImportError as e:
@@ -80,18 +83,21 @@ def find_system_cameras() -> Mapping[str, str]:
             return find_system_cameras()
     else:  # desktop Linux and similar
         from electrum import qrscanner
+
         return qrscanner.find_system_cameras()
 
 
 # --- Internals below (not part of external API)
 
+
 def _scan_qrcode_using_zbar(
-        *,
-        parent: Optional[QWidget],
-        config: 'SimpleConfig',
-        callback: Callable[[bool, str, Optional[str]], None],
+    *,
+    parent: Optional[QWidget],
+    config: "SimpleConfig",
+    callback: Callable[[bool, str, Optional[str]], None],
 ) -> None:
     from electrum import qrscanner
+
     data = None
     try:
         data = qrscanner.scan_barcode(config.get_video_device())
@@ -99,7 +105,7 @@ def _scan_qrcode_using_zbar(
         success = False
         error = str(e)
     except BaseException as e:
-        _logger.exception('camera error')
+        _logger.exception("camera error")
         success = False
         error = repr(e)
     else:
@@ -113,18 +119,24 @@ _qr_dialog = None
 
 
 def _scan_qrcode_using_qtmultimedia(
-        *,
-        parent: Optional[QWidget],
-        config: 'SimpleConfig',
-        callback: Callable[[bool, str, Optional[str]], None],
+    *,
+    parent: Optional[QWidget],
+    config: "SimpleConfig",
+    callback: Callable[[bool, str, Optional[str]], None],
 ) -> None:
     try:
         from .qtmultimedia import QrReaderCameraDialog, CameraError
     except ImportError as e:
         icon = QMessageBox.Warning
         title = _("QR Reader Error")
-        message = _("QR reader failed to load. This may happen if "
-                    "you are using an older version of PyQt5.") + "\n\n" + str(e)
+        message = (
+            _(
+                "QR reader failed to load. This may happen if "
+                "you are using an older version of PyQt5."
+            )
+            + "\n\n"
+            + str(e)
+        )
         if isinstance(parent, MessageBoxMixin):
             parent.msg_box(title=title, text=message, icon=icon, parent=None)
         else:
@@ -152,7 +164,6 @@ def _scan_qrcode_using_qtmultimedia(
         _qr_dialog = None
         callback(False, str(e), None)
     except Exception as e:
-        _logger.exception('camera error')
+        _logger.exception("camera error")
         _qr_dialog = None
         callback(False, repr(e), None)
-

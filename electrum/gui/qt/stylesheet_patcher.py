@@ -7,7 +7,7 @@ import sys
 from PyQt5 import QtWidgets
 
 
-CUSTOM_PATCH_FOR_DARK_THEME = '''
+CUSTOM_PATCH_FOR_DARK_THEME = """
 /* PayToEdit text was being clipped */
 QAbstractScrollArea {
     padding: 0px;
@@ -24,9 +24,9 @@ QComboBox::item:checked {
     font-weight: bold;
     max-height: 30px;
 }
-'''
+"""
 
-CUSTOM_PATCH_FOR_DEFAULT_THEME_MACOS = '''
+CUSTOM_PATCH_FOR_DEFAULT_THEME_MACOS = """
 /* On macOS, main window status bar icons have ugly frame (see #6300) */
 StatusBarButton {
     background-color: transparent;
@@ -53,7 +53,7 @@ StatusBarButton:disabled {
 StatusBarButton:hover {
   border: 1px solid #148CD2;
 }
-'''
+"""
 
 
 def patch_qt_stylesheet(use_dark_theme: bool) -> None:
@@ -61,7 +61,7 @@ def patch_qt_stylesheet(use_dark_theme: bool) -> None:
     if use_dark_theme:
         custom_patch = CUSTOM_PATCH_FOR_DARK_THEME
     else:  # default theme (typically light)
-        if sys.platform == 'darwin':
+        if sys.platform == "darwin":
             custom_patch = CUSTOM_PATCH_FOR_DEFAULT_THEME_MACOS
 
     app = QtWidgets.QApplication.instance()

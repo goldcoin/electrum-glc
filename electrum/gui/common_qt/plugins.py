@@ -28,20 +28,23 @@ class PluginQObject(QObject):
         self.app = parent
 
     @pyqtProperty(str, notify=pluginChanged)
-    def name(self): return self._name
+    def name(self):
+        return self._name
 
     @pyqtProperty(bool, notify=busyChanged)
-    def busy(self): return self._busy
+    def busy(self):
+        return self._busy
 
     # below only used for QML, not compatible yet with Qt
 
     @pyqtProperty(bool, notify=pluginEnabledChanged)
-    def pluginEnabled(self): return self.plugin.is_enabled()
+    def pluginEnabled(self):
+        return self.plugin.is_enabled()
 
     @pluginEnabled.setter
     def pluginEnabled(self, enabled):
         if enabled != self.plugin.is_enabled():
-            self.logger.debug(f'can {self.plugin.can_user_disable()}, {self.plugin.is_available()}')
+            self.logger.debug(f"can {self.plugin.can_user_disable()}, {self.plugin.is_available()}")
             if not self.plugin.can_user_disable() and not enabled:
                 return
             if enabled:
@@ -49,4 +52,3 @@ class PluginQObject(QObject):
             else:
                 self.app.plugins.disable(self.plugin.name)
             self.pluginEnabledChanged.emit()
-

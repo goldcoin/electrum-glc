@@ -25,7 +25,7 @@ class QEChannelDetails(AuthMixin, QObject, QtEventListener):
 
     channelChanged = pyqtSignal()
     channelCloseSuccess = pyqtSignal()
-    channelCloseFailed = pyqtSignal([str], arguments=['message'])
+    channelCloseFailed = pyqtSignal([str], arguments=["message"])
     isClosingChanged = pyqtSignal()
     trampolineFrozenInGossipMode = pyqtSignal()
 
@@ -55,6 +55,7 @@ class QEChannelDetails(AuthMixin, QObject, QtEventListener):
         self.unregister_callbacks()
 
     walletChanged = pyqtSignal()
+
     @pyqtProperty(QEWallet, notify=walletChanged)
     def wallet(self):
         return self._wallet
@@ -66,6 +67,7 @@ class QEChannelDetails(AuthMixin, QObject, QtEventListener):
             self.walletChanged.emit()
 
     channelidChanged = pyqtSignal()
+
     @pyqtProperty(str, notify=channelidChanged)
     def channelid(self):
         return self._channelid
@@ -89,7 +91,7 @@ class QEChannelDetails(AuthMixin, QObject, QtEventListener):
     def name(self):
         if not self._channel:
             return
-        return self._wallet.wallet.lnworker.get_node_alias(self._channel.node_id) or ''
+        return self._wallet.wallet.lnworker.get_node_alias(self._channel.node_id) or ""
 
     @pyqtProperty(str, notify=channelChanged)
     def pubkey(self):
@@ -110,27 +112,24 @@ class QEChannelDetails(AuthMixin, QObject, QtEventListener):
     @pyqtProperty(str, notify=channelChanged)
     def initiator(self):
         if self._channel.is_backup():
-            return ''
-        return 'Local' if self._channel.constraints.is_initiator else 'Remote'
+            return ""
+        return "Local" if self._channel.constraints.is_initiator else "Remote"
 
-    @pyqtProperty('QVariantMap', notify=channelChanged)
+    @pyqtProperty("QVariantMap", notify=channelChanged)
     def fundingOutpoint(self):
         outpoint = self._channel.funding_outpoint
-        return {
-            'txid': outpoint.txid,
-            'index': outpoint.output_index
-        }
+        return {"txid": outpoint.txid, "index": outpoint.output_index}
 
     @pyqtProperty(str, notify=channelChanged)
     def closingTxid(self):
         if not self._channel.is_closed():
-            return ''
+            return ""
         item = self._channel.get_closing_height()
         if item:
             closing_txid, closing_height, timestamp = item
             return closing_txid
         else:
-            return ''
+            return ""
 
     @pyqtProperty(QEAmount, notify=channelChanged)
     def capacity(self):
@@ -158,7 +157,9 @@ class QEChannelDetails(AuthMixin, QObject, QtEventListener):
     @pyqtProperty(QEAmount, notify=channelChanged)
     def canReceive(self):
         if not self._channel.is_backup():
-            self._can_receive.copyFrom(QEAmount(amount_msat=self._channel.available_to_spend(REMOTE)))
+            self._can_receive.copyFrom(
+                QEAmount(amount_msat=self._channel.available_to_spend(REMOTE))
+            )
         return self._can_receive
 
     @pyqtProperty(bool, notify=channelChanged)
@@ -171,7 +172,11 @@ class QEChannelDetails(AuthMixin, QObject, QtEventListener):
 
     @pyqtProperty(str, notify=channelChanged)
     def channelType(self):
-        return self._channel.storage['channel_type'].name_minimal if 'channel_type' in self._channel.storage else 'Channel Backup'
+        return (
+            self._channel.storage["channel_type"].name_minimal
+            if "channel_type" in self._channel.storage
+            else "Channel Backup"
+        )
 
     @pyqtProperty(bool, notify=channelChanged)
     def isOpen(self):
@@ -203,12 +208,18 @@ class QEChannelDetails(AuthMixin, QObject, QtEventListener):
 
     @pyqtProperty(str, notify=channelChanged)
     def messageForceCloseBackup(self):
-        return ' '.join([
-            _('If you force-close this channel, the funds you have in it will not be available for {} blocks.').format(self.toSelfDelay),
-            _('During that time, funds will not be recoverable from your seed, and may be lost if you lose your device.'),
-            _('To prevent that, please save this channel backup.'),
-            _('It may be imported in another wallet with the same seed.')
-        ])
+        return " ".join(
+            [
+                _(
+                    "If you force-close this channel, the funds you have in it will not be available for {} blocks."
+                ).format(self.toSelfDelay),
+                _(
+                    "During that time, funds will not be recoverable from your seed, and may be lost if you lose your device."
+                ),
+                _("To prevent that, please save this channel backup."),
+                _("It may be imported in another wallet with the same seed."),
+            ]
+        )
 
     @pyqtProperty(bool, notify=channelChanged)
     def isBackup(self):
@@ -217,8 +228,8 @@ class QEChannelDetails(AuthMixin, QObject, QtEventListener):
     @pyqtProperty(str, notify=channelChanged)
     def backupType(self):
         if not self.isBackup:
-            return ''
-        return 'imported' if self._channel.is_imported else 'on-chain'
+            return ""
+        return "imported" if self._channel.is_imported else "on-chain"
 
     @pyqtProperty(int, notify=channelChanged)
     def toSelfDelay(self):
@@ -253,11 +264,11 @@ class QEChannelDetails(AuthMixin, QObject, QtEventListener):
     def closeChannel(self, closetype):
         self.do_close_channel(closetype)
 
-    @auth_protect(message=_('Close Lightning channel?'))
+    @auth_protect(message=_("Close Lightning channel?"))
     def do_close_channel(self, closetype):
         channel_id = self._channel.channel_id
 
-        def handle_result(success: bool, msg: str = ''):
+        def handle_result(success: bool, msg: str = ""):
             try:
                 if success:
                     self.channelCloseSuccess.emit()
@@ -266,24 +277,32 @@ class QEChannelDetails(AuthMixin, QObject, QtEventListener):
 
                 self._is_closing = False
                 self.isClosingChanged.emit()
-            except RuntimeError:  # QEChannelDetails might be deleted at this point if the user closed the dialog.
+            except (
+                RuntimeError
+            ):  # QEChannelDetails might be deleted at this point if the user closed the dialog.
                 pass
 
         def do_close():
             try:
                 self._is_closing = True
                 self.isClosingChanged.emit()
-                if closetype == 'remote_force':
-                    self._wallet.wallet.network.run_from_another_thread(self._wallet.wallet.lnworker.request_force_close(channel_id))
-                elif closetype == 'local_force':
-                    self._wallet.wallet.network.run_from_another_thread(self._wallet.wallet.lnworker.force_close_channel(channel_id))
+                if closetype == "remote_force":
+                    self._wallet.wallet.network.run_from_another_thread(
+                        self._wallet.wallet.lnworker.request_force_close(channel_id)
+                    )
+                elif closetype == "local_force":
+                    self._wallet.wallet.network.run_from_another_thread(
+                        self._wallet.wallet.lnworker.force_close_channel(channel_id)
+                    )
                 else:
-                    self._wallet.wallet.network.run_from_another_thread(self._wallet.wallet.lnworker.close_channel(channel_id))
-                self._logger.debug('Channel close successful')
+                    self._wallet.wallet.network.run_from_another_thread(
+                        self._wallet.wallet.lnworker.close_channel(channel_id)
+                    )
+                self._logger.debug("Channel close successful")
                 handle_result(True)
             except Exception as e:
                 self._logger.exception("Could not close channel: " + repr(e))
-                handle_result(False, _('Could not close channel: ') + repr(e))
+                handle_result(False, _("Could not close channel: ") + repr(e))
 
         threading.Thread(target=do_close, daemon=True).start()
 
@@ -300,10 +319,14 @@ class QEChannelDetails(AuthMixin, QObject, QtEventListener):
 
     @pyqtSlot(result=str)
     def channelBackupHelpText(self):
-        return ' '.join([
-            _("Channel backups can be imported in another instance of the same wallet."),
-            _("In the Electrum mobile app, use the 'Send' button to scan this QR code."),
-            '\n\n',
-            _("Please note that channel backups cannot be used to restore your channels."),
-            _("If you lose your wallet file, the only thing you can do with a backup is to request your channel to be closed, so that your funds will be sent on-chain."),
-        ])
+        return " ".join(
+            [
+                _("Channel backups can be imported in another instance of the same wallet."),
+                _("In the Electrum mobile app, use the 'Send' button to scan this QR code."),
+                "\n\n",
+                _("Please note that channel backups cannot be used to restore your channels."),
+                _(
+                    "If you lose your wallet file, the only thing you can do with a backup is to request your channel to be closed, so that your funds will be sent on-chain."
+                ),
+            ]
+        )

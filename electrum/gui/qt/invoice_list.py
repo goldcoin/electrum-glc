@@ -62,14 +62,14 @@ class InvoiceList(MyTreeView):
         STATUS = enum.auto()
 
     headers = {
-        Columns.DATE: _('Date'),
-        Columns.DESCRIPTION: _('Description'),
-        Columns.AMOUNT: _('Amount'),
-        Columns.STATUS: _('Status'),
+        Columns.DATE: _("Date"),
+        Columns.DESCRIPTION: _("Description"),
+        Columns.AMOUNT: _("Amount"),
+        Columns.STATUS: _("Status"),
     }
     filter_columns = [Columns.DATE, Columns.DESCRIPTION, Columns.AMOUNT]
 
-    def __init__(self, send_tab: 'SendTab'):
+    def __init__(self, send_tab: "SendTab"):
         window = send_tab.window
         super().__init__(
             main_window=window,
@@ -100,7 +100,7 @@ class InvoiceList(MyTreeView):
         if self.wallet.lnworker:
             log = self.wallet.lnworker.logs.get(key)
             if log and status == PR_INFLIGHT:
-                status_str += '... (%d)'%len(log)
+                status_str += "... (%d)" % len(log)
         status_item.setText(status_str)
         status_item.setIcon(read_QIcon(pr_icons.get(status)))
 
@@ -112,18 +112,22 @@ class InvoiceList(MyTreeView):
         for idx, item in enumerate(self.wallet.get_unpaid_invoices()):
             key = item.get_id()
             if item.is_lightning():
-                icon_name = 'lightning.png'
+                icon_name = "lightning.png"
             else:
-                icon_name = 'goldcoin.png'
+                icon_name = "goldcoin.png"
                 if item.bip70:
-                    icon_name = 'seal.png'
+                    icon_name = "seal.png"
             status = self.wallet.get_invoice_status(item)
             amount = item.get_amount_sat()
             amount_str = self.main_window.format_amount(amount, whitespaces=True) if amount else ""
-            amount_str_nots = self.main_window.format_amount(amount, whitespaces=True, add_thousands_sep=False) if amount else ""
+            amount_str_nots = (
+                self.main_window.format_amount(amount, whitespaces=True, add_thousands_sep=False)
+                if amount
+                else ""
+            )
             timestamp = item.time or 0
             labels = [""] * len(self.Columns)
-            labels[self.Columns.DATE] = format_time(timestamp) if timestamp else _('Unknown')
+            labels[self.Columns.DATE] = format_time(timestamp) if timestamp else _("Unknown")
             labels[self.Columns.DESCRIPTION] = item.message
             labels[self.Columns.AMOUNT] = amount_str
             labels[self.Columns.STATUS] = item.get_status_str(status)
@@ -132,9 +136,11 @@ class InvoiceList(MyTreeView):
             items[self.Columns.DATE].setIcon(read_QIcon(icon_name))
             items[self.Columns.STATUS].setIcon(read_QIcon(pr_icons.get(status)))
             items[self.Columns.DATE].setData(key, role=ROLE_REQUEST_ID)
-            #items[self.Columns.DATE].setData(item.type, role=ROLE_REQUEST_TYPE)
+            # items[self.Columns.DATE].setData(item.type, role=ROLE_REQUEST_TYPE)
             items[self.Columns.DATE].setData(timestamp, role=ROLE_SORT_ORDER)
-            items[self.Columns.AMOUNT].setData(amount_str_nots.strip(), role=self.ROLE_CLIPBOARD_DATA)
+            items[self.Columns.AMOUNT].setData(
+                amount_str_nots.strip(), role=self.ROLE_CLIPBOARD_DATA
+            )
             self.std_model.insertRow(idx, items)
         self.filter()
         self.proxy.setDynamicSortFilter(True)
@@ -157,13 +163,21 @@ class InvoiceList(MyTreeView):
     def create_menu(self, position):
         wallet = self.wallet
         items = self.selected_in_column(0)
-        if len(items)>1:
+        if len(items) > 1:
             keys = [item.data(ROLE_REQUEST_ID) for item in items]
             invoices = [wallet.get_invoice(key) for key in keys]
-            can_batch_pay = all([not i.is_lightning() and wallet.get_invoice_status(i) == PR_UNPAID for i in invoices])
+            can_batch_pay = all(
+                [
+                    not i.is_lightning() and wallet.get_invoice_status(i) == PR_UNPAID
+                    for i in invoices
+                ]
+            )
             menu = QMenu(self)
             if can_batch_pay:
-                menu.addAction(_("Batch pay invoices") + "...", lambda: self.send_tab.pay_multiple_invoices(invoices))
+                menu.addAction(
+                    _("Batch pay invoices") + "...",
+                    lambda: self.send_tab.pay_multiple_invoices(invoices),
+                )
             menu.addAction(_("Delete invoices"), lambda: self.delete_invoices(keys))
             menu.exec_(self.viewport().mapToGlobal(position))
             return
@@ -179,7 +193,10 @@ class InvoiceList(MyTreeView):
         copy_menu = self.add_copy_menu(menu, idx)
         address = invoice.get_address()
         if address:
-            copy_menu.addAction(_("Address"), lambda: self.main_window.do_copy(invoice.get_address(), title='Goldcoin Address'))
+            copy_menu.addAction(
+                _("Address"),
+                lambda: self.main_window.do_copy(invoice.get_address(), title="Goldcoin Address"),
+            )
         status = wallet.get_invoice_status(invoice)
         if status == PR_UNPAID:
             if bool(invoice.get_amount_sat()):
@@ -200,7 +217,7 @@ class InvoiceList(MyTreeView):
         d.setMinimumWidth(600)
         vbox = QVBoxLayout(d)
         log_w = QTreeWidget()
-        log_w.setHeaderLabels([_('Hops'), _('Channel ID'), _('Message')])
+        log_w.setHeaderLabels([_("Hops"), _("Channel ID"), _("Message")])
         log_w.header().setSectionResizeMode(2, QHeaderView.Stretch)
         log_w.header().setSectionResizeMode(1, QHeaderView.ResizeToContents)
         for payment_attempt_log in log:

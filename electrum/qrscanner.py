@@ -40,12 +40,12 @@ from .logging import get_logger
 _logger = get_logger(__name__)
 
 
-if sys.platform == 'darwin':
-    name = 'libzbar.0.dylib'
-elif sys.platform in ('windows', 'win32'):
-    name = 'libzbar-0.dll'
+if sys.platform == "darwin":
+    name = "libzbar.0.dylib"
+elif sys.platform in ("windows", "win32"):
+    name = "libzbar-0.dll"
 else:
-    name = 'libzbar.so.0'
+    name = "libzbar.so.0"
 
 try:
     libzbar = ctypes.cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), name))
@@ -57,7 +57,7 @@ except BaseException as e1:
         _logger.error(f"failed to load zbar. exceptions: {[e1,e2]!r}")
 
 
-def scan_barcode(device='', timeout=-1, display=True, threaded=False) -> Optional[str]:
+def scan_barcode(device="", timeout=-1, display=True, threaded=False) -> Optional[str]:
     if libzbar is None:
         raise UserFacingException("Cannot start QR scanner: zbar not available.")
     libzbar.zbar_symbol_get_data.restype = ctypes.c_char_p
@@ -67,10 +67,12 @@ def scan_barcode(device='', timeout=-1, display=True, threaded=False) -> Optiona
     # libzbar.zbar_set_verbosity(100)  # verbose logs for debugging
     proc = libzbar.zbar_processor_create(threaded)
     libzbar.zbar_processor_request_size(proc, 640, 480)
-    if libzbar.zbar_processor_init(proc, device.encode('utf-8'), display) != 0:
+    if libzbar.zbar_processor_init(proc, device.encode("utf-8"), display) != 0:
         raise UserFacingException(
-            _("Cannot start QR scanner: initialization failed.") + "\n" +
-            _("Make sure you have a camera connected and enabled."))
+            _("Cannot start QR scanner: initialization failed.")
+            + "\n"
+            + _("Make sure you have a camera connected and enabled.")
+        )
     libzbar.zbar_processor_set_visible(proc)
     if libzbar.zbar_process_one(proc, timeout):
         symbols = libzbar.zbar_processor_get_results(proc)
@@ -83,21 +85,21 @@ def scan_barcode(device='', timeout=-1, display=True, threaded=False) -> Optiona
         return
     symbol = libzbar.zbar_symbol_set_first_symbol(symbols)
     data = libzbar.zbar_symbol_get_data(symbol)
-    return data.decode('utf8')
+    return data.decode("utf8")
 
 
 def find_system_cameras() -> Mapping[str, str]:
     device_root = "/sys/class/video4linux"
-    devices = {} # Name -> device
+    devices = {}  # Name -> device
     if os.path.exists(device_root):
         for device in os.listdir(device_root):
-            path = os.path.join(device_root, device, 'name')
+            path = os.path.join(device_root, device, "name")
             try:
-                with open(path, encoding='utf-8') as f:
+                with open(path, encoding="utf-8") as f:
                     name = f.read()
             except Exception:
                 continue
-            name = name.strip('\n')
+            name = name.strip("\n")
             devices[name] = os.path.join("/dev", device)
     return devices
 

@@ -1,6 +1,7 @@
 from keepkeylib.client import proto, BaseClient, ProtocolMixin
 from .clientbase import KeepKeyClientBase
 
+
 class KeepKeyClient(KeepKeyClientBase, ProtocolMixin, BaseClient):
     def __init__(self, transport, handler, plugin):
         BaseClient.__init__(self, transport)

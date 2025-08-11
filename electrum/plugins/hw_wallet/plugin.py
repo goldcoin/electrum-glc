@@ -26,8 +26,14 @@
 from abc import abstractmethod, ABC
 from typing import TYPE_CHECKING, Sequence, Optional, Type, Iterable, Any
 
-from electrum.plugin import (BasePlugin, hook, Device, DeviceMgr,
-                             assert_runs_in_hwd_thread, runs_in_hwd_thread)
+from electrum.plugin import (
+    BasePlugin,
+    hook,
+    Device,
+    DeviceMgr,
+    assert_runs_in_hwd_thread,
+    runs_in_hwd_thread,
+)
 from electrum.i18n import _
 from electrum.bitcoin import is_address, opcodes
 from electrum.util import versiontuple, UserFacingException
@@ -43,13 +49,13 @@ if TYPE_CHECKING:
 
 
 class HW_PluginBase(BasePlugin, ABC):
-    keystore_class: Type['Hardware_KeyStore']
+    keystore_class: Type["Hardware_KeyStore"]
     libraries_available: bool
     SUPPORTED_XTYPES = ()
 
     # define supported library versions:  minimum_library <= x < maximum_library
     minimum_library = (0,)
-    maximum_library = (float('inf'),)
+    maximum_library = (float("inf"),)
 
     DEVICE_IDS: Iterable[Any]
 
@@ -62,55 +68,69 @@ class HW_PluginBase(BasePlugin, ABC):
     def is_enabled(self):
         return True
 
-    def device_manager(self) -> 'DeviceMgr':
+    def device_manager(self) -> "DeviceMgr":
         return self.parent.device_manager
 
-    def create_device_from_hid_enumeration(self, d: dict, *, product_key) -> Optional['Device']:
+    def create_device_from_hid_enumeration(self, d: dict, *, product_key) -> Optional["Device"]:
         # note: id_ needs to be unique between simultaneously connected devices,
         #       and ideally unchanged while a device is connected.
         # Older versions of hid don't provide interface_number
-        interface_number = d.get('interface_number', -1)
-        usage_page = d['usage_page']
+        interface_number = d.get("interface_number", -1)
+        usage_page = d["usage_page"]
         # id_=str(d['path']) in itself might be sufficient, but this had to be touched
         # a number of times already, so let's just go for the overkill approach:
         id_ = f"{d['path']},{d['serial_number']},{interface_number},{usage_page}"
-        device = Device(path=d['path'],
-                        interface_number=interface_number,
-                        id_=id_,
-                        product_key=product_key,
-                        usage_page=usage_page,
-                        transport_ui_string='hid')
+        device = Device(
+            path=d["path"],
+            interface_number=interface_number,
+            id_=id_,
+            product_key=product_key,
+            usage_page=usage_page,
+            transport_ui_string="hid",
+        )
         return device
 
     @hook
-    def close_wallet(self, wallet: 'Abstract_Wallet'):
+    def close_wallet(self, wallet: "Abstract_Wallet"):
         for keystore in wallet.get_keystores():
             if isinstance(keystore, self.keystore_class):
                 self.device_manager().unpair_pairing_code(keystore.pairing_code())
                 if keystore.thread:
                     keystore.thread.stop()
 
-    def get_client(self, keystore: 'Hardware_KeyStore', force_pair: bool = True, *,
-                   devices: Sequence['Device'] = None,
-                   allow_user_interaction: bool = True) -> Optional['HardwareClientBase']:
+    def get_client(
+        self,
+        keystore: "Hardware_KeyStore",
+        force_pair: bool = True,
+        *,
+        devices: Sequence["Device"] = None,
+        allow_user_interaction: bool = True,
+    ) -> Optional["HardwareClientBase"]:
         devmgr = self.device_manager()
         handler = keystore.handler
-        client = devmgr.client_for_keystore(self, handler, keystore, force_pair,
-                                            devices=devices,
-                                            allow_user_interaction=allow_user_interaction)
+        client = devmgr.client_for_keystore(
+            self,
+            handler,
+            keystore,
+            force_pair,
+            devices=devices,
+            allow_user_interaction=allow_user_interaction,
+        )
         return client
 
-    def show_address(self, wallet: 'Abstract_Wallet', address, keystore: 'Hardware_KeyStore' = None):
+    def show_address(
+        self, wallet: "Abstract_Wallet", address, keystore: "Hardware_KeyStore" = None
+    ):
         pass  # implemented in child classes
 
     def show_address_helper(self, wallet, address, keystore=None):
         if keystore is None:
             keystore = wallet.get_keystore()
         if not is_address(address):
-            keystore.handler.show_error(_('Invalid Bitcoin Address'))
+            keystore.handler.show_error(_("Invalid Bitcoin Address"))
             return False
         if not wallet.is_mine(address):
-            keystore.handler.show_error(_('Address not in wallet.'))
+            keystore.handler.show_error(_("Address not in wallet."))
             return False
         if type(keystore) != self.keystore_class:
             return False
@@ -134,33 +154,37 @@ class HW_PluginBase(BasePlugin, ABC):
             # this might raise ImportError or LibraryFoundButUnusable
             library_version = self.get_library_version()
             # if no exception so far, we might still raise LibraryFoundButUnusable
-            if (library_version == 'unknown'
-                    or versiontuple(library_version) < self.minimum_library
-                    or versiontuple(library_version) >= self.maximum_library):
+            if (
+                library_version == "unknown"
+                or versiontuple(library_version) < self.minimum_library
+                or versiontuple(library_version) >= self.maximum_library
+            ):
                 raise LibraryFoundButUnusable(library_version=library_version)
         except ImportError as e:
             self.libraries_available_message = (
-                _("Missing libraries for {}.").format(self.name)
-                + f"\n    {e!r}"
+                _("Missing libraries for {}.").format(self.name) + f"\n    {e!r}"
             )
             return False
         except LibraryFoundButUnusable as e:
             library_version = e.library_version
-            self.libraries_available_message = (
-                    _("Library version for '{}' is incompatible.").format(self.name)
-                    + '\nInstalled: {}, Needed: {} <= x < {}'
-                    .format(library_version, version_str(self.minimum_library), version_str(self.maximum_library)))
+            self.libraries_available_message = _(
+                "Library version for '{}' is incompatible."
+            ).format(self.name) + "\nInstalled: {}, Needed: {} <= x < {}".format(
+                library_version,
+                version_str(self.minimum_library),
+                version_str(self.maximum_library),
+            )
             self.logger.warning(self.libraries_available_message)
             return False
 
         return True
 
     def get_library_not_available_message(self) -> str:
-        if hasattr(self, 'libraries_available_message'):
+        if hasattr(self, "libraries_available_message"):
             message = self.libraries_available_message
         else:
             message = _("Missing libraries for {}.").format(self.name)
-        message += '\n' + _("Make sure you install it with python3")
+        message += "\n" + _("Make sure you install it with python3")
         return message
 
     def set_ignore_outdated_fw(self):
@@ -169,11 +193,12 @@ class HW_PluginBase(BasePlugin, ABC):
     def is_outdated_fw_ignored(self) -> bool:
         return self._ignore_outdated_fw
 
-    def create_client(self, device: 'Device',
-                      handler: Optional['HardwareHandlerBase']) -> Optional['HardwareClientBase']:
+    def create_client(
+        self, device: "Device", handler: Optional["HardwareHandlerBase"]
+    ) -> Optional["HardwareClientBase"]:
         raise NotImplementedError()
 
-    def create_handler(self, window) -> 'HardwareHandlerBase':
+    def create_handler(self, window) -> "HardwareHandlerBase":
         # note: in Qt GUI, 'window' is either an ElectrumWindow or an QENewWalletWizard
         raise NotImplementedError()
 
@@ -184,20 +209,19 @@ class HW_PluginBase(BasePlugin, ABC):
         return device.product_key in self.DEVICE_IDS
 
     @abstractmethod
-    def wizard_entry_for_device(self, device_info: 'DeviceInfo', *, new_wallet: bool) -> str:
-        """Return view name for device
-        """
+    def wizard_entry_for_device(self, device_info: "DeviceInfo", *, new_wallet: bool) -> str:
+        """Return view name for device"""
         pass
 
 
 class HardwareClientBase(ABC):
     handler = None  # type: Optional['HardwareHandlerBase']
 
-    def __init__(self, *, plugin: 'HW_PluginBase'):
+    def __init__(self, *, plugin: "HW_PluginBase"):
         assert_runs_in_hwd_thread()
         self.plugin = plugin
 
-    def device_manager(self) -> 'DeviceMgr':
+    def device_manager(self) -> "DeviceMgr":
         return self.plugin.device_manager()
 
     @abstractmethod
@@ -249,7 +273,7 @@ class HardwareClientBase(ABC):
     def request_root_fingerprint_from_device(self) -> str:
         # digitalbitbox (at least) does not reveal xpubs corresponding to unhardened paths
         # so ask for a direct child, and read out fingerprint from that:
-        child_of_root_xpub = self.get_xpub("m/0'", xtype='standard')
+        child_of_root_xpub = self.get_xpub("m/0'", xtype="standard")
         root_fingerprint = BIP32Node.from_xkey(child_of_root_xpub).fingerprint.hex().lower()
         return root_fingerprint
 
@@ -271,17 +295,18 @@ class HardwareClientBase(ABC):
 
 class HardwareHandlerBase:
     """An interface between the GUI and the device handling logic for handling I/O."""
+
     win = None
     device: str
 
-    def get_wallet(self) -> Optional['Abstract_Wallet']:
+    def get_wallet(self) -> Optional["Abstract_Wallet"]:
         if self.win is not None:
-            if hasattr(self.win, 'wallet'):
+            if hasattr(self.win, "wallet"):
                 return self.win.wallet
 
-    def get_gui_thread(self) -> Optional['threading.Thread']:
+    def get_gui_thread(self) -> Optional["threading.Thread"]:
         if self.win is not None:
-            if hasattr(self.win, 'gui_thread'):
+            if hasattr(self.win, "gui_thread"):
                 return self.win.gui_thread
 
     def update_status(self, paired: bool) -> None:
@@ -319,9 +344,10 @@ def is_any_tx_output_on_change_branch(tx: PartialTransaction) -> bool:
 def trezor_validate_op_return_output_and_get_data(output: TxOutput) -> bytes:
     validate_op_return_output(output)
     script = output.scriptpubkey
-    if not (script[0] == opcodes.OP_RETURN and
-            script[1] == len(script) - 2 and script[1] <= 75):
-        raise UserFacingException(_("Only OP_RETURN scripts, with one constant push, are supported."))
+    if not (script[0] == opcodes.OP_RETURN and script[1] == len(script) - 2 and script[1] <= 75):
+        raise UserFacingException(
+            _("Only OP_RETURN scripts, with one constant push, are supported.")
+        )
     return script[2:]
 
 
@@ -330,8 +356,13 @@ def validate_op_return_output(output: TxOutput, *, max_size: int = None) -> None
     if script[0] != opcodes.OP_RETURN:
         raise UserFacingException(_("Only OP_RETURN scripts are supported."))
     if max_size is not None and len(script) > max_size:
-        raise UserFacingException(_("OP_RETURN payload too large." + "\n"
-                                  + f"(scriptpubkey size {len(script)} > {max_size})"))
+        raise UserFacingException(
+            _(
+                "OP_RETURN payload too large."
+                + "\n"
+                + f"(scriptpubkey size {len(script)} > {max_size})"
+            )
+        )
     if output.value != 0:
         raise UserFacingException(_("Amount for OP_RETURN output must be zero."))
 
@@ -339,24 +370,31 @@ def validate_op_return_output(output: TxOutput, *, max_size: int = None) -> None
 def only_hook_if_libraries_available(func):
     # note: this decorator must wrap @hook, not the other way around,
     # as 'hook' uses the name of the function it wraps
-    def wrapper(self: 'HW_PluginBase', *args, **kwargs):
-        if not self.libraries_available: return None
+    def wrapper(self: "HW_PluginBase", *args, **kwargs):
+        if not self.libraries_available:
+            return None
         return func(self, *args, **kwargs)
+
     return wrapper
 
 
 class LibraryFoundButUnusable(Exception):
-    def __init__(self, library_version='unknown'):
+    def __init__(self, library_version="unknown"):
         self.library_version = library_version
 
 
 class OutdatedHwFirmwareException(UserFacingException):
 
     def text_ignore_old_fw_and_continue(self) -> str:
-        suffix = (_("The firmware of your hardware device is too old. "
-                    "If possible, you should upgrade it. "
-                    "You can ignore this error and try to continue, however things are likely to break.") + "\n\n" +
-                  _("Ignore and continue?"))
+        suffix = (
+            _(
+                "The firmware of your hardware device is too old. "
+                "If possible, you should upgrade it. "
+                "You can ignore this error and try to continue, however things are likely to break."
+            )
+            + "\n\n"
+            + _("Ignore and continue?")
+        )
         if str(self):
             return str(self) + "\n\n" + suffix
         else:
@@ -364,6 +402,6 @@ class OutdatedHwFirmwareException(UserFacingException):
 
 
 class OperationCancelled(UserFacingException):
-    """Emitted when an operation is cancelled by user on a HW device
-    """
+    """Emitted when an operation is cancelled by user on a HW device"""
+
     pass

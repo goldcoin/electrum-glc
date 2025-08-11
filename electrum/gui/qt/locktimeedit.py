@@ -8,8 +8,15 @@ from typing import Optional, Any
 
 from PyQt5.QtCore import Qt, QDateTime, pyqtSignal
 from PyQt5.QtGui import QPalette, QPainter
-from PyQt5.QtWidgets import (QWidget, QLineEdit, QStyle, QStyleOptionFrame, QComboBox,
-                             QHBoxLayout, QDateTimeEdit)
+from PyQt5.QtWidgets import (
+    QWidget,
+    QLineEdit,
+    QStyle,
+    QStyleOptionFrame,
+    QComboBox,
+    QHBoxLayout,
+    QDateTimeEdit,
+)
 
 from electrum.i18n import _
 from electrum.bitcoin import NLOCKTIME_MIN, NLOCKTIME_MAX, NLOCKTIME_BLOCKHEIGHT_MAX
@@ -107,10 +114,10 @@ class LockTimeRawEdit(QLineEdit, _LockTimeEditor):
 
     def numbify(self):
         text = self.text().strip()
-        chars = '0123456789'
+        chars = "0123456789"
         pos = self.cursorPosition()
-        pos = len(''.join([i for i in text[:pos] if i in chars]))
-        s = ''.join([i for i in text if i in chars])
+        pos = len("".join([i for i in text[:pos] if i in chars]))
+        s = "".join([i for i in text if i in chars])
         self.set_locktime(s)
         # setText sets Modified to False.  Instead we want to remember
         # if updates were because of user modification.
@@ -127,7 +134,7 @@ class LockTimeRawEdit(QLineEdit, _LockTimeEditor):
         try:
             x = int(x)
         except Exception:
-            self.setText('')
+            self.setText("")
             return
         x = max(x, self.min_allowed_value)
         x = min(x, self.max_allowed_value)
@@ -159,7 +166,7 @@ def get_max_allowed_timestamp() -> int:
     try:
         datetime.fromtimestamp(ts)
     except (OSError, OverflowError):
-        ts = 2 ** 31 - 1  # INT32_MAX
+        ts = 2**31 - 1  # INT32_MAX
         datetime.fromtimestamp(ts)  # test if raises
     return ts
 

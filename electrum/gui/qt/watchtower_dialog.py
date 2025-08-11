@@ -27,7 +27,7 @@ import enum
 
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QPushButton, QLabel)
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QLabel
 
 from electrum.i18n import _
 from .util import Buttons
@@ -42,12 +42,12 @@ class WatcherList(MyTreeView):
         STATUS = enum.auto()
 
     headers = {
-        Columns.OUTPOINT: _('Outpoint'),
-        Columns.TX_COUNT: _('Tx'),
-        Columns.STATUS: _('Status'),
+        Columns.OUTPOINT: _("Outpoint"),
+        Columns.TX_COUNT: _("Tx"),
+        Columns.STATUS: _("Status"),
     }
 
-    def __init__(self, parent: 'WatchtowerDialog'):
+    def __init__(self, parent: "WatchtowerDialog"):
         super().__init__(
             parent=parent,
             stretch_column=self.Columns.OUTPOINT,
@@ -75,7 +75,7 @@ class WatcherList(MyTreeView):
             self.set_editability(items)
             self.model().insertRow(self.model().rowCount(), items)
         size = lnwatcher.sweepstore.filesize()
-        self.parent.size_label.setText('Database size: %.2f Mb'%(size/1024/1024.))
+        self.parent.size_label.setText("Database size: %.2f Mb" % (size / 1024 / 1024.0))
 
 
 class WatchtowerDialog(QDialog):
@@ -87,7 +87,7 @@ class WatchtowerDialog(QDialog):
         self.network = gui_object.daemon.network
         assert self.network
         self.lnwatcher = self.network.local_watchtower
-        self.setWindowTitle(_('Watchtower'))
+        self.setWindowTitle(_("Watchtower"))
         self.setMinimumSize(600, 200)
         self.size_label = QLabel()
         self.watcher_list = WatcherList(self)
@@ -95,7 +95,7 @@ class WatchtowerDialog(QDialog):
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.size_label)
         vbox.addWidget(self.watcher_list)
-        b = QPushButton(_('Close'))
+        b = QPushButton(_("Close"))
         b.clicked.connect(self.close)
         vbox.addLayout(Buttons(b))
         self.watcher_list.update()

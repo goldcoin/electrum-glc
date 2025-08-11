@@ -20,13 +20,14 @@ class Plugin(LabelsPlugin):
         downloadSuccess = pyqtSignal()
         downloadFailed = pyqtSignal()
 
-        _name = _('LabelSync Plugin')
+        _name = _("LabelSync Plugin")
 
         def __init__(self, plugin, parent):
             super().__init__(plugin, parent)
 
         @pyqtSlot(result=str)
-        def settingsComponent(self): return '../../../plugins/labels/Labels.qml'
+        def settingsComponent(self):
+            return "../../../plugins/labels/Labels.qml"
 
         @pyqtSlot()
         def upload(self):
@@ -74,7 +75,7 @@ class Plugin(LabelsPlugin):
 
     def push_async(self):
         if not self._app.daemon.currentWallet:
-            self.logger.error('No current wallet')
+            self.logger.error("No current wallet")
             self.so.download_finished(False)
             return
 
@@ -84,7 +85,7 @@ class Plugin(LabelsPlugin):
             try:
                 self.push(_wallet)
                 self.so.upload_finished(True)
-                self._app.appController.userNotify.emit(_('Labels uploaded'))
+                self._app.appController.userNotify.emit(_("Labels uploaded"))
             except Exception as e:
                 self.logger.error(repr(e))
                 self.so.upload_finished(False)
@@ -94,7 +95,7 @@ class Plugin(LabelsPlugin):
 
     def pull_async(self):
         if not self._app.daemon.currentWallet:
-            self.logger.error('No current wallet')
+            self.logger.error("No current wallet")
             self.so.download_finished(False)
             return
 
@@ -104,7 +105,7 @@ class Plugin(LabelsPlugin):
             try:
                 self.pull(_wallet, True)
                 self.so.download_finished(True)
-                self._app.appController.userNotify.emit(_('Labels downloaded'))
+                self._app.appController.userNotify.emit(_("Labels downloaded"))
             except Exception as e:
                 self.logger.error(repr(e))
                 self.so.download_finished(False)
@@ -113,16 +114,16 @@ class Plugin(LabelsPlugin):
         threading.Thread(target=pull_thread, args=[wallet]).start()
 
     def on_pulled(self, wallet):
-        self.logger.info('on pulled')
+        self.logger.info("on pulled")
         _wallet = QEWallet.getInstanceFor(wallet)
-        self.logger.debug('wallet ' + ('found' if _wallet else 'not found'))
+        self.logger.debug("wallet " + ("found" if _wallet else "not found"))
         if _wallet:
             _wallet.labelsUpdated.emit()
 
     @hook
     def init_qml(self, app):
-        self.logger.debug(f'init_qml hook called, gui={str(type(app))}')
-        self.logger.debug(f'app={self._app!r}, so={self.so!r}')
+        self.logger.debug(f"init_qml hook called, gui={str(type(app))}")
+        self.logger.debug(f"app={self._app!r}, so={self.so!r}")
         self._app = app
         # important: QSignalObject needs to be parented, as keeping a ref
         # in the plugin is not enough to avoid gc

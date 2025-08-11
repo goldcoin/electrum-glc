@@ -44,7 +44,7 @@ class QrReaderCropBlurEffect(QGraphicsBlurEffect):
         self.crop = crop
 
     def draw(self, painter: QPainter):
-        assert self.crop, 'crop must be set'
+        assert self.crop, "crop must be set"
 
         # Compute painter regions for the crop and the blur
         all_region = QRegion(painter.viewport())
