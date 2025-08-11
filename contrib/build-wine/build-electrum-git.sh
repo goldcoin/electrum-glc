@@ -37,7 +37,10 @@ info "Installing requirements..."
 $WINE_PYTHON -m pip install --no-build-isolation --no-dependencies --no-binary :all: --no-warn-script-location \
     --cache-dir "$WINE_PIP_CACHE_DIR" -r "$CONTRIB"/deterministic-build/requirements.txt
 info "Installing dependencies specific to binaries..."
-# TODO tighten "--no-binary :all:" (but we don't have a C compiler...)
+# Install scrypt first with binary wheel support (requires C++ compiler otherwise)
+$WINE_PYTHON -m pip install --no-build-isolation --no-warn-script-location \
+    --cache-dir "$WINE_PIP_CACHE_DIR" scrypt>=0.9.4
+# Install other binary dependencies
 $WINE_PYTHON -m pip install --no-build-isolation --no-dependencies --no-warn-script-location \
     --cache-dir "$WINE_PIP_CACHE_DIR" -r "$CONTRIB"/deterministic-build/requirements-binaries.txt
 info "Installing hardware wallet requirements..."
