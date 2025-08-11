@@ -18,7 +18,7 @@ MAX_PARTS = 5  # maximum number of parts for splitting
 ChannelsFundsInfo = dict[tuple[bytes, bytes], int]
 
 
-class SplitConfig(dict, dict[tuple[bytes, bytes], list[int]]):
+class SplitConfig(dict[tuple[bytes, bytes], list[int]]):
     """maps a channel (channel_id, node_id) to a list of amounts"""
 
     def number_parts(self) -> int:
