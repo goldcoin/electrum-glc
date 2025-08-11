@@ -82,7 +82,19 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libsecp256k1-0 libsecp256k1-dev
+          # Try to install libsecp256k1-dev if available, otherwise build from source
+          sudo apt-get install -y libsecp256k1-dev || {
+            echo "libsecp256k1-dev not found, building from source..."
+            sudo apt-get install -y autoconf automake libtool
+            git clone https://github.com/bitcoin-core/secp256k1.git
+            cd secp256k1
+            git checkout 199d27cea32203b224b208627533c2e813cd3b21
+            ./autogen.sh
+            ./configure --enable-module-recovery
+            make
+            sudo make install
+            sudo ldconfig
+          }
           
       - name: Install Python dependencies
         run: |
