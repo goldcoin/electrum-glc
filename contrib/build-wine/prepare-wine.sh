@@ -35,6 +35,8 @@ else
 fi
 PYTHON_DOWNLOADS="$CACHEDIR/python$PYTHON_VERSION"
 mkdir -p "$PYTHON_DOWNLOADS"
+
+# Python 3.11 has all MSI files including tools.msi
 for msifile in core dev exe lib pip tools; do
     echo "Installing $msifile..."
     download_if_not_exist "$PYTHON_DOWNLOADS/${msifile}.msi" "https://www.python.org/ftp/python/$PYTHON_VERSION/$PYARCH/${msifile}.msi"
@@ -48,7 +50,7 @@ break_legacy_easy_install
 info "Installing build dependencies."
 $WINE_PYTHON -m pip install --no-build-isolation --no-dependencies --no-warn-script-location \
     --cache-dir "$WINE_PIP_CACHE_DIR" -r "$CONTRIB"/deterministic-build/requirements-build-base.txt
-$WINE_PYTHON -m pip install --no-build-isolation --no-dependencies --no-binary :all: --no-warn-script-location \
+$WINE_PYTHON -m pip install --no-build-isolation --no-dependencies --no-binary :all: --use-feature=no-binary-enable-wheel-cache --no-warn-script-location \
     --cache-dir "$WINE_PIP_CACHE_DIR" -r "$CONTRIB"/deterministic-build/requirements-build-wine.txt
 
 

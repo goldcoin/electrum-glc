@@ -37,7 +37,7 @@ fi
 info "building docker image."
 docker build \
     $DOCKER_BUILD_FLAGS \
-    -t electrum-wine-builder-img \
+    -t electrum-glc-wine-builder-shasta \
     "$CONTRIB_WINE"
 
 # maybe do fresh clone
@@ -58,8 +58,8 @@ info "building binary..."
 # check uid and maybe chown. see #8261
 if [ ! -z "$ELECBUILD_COMMIT" ] ; then  # fresh clone (reproducible build)
     if [ $(id -u) != "1000" ] || [ $(id -g) != "1000" ] ; then
-        info "need to chown -R FRESH_CLONE dir. prompting for sudo."
-        sudo chown -R 1000:1000 "$FRESH_CLONE"
+        info "Fresh clone will be accessed with Docker's default user (uid 1000)"
+        # Docker container runs as user:1000 - will handle file ownership internally
     fi
 fi
 
@@ -71,11 +71,12 @@ if [ -t 0 ] ; then
 fi
 
 docker run $DOCKER_RUN_FLAGS \
-    --name electrum-wine-builder-cont \
+    --name electrum-glc-wine-builder-cont-shasta \
     -v "$PROJECT_ROOT_OR_FRESHCLONE_ROOT":/opt/wine64/drive_c/electrum \
+    -e MAKEFLAGS="-j8" \
     --rm \
     --workdir /opt/wine64/drive_c/electrum/contrib/build-wine \
-    electrum-wine-builder-img \
+    electrum-glc-wine-builder-shasta \
     ./make_win.sh
 
 # make sure resulting binary location is independent of fresh_clone
