@@ -18,6 +18,14 @@ if not cmdline_name:
 hiddenimports = []
 hiddenimports += collect_submodules('pkg_resources')  # workaround for https://github.com/pypa/setuptools/issues/1963
 hiddenimports += ['_scrypt']
+hiddenimports += ['electrum.plugin']  # Include the plugin.py module explicitly
+hiddenimports += ['electrum.plugins']  # Include the plugins package init
+hiddenimports += ['electrum.plugins.hw_wallet']  # Include the hw_wallet plugin
+hiddenimports += ['electrum.plugins.hw_wallet.plugin']  # Include the hw_wallet plugin module
+hiddenimports += ['electrum.gui']  # Include gui module
+hiddenimports += ['electrum.gui.common_qt']  # Include common_qt module explicitly
+hiddenimports += ['electrum.gui.common_qt.plugins']  # Include common_qt.plugins explicitly
+hiddenimports += collect_submodules('electrum.gui')  # Collect all GUI modules
 hiddenimports += collect_submodules(f"{PYPKG}.plugins")
 
 
