@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "Lightweight Goldcoin Wallet"
 authors = [{name = "Thomas Voegtlin", email = "thomasv@electrum.org"}]
 license = {text = "MIT"}
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
     "qrcode",
     "protobuf>=3.20,<4",
@@ -48,7 +48,7 @@ version = {attr = "electrum.version.ELECTRUM_VERSION"}
 
 [tool.black]
 line-length = 100
-target-version = ['py312']
+target-version = ['py311']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -69,7 +69,7 @@ known_first_party = ["electrum"]
 skip_glob = ["*/locale/*"]
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
@@ -92,7 +92,7 @@ exclude = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py312"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = [

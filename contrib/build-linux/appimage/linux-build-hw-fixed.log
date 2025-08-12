@@ -1,0 +1,335 @@
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+💬 [0;34mINFO:[0m  building docker image.
+💬 [0;34mINFO:[0m  not doing fresh clone.
+💬 [0;34mINFO:[0m  building binary...
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+💬 [0;34mINFO:[0m  downloading some dependencies.
+💬 [0;34mINFO:[0m  building python.
+💬 [0;34mINFO:[0m  python already built, skipping
+💬 [0;34mINFO:[0m  installing python.
+💬 [0;34mINFO:[0m  libsecp256k1 already built, skipping
+💬 [0;34mINFO:[0m  building libxcb-util1.
+💬 [0;34mINFO:[0m  libxcb-util1 already built, skipping
+💬 [0;34mINFO:[0m  installing pip.
+Looking in links: /tmp/tmpeqj9dhv0
+Requirement already satisfied: pip in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (25.0.1)
+💬 [0;34mINFO:[0m  Intentionally breaking legacy easy_install.
+💬 [0;34mINFO:[0m  preparing electrum-locale.
+💬 [0;34mINFO:[0m  Installing build dependencies.
+Collecting flit-core==3.8.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 1))
+  Using cached flit_core-3.8.0-py3-none-any.whl (62 kB)
+Collecting packaging==21.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 4))
+  Using cached packaging-21.3-py3-none-any.whl (40 kB)
+Collecting pip==24.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 7))
+  Using cached pip-24.0-py3-none-any.whl (2.1 MB)
+Collecting poetry-core==1.3.2 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 10))
+  Using cached poetry_core-1.3.2-py3-none-any.whl (531 kB)
+Collecting pyparsing==3.0.9 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 13))
+  Using cached pyparsing-3.0.9-py3-none-any.whl (98 kB)
+Collecting setuptools==69.0.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 16))
+  Using cached setuptools-69.0.3-py3-none-any.whl (819 kB)
+Collecting setuptools-scm==7.0.5 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 19))
+  Using cached setuptools_scm-7.0.5-py3-none-any.whl (42 kB)
+Collecting tomli==2.0.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 22))
+  Using cached tomli-2.0.1-py3-none-any.whl (12 kB)
+Collecting typing-extensions==4.4.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 25))
+  Using cached typing_extensions-4.4.0-py3-none-any.whl (26 kB)
+Collecting wheel==0.38.4 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 28))
+  Using cached wheel-0.38.4-py3-none-any.whl (36 kB)
+Installing collected packages: wheel, typing-extensions, tomli, setuptools-scm, setuptools, pyparsing, poetry-core, pip, packaging, flit-core
+  Attempting uninstall: pip
+    Found existing installation: pip 25.0.1
+    Uninstalling pip-25.0.1:
+      Successfully uninstalled pip-25.0.1
+Successfully installed flit-core-3.8.0 packaging-21.3 pip-24.0 poetry-core-1.3.2 pyparsing-3.0.9 setuptools-69.0.3 setuptools-scm-7.0.5 tomli-2.0.1 typing-extensions-4.4.0 wheel-0.38.4
+Collecting Cython==3.0.8 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-appimage.txt (line 1))
+  Using cached Cython-3.0.8-cp312-cp312-linux_x86_64.whl
+Requirement already satisfied: pip==24.0 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-appimage.txt (line 3)) (24.0)
+Requirement already satisfied: setuptools==69.0.3 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-appimage.txt (line 5)) (69.0.3)
+Requirement already satisfied: wheel==0.38.4 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-appimage.txt (line 7)) (0.38.4)
+Installing collected packages: Cython
+Successfully installed Cython-3.0.8
+💬 [0;34mINFO:[0m  installing electrum and its dependencies.
+Collecting aiohttp==3.8.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 1))
+  Using cached aiohttp-3.8.3-py3-none-any.whl
+Collecting aiohttp-socks==0.8.4 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 3))
+  Using cached aiohttp_socks-0.8.4-py3-none-any.whl
+Collecting aiorpcX==0.22.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 5))
+  Using cached aiorpcX-0.22.1-py3-none-any.whl
+Collecting aiosignal==1.3.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 7))
+  Using cached aiosignal-1.3.1-py3-none-any.whl
+Collecting async-timeout==4.0.2 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 9))
+  Using cached async_timeout-4.0.2-py3-none-any.whl
+Collecting attrs==22.1.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 11))
+  Using cached attrs-22.1.0-py2.py3-none-any.whl
+Collecting bitstring==3.1.9 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 13))
+  Using cached bitstring-3.1.9-py3-none-any.whl
+Collecting certifi==2023.11.17 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 15))
+  Using cached certifi-2023.11.17-py3-none-any.whl
+Collecting charset-normalizer==2.1.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 17))
+  Using cached charset_normalizer-2.1.1-py3-none-any.whl
+Collecting dnspython==2.2.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 19))
+  Using cached dnspython-2.2.1-py3-none-any.whl
+Collecting frozenlist==1.3.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 21))
+  Using cached frozenlist-1.3.3-py3-none-any.whl
+Collecting idna==3.4 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 23))
+  Using cached idna-3.4-py3-none-any.whl
+Collecting jsonpatch==1.33 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 25))
+  Using cached jsonpatch-1.33-py2.py3-none-any.whl
+Collecting jsonpointer==2.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 27))
+  Using cached jsonpointer-2.3-py2.py3-none-any.whl
+Collecting multidict==6.0.2 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 29))
+  Using cached multidict-6.0.2-py3-none-any.whl
+Requirement already satisfied: packaging==21.3 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 31)) (21.3)
+Requirement already satisfied: pip==24.0 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 33)) (24.0)
+Collecting protobuf==3.20.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 35))
+  Using cached protobuf-3.20.3-py2.py3-none-any.whl
+Requirement already satisfied: pyparsing==3.0.9 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 37)) (3.0.9)
+Collecting python-socks==2.4.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 39))
+  Using cached python_socks-2.4.3-py3-none-any.whl
+Collecting QDarkStyle==3.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 41))
+  Using cached QDarkStyle-3.1-py2.py3-none-any.whl
+Collecting qrcode==7.3.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 43))
+  Using cached qrcode-7.3.1-py3-none-any.whl
+Collecting QtPy==2.3.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 45))
+  Using cached QtPy-2.3.0-py3-none-any.whl
+Requirement already satisfied: setuptools==69.0.3 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 47)) (69.0.3)
+Requirement already satisfied: wheel==0.38.4 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 49)) (0.38.4)
+Collecting yarl==1.8.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 51))
+  Using cached yarl-1.8.1-py3-none-any.whl
+Installing collected packages: QDarkStyle, python-socks, bitstring, aiohttp-socks, yarl, QtPy, qrcode, protobuf, multidict, jsonpointer, jsonpatch, idna, frozenlist, dnspython, charset-normalizer, certifi, attrs, async-timeout, aiosignal, aiorpcX, aiohttp
+Successfully installed QDarkStyle-3.1 QtPy-2.3.0 aiohttp-3.8.3 aiohttp-socks-0.8.4 aiorpcX-0.22.1 aiosignal-1.3.1 async-timeout-4.0.2 attrs-22.1.0 bitstring-3.1.9 certifi-2023.11.17 charset-normalizer-2.1.1 dnspython-2.2.1 frozenlist-1.3.3 idna-3.4 jsonpatch-1.33 jsonpointer-2.3 multidict-6.0.2 protobuf-3.20.3 python-socks-2.4.3 qrcode-7.3.1 yarl-1.8.1
+Collecting cffi==1.15.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 1))
+  Using cached cffi-1.15.1-cp312-cp312-linux_x86_64.whl
+Collecting cryptography==38.0.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 66))
+  Using cached cryptography-38.0.3-cp36-abi3-manylinux_2_28_x86_64.whl (4.2 MB)
+Requirement already satisfied: pip==24.0 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 93)) (24.0)
+Collecting pycparser==2.21 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 96))
+  Using cached pycparser-2.21-py2.py3-none-any.whl
+Collecting PyQt5==5.15.9 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 99))
+  Using cached PyQt5-5.15.9-cp37-abi3-manylinux_2_17_x86_64.whl (8.4 MB)
+Collecting PyQt5-Qt5==5.15.2 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 105))
+  Using cached PyQt5_Qt5-5.15.2-py3-none-manylinux2014_x86_64.whl (59.9 MB)
+Collecting PyQt5-sip==12.12.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 110))
+  Using cached PyQt5_sip-12.12.1-cp312-cp312-linux_x86_64.whl
+Collecting scrypt==0.9.4 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 132))
+  Using cached scrypt-0.9.4-cp312-cp312-linux_x86_64.whl
+Requirement already satisfied: setuptools==69.0.3 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 152)) (69.0.3)
+Requirement already satisfied: wheel==0.38.4 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 155)) (0.38.4)
+Installing collected packages: scrypt, PyQt5-Qt5, cffi, PyQt5-sip, PyQt5, pycparser, cryptography
+Successfully installed PyQt5-5.15.9 PyQt5-Qt5-5.15.2 PyQt5-sip-12.12.1 cffi-1.15.1 cryptography-38.0.3 pycparser-2.21 scrypt-0.9.4
+Collecting base58==2.1.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 1))
+  Using cached base58-2.1.1.tar.gz (6.5 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting bitbox02==6.2.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 4))
+  Using cached bitbox02-6.2.0.tar.gz (45 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting cbor==1.0.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 9))
+  Using cached cbor-1.0.0.tar.gz (20 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Requirement already satisfied: certifi==2023.11.17 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 11)) (2023.11.17)
+Requirement already satisfied: cffi==1.15.1 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 14)) (1.15.1)
+Requirement already satisfied: charset-normalizer==2.1.1 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 79)) (2.1.1)
+Collecting ckcc-protocol==1.4.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 82))
+  Using cached ckcc-protocol-1.4.0.tar.gz (33 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting click==8.1.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 85))
+  Using cached click-8.1.3.tar.gz (331 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting colorama==0.4.5 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 88))
+  Using cached colorama-0.4.5.tar.gz (27 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting construct==2.10.68 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 91))
+  Using cached construct-2.10.68.tar.gz (57 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting construct-classes==0.1.2 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 93))
+  Using cached construct-classes-0.1.2.tar.gz (5.0 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: cryptography==38.0.3 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 96)) (38.0.3)
+Collecting ecdsa==0.18.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 123))
+  Using cached ecdsa-0.18.0.tar.gz (197 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting hidapi==0.14.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 126))
+  Using cached hidapi-0.14.0.tar.gz (143 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Requirement already satisfied: idna==3.4 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 168)) (3.4)
+Collecting keepkey==6.3.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 171))
+  Using cached keepkey-6.3.1.tar.gz (166 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting ledger-bitcoin==0.2.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 175))
+  Using cached ledger_bitcoin-0.2.1.tar.gz (62 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting ledgercomm==1.1.2 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 178))
+  Using cached ledgercomm-1.1.2.tar.gz (9.8 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting libusb1==3.0.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 181))
+  Using cached libusb1-3.0.0.tar.gz (82 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting mnemonic==0.20 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 186))
+  Using cached mnemonic-0.20.tar.gz (67 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting noiseprotocol==0.3.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 189))
+  Using cached noiseprotocol-0.3.1.tar.gz (16 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Requirement already satisfied: pip==24.0 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 192)) (24.0)
+Requirement already satisfied: protobuf==3.20.3 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 195)) (3.20.3)
+Collecting pyaes==1.6.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 218))
+  Using cached pyaes-1.6.1.tar.gz (28 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Requirement already satisfied: pycparser==2.21 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 220)) (2.21)
+Collecting pyserial==3.5 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 223))
+  Using cached pyserial-3.5.tar.gz (159 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting requests==2.28.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 226))
+  Using cached requests-2.28.1.tar.gz (109 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting safet==0.1.5 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 229))
+  Using cached safet-0.1.5.tar.gz (132 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting semver==2.13.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 232))
+  Using cached semver-2.13.0.tar.gz (45 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: setuptools==69.0.3 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 235)) (69.0.3)
+Collecting simple-rlp==0.1.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 238))
+  Downloading simple-rlp-0.1.3.tar.gz (4.3 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting six==1.16.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 240))
+  Downloading six-1.16.0.tar.gz (34 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting trezor==0.13.8 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 243))
+  Downloading trezor-0.13.8.tar.gz (219 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 219.9/219.9 kB 19.9 MB/s eta 0:00:00
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Requirement already satisfied: typing-extensions==4.4.0 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 246)) (4.4.0)
+Collecting urllib3==1.26.12 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 249))
+  Downloading urllib3-1.26.12.tar.gz (299 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 299.8/299.8 kB 39.6 MB/s eta 0:00:00
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Requirement already satisfied: wheel==0.38.4 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-hw.txt (line 252)) (0.38.4)
+Building wheels for collected packages: base58, bitbox02, cbor, ckcc-protocol, click, colorama, construct, construct-classes, ecdsa, hidapi, keepkey, ledger-bitcoin, ledgercomm, libusb1, mnemonic, noiseprotocol, pyaes, pyserial, requests, safet, semver, simple-rlp, six, trezor, urllib3
+  Building wheel for base58 (setup.py): started
+  Building wheel for base58 (setup.py): finished with status 'done'
+  Created wheel for base58: filename=base58-2.1.1-py3-none-any.whl size=5600 sha256=d0e881a8869a05095b770dc8073f5b90e228fb2f837aea4e034aa0a60faff512
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/cd/e6/03/2e59713a18d8a762ead465a55ac796728ae2000b6d3fc9e307
+  Building wheel for bitbox02 (setup.py): started
+  Building wheel for bitbox02 (setup.py): finished with status 'done'
+  Created wheel for bitbox02: filename=bitbox02-6.2.0-py3-none-any.whl size=63488 sha256=611ab9e3570bc6259de51cf7db7828d0802d14c608e467ab58ee079ead9b29b3
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/57/f3/fe/d240d4c25098172fd4dbb9bcb3b25c9bc5a63593b76d96a6f4
+  Building wheel for cbor (setup.py): started
+  Building wheel for cbor (setup.py): finished with status 'done'
+  Created wheel for cbor: filename=cbor-1.0.0-cp312-cp312-linux_x86_64.whl size=60257 sha256=da43997f0dc48a214e6e49a539c84b31360cb76dacfd961257956e2415323bf5
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/44/3e/21/a739cbcc331a1ab45c326d6edbdac6118de4402f6076e30ff1
+  Building wheel for ckcc-protocol (setup.py): started
+  Building wheel for ckcc-protocol (setup.py): finished with status 'done'
+  Created wheel for ckcc-protocol: filename=ckcc_protocol-1.4.0-py3-none-any.whl size=34666 sha256=9a7b2dd259eaeb2fa26702c3182f993a4bf5ce59c5d0e99fac99a5fce596709f
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/3c/c3/99/1eaa9074c939083b9d9ca2b29266875c42ec83c68a3e9f7cde
+  Building wheel for click (setup.py): started
+  Building wheel for click (setup.py): finished with status 'done'
+  Created wheel for click: filename=click-8.1.3-py3-none-any.whl size=96574 sha256=a6d1fe956db73d97919aff5f1402fc58dce663bc4e05a1bb8b2d90f0230437d6
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/5c/53/6f/e2a1e10e9e691c3b3f3e5f4c5b205707a68ef20aedac87f3f3
+  Building wheel for colorama (setup.py): started
+  Building wheel for colorama (setup.py): finished with status 'done'
+  Created wheel for colorama: filename=colorama-0.4.5-py2.py3-none-any.whl size=16204 sha256=c236748095e5e642385a3229ac3727db8b7b86bbafbe4964fdd48955314f518f
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/c5/c3/2d/a5c92fd587bd80fb17daa1ab0a539faa94e870a143e88727b8
+  Building wheel for construct (setup.py): started
+  Building wheel for construct (setup.py): finished with status 'done'
+  Created wheel for construct: filename=construct-2.10.68-py3-none-any.whl size=59224 sha256=f34f089ac507bfae030e9b0e68ddcc905e5732cd171cb383a465772e0633e2bc
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/a8/f6/20/4f02ada93d3d85dee07663908dadb9e26a3b9d5ad9af47753c
+  Building wheel for construct-classes (pyproject.toml): started
+  Building wheel for construct-classes (pyproject.toml): finished with status 'done'
+  Created wheel for construct-classes: filename=construct_classes-0.1.2-py3-none-any.whl size=7203 sha256=08d4f6a29289d87fd03e198ac43e384a9cb40a415074fe9459b038f7bff48ec7
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/70/ec/32/6d215b9e53c199301bf384674599c9dce879fcb87a060df9eb
+  Building wheel for ecdsa (setup.py): started
+  Building wheel for ecdsa (setup.py): finished with status 'done'
+  Created wheel for ecdsa: filename=ecdsa-0.18.0-py2.py3-none-any.whl size=142896 sha256=3c6d20a11c8e5c58d8e222dfac4281bf1f4d60dc488d879ec31bb06d40c40bf9
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/23/de/72/c44702dcdb3eef3a71ed00c46768849b0a149fd5c470d1a20b
+  Building wheel for hidapi (setup.py): started
+  Building wheel for hidapi (setup.py): finished with status 'error'
+  Running setup.py clean for hidapi
+  Building wheel for keepkey (setup.py): started
+  Building wheel for keepkey (setup.py): finished with status 'done'
+  Created wheel for keepkey: filename=keepkey-6.3.1-py3-none-any.whl size=84195 sha256=459fe1e33f3e635b023e633801ff052b0a2c5cf0d5dcd6be5bc78a7943942621
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/12/24/35/8ccbb02db1c0dfac28435db34d77ec100d7d4eef8584f0dfc9
+  Building wheel for ledger-bitcoin (pyproject.toml): started
+  Building wheel for ledger-bitcoin (pyproject.toml): finished with status 'done'
+  Created wheel for ledger-bitcoin: filename=ledger_bitcoin-0.2.1-py3-none-any.whl size=70312 sha256=66e564205ebb1effd7ea1728ab7d728802c3785bec1e6949c785228c90fcce4c
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/37/ed/6a/6200603b88f84f7b1a6d4686b3c1d4f6674c4d3dd8d6350eed
+  Building wheel for ledgercomm (setup.py): started
+  Building wheel for ledgercomm (setup.py): finished with status 'done'
+  Created wheel for ledgercomm: filename=ledgercomm-1.1.2-py3-none-any.whl size=10977 sha256=78e072d5010d0ffabb01f1b4ff372bde38d8a5b4796310207b4208bb52b50bb5
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/7b/e2/76/1c2c00a14072f89dc671efd0b785d7cb05502e60887d9885c1
+  Building wheel for libusb1 (setup.py): started
+  Building wheel for libusb1 (setup.py): finished with status 'done'
+  Created wheel for libusb1: filename=libusb1-3.0.0-py3-none-any.whl size=62121 sha256=a86db2008e3e303f9c5c0fc562c66045a37c7e702d49daed9c25b7b34c63b62e
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/9e/f2/2f/3757e98dd34c30c07d864e0213f8e66a838a40311c433f9178
+  Building wheel for mnemonic (setup.py): started
+  Building wheel for mnemonic (setup.py): finished with status 'done'
+  Created wheel for mnemonic: filename=mnemonic-0.20-py3-none-any.whl size=62039 sha256=81e83fe8ce6cb8e5beae16bdee6c665d63b7dd71a7bce61978275cbdf51bbae9
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/55/04/fe/c51deb7bb5f8d46be29bae89a895899d4e88e467bebab4ff4d
+  Building wheel for noiseprotocol (setup.py): started
+  Building wheel for noiseprotocol (setup.py): finished with status 'done'
+  Created wheel for noiseprotocol: filename=noiseprotocol-0.3.1-py3-none-any.whl size=18123 sha256=38a420f5f2a04366035a2e823604de7331ccaed7b42c061fb5a150655342c0d6
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/a3/94/4e/9bc0d9a29ae2f2e08c47c9be4667e29f7320a9cebd7d9d52ea
+  Building wheel for pyaes (setup.py): started
+  Building wheel for pyaes (setup.py): finished with status 'done'
+  Created wheel for pyaes: filename=pyaes-1.6.1-py3-none-any.whl size=26347 sha256=1968bb82d2bfe2aad795b36ce3dc3af8fe00f5fdcc4f04a0c505e7c7c55414a0
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/d9/43/32/ec313dd557e88e419489b9df40c04dad7b99576bde162496f8
+  Building wheel for pyserial (setup.py): started
+  Building wheel for pyserial (setup.py): finished with status 'done'
+  Created wheel for pyserial: filename=pyserial-3.5-py2.py3-none-any.whl size=90525 sha256=26f7fd83c8767bab66f8d4db9da5dfaeb7449a3944a72a97a60a970c8c2a81a3
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/66/f8/c1/0a3808b9637cd4638c5a302d30873762bc0037da5ef1ae90cf
+  Building wheel for requests (pyproject.toml): started
+  Building wheel for requests (pyproject.toml): finished with status 'done'
+  Created wheel for requests: filename=requests-2.28.1-py3-none-any.whl size=62826 sha256=97edd209e8a654f877e195b028f15e514d22e8cf7945d7cb36e22a5a3a9c3397
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/37/4f/a1/67d039e0a899335c82813b5c6004e8fde88b594dcd639e7bf7
+  Building wheel for safet (setup.py): started
+  Building wheel for safet (setup.py): finished with status 'done'
+  Created wheel for safet: filename=safet-0.1.5-py3-none-any.whl size=253716 sha256=ab8d5ea13b59ad58772ac374dc7d048ea56fac5fbe66cdcb28dadf382724c066
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/13/74/e5/26a0f6411dbf40444e1471dcef2a760be477cdb1e1833ee0f9
+  Building wheel for semver (pyproject.toml): started
+  Building wheel for semver (pyproject.toml): finished with status 'done'
+  Created wheel for semver: filename=semver-2.13.0-py3-none-any.whl size=12889 sha256=e52afc2cf73b601d0454706bacefffc2239ba8e61483ec6d653f453a46991cc8
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/04/7c/62/65cd036011a9263118a7c7d4d37ed1484c340f154e5ac74166
+  Building wheel for simple-rlp (setup.py): started
+  Building wheel for simple-rlp (setup.py): finished with status 'done'
+  Created wheel for simple-rlp: filename=simple_rlp-0.1.3-py3-none-any.whl size=4863 sha256=24e6b021a3ca7a9418d870909569fd089940276f17ec0241cb766e691d06b81e
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/f4/cf/46/e2c74f630e4a619c10b403d02d60c7999df6f154905cf32b20
+  Building wheel for six (setup.py): started
+  Building wheel for six (setup.py): finished with status 'done'
+  Created wheel for six: filename=six-1.16.0-py2.py3-none-any.whl size=11038 sha256=ec965649aa41237d83a301e8e39d1891e9bbe939751554b4d9822bb97f0a8eac
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/2d/44/a6/eaa84ad030d2047bb916e0740a9ec8b0ee9d23127bb389728f
+  Building wheel for trezor (setup.py): started
+  Building wheel for trezor (setup.py): finished with status 'done'
+  Created wheel for trezor: filename=trezor-0.13.8-py3-none-any.whl size=214702 sha256=a8142c2ae574f707e96f9c27ec141121be0ed61e18d42daea5fc2889db2bb7f4
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/6e/bd/bb/ee952ad5efd34447000d9fd83ddbff7d45a52d7b9b796c3a3e
+  Building wheel for urllib3 (setup.py): started
+  Building wheel for urllib3 (setup.py): finished with status 'done'
+  Created wheel for urllib3: filename=urllib3-1.26.12-py2.py3-none-any.whl size=140381 sha256=01f832d6f83b8585d3d90c22a6507f28edeb2fd17432abf2c21ecaca2fabb3af
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/bc/e6/68/d3697c52f732016e854a878a66c4057893b537fcbbb8a922f8
+Successfully built base58 bitbox02 cbor ckcc-protocol click colorama construct construct-classes ecdsa keepkey ledger-bitcoin ledgercomm libusb1 mnemonic noiseprotocol pyaes pyserial requests safet semver simple-rlp six trezor urllib3
+Failed to build hidapi

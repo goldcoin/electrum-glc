@@ -1,0 +1,223 @@
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+💬 [0;34mINFO:[0m  building docker image.
+💬 [0;34mINFO:[0m  not doing fresh clone.
+💬 [0;34mINFO:[0m  building binary...
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+💬 [0;34mINFO:[0m  downloading some dependencies.
+💬 [0;34mINFO:[0m  building python.
+💬 [0;34mINFO:[0m  python already built, skipping
+💬 [0;34mINFO:[0m  installing python.
+💬 [0;34mINFO:[0m  libsecp256k1 already built, skipping
+💬 [0;34mINFO:[0m  building libxcb-util1.
+💬 [0;34mINFO:[0m  libxcb-util1 already built, skipping
+💬 [0;34mINFO:[0m  installing pip.
+Looking in links: /tmp/tmpbp4p56k0
+Requirement already satisfied: pip in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (25.0.1)
+💬 [0;34mINFO:[0m  Intentionally breaking legacy easy_install.
+💬 [0;34mINFO:[0m  preparing electrum-locale.
+💬 [0;34mINFO:[0m  Installing build dependencies.
+Collecting flit-core==3.8.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 1))
+  Using cached flit_core-3.8.0-py3-none-any.whl (62 kB)
+Collecting packaging==21.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 4))
+  Using cached packaging-21.3-py3-none-any.whl (40 kB)
+Collecting pip==24.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 7))
+  Using cached pip-24.0-py3-none-any.whl (2.1 MB)
+Collecting poetry-core==1.3.2 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 10))
+  Using cached poetry_core-1.3.2-py3-none-any.whl (531 kB)
+Collecting pyparsing==3.0.9 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 13))
+  Using cached pyparsing-3.0.9-py3-none-any.whl (98 kB)
+Collecting setuptools==69.0.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 16))
+  Using cached setuptools-69.0.3-py3-none-any.whl (819 kB)
+Collecting setuptools-scm==7.0.5 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 19))
+  Using cached setuptools_scm-7.0.5-py3-none-any.whl (42 kB)
+Collecting tomli==2.0.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 22))
+  Using cached tomli-2.0.1-py3-none-any.whl (12 kB)
+Collecting typing-extensions==4.4.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 25))
+  Using cached typing_extensions-4.4.0-py3-none-any.whl (26 kB)
+Collecting wheel==0.38.4 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 28))
+  Using cached wheel-0.38.4-py3-none-any.whl (36 kB)
+Installing collected packages: wheel, typing-extensions, tomli, setuptools-scm, setuptools, pyparsing, poetry-core, pip, packaging, flit-core
+  Attempting uninstall: pip
+    Found existing installation: pip 25.0.1
+    Uninstalling pip-25.0.1:
+      Successfully uninstalled pip-25.0.1
+Successfully installed flit-core-3.8.0 packaging-21.3 pip-24.0 poetry-core-1.3.2 pyparsing-3.0.9 setuptools-69.0.3 setuptools-scm-7.0.5 tomli-2.0.1 typing-extensions-4.4.0 wheel-0.38.4
+Collecting Cython==3.0.8 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-appimage.txt (line 1))
+  Using cached Cython-3.0.8-cp312-cp312-linux_x86_64.whl
+Requirement already satisfied: pip==24.0 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-appimage.txt (line 3)) (24.0)
+Requirement already satisfied: setuptools==69.0.3 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-appimage.txt (line 5)) (69.0.3)
+Requirement already satisfied: wheel==0.38.4 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-appimage.txt (line 7)) (0.38.4)
+Installing collected packages: Cython
+Successfully installed Cython-3.0.8
+💬 [0;34mINFO:[0m  installing electrum and its dependencies.
+Collecting aiohttp==3.8.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 1))
+  Using cached aiohttp-3.8.3.tar.gz (7.3 MB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting aiohttp-socks==0.8.4 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 3))
+  Using cached aiohttp_socks-0.8.4.tar.gz (8.5 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting aiorpcX==0.22.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 5))
+  Using cached aiorpcX-0.22.1.tar.gz (28 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting aiosignal==1.3.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 7))
+  Using cached aiosignal-1.3.1.tar.gz (19 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting async-timeout==4.0.2 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 9))
+  Using cached async-timeout-4.0.2.tar.gz (8.2 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting attrs==22.1.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 11))
+  Using cached attrs-22.1.0.tar.gz (201 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting bitstring==3.1.9 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 13))
+  Using cached bitstring-3.1.9.tar.gz (198 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting certifi==2023.11.17 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 15))
+  Using cached certifi-2023.11.17.tar.gz (163 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting charset-normalizer==2.1.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 17))
+  Using cached charset-normalizer-2.1.1.tar.gz (82 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting dnspython==2.2.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 19))
+  Using cached dnspython-2.2.1.tar.gz (281 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting frozenlist==1.3.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 21))
+  Using cached frozenlist-1.3.3.tar.gz (66 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting idna==3.4 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 23))
+  Using cached idna-3.4.tar.gz (183 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting jsonpatch==1.33 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 25))
+  Using cached jsonpatch-1.33.tar.gz (21 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting jsonpointer==2.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 27))
+  Using cached jsonpointer-2.3.tar.gz (9.3 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting multidict==6.0.2 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 29))
+  Using cached multidict-6.0.2.tar.gz (50 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: packaging==21.3 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 31)) (21.3)
+Requirement already satisfied: pip==24.0 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 33)) (24.0)
+Collecting protobuf==3.20.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 35))
+  Using cached protobuf-3.20.3.tar.gz (216 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Requirement already satisfied: pyparsing==3.0.9 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 37)) (3.0.9)
+Collecting python-socks==2.4.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 39))
+  Using cached python-socks-2.4.3.tar.gz (25 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting QDarkStyle==3.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 41))
+  Using cached QDarkStyle-3.1.tar.gz (698 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting qrcode==7.3.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 43))
+  Using cached qrcode-7.3.1.tar.gz (43 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting QtPy==2.3.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 45))
+  Using cached QtPy-2.3.0.tar.gz (53 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: setuptools==69.0.3 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 47)) (69.0.3)
+Requirement already satisfied: wheel==0.38.4 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 49)) (0.38.4)
+Collecting yarl==1.8.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 51))
+  Downloading yarl-1.8.1.tar.gz (172 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 172.3/172.3 kB 24.5 MB/s eta 0:00:00
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: aiohttp, aiohttp-socks, aiorpcX, aiosignal, async-timeout, attrs, bitstring, certifi, charset-normalizer, dnspython, frozenlist, idna, jsonpatch, jsonpointer, multidict, protobuf, python-socks, QDarkStyle, qrcode, QtPy, yarl
+  Building wheel for aiohttp (pyproject.toml): started
+  Building wheel for aiohttp (pyproject.toml): finished with status 'error'
+  Building wheel for aiohttp-socks (pyproject.toml): started
+  Building wheel for aiohttp-socks (pyproject.toml): finished with status 'done'
+  Created wheel for aiohttp-socks: filename=aiohttp_socks-0.8.4-py3-none-any.whl size=9609 sha256=aaaa1c8e9a6733d00bf585bf5fb552fe16c5b80587eca16c848a9b1c09425044
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/4e/28/f3/fa2691a52fd0e751f4058b160c0b68f655badbf1d29cb0310b
+  Building wheel for aiorpcX (setup.py): started
+  Building wheel for aiorpcX (setup.py): finished with status 'done'
+  Created wheel for aiorpcX: filename=aiorpcX-0.22.1-py3-none-any.whl size=35420 sha256=d2f3d530326e2098990736a1abc14049b5b1664de35445326afc6aa5e193c525
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/18/9d/1a/d2c66001bd2abc9e83a2bf35310f495643e3590ac6a0330ddd
+  Building wheel for aiosignal (pyproject.toml): started
+  Building wheel for aiosignal (pyproject.toml): finished with status 'done'
+  Created wheel for aiosignal: filename=aiosignal-1.3.1-py3-none-any.whl size=7618 sha256=7f8f538f92f22dedab2edb238b07229cfd7a160f80060b1c95de18c76062931c
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/52/b6/98/9db9ecd54a156a085ca03dd0613859a4d9befcd50539d779dc
+  Building wheel for async-timeout (pyproject.toml): started
+  Building wheel for async-timeout (pyproject.toml): finished with status 'done'
+  Created wheel for async-timeout: filename=async_timeout-4.0.2-py3-none-any.whl size=5747 sha256=fc0797f801f678cb51e6c551ace1965792c1feee5a8b47845f51011ee4786b5f
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/64/78/a8/eef6ebf4a2cbeef8b1ee8249e3ff3ebee85457a74470a38b5f
+  Building wheel for attrs (pyproject.toml): started
+  Building wheel for attrs (pyproject.toml): finished with status 'done'
+  Created wheel for attrs: filename=attrs-22.1.0-py2.py3-none-any.whl size=58795 sha256=366ebe821ccbea2f279d46937dcc1049e9c2a3610530179bb7f603b198d6e026
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/e7/24/af/d46e96cd3701ceb4eeb0ccaabdacd1120b5229bf91800c2ac9
+  Building wheel for bitstring (setup.py): started
+  Building wheel for bitstring (setup.py): finished with status 'done'
+  Created wheel for bitstring: filename=bitstring-3.1.9-py3-none-any.whl size=38401 sha256=915f77f8b3d020953404e64f99fe800d01c2d069a56842432801059a62e02546
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/58/cf/dc/74d62e19ba804515b711b0cd237a6e099a2faa1f8ec3c22079
+  Building wheel for certifi (setup.py): started
+  Building wheel for certifi (setup.py): finished with status 'done'
+  Created wheel for certifi: filename=certifi-2023.11.17-py3-none-any.whl size=162528 sha256=312335274dae9f387099d2f8a643df109a9fef17eaac59cfa748509a4e0728c7
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/55/19/8d/c617ecbbf1c0781e12e4ce05c2d4096d755da21aff458699b7
+  Building wheel for charset-normalizer (setup.py): started
+  Building wheel for charset-normalizer (setup.py): finished with status 'done'
+  Created wheel for charset-normalizer: filename=charset_normalizer-2.1.1-py3-none-any.whl size=39748 sha256=354d737aa4dcfd7ef5ddabb7f458cd1a8c211b017f3d9b9456c01da7015c1bd4
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/16/79/a6/a975d4ecad1517df5aa003e35ee79e3aaa7b8ca8130acbeb72
+  Building wheel for dnspython (pyproject.toml): started
+  Building wheel for dnspython (pyproject.toml): finished with status 'done'
+  Created wheel for dnspython: filename=dnspython-2.2.1-py3-none-any.whl size=269094 sha256=28353d18f11029dc3d6ff8df7949710c3e443a735385136b50c4b58934bbc8af
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/a2/40/b2/6f31ad78f9e1d1cac7c787313ecf379fa90385f111653fe1eb
+  Building wheel for frozenlist (pyproject.toml): started
+  Building wheel for frozenlist (pyproject.toml): finished with status 'error'
+  Building wheel for idna (pyproject.toml): started
+  Building wheel for idna (pyproject.toml): finished with status 'done'
+  Created wheel for idna: filename=idna-3.4-py3-none-any.whl size=61539 sha256=6ed7c90fe45674c2924dff5d6cdaf4aa44ae598a4a6d7153e750d530ccfed99d
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/e6/99/18/c551adf9838e5519dbf1607f04e1fba8dff3ddbf7f0918cb9e
+  Building wheel for jsonpatch (setup.py): started
+  Building wheel for jsonpatch (setup.py): finished with status 'done'
+  Created wheel for jsonpatch: filename=jsonpatch-1.33-py2.py3-none-any.whl size=12882 sha256=523331eb8278cf9c79753894ca34aaf4665d2b7b1ef5a9589727ca8ba6e1aaa0
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/a8/be/f8/8ed731c4b08129b3396960a0288e00115c2d1ee458007c8aaf
+  Building wheel for jsonpointer (setup.py): started
+  Building wheel for jsonpointer (setup.py): finished with status 'done'
+  Created wheel for jsonpointer: filename=jsonpointer-2.3-py2.py3-none-any.whl size=7735 sha256=0ed34fbe01ff82cf1233b0a8f8d8abc0db4f6d5e37f79d2b37000399823d108e
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/8c/1e/2e/c8d4c74f050e5cd01bd13d489bef7e61763bba034e4ad45093
+  Building wheel for multidict (pyproject.toml): started
+  Building wheel for multidict (pyproject.toml): finished with status 'done'
+  Created wheel for multidict: filename=multidict-6.0.2-cp312-cp312-linux_x86_64.whl size=182426 sha256=e9f049b8322440959185d5df07b024347ac27597406fe46a992cdf2e07de492c
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/d5/3b/9b/128c0e12444b89e7e2deb9f604f8ceaccf2704f723d4314601
+  Building wheel for protobuf (setup.py): started
+  Building wheel for protobuf (setup.py): finished with status 'done'
+  Created wheel for protobuf: filename=protobuf-3.20.3-py2.py3-none-any.whl size=162133 sha256=fe1e90bfda0a36bc150a6af58bf1905806bae592703e201cdcc07f728792b00e
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/fc/2d/75/8a2f2988232dcb16a81794549e4efb1b4dae7974ca10653480
+  Building wheel for python-socks (pyproject.toml): started
+  Building wheel for python-socks (pyproject.toml): finished with status 'done'
+  Created wheel for python-socks: filename=python_socks-2.4.3-py3-none-any.whl size=52433 sha256=9c88bad401dda6d4df0af6eea5170d72b0bc605cd664ab368425a0f5871b83f8
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/32/cf/0c/afcfecd03c4ad3fa5ca6cbc7570ea1d7303fce3768850faf69
+  Building wheel for QDarkStyle (setup.py): started
+  Building wheel for QDarkStyle (setup.py): finished with status 'done'
+  Created wheel for QDarkStyle: filename=QDarkStyle-3.1-py2.py3-none-any.whl size=870167 sha256=ae09d800ba8db212598daca7b68a25daff7494e7596b2a68b58bcd1854889b37
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/5d/53/ab/37da52c14da456c9193a5f69b763909db4038395c3801697e0
+  Building wheel for qrcode (setup.py): started
+  Building wheel for qrcode (setup.py): finished with status 'done'
+  Created wheel for qrcode: filename=qrcode-7.3.1-py3-none-any.whl size=40386 sha256=599c9fbe86c8aedf8332933b2974078bc1bce03800037797741dc4399e5eaae4
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/23/13/8b/59ae3d8bf84ad9a4ce3b3f5a50932989bdc6264b361e1ba048
+  Building wheel for QtPy (pyproject.toml): started
+  Building wheel for QtPy (pyproject.toml): finished with status 'done'
+  Created wheel for QtPy: filename=QtPy-2.3.0-py3-none-any.whl size=83600 sha256=bf25b67e40f779660b9661460729a599034821b2a2b4b4445709fd79ffd6baee
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/b2/8b/df/ef5e1647cfe04554a554ea132655e908025814e68c4310b945
+  Building wheel for yarl (pyproject.toml): started
+  Building wheel for yarl (pyproject.toml): finished with status 'error'
+Successfully built aiohttp-socks aiorpcX aiosignal async-timeout attrs bitstring certifi charset-normalizer dnspython idna jsonpatch jsonpointer multidict protobuf python-socks QDarkStyle qrcode QtPy
+Failed to build aiohttp frozenlist yarl

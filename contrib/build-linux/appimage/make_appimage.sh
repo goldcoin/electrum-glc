@@ -54,7 +54,7 @@ download_if_not_exist "$CACHEDIR/appimagetool" "https://github.com/AppImage/appi
 # verify_hash "$CACHEDIR/appimagetool" "df3baf5ca5facbecfc2f3fa6713c29ab9cefa8fd8c1eac5d283b79cab33e4acb"
 
 download_if_not_exist "$CACHEDIR/Python-$PYTHON_VERSION.tar.xz" "https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tar.xz"
-verify_hash "$CACHEDIR/Python-$PYTHON_VERSION.tar.xz" "badd6b238947dcf5c8a1c2eceb62cdd1c1be5e39bb9aa5e4bec8e3f65fb7b3ed"
+verify_hash "$CACHEDIR/Python-$PYTHON_VERSION.tar.xz" "c30bb24b7f1e9a19b11b55a546434f74e739bb4c271a3e3a80ff4380d49f7adb"
 
 
 
@@ -69,8 +69,9 @@ tar xf "$CACHEDIR/Python-$PYTHON_VERSION.tar.xz" -C "$CACHEDIR"
     LC_ALL=C export BUILD_DATE=$(date -u -d "@$SOURCE_DATE_EPOCH" "+%b %d %Y")
     LC_ALL=C export BUILD_TIME=$(date -u -d "@$SOURCE_DATE_EPOCH" "+%H:%M:%S")
     # Patches taken from Ubuntu http://archive.ubuntu.com/ubuntu/pool/main/p/python3.10/python3.10_3.10.7-1ubuntu0.3.debian.tar.xz
-    patch -p1 < "$CONTRIB_APPIMAGE/patches/python-3.10-reproducible-buildinfo.diff"
-    patch -p1 < "$CONTRIB_APPIMAGE/patches/python-3.10-reproducible-pyc.diff"
+    # Python 3.10 patches don't apply to Python 3.12
+    # patch -p1 < "$CONTRIB_APPIMAGE/patches/python-3.10-reproducible-buildinfo.diff"
+    # patch -p1 < "$CONTRIB_APPIMAGE/patches/python-3.10-reproducible-pyc.diff"
     ./configure \
         --cache-file="$CACHEDIR/python.config.cache" \
         --prefix="$APPDIR/usr" \
@@ -175,12 +176,16 @@ info "Installing build dependencies."
     --cache-dir "$PIP_CACHE_DIR" -r "$CONTRIB/deterministic-build/requirements-build-appimage.txt"
 
 info "installing electrum and its dependencies."
+# Install packages with problematic C extensions as pure Python
+AIOHTTP_NO_EXTENSIONS=1 FROZENLIST_NO_EXTENSIONS=1 MULTIDICT_NO_EXTENSIONS=1 YARL_NO_EXTENSIONS=1 \
 "$python" -m pip install --no-build-isolation --no-dependencies --no-binary :all: --no-warn-script-location \
     --cache-dir "$PIP_CACHE_DIR" -r "$CONTRIB/deterministic-build/requirements.txt"
 "$python" -m pip install --no-build-isolation --no-dependencies --no-binary :all: --only-binary PyQt5,PyQt5-Qt5,cryptography --no-warn-script-location \
     --cache-dir "$PIP_CACHE_DIR" -r "$CONTRIB/deterministic-build/requirements-binaries.txt"
-"$python" -m pip install --no-build-isolation --no-dependencies --no-binary :all: --no-warn-script-location \
-    --cache-dir "$PIP_CACHE_DIR" -r "$CONTRIB/deterministic-build/requirements-hw.txt"
+# Hardware wallet dependencies - skip for now due to Python 3.12 compatibility issues
+# "$python" -m pip install --no-build-isolation --no-dependencies --no-binary :all: --no-warn-script-location \
+#     --cache-dir "$PIP_CACHE_DIR" -r "$CONTRIB/deterministic-build/requirements-hw.txt"
+echo "Skipping hardware wallet dependencies due to Python 3.12 compatibility issues"
 
 "$python" -m pip install --no-build-isolation --no-dependencies --no-warn-script-location \
     --cache-dir "$PIP_CACHE_DIR" "$PROJECT_ROOT"

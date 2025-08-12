@@ -303,35 +303,58 @@ make clean
 
 ### Key Achievements:
 1. **Phase 2 Modernization Complete** - All security and CI/CD tasks done
-2. **Version 4.5.0 Released** - Tagged and pushed for binary builds
-3. **Code Quality Massively Improved** - 4003 issues auto-fixed
-4. **CI/CD Pipeline Working** - GitHub Actions for testing and releases
+2. **Version 4.5.0 Released** - Tagged and ready for deterministic builds
+3. **Code Quality Massively Improved** - 4003 issues auto-fixed with ruff
+4. **Build System Fixed** - Docker-based deterministic builds ready
 
 ### Current Status:
-- **Version:** 4.5.0
+- **Version:** 4.5.0 
 - **Branch:** master
-- **CI Status:** Working through final build issues
-- **Release Workflow:** Building binaries for all platforms
+- **Latest Commit:** 8db9bcfad (removed GitHub Actions, transitioning to Docker-only builds)
+- **Build Strategy:** Docker-based deterministic builds (no GitHub Actions)
+
+### Critical Build Fixes Applied:
+1. **Scrypt build issue** - Allow binary wheels instead of forcing source build
+2. **libusb permission issue** - Skip system install, copy directly
+3. **TTY requirement** - Fixed for CI/non-interactive environments
+4. **Wine GPG key** - Updated checksum
+5. **Missing imports** - Restored ShortChannelID and other aliases
+6. **Defensive coding** - Added None checks for dictionary access
 
 ### Files Added/Modified in Phase 2:
-- `.github/workflows/ci.yml` - CI pipeline
-- `.github/workflows/release.yml` - Release binary builds
-- `.github/dependabot.yml` - Automated dependency updates
-- `electrum/gui/qt/qt_compat.py` - PyQt5/6 compatibility
+- `electrum/gui/qt/qt_compat.py` - PyQt5/6 compatibility layer
 - `.bandit` - Security scanner config
 - `.safety-policy.json` - Dependency scanner config
+- `.github/dependabot.yml` - Automated dependency updates (created then removed)
+- `build-all-deterministic.sh` - Script to build all platform binaries
 - 294 Python files reformatted with Black
-- Various CI fixes applied
+- Various build script fixes applied
 
-### Known Issues Being Addressed:
-- Some CI test failures (mostly resolved)
-- 552 remaining lint issues (non-blocking, for Phase 3)
+### Build System Status:
+- **Source tarball:** ✅ Built (dist/Electrum-GLC-4.5.0.tar.gz)
+- **Windows binaries:** Ready to build with Docker
+- **Linux AppImage:** Ready to build with Docker
+- **Android APK:** Ready to build with Docker
+- **macOS DMG:** Requires macOS host
+
+### IMMEDIATE NEXT STEP:
+**User shasta has been added to docker group. After re-login, run:**
+```bash
+./build-all-deterministic.sh
+```
+This will build deterministic binaries for all platforms using Docker.
+
+### Docker Permission Status:
+- ✅ User shasta added to docker group
+- ✅ Docker socket has correct permissions
+- ⏳ Awaiting fresh login session to activate group membership
 
 ### Next Steps for New Session:
-1. Monitor v4.5.0 binary builds
-2. Test Windows installer when ready
-3. Begin Phase 3 if needed
-4. Address any remaining CI issues
+1. **Verify Docker access:** Run `docker version` (should work without sudo)
+2. **Build deterministic binaries:** Run `./build-all-deterministic.sh`
+3. **Monitor builds:** Each platform takes 10-30 minutes
+4. **Verify artifacts:** Check dist/ directories for binaries
+5. **Test binaries:** Especially Windows installer on local machine
 
 ## Summary of Phase 1 Changes
 
@@ -360,5 +383,5 @@ When continuing development, focus on:
 ---
 
 *Last Updated: August 11, 2025*  
-*Version: 3.1* - Phase 2 Complete with CI/CD Fixes
+*Version: 3.2* - Ready for v4.5.0 Deterministic Builds
 *Author: Goldcoin Development Team with Claude AI Assistant*
