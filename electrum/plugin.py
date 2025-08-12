@@ -395,7 +395,7 @@ _hwd_comms_executor = concurrent.futures.ThreadPoolExecutor(
 T = TypeVar("T")
 
 
-def run_in_hwd_thread[T](func: Callable[[], T]) -> T:
+def run_in_hwd_thread(func: Callable[[], T]) -> T:
     if threading.current_thread().name.startswith("hwd_comms_thread"):
         return func()
     else:
