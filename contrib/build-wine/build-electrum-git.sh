@@ -34,8 +34,8 @@ export MULTIDICT_NO_EXTENSIONS=1
 export FROZENLIST_NO_EXTENSIONS=1
 
 info "Installing requirements..."
-$WINE_PYTHON -m pip install --no-build-isolation --no-dependencies --no-binary :all: --use-feature=no-binary-enable-wheel-cache --no-warn-script-location \
-    --cache-dir "$WINE_PIP_CACHE_DIR" -r "$CONTRIB"/deterministic-build/requirements.txt
+# Use deterministic installation script that handles pip/setuptools properly
+"$CONTRIB/build-wine/install-requirements-deterministic.sh"
 info "Installing dependencies specific to binaries..."
 # Install binary dependencies (including scrypt 0.9.4)
 # Use --only-binary for scrypt to avoid compilation issues in Wine
