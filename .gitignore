@@ -49,3 +49,10 @@ electrum/*.so.*
 electrum/*.dll
 electrum/*.dylib
 contrib/osx/*.dylib
+
+# test builds and executables
+test-builds/
+*.exe
+*.msi
+*.dmg
+*.AppImage
