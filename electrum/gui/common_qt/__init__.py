@@ -7,7 +7,7 @@ import sys
 
 # FIXME: remove when both desktop and mobile are Qt6
 def get_qt_major_version() -> int:
-    _GUI_QT_VERSION = getattr(sys, '_GUI_QT_VERSION', None)
+    _GUI_QT_VERSION = getattr(sys, "_GUI_QT_VERSION", None)
     if _GUI_QT_VERSION is None:
         # used by pyinstaller when building (analysis phase)
         _GUI_QT_VERSION = 5

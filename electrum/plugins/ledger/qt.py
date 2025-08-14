@@ -4,14 +4,19 @@ from typing import TYPE_CHECKING
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QInputDialog, QLineEdit
 
+from electrum.gui.qt.wizard.wallet import (
+    WCHWUninitialized,
+    WCHWUnlock,
+    WCHWXPub,
+    WCScriptAndDerivation,
+)
 from electrum.i18n import _
 from electrum.plugin import hook
 from electrum.wallet import Standard_Wallet
 
-from .ledger import LedgerPlugin, Ledger_Client
-from ..hw_wallet.qt import QtHandlerBase, QtPluginBase
 from ..hw_wallet.plugin import only_hook_if_libraries_available
-from electrum.gui.qt.wizard.wallet import WCScriptAndDerivation, WCHWUninitialized, WCHWUnlock, WCHWXPub
+from ..hw_wallet.qt import QtHandlerBase, QtPluginBase
+from .ledger import Ledger_Client, LedgerPlugin
 
 if TYPE_CHECKING:
     from electrum.gui.qt.wizard.wallet import QENewWalletWizard
@@ -31,22 +36,24 @@ class Plugin(LedgerPlugin, QtPluginBase):
             return
         keystore = wallet.get_keystore()
         if type(keystore) == self.keystore_class and len(addrs) == 1:
+
             def show_address():
                 keystore.thread.add(partial(self.show_address, wallet, addrs[0], keystore=keystore))
+
             menu.addAction(_("Show on Ledger"), show_address)
 
     @hook
-    def init_wallet_wizard(self, wizard: 'QENewWalletWizard'):
+    def init_wallet_wizard(self, wizard: "QENewWalletWizard"):
         self.extend_wizard(wizard)
 
     # insert ledger pages in new wallet wizard
-    def extend_wizard(self, wizard: 'QENewWalletWizard'):
+    def extend_wizard(self, wizard: "QENewWalletWizard"):
         super().extend_wizard(wizard)
         views = {
-            'ledger_start': {'gui': WCScriptAndDerivation},
-            'ledger_xpub': {'gui': WCHWXPub},
-            'ledger_not_initialized': {'gui': WCHWUninitialized},
-            'ledger_unlock': {'gui': WCHWUnlock}
+            "ledger_start": {"gui": WCScriptAndDerivation},
+            "ledger_xpub": {"gui": WCHWXPub},
+            "ledger_not_initialized": {"gui": WCHWUninitialized},
+            "ledger_unlock": {"gui": WCHWUnlock},
         }
         wizard.navmap_merge(views)
 
@@ -58,19 +65,21 @@ class Ledger_Handler(QtHandlerBase):
     MESSAGE_DIALOG_TITLE = _("Ledger Status")
 
     def __init__(self, win):
-        super(Ledger_Handler, self).__init__(win, 'Ledger')
+        super().__init__(win, "Ledger")
         self.setup_signal.connect(self.setup_dialog)
         self.auth_signal.connect(self.auth_dialog)
 
     def word_dialog(self, msg):
-        response = QInputDialog.getText(self.top_level_window(), "Ledger Wallet Authentication", msg, QLineEdit.Password)
+        response = QInputDialog.getText(
+            self.top_level_window(), "Ledger Wallet Authentication", msg, QLineEdit.Password
+        )
         if not response[1]:
             self.word = None
         else:
             self.word = str(response[0])
         self.done.set()
 
-    def auth_dialog(self, data, client: 'Ledger_Client'):
+    def auth_dialog(self, data, client: "Ledger_Client"):
         try:
             from .auth2fa import LedgerAuthDialog
         except ImportError as e:
@@ -81,7 +90,7 @@ class Ledger_Handler(QtHandlerBase):
         self.word = dialog.pin
         self.done.set()
 
-    def get_auth(self, data, *, client: 'Ledger_Client'):
+    def get_auth(self, data, *, client: "Ledger_Client"):
         self.done.clear()
         self.auth_signal.emit(data, client)
         self.done.wait()
@@ -94,4 +103,4 @@ class Ledger_Handler(QtHandlerBase):
         return
 
     def setup_dialog(self):
-        self.show_error(_('Initialization of Ledger HW devices is currently disabled.'))
+        self.show_error(_("Initialization of Ledger HW devices is currently disabled."))

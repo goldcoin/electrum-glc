@@ -1,21 +1,19 @@
 import os
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject
+from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QGuiApplication
 
-from electrum.util import send_exception_to_crash_reporter, UserFacingException
-from electrum.simple_config import SimpleConfig
-from electrum.logging import get_logger
 from electrum.i18n import _
+from electrum.logging import get_logger
+from electrum.util import send_exception_to_crash_reporter
 
-
-if 'ANDROID_DATA' in os.environ:
-    from jnius import autoclass, cast
+if "ANDROID_DATA" in os.environ:
     from android import activity
+    from jnius import autoclass
 
-    jpythonActivity = autoclass('org.kivy.android.PythonActivity').mActivity
-    jString = autoclass('java.lang.String')
-    jIntent = autoclass('android.content.Intent')
+    jpythonActivity = autoclass("org.kivy.android.PythonActivity").mActivity
+    jString = autoclass("java.lang.String")
+    jIntent = autoclass("android.content.Intent")
 
 
 class QEQRScanner(QObject):
@@ -46,7 +44,7 @@ class QEQRScanner(QObject):
 
     @pyqtSlot()
     def open(self):
-        if 'ANDROID_DATA' not in os.environ:
+        if "ANDROID_DATA" not in os.environ:
             self._scan_qr_non_android()
             return
         SimpleScannerActivity = autoclass("org.electrum.qr.SimpleScannerActivity")
@@ -59,13 +57,14 @@ class QEQRScanner(QObject):
                     #  this doesn't work due to some bug in jnius:
                     # contents = intent.getStringExtra("text")
                     contents = intent.getStringExtra(jString("text"))
-                    #self._logger.info(f"on_qr_result. {contents=!r}")
+                    # self._logger.info(f"on_qr_result. {contents=!r}")
                     self.scanData = contents
                     self.found.emit()
             except Exception as e:  # exc would otherwise get lost
                 send_exception_to_crash_reporter(e)
             finally:
                 activity.unbind(on_activity_result=on_qr_result)
+
         activity.bind(on_activity_result=on_qr_result)
         jpythonActivity.startActivityForResult(intent, 0)
 

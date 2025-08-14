@@ -26,6 +26,6 @@
 
 from .swapserver import SwapServerPlugin
 
+
 class Plugin(SwapServerPlugin):
     pass
-

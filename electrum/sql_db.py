@@ -1,8 +1,8 @@
+import asyncio
 import os
 import queue
-import threading
-import asyncio
 import sqlite3
+import threading
 
 from .logging import Logger
 from .util import test_read_write_permissions
@@ -13,11 +13,13 @@ def sql(func):
 
     returns an awaitable asyncio.Future
     """
-    def wrapper(self: 'SqlDB', *args, **kwargs):
+
+    def wrapper(self: "SqlDB", *args, **kwargs):
         assert threading.current_thread() != self.sql_thread
         f = self.asyncio_loop.create_future()
         self.db_requests.put((f, func, args, kwargs))
         return f
+
     return wrapper
 
 

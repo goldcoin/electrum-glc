@@ -1,0 +1,21 @@
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+💬 [0;34mINFO:[0m  Clearing /home/shasta/git/electrum-glc/contrib/build-wine/../../contrib/build-wine/dist...
+💬 [0;34mINFO:[0m  building docker image.
+💬 [0;34mINFO:[0m  not doing fresh clone.
+💬 [0;34mINFO:[0m  building binary...
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+💬 [0;34mINFO:[0m  Clearing /opt/wine64/drive_c/electrum/contrib/build-wine/build and /opt/wine64/drive_c/electrum/contrib/build-wine/dist...
+💬 [0;34mINFO:[0m  libsecp256k1 already built, skipping
+💬 [0;34mINFO:[0m  libzbar already built, skipping
+💬 [0;34mINFO:[0m  libusb already built, skipping
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+💬 [0;34mINFO:[0m  Booting wine.
+💬 [0;34mINFO:[0m  Installing Python.
+Installing core...
+Installing dev...
+Installing exe...
+Installing lib...
+Installing pip...
+💬 [0;34mINFO:[0m  Intentionally breaking legacy easy_install.
+💬 [0;34mINFO:[0m  Installing build dependencies.
+🗯 [0;31mERROR:[0m prepare-wine failed

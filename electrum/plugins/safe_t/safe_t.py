@@ -1,39 +1,45 @@
-from typing import Optional, TYPE_CHECKING, Sequence
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Optional
 
-from electrum.util import UserFacingException
+from electrum import constants, descriptor
 from electrum.bip32 import BIP32Node
-from electrum import descriptor
-from electrum import constants
 from electrum.i18n import _
-from electrum.plugin import Device, runs_in_hwd_thread
-from electrum.transaction import Transaction, PartialTransaction, PartialTxInput, Sighash
 from electrum.keystore import Hardware_KeyStore
+from electrum.plugin import Device, runs_in_hwd_thread
+from electrum.transaction import PartialTransaction, PartialTxInput, Sighash, Transaction
+from electrum.util import UserFacingException
 
 from ..hw_wallet import HW_PluginBase
-from ..hw_wallet.plugin import is_any_tx_output_on_change_branch, trezor_validate_op_return_output_and_get_data
+from ..hw_wallet.plugin import (
+    is_any_tx_output_on_change_branch,
+    trezor_validate_op_return_output_and_get_data,
+)
 
 if TYPE_CHECKING:
-    from .client import SafeTClient
     from electrum.plugin import DeviceInfo
     from electrum.wizard import NewWalletWizard
 
+    from .client import SafeTClient
+
 # Safe-T mini initialization methods
-TIM_NEW, TIM_RECOVER, TIM_MNEMONIC, TIM_PRIVKEY = range(0, 4)
+TIM_NEW, TIM_RECOVER, TIM_MNEMONIC, TIM_PRIVKEY = range(4)
 
 
 class SafeTKeyStore(Hardware_KeyStore):
-    hw_type = 'safe_t'
-    device = 'Safe-T mini'
+    hw_type = "safe_t"
+    device = "Safe-T mini"
 
-    plugin: 'SafeTPlugin'
+    plugin: "SafeTPlugin"
 
     def decrypt_message(self, sequence, message, password):
-        raise UserFacingException(_('Encryption and decryption are not implemented by {}').format(self.device))
+        raise UserFacingException(
+            _("Encryption and decryption are not implemented by {}").format(self.device)
+        )
 
     @runs_in_hwd_thread
     def sign_message(self, sequence, message, password, *, script_type=None):
         client = self.get_client()
-        address_path = self.get_derivation_prefix() + "/%d/%d"%sequence
+        address_path = self.get_derivation_prefix() + "/%d/%d" % sequence
         address_n = client.expand_path(address_path)
         msg_sig = client.sign_message(self.plugin.get_coin_name(), address_n, message)
         return msg_sig.signature
@@ -47,7 +53,7 @@ class SafeTKeyStore(Hardware_KeyStore):
         for txin in tx.inputs():
             tx_hash = txin.prevout.txid.hex()
             if txin.utxo is None and not txin.is_segwit():
-                raise UserFacingException(_('Missing previous tx for legacy input.'))
+                raise UserFacingException(_("Missing previous tx for legacy input."))
             prev_tx[tx_hash] = txin.utxo
 
         self.plugin.sign_transaction(self, tx, prev_tx)
@@ -60,12 +66,12 @@ class SafeTPlugin(HW_PluginBase):
     #     libraries_available, libraries_URL, minimum_firmware,
     #     wallet_class, types
 
-    firmware_URL = 'https://safe-t.io'
-    libraries_URL = 'https://github.com/archos-safe-t/python-safet'
+    firmware_URL = "https://safe-t.io"
+    libraries_URL = "https://github.com/archos-safe-t/python-safet"
     minimum_firmware = (1, 0, 5)
     keystore_class = SafeTKeyStore
     minimum_library = (0, 1, 0)
-    SUPPORTED_XTYPES = ('standard', 'p2wpkh-p2sh', 'p2wpkh', 'p2wsh-p2sh', 'p2wsh')
+    SUPPORTED_XTYPES = ("standard", "p2wpkh-p2sh", "p2wpkh", "p2wsh-p2sh", "p2wsh")
 
     MAX_LABEL_LEN = 32
 
@@ -76,33 +82,39 @@ class SafeTPlugin(HW_PluginBase):
         if not self.libraries_available:
             return
 
-        from . import client
-        from . import transport
         import safetlib.messages
+
+        from . import client, transport
+
         self.client_class = client.SafeTClient
         self.types = safetlib.messages
-        self.DEVICE_IDS = ('Safe-T mini',)
+        self.DEVICE_IDS = ("Safe-T mini",)
 
         self.transport_handler = transport.SafeTTransport()
         self.device_manager().register_enumerate_func(self.enumerate)
 
     def get_library_version(self):
         import safetlib
+
         try:
             return safetlib.__version__
         except AttributeError:
-            return 'unknown'
+            return "unknown"
 
     @runs_in_hwd_thread
     def enumerate(self):
         devices = self.transport_handler.enumerate_devices()
-        return [Device(path=d.get_path(),
-                       interface_number=-1,
-                       id_=d.get_path(),
-                       product_key='Safe-T mini',
-                       usage_page=0,
-                       transport_ui_string=d.get_path())
-                for d in devices]
+        return [
+            Device(
+                path=d.get_path(),
+                interface_number=-1,
+                id_=d.get_path(),
+                product_key="Safe-T mini",
+                usage_page=0,
+                transport_ui_string=d.get_path(),
+            )
+            for d in devices
+        ]
 
     @runs_in_hwd_thread
     def create_client(self, device, handler):
@@ -122,15 +134,16 @@ class SafeTPlugin(HW_PluginBase):
 
         # Try a ping for device sanity
         try:
-            client.ping('t')
+            client.ping("t")
         except BaseException as e:
             self.logger.info(f"ping failed {e}")
             return None
 
         if not client.atleast_version(*self.minimum_firmware):
-            msg = (_('Outdated {} firmware for device labelled {}. Please '
-                     'download the updated firmware from {}')
-                   .format(self.device, client.label(), self.firmware_URL))
+            msg = _(
+                "Outdated {} firmware for device labelled {}. Please "
+                "download the updated firmware from {}"
+            ).format(self.device, client.label(), self.firmware_URL)
             self.logger.info(msg)
             if handler:
                 handler.show_error(msg)
@@ -141,11 +154,12 @@ class SafeTPlugin(HW_PluginBase):
         return client
 
     @runs_in_hwd_thread
-    def get_client(self, keystore, force_pair=True, *,
-                   devices=None, allow_user_interaction=True) -> Optional['SafeTClient']:
-        client = super().get_client(keystore, force_pair,
-                                    devices=devices,
-                                    allow_user_interaction=allow_user_interaction)
+    def get_client(
+        self, keystore, force_pair=True, *, devices=None, allow_user_interaction=True
+    ) -> Optional["SafeTClient"]:
+        client = super().get_client(
+            keystore, force_pair, devices=devices, allow_user_interaction=allow_user_interaction
+        )
         # returns the client for a given keystore. can use xpub
         if client:
             client.used()
@@ -159,15 +173,18 @@ class SafeTPlugin(HW_PluginBase):
         item, label, pin_protection, passphrase_protection = settings
 
         if method == TIM_RECOVER:
-            handler.show_error(_(
-                "You will be asked to enter 24 words regardless of your "
-                "seed's actual length.  If you enter a word incorrectly or "
-                "misspell it, you cannot change it or go back - you will need "
-                "to start again from the beginning.\n\nSo please enter "
-                "the words carefully!"),
-                blocking=True)
+            handler.show_error(
+                _(
+                    "You will be asked to enter 24 words regardless of your "
+                    "seed's actual length.  If you enter a word incorrectly or "
+                    "misspell it, you cannot change it or go back - you will need "
+                    "to start again from the beginning.\n\nSo please enter "
+                    "the words carefully!"
+                ),
+                blocking=True,
+            )
 
-        language = 'english'
+        language = "english"
         devmgr = self.device_manager()
         client = devmgr.client_by_id(device_id)
         if not client:
@@ -177,56 +194,61 @@ class SafeTPlugin(HW_PluginBase):
             strength = 64 * (item + 2)  # 128, 192 or 256
             u2f_counter = 0
             skip_backup = False
-            client.reset_device(True, strength, passphrase_protection,
-                                pin_protection, label, language,
-                                u2f_counter, skip_backup)
+            client.reset_device(
+                True,
+                strength,
+                passphrase_protection,
+                pin_protection,
+                label,
+                language,
+                u2f_counter,
+                skip_backup,
+            )
         elif method == TIM_RECOVER:
             word_count = 6 * (item + 2)  # 12, 18 or 24
             client.step = 0
-            client.recovery_device(word_count, passphrase_protection,
-                                       pin_protection, label, language)
+            client.recovery_device(
+                word_count, passphrase_protection, pin_protection, label, language
+            )
         elif method == TIM_MNEMONIC:
             pin = pin_protection  # It's the pin, not a boolean
-            client.load_device_by_mnemonic(str(item), pin,
-                                           passphrase_protection,
-                                           label, language)
+            client.load_device_by_mnemonic(str(item), pin, passphrase_protection, label, language)
         else:
             pin = pin_protection  # It's the pin, not a boolean
-            client.load_device_by_xprv(item, pin, passphrase_protection,
-                                       label, language)
+            client.load_device_by_xprv(item, pin, passphrase_protection, label, language)
 
     def _make_node_path(self, xpub: str, address_n: Sequence[int]):
         bip32node = BIP32Node.from_xkey(xpub)
         node = self.types.HDNodeType(
             depth=bip32node.depth,
-            fingerprint=int.from_bytes(bip32node.fingerprint, 'big'),
-            child_num=int.from_bytes(bip32node.child_number, 'big'),
+            fingerprint=int.from_bytes(bip32node.fingerprint, "big"),
+            child_num=int.from_bytes(bip32node.child_number, "big"),
             chain_code=bip32node.chaincode,
             public_key=bip32node.eckey.get_public_key_bytes(compressed=True),
         )
         return self.types.HDNodePathType(node=node, address_n=address_n)
 
     def get_safet_input_script_type(self, electrum_txin_type: str):
-        if electrum_txin_type in ('p2wpkh', 'p2wsh'):
+        if electrum_txin_type in ("p2wpkh", "p2wsh"):
             return self.types.InputScriptType.SPENDWITNESS
-        if electrum_txin_type in ('p2wpkh-p2sh', 'p2wsh-p2sh'):
+        if electrum_txin_type in ("p2wpkh-p2sh", "p2wsh-p2sh"):
             return self.types.InputScriptType.SPENDP2SHWITNESS
-        if electrum_txin_type in ('p2pkh',):
+        if electrum_txin_type in ("p2pkh",):
             return self.types.InputScriptType.SPENDADDRESS
-        if electrum_txin_type in ('p2sh',):
+        if electrum_txin_type in ("p2sh",):
             return self.types.InputScriptType.SPENDMULTISIG
-        raise ValueError('unexpected txin type: {}'.format(electrum_txin_type))
+        raise ValueError(f"unexpected txin type: {electrum_txin_type}")
 
     def get_safet_output_script_type(self, electrum_txin_type: str):
-        if electrum_txin_type in ('p2wpkh', 'p2wsh'):
+        if electrum_txin_type in ("p2wpkh", "p2wsh"):
             return self.types.OutputScriptType.PAYTOWITNESS
-        if electrum_txin_type in ('p2wpkh-p2sh', 'p2wsh-p2sh'):
+        if electrum_txin_type in ("p2wpkh-p2sh", "p2wsh-p2sh"):
             return self.types.OutputScriptType.PAYTOP2SHWITNESS
-        if electrum_txin_type in ('p2pkh',):
+        if electrum_txin_type in ("p2pkh",):
             return self.types.OutputScriptType.PAYTOADDRESS
-        if electrum_txin_type in ('p2sh',):
+        if electrum_txin_type in ("p2sh",):
             return self.types.OutputScriptType.PAYTOMULTISIG
-        raise ValueError('unexpected txin type: {}'.format(electrum_txin_type))
+        raise ValueError(f"unexpected txin type: {electrum_txin_type}")
 
     @runs_in_hwd_thread
     def sign_transaction(self, keystore, tx: PartialTransaction, prev_tx):
@@ -234,8 +256,9 @@ class SafeTPlugin(HW_PluginBase):
         client = self.get_client(keystore)
         inputs = self.tx_inputs(tx, for_sig=True, keystore=keystore)
         outputs = self.tx_outputs(tx, keystore=keystore)
-        signatures = client.sign_tx(self.get_coin_name(), inputs, outputs,
-                                    lock_time=tx.locktime, version=tx.version)[0]
+        signatures = client.sign_tx(
+            self.get_coin_name(), inputs, outputs, lock_time=tx.locktime, version=tx.version
+        )[0]
         sighash = Sighash.to_sigbytes(Sighash.ALL).hex()
         signatures = [(x.hex() + sighash) for x in signatures]
         tx.update_signatures(signatures)
@@ -252,7 +275,7 @@ class SafeTPlugin(HW_PluginBase):
             return
         deriv_suffix = wallet.get_address_index(address)
         derivation = keystore.get_derivation_prefix()
-        address_path = "%s/%d/%d"%(derivation, *deriv_suffix)
+        address_path = "%s/%d/%d" % (derivation, *deriv_suffix)
         address_n = client.expand_path(address_path)
         script_type = self.get_safet_input_script_type(wallet.txin_type)
 
@@ -263,15 +286,17 @@ class SafeTPlugin(HW_PluginBase):
         else:
             multisig = None
 
-        client.get_address(self.get_coin_name(), address_n, True, multisig=multisig, script_type=script_type)
+        client.get_address(
+            self.get_coin_name(), address_n, True, multisig=multisig, script_type=script_type
+        )
 
-    def tx_inputs(self, tx: Transaction, *, for_sig=False, keystore: 'SafeTKeyStore' = None):
+    def tx_inputs(self, tx: Transaction, *, for_sig=False, keystore: "SafeTKeyStore" = None):
         inputs = []
         for txin in tx.inputs():
             txinputtype = self.types.TxInputType()
             if txin.is_coinbase_input():
-                prev_hash = b"\x00"*32
-                prev_index = 0xffffffff  # signed int -1
+                prev_hash = b"\x00" * 32
+                prev_index = 0xFFFFFFFF  # signed int -1
             else:
                 if for_sig:
                     assert isinstance(tx, PartialTransaction)
@@ -283,10 +308,10 @@ class SafeTPlugin(HW_PluginBase):
                         multisig = self._make_multisig(multi)
                     else:
                         multisig = None
-                    script_type = self.get_safet_input_script_type(desc.to_legacy_electrum_script_type())
-                    txinputtype = self.types.TxInputType(
-                        script_type=script_type,
-                        multisig=multisig)
+                    script_type = self.get_safet_input_script_type(
+                        desc.to_legacy_electrum_script_type()
+                    )
+                    txinputtype = self.types.TxInputType(script_type=script_type, multisig=multisig)
                     my_pubkey, full_path = keystore.find_my_pubkey_in_txinout(txin)
                     if full_path:
                         txinputtype._extend_address_n(full_path)
@@ -317,11 +342,10 @@ class SafeTPlugin(HW_PluginBase):
             der_suffix = pubkey_provider.get_der_suffix_int_list()
             pubkeys.append(self._make_node_path(xpub, der_suffix))
         return self.types.MultisigRedeemScriptType(
-            pubkeys=pubkeys,
-            signatures=[b''] * len(pubkeys),
-            m=desc.thresh)
+            pubkeys=pubkeys, signatures=[b""] * len(pubkeys), m=desc.thresh
+        )
 
-    def tx_outputs(self, tx: PartialTransaction, *, keystore: 'SafeTKeyStore'):
+    def tx_outputs(self, tx: PartialTransaction, *, keystore: "SafeTKeyStore"):
 
         def create_output_by_derivation():
             desc = txout.script_descriptor
@@ -334,10 +358,8 @@ class SafeTPlugin(HW_PluginBase):
             my_pubkey, full_path = keystore.find_my_pubkey_in_txinout(txout)
             assert full_path
             txoutputtype = self.types.TxOutputType(
-                multisig=multisig,
-                amount=txout.value,
-                address_n=full_path,
-                script_type=script_type)
+                multisig=multisig, amount=txout.value, address_n=full_path, script_type=script_type
+            )
             return txoutputtype
 
         def create_output_by_address():
@@ -376,7 +398,7 @@ class SafeTPlugin(HW_PluginBase):
 
         return outputs
 
-    def electrum_tx_to_txtype(self, tx: Optional[Transaction]):
+    def electrum_tx_to_txtype(self, tx: Transaction | None):
         t = self.types.TransactionType()
         if tx is None:
             # probably for segwit input and we don't need this prev txn
@@ -397,34 +419,36 @@ class SafeTPlugin(HW_PluginBase):
         tx = self.prev_tx[tx_hash]
         return self.electrum_tx_to_txtype(tx)
 
-    def wizard_entry_for_device(self, device_info: 'DeviceInfo', *, new_wallet=True) -> str:
+    def wizard_entry_for_device(self, device_info: "DeviceInfo", *, new_wallet=True) -> str:
         if new_wallet:
-            return 'safet_start' if device_info.initialized else 'safet_not_initialized'
+            return "safet_start" if device_info.initialized else "safet_not_initialized"
         else:
-            return 'safet_unlock'
+            return "safet_unlock"
 
     # insert safe_t pages in new wallet wizard
-    def extend_wizard(self, wizard: 'NewWalletWizard'):
+    def extend_wizard(self, wizard: "NewWalletWizard"):
         views = {
-            'safet_start': {
-                'next': 'safet_xpub',
+            "safet_start": {
+                "next": "safet_xpub",
             },
-            'safet_xpub': {
-                'next': lambda d: wizard.wallet_password_view(d) if wizard.last_cosigner(d) else 'multisig_cosigner_keystore',
-                'accept': wizard.maybe_master_pubkey,
-                'last': lambda d: wizard.is_single_password() and wizard.last_cosigner(d)
+            "safet_xpub": {
+                "next": lambda d: (
+                    wizard.wallet_password_view(d)
+                    if wizard.last_cosigner(d)
+                    else "multisig_cosigner_keystore"
+                ),
+                "accept": wizard.maybe_master_pubkey,
+                "last": lambda d: wizard.is_single_password() and wizard.last_cosigner(d),
             },
-            'safet_not_initialized': {
-                'next': 'safet_choose_new_recover',
+            "safet_not_initialized": {
+                "next": "safet_choose_new_recover",
             },
-            'safet_choose_new_recover': {
-                'next': 'safet_do_init',
+            "safet_choose_new_recover": {
+                "next": "safet_do_init",
             },
-            'safet_do_init': {
-                'next': 'safet_start',
+            "safet_do_init": {
+                "next": "safet_start",
             },
-            'safet_unlock': {
-                'last': True
-            },
+            "safet_unlock": {"last": True},
         }
         wizard.navmap_merge(views)

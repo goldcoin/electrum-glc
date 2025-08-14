@@ -28,16 +28,14 @@
 from typing import Optional
 
 from ..logging import get_logger
-
 from .abstract_base import AbstractQrCodeReader, QrCodeResult
-
 
 _logger = get_logger(__name__)
 
 
 class MissingQrDetectionLib(RuntimeError):
-    ''' Raised if we can't find zbar or whatever other platform lib
-    we require to detect QR in image frames. '''
+    """Raised if we can't find zbar or whatever other platform lib
+    we require to detect QR in image frames."""
 
 
 def get_qr_reader() -> AbstractQrCodeReader:
@@ -48,6 +46,7 @@ def get_qr_reader() -> AbstractQrCodeReader:
     excs = []
     try:
         from .zbar import ZbarQrCodeReader
+
         return ZbarQrCodeReader()
         """
         # DEBUG CODE BELOW
@@ -63,11 +62,14 @@ def get_qr_reader() -> AbstractQrCodeReader:
         _logger.exception("")
         excs.append(e)
 
-    raise MissingQrDetectionLib(f"The platform QR detection library is not available.\nerrors: {excs!r}")
+    raise MissingQrDetectionLib(
+        f"The platform QR detection library is not available.\nerrors: {excs!r}"
+    )
 
 
 # --- Internals below (not part of external API)
 
+
 class MissingLib(RuntimeError):
-    ''' Raised by underlying implementation if missing libs '''
-    pass
+    """Raised by underlying implementation if missing libs"""
+

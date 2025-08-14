@@ -23,17 +23,16 @@
 # As is, this script can test around ~1000 passwords per second for storage-encryption.
 
 import sys
-from string import digits, ascii_uppercase, ascii_lowercase
-from itertools import product
-from typing import Callable
+from collections.abc import Callable
 from functools import partial
+from itertools import product
+from string import ascii_lowercase, ascii_uppercase, digits
 
-from electrum.wallet import Wallet, Abstract_Wallet
-from electrum.storage import WalletStorage
-from electrum.wallet_db import WalletDB
 from electrum.simple_config import SimpleConfig
+from electrum.storage import WalletStorage
 from electrum.util import InvalidPassword
-
+from electrum.wallet import Abstract_Wallet, Wallet
+from electrum.wallet_db import WalletDB
 
 ALLOWED_CHARS = digits + ascii_uppercase + ascii_lowercase
 MAX_PASSWORD_LEN = 12
@@ -66,10 +65,12 @@ def bruteforce_loop(test_password: Callable[[str], bool]) -> str:
                 return password
             num_tested += 1
             if num_tested % 5000 == 0:
-                print(f"> tested {num_tested} passwords so far... most recently tried: {password!r}")
+                print(
+                    f"> tested {num_tested} passwords so far... most recently tried: {password!r}"
+                )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("ERROR. usage: bruteforce_pw.py <path_to_wallet_file>")
         sys.exit(1)
@@ -82,7 +83,7 @@ if __name__ == '__main__':
         sys.exit(1)
     if storage.is_encrypted():
         test_password = partial(test_password_for_storage_encryption, storage)
-        print(f"wallet found: with storage encryption.")
+        print("wallet found: with storage encryption.")
     else:
         db = WalletDB(storage.read(), manual_upgrades=True)
         wallet = Wallet(db, storage, config=config)
@@ -90,7 +91,7 @@ if __name__ == '__main__':
             print("wallet found but it is not encrypted.")
             sys.exit(0)
         test_password = partial(test_password_for_keystore_encryption, wallet)
-        print(f"wallet found: with keystore encryption.")
+        print("wallet found: with keystore encryption.")
     password = bruteforce_loop(test_password)
-    print(f"====================")
+    print("====================")
     print(f"password found: {password}")

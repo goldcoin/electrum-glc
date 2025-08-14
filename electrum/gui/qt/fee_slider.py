@@ -1,10 +1,11 @@
 import threading
 
-from PyQt5.QtGui import QCursor
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QSlider, QToolTip, QComboBox
+from PyQt5.QtGui import QCursor
+from PyQt5.QtWidgets import QComboBox, QSlider, QToolTip
 
 from electrum.i18n import _
+
 
 class FeeComboBox(QComboBox):
 
@@ -12,18 +13,15 @@ class FeeComboBox(QComboBox):
         QComboBox.__init__(self)
         self.config = fee_slider.config
         self.fee_slider = fee_slider
-        
-        self.addItems([_('Static')])
+
+        self.addItems([_("Static")])
         self.setCurrentIndex(0)
         self.currentIndexChanged.connect(self.on_fee_type)
-        self.help_msg = '\n'.join([
-           _('Static: the fee slider uses static values')
-            ]
-        )
+        self.help_msg = "\n".join([_("Static: the fee slider uses static values")])
 
     def on_fee_type(self, x):
-        self.config.FEE_EST_USE_MEMPOOL = (x == 2)
-        self.config.FEE_EST_DYNAMIC = (x > 0)
+        self.config.FEE_EST_USE_MEMPOOL = x == 2
+        self.config.FEE_EST_DYNAMIC = x > 0
         self.fee_slider.update()
 
 
@@ -42,7 +40,11 @@ class FeeSlider(QSlider):
 
     def get_fee_rate(self, pos):
         if self.dyn:
-            fee_rate = self.config.depth_to_fee(pos) if self.config.use_mempool_fees() else self.config.eta_to_fee(pos)
+            fee_rate = (
+                self.config.depth_to_fee(pos)
+                if self.config.use_mempool_fees()
+                else self.config.eta_to_fee(pos)
+            )
         else:
             fee_rate = self.config.static_fee(pos)
         return fee_rate
@@ -59,13 +61,13 @@ class FeeSlider(QSlider):
         mempool = self.config.use_mempool_fees()
         target, estimate = self.config.get_fee_text(pos, self.dyn, mempool, fee_rate)
         if self.dyn:
-            return _('Target') + ': ' + target + '\n' + _('Current rate') + ': ' + estimate
+            return _("Target") + ": " + target + "\n" + _("Current rate") + ": " + estimate
         else:
-            return _('Fixed rate') + ': ' + target + '\n' + _('Estimate') + ': ' + estimate
+            return _("Fixed rate") + ": " + target + "\n" + _("Estimate") + ": " + estimate
 
     def get_dynfee_target(self):
         if not self.dyn:
-            return ''
+            return ""
         pos = self.value()
         fee_rate = self.get_fee_rate(pos)
         mempool = self.config.use_mempool_fees()
@@ -84,7 +86,7 @@ class FeeSlider(QSlider):
 
     def activate(self):
         self._active = True
-        self.setStyleSheet('')
+        self.setStyleSheet("")
 
     def deactivate(self):
         self._active = False

@@ -23,11 +23,10 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import List
 
+from PyQt5.QtCore import QPoint, QRect, QRectF, QSize, Qt
+from PyQt5.QtGui import QColor, QPainter, QPainterPath, QPaintEvent, QPen, QTransform
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtGui import QPainter, QPaintEvent, QPen, QPainterPath, QColor, QTransform
-from PyQt5.QtCore import QPoint, QSize, QRect, QRectF, Qt
 
 from electrum.qrreader import QrCodeResult
 
@@ -65,8 +64,9 @@ class QrReaderVideoOverlay(QWidget):
         self.bg_rect_pen.setStyle(Qt.DotLine)
         self.bg_rect_fill = QColor(255, 255, 255, int(255 * self.BG_RECT_OPACITY))
 
-    def set_results(self, results: List[QrCodeResult], flip_x: bool,
-                    validator_results: QrReaderValidatorResult):
+    def set_results(
+        self, results: list[QrCodeResult], flip_x: bool, validator_results: QrReaderValidatorResult
+    ):
         self.results = results
         self.flip_x = flip_x
         self.validator_results = validator_results
@@ -88,8 +88,9 @@ class QrReaderVideoOverlay(QWidget):
         transform = painter.worldTransform()
 
         # Set scaling transform
-        transform = transform.scale(self.width() / self.resolution.width(),
-                                    self.height() / self.resolution.height())
+        transform = transform.scale(
+            self.width() / self.resolution.width(), self.height() / self.resolution.height()
+        )
 
         # Compute the transform to flip the coordinate system on the x axis
         transform_flip = QTransform()
@@ -114,7 +115,7 @@ class QrReaderVideoOverlay(QWidget):
                 pen.setColor(self.validator_results.result_colors[res])
             painter.setPen(pen)
             num_points = len(res.points)
-            for i in range(0, num_points):
+            for i in range(num_points):
                 i_n = i + 1
 
                 line_from = toqp(res.points[i])

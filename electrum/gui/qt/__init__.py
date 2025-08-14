@@ -27,51 +27,69 @@ import os
 import signal
 import sys
 import threading
-from typing import Optional, TYPE_CHECKING, List, Sequence
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, List, Optional
 
 try:
     import PyQt5
     import PyQt5.QtGui
 except Exception as e:
     from electrum import GuiImportError
+
     raise GuiImportError(
         "Error: Could not import PyQt5. On Linux systems, "
-        "you may try 'sudo apt-get install python3-pyqt5'") from e
+        "you may try 'sudo apt-get install python3-pyqt5'"
+    ) from e
 
-from PyQt5.QtGui import QGuiApplication
-from PyQt5.QtWidgets import QApplication, QSystemTrayIcon, QWidget, QMenu, QMessageBox
-from PyQt5.QtCore import QObject, pyqtSignal, QTimer, Qt
 import PyQt5.QtCore as QtCore
+from PyQt5.QtCore import QObject, Qt, QTimer, pyqtSignal
+from PyQt5.QtGui import QGuiApplication
+from PyQt5.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon, QWidget
+
 sys._GUI_QT_VERSION = 5  # used by gui/common_qt
 
 try:
     # Preload QtMultimedia at app start, if available.
     # We use QtMultimedia on some platforms for camera-handling, and
     # lazy-loading it later led to some crashes. Maybe due to bugs in PyQt5. (see #7725)
-    from PyQt5.QtMultimedia import QCameraInfo; del QCameraInfo
-except ImportError as e:
+    from PyQt5.QtMultimedia import QCameraInfo
+
+    del QCameraInfo
+except ImportError:
     pass  # failure is ok; it is an optional dependency.
 
-from electrum.i18n import _, set_language
-from electrum.plugin import run_hook
-from electrum.util import (UserCancelled, profiler, send_exception_to_crash_reporter,
-                           WalletFileException, BitcoinException, get_new_wallet_name, InvalidPassword)
-from electrum.wallet import Wallet, Abstract_Wallet
-from electrum.wallet_db import WalletDB, WalletRequiresSplit, WalletRequiresUpgrade, WalletUnfinished
-from electrum.logging import Logger
 from electrum.gui import BaseElectrumGui
+from electrum.i18n import _, set_language
+from electrum.keystore import load_keystore
+from electrum.logging import Logger
+from electrum.plugin import run_hook
 from electrum.simple_config import SimpleConfig
 from electrum.storage import WalletStorage
+from electrum.util import (
+    BitcoinException,
+    InvalidPassword,
+    UserCancelled,
+    WalletFileException,
+    get_new_wallet_name,
+    profiler,
+    send_exception_to_crash_reporter,
+)
+from electrum.wallet import Abstract_Wallet, Wallet
+from electrum.wallet_db import (
+    WalletDB,
+    WalletRequiresSplit,
+    WalletRequiresUpgrade,
+    WalletUnfinished,
+)
 from electrum.wizard import WizardViewState
-from electrum.keystore import load_keystore
 
-from .util import read_QIcon, ColorScheme, custom_message_box, MessageBoxMixin, WWLabel
+from .exception_window import Exception_Hook
+from .lightning_dialog import LightningDialog
 from .main_window import ElectrumWindow
 from .network_dialog import NetworkDialog
 from .stylesheet_patcher import patch_qt_stylesheet
-from .lightning_dialog import LightningDialog
+from .util import ColorScheme, MessageBoxMixin, WWLabel, custom_message_box, read_QIcon
 from .watchtower_dialog import WatchtowerDialog
-from .exception_window import Exception_Hook
 from .wizard.server_connect import QEServerConnectWizard
 from .wizard.wallet import QENewWalletWizard
 
@@ -83,7 +101,7 @@ if TYPE_CHECKING:
 class OpenFileEventFilter(QObject):
     def __init__(self, windows: Sequence[ElectrumWindow]):
         self.windows = windows
-        super(OpenFileEventFilter, self).__init__()
+        super().__init__()
 
     def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.FileOpen:
@@ -103,26 +121,27 @@ class QElectrumApplication(QApplication):
     alias_received_signal = pyqtSignal()
 
 
-
 class ElectrumGui(BaseElectrumGui, Logger):
 
-    network_dialog: Optional['NetworkDialog']
-    lightning_dialog: Optional['LightningDialog']
-    watchtower_dialog: Optional['WatchtowerDialog']
+    network_dialog: Optional["NetworkDialog"]
+    lightning_dialog: Optional["LightningDialog"]
+    watchtower_dialog: Optional["WatchtowerDialog"]
 
     @profiler
-    def __init__(self, *, config: 'SimpleConfig', daemon: 'Daemon', plugins: 'Plugins'):
+    def __init__(self, *, config: "SimpleConfig", daemon: "Daemon", plugins: "Plugins"):
         BaseElectrumGui.__init__(self, config=config, daemon=daemon, plugins=plugins)
         Logger.__init__(self)
-        self.logger.info(f"Qt GUI starting up... Qt={QtCore.QT_VERSION_STR}, PyQt={QtCore.PYQT_VERSION_STR}")
+        self.logger.info(
+            f"Qt GUI starting up... Qt={QtCore.QT_VERSION_STR}, PyQt={QtCore.PYQT_VERSION_STR}"
+        )
         # Uncomment this call to verify objects are being properly
         # GC-ed when windows are closed
-        #network.add_jobs([DebugMem([Abstract_Wallet, SPV, Synchronizer,
+        # network.add_jobs([DebugMem([Abstract_Wallet, SPV, Synchronizer,
         #                            ElectrumWindow], interval=5)])
         if hasattr(QtCore.Qt, "AA_ShareOpenGLContexts"):
             QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
-        if hasattr(QGuiApplication, 'setDesktopFileName'):
-            QGuiApplication.setDesktopFileName('electrum.desktop')
+        if hasattr(QGuiApplication, "setDesktopFileName"):
+            QGuiApplication.setDesktopFileName("electrum.desktop")
         self.gui_thread = threading.current_thread()
         self.windows = []  # type: List[ElectrumWindow]
         self.efilter = OpenFileEventFilter(self.windows)
@@ -150,13 +169,13 @@ class ElectrumGui(BaseElectrumGui, Logger):
         self.reload_app_stylesheet()
 
         # always load 2fa
-        self.plugins.load_plugin('trustedcoin')
+        self.plugins.load_plugin("trustedcoin")
 
-        run_hook('init_qt', self)
+        run_hook("init_qt", self)
 
     def _init_tray(self):
         self.tray = QSystemTrayIcon(self.tray_icon(), None)
-        self.tray.setToolTip('Electrum')
+        self.tray.setToolTip("Electrum")
         self.tray.activated.connect(self.tray_activated)
         self.build_tray_menu()
         self.tray.show()
@@ -171,14 +190,15 @@ class ElectrumGui(BaseElectrumGui, Logger):
              - in Coins tab, the color for "frozen" UTXOs, or
              - in TxDialog, the receiving/change address colors
         """
-        use_dark_theme = self.config.GUI_QT_COLOR_THEME == 'dark'
+        use_dark_theme = self.config.GUI_QT_COLOR_THEME == "dark"
         if use_dark_theme:
             try:
                 import qdarkstyle
+
                 self.app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
             except BaseException as e:
                 use_dark_theme = False
-                self.logger.warning(f'Error setting dark theme: {repr(e)}')
+                self.logger.warning(f"Error setting dark theme: {e!r}")
         else:
             self.app.setStyleSheet(self._default_qtstylesheet)
         # Apply any necessary stylesheet patches
@@ -215,9 +235,9 @@ class ElectrumGui(BaseElectrumGui, Logger):
 
     def tray_icon(self):
         if self.dark_icon:
-            return read_QIcon('electrum_dark_icon.png')
+            return read_QIcon("electrum_dark_icon.png")
         else:
-            return read_QIcon('electrum_light_icon.png')
+            return read_QIcon("electrum_light_icon.png")
 
     def toggle_tray_icon(self):
         if not self.tray:
@@ -228,7 +248,7 @@ class ElectrumGui(BaseElectrumGui, Logger):
 
     def tray_activated(self, reason):
         if reason == QSystemTrayIcon.DoubleClick:
-            if all([w.is_hidden() for w in self.windows]):
+            if all(w.is_hidden() for w in self.windows):
                 for w in self.windows:
                     w.bring_to_top()
             else:
@@ -269,7 +289,7 @@ class ElectrumGui(BaseElectrumGui, Logger):
     def _maybe_quit_if_no_windows_open(self) -> None:
         """Check if there are any open windows and decide whether we should quit."""
         # keep daemon running after close
-        if self.config.get('daemon'):
+        if self.config.get("daemon"):
             return
         # check if a wizard is in progress
         with self._num_wizards_lock:
@@ -299,9 +319,7 @@ class ElectrumGui(BaseElectrumGui, Logger):
             self.network_dialog.show()
             self.network_dialog.raise_()
             return
-        self.network_dialog = NetworkDialog(
-            network=self.daemon.network,
-            config=self.config)
+        self.network_dialog = NetworkDialog(network=self.daemon.network, config=self.config)
         self.network_dialog.show()
 
     def _create_window_for_wallet(self, wallet):
@@ -313,7 +331,7 @@ class ElectrumGui(BaseElectrumGui, Logger):
         return w
 
     def count_wizards_in_progress(func):
-        def wrapper(self: 'ElectrumGui', *args, **kwargs):
+        def wrapper(self: "ElectrumGui", *args, **kwargs):
             with self._num_wizards_lock:
                 self._num_wizards_in_progress += 1
             try:
@@ -322,17 +340,18 @@ class ElectrumGui(BaseElectrumGui, Logger):
                 with self._num_wizards_lock:
                     self._num_wizards_in_progress -= 1
                 self._maybe_quit_if_no_windows_open()
+
         return wrapper
 
     @count_wizards_in_progress
     def start_new_window(
-            self,
-            path,
-            uri: Optional[str],
-            *,
-            app_is_starting: bool = False,
-            force_wizard: bool = False,
-    ) -> Optional[ElectrumWindow]:
+        self,
+        path,
+        uri: str | None,
+        *,
+        app_is_starting: bool = False,
+        force_wizard: bool = False,
+    ) -> ElectrumWindow | None:
         """Raises the window for the wallet if it is open.
         Otherwise, opens the wallet and creates a new window for it.
         Warning: the returned window might be for a completely different wallet
@@ -353,12 +372,14 @@ class ElectrumGui(BaseElectrumGui, Logger):
             except WalletRequiresUpgrade:
                 pass  # open with wizard below
             except Exception as e:
-                self.logger.exception('')
+                self.logger.exception("")
                 err_text = str(e) if isinstance(e, WalletFileException) else repr(e)
-                custom_message_box(icon=QMessageBox.Warning,
-                                   parent=None,
-                                   title=_('Error'),
-                                   text=_('Cannot load wallet') + ' (1):\n' + err_text)
+                custom_message_box(
+                    icon=QMessageBox.Warning,
+                    parent=None,
+                    title=_("Error"),
+                    text=_("Cannot load wallet") + " (1):\n" + err_text,
+                )
                 if isinstance(e, WalletFileException) and e.should_report_crash:
                     send_exception_to_crash_reporter(e)
                 # if app is starting, still let wizard appear
@@ -378,12 +399,14 @@ class ElectrumGui(BaseElectrumGui, Logger):
             else:
                 window = self._create_window_for_wallet(wallet)
         except Exception as e:
-            self.logger.exception('')
+            self.logger.exception("")
             err_text = str(e) if isinstance(e, WalletFileException) else repr(e)
-            custom_message_box(icon=QMessageBox.Warning,
-                               parent=None,
-                               title=_('Error'),
-                               text=_('Cannot load wallet') + '(2) :\n' + err_text)
+            custom_message_box(
+                icon=QMessageBox.Warning,
+                parent=None,
+                title=_("Error"),
+                text=_("Cannot load wallet") + "(2) :\n" + err_text,
+            )
             if isinstance(e, WalletFileException) and e.should_report_crash:
                 send_exception_to_crash_reporter(e)
             if app_is_starting:
@@ -402,41 +425,43 @@ class ElectrumGui(BaseElectrumGui, Logger):
                 return self.start_new_window(path, uri=None, force_wizard=True)
             return
         window.bring_to_top()
-        window.setWindowState(window.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
+        window.setWindowState(
+            window.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive
+        )
         window.activateWindow()
         if uri:
             window.show_send_tab()
             window.send_tab.set_payment_identifier(uri)
         return window
 
-    def _start_wizard_to_select_or_create_wallet(self, path) -> Optional[Abstract_Wallet]:
+    def _start_wizard_to_select_or_create_wallet(self, path) -> Abstract_Wallet | None:
         wizard = QENewWalletWizard(self.config, self.app, self.plugins, self.daemon, path)
         result = wizard.exec()
         # TODO: use dialog.open() instead to avoid new event loop spawn?
-        self.logger.info(f'wizard dialog exec result={result}')
+        self.logger.info(f"wizard dialog exec result={result}")
         if result == QENewWalletWizard.Rejected:
-            self.logger.info('wizard dialog cancelled by user')
+            self.logger.info("wizard dialog cancelled by user")
             return
 
         d = wizard.get_wizard_data()
 
-        if d['wallet_is_open']:
+        if d["wallet_is_open"]:
             for window in self.windows:
-                if window.wallet.storage.path == d['wallet_name']:
+                if window.wallet.storage.path == d["wallet_name"]:
                     return window.wallet
-            raise Exception('found by wizard but not here?!')
+            raise Exception("found by wizard but not here?!")
 
-        if not d['wallet_exists']:
-            self.logger.info('about to create wallet')
+        if not d["wallet_exists"]:
+            self.logger.info("about to create wallet")
             wizard.create_storage()
-            if d['wallet_type'] == '2fa' and 'x3' not in d:
+            if d["wallet_type"] == "2fa" and "x3" not in d:
                 return
             wallet_file = wizard.path
         else:
-            wallet_file = d['wallet_name']
+            wallet_file = d["wallet_name"]
 
         try:
-            wallet = self.daemon.load_wallet(wallet_file, d['password'], upgrade=True)
+            wallet = self.daemon.load_wallet(wallet_file, d["password"], upgrade=True)
             return wallet
         except WalletRequiresSplit as e:
             wizard.run_split(wallet_file, e._split_data)
@@ -445,26 +470,34 @@ class ElectrumGui(BaseElectrumGui, Logger):
             # wallet creation is not complete, 2fa online phase
             db = e._wallet_db
             action = db.get_action()
-            assert action[1] == 'accept_terms_of_use', 'only support for resuming trustedcoin split setup'
-            k1 = load_keystore(db, 'x1')
-            if 'password' in d and d['password']:
-                xprv = k1.get_master_private_key(d['password'])
+            assert (
+                action[1] == "accept_terms_of_use"
+            ), "only support for resuming trustedcoin split setup"
+            k1 = load_keystore(db, "x1")
+            if d.get("password"):
+                xprv = k1.get_master_private_key(d["password"])
             else:
-                xprv = db.get('x1')['xprv']
+                xprv = db.get("x1")["xprv"]
             _wiz_data_updates = {
-                'wallet_name': os.path.basename(wallet_file),
-                'xprv1': xprv,
-                'xpub1': db.get('x1')['xpub'],
-                'xpub2': db.get('x2')['xpub'],
+                "wallet_name": os.path.basename(wallet_file),
+                "xprv1": xprv,
+                "xpub1": db.get("x1")["xpub"],
+                "xpub2": db.get("x2")["xpub"],
             }
             data = {**d, **_wiz_data_updates}
-            wizard = QENewWalletWizard(self.config, self.app, self.plugins, self.daemon, path,
-                                       start_viewstate=WizardViewState('trustedcoin_tos_email', data, {}))
+            wizard = QENewWalletWizard(
+                self.config,
+                self.app,
+                self.plugins,
+                self.daemon,
+                path,
+                start_viewstate=WizardViewState("trustedcoin_tos_email", data, {}),
+            )
             result = wizard.exec()
             if result == QENewWalletWizard.Rejected:
-                self.logger.info('wizard dialog cancelled by user')
+                self.logger.info("wizard dialog cancelled by user")
                 return
-            db.put('x3', wizard.get_wizard_data()['x3'])
+            db.put("x3", wizard.get_wizard_data()["x3"])
             db.write()
 
         wallet = Wallet(db, config=self.config)
@@ -479,7 +512,7 @@ class ElectrumGui(BaseElectrumGui, Logger):
         # save wallet path of last open window
         if not self.windows:
             self.config.save_last_wallet(window.wallet)
-        run_hook('on_close_window', window)
+        run_hook("on_close_window", window)
         self.daemon.stop_wallet(window.wallet.storage.path)
 
     def init_network(self):
@@ -505,14 +538,14 @@ class ElectrumGui(BaseElectrumGui, Logger):
             self.init_network()
         except UserCancelled:
             return
-        except Exception as e:
-            self.logger.exception('')
+        except Exception:
+            self.logger.exception("")
             return
         # start wizard to select/create wallet
         self.timer.start()
         path = self.config.get_wallet_path(use_gui_last_wallet=True)
         try:
-            if not self.start_new_window(path, self.config.get('url'), app_is_starting=True):
+            if not self.start_new_window(path, self.config.get("url"), app_is_starting=True):
                 return
         except Exception as e:
             self.logger.error("error loading wallet (or creating window for it)")
@@ -525,7 +558,7 @@ class ElectrumGui(BaseElectrumGui, Logger):
         # on some platforms the exec_ call may not return, so use _cleanup_before_exit
 
     def stop(self):
-        self.logger.info('closing GUI')
+        self.logger.info("closing GUI")
         self.app.quit_signal.emit()
 
     @classmethod

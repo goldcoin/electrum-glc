@@ -23,27 +23,24 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import time
-from xmlrpc.client import ServerProxy
-from typing import TYPE_CHECKING, Union, List, Tuple, Dict
 import ssl
+import time
+from typing import TYPE_CHECKING, Union
+from xmlrpc.client import ServerProxy
 
+import certifi
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QPushButton
-import certifi
 
-from electrum import util, keystore, ecc, crypto
-from electrum import transaction
-from electrum.transaction import Transaction, PartialTransaction, tx_from_any, SerializationError
+from electrum import crypto, ecc, keystore, util
 from electrum.bip32 import BIP32Node
-from electrum.plugin import BasePlugin, hook
-from electrum.i18n import _
-from electrum.wallet import Multisig_Wallet, Abstract_Wallet
-from electrum.util import bfh
-from electrum.logging import Logger
-
-from electrum.gui.qt.transaction_dialog import show_transaction, TxDialog
+from electrum.gui.qt.transaction_dialog import TxDialog, show_transaction
 from electrum.gui.qt.util import WaitingDialog
+from electrum.i18n import _
+from electrum.logging import Logger
+from electrum.plugin import BasePlugin, hook
+from electrum.transaction import PartialTransaction, SerializationError, Transaction, tx_from_any
+from electrum.wallet import Abstract_Wallet, Multisig_Wallet
 
 if TYPE_CHECKING:
     from electrum.gui.qt import ElectrumGui
@@ -52,13 +49,13 @@ if TYPE_CHECKING:
 
 ca_path = certifi.where()
 ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH, cafile=ca_path)
-server = ServerProxy('https://cosigner.electrum.org/', allow_none=True, context=ssl_context)
+server = ServerProxy("https://cosigner.electrum.org/", allow_none=True, context=ssl_context)
 # FIXME this is not using the network proxy.
 
 
 class Listener(util.DaemonThread):
 
-    def __init__(self, cw: 'CosignerWallet'):
+    def __init__(self, cw: "CosignerWallet"):
         util.DaemonThread.__init__(self)
         self.daemon = True
         self.cw = cw
@@ -89,8 +86,7 @@ class Listener(util.DaemonThread):
                 if message:
                     self.received.add(keyhash)
                     self.logger.info(f"received message for {keyhash}")
-                    self.cw.obj.cosigner_receive_signal.emit(
-                        keyhash, message)
+                    self.cw.obj.cosigner_receive_signal.emit(keyhash, message)
             # poll every 30 seconds
             time.sleep(30)
 
@@ -107,7 +103,7 @@ class Plugin(BasePlugin):
         self.cosigner_wallets = {}  # type: Dict[Abstract_Wallet, CosignerWallet]
 
     @hook
-    def init_qt(self, gui: 'ElectrumGui'):
+    def init_qt(self, gui: "ElectrumGui"):
         if self._init_qt_received:  # only need/want the first signal
             return
         self._init_qt_received = True
@@ -115,7 +111,7 @@ class Plugin(BasePlugin):
             self.load_wallet(window.wallet, window)
 
     @hook
-    def load_wallet(self, wallet: 'Abstract_Wallet', window: 'ElectrumWindow'):
+    def load_wallet(self, wallet: "Abstract_Wallet", window: "ElectrumWindow"):
         if type(wallet) != Multisig_Wallet:
             return
         self.cosigner_wallets[wallet] = CosignerWallet(wallet, window)
@@ -131,12 +127,12 @@ class Plugin(BasePlugin):
         return True
 
     @hook
-    def transaction_dialog(self, d: 'TxDialog'):
+    def transaction_dialog(self, d: "TxDialog"):
         if cw := self.cosigner_wallets.get(d.wallet):
             cw.hook_transaction_dialog(d)
 
     @hook
-    def transaction_dialog_update(self, d: 'TxDialog'):
+    def transaction_dialog_update(self, d: "TxDialog"):
         if cw := self.cosigner_wallets.get(d.wallet):
             cw.hook_transaction_dialog_update(d)
 
@@ -144,7 +140,7 @@ class Plugin(BasePlugin):
 class CosignerWallet(Logger):
     # one for each open window
 
-    def __init__(self, wallet: 'Multisig_Wallet', window: 'ElectrumWindow'):
+    def __init__(self, wallet: "Multisig_Wallet", window: "ElectrumWindow"):
         assert isinstance(wallet, Multisig_Wallet)
         self.wallet = wallet
         self.window = window
@@ -176,18 +172,18 @@ class CosignerWallet(Logger):
         self.listener.stop()
         self.listener = None
 
-    def hook_transaction_dialog(self, d: 'TxDialog'):
+    def hook_transaction_dialog(self, d: "TxDialog"):
         d.cosigner_send_button = b = QPushButton(_("Send to cosigner"))
         b.clicked.connect(lambda: self.do_send(d.tx))
         d.buttons.insert(0, b)
         b.setVisible(False)
 
-    def hook_transaction_dialog_update(self, d: 'TxDialog'):
+    def hook_transaction_dialog_update(self, d: "TxDialog"):
         assert self.wallet == d.wallet
         if d.tx.is_complete() or d.wallet.can_sign(d.tx):
             d.cosigner_send_button.setVisible(False)
             return
-        for xpub, K, _hash in self.cosigner_list:
+        for xpub, _K, _hash in self.cosigner_list:
             if self.cosigner_can_sign(d.tx, xpub):
                 d.cosigner_send_button.setVisible(True)
                 break
@@ -202,13 +198,21 @@ class CosignerWallet(Logger):
 
     def do_send(self, tx: Union[Transaction, PartialTransaction]):
         def on_success(result):
-            self.window.show_message(_("Your transaction was sent to the cosigning pool.") + '\n' +
-                                _("Open your cosigner wallet to retrieve it."))
+            self.window.show_message(
+                _("Your transaction was sent to the cosigning pool.")
+                + "\n"
+                + _("Open your cosigner wallet to retrieve it.")
+            )
+
         def on_failure(exc_info):
             e = exc_info[1]
-            try: self.logger.error("on_failure", exc_info=exc_info)
-            except OSError: pass
-            self.window.show_error(_("Failed to send transaction to cosigning pool") + ':\n' + repr(e))
+            try:
+                self.logger.error("on_failure", exc_info=exc_info)
+            except OSError:
+                pass
+            self.window.show_error(
+                _("Failed to send transaction to cosigning pool") + ":\n" + repr(e)
+            )
 
         buffer = []
         # construct messages
@@ -217,7 +221,7 @@ class CosignerWallet(Logger):
                 continue
             raw_tx_bytes = tx.serialize_as_bytes()
             public_key = ecc.ECPubkey(K)
-            message = public_key.encrypt_message(raw_tx_bytes).decode('ascii')
+            message = public_key.encrypt_message(raw_tx_bytes).decode("ascii")
             buffer.append((_hash, message))
         if not buffer:
             return
@@ -227,12 +231,13 @@ class CosignerWallet(Logger):
         def send_messages_task():
             for _hash, message in buffer:
                 server.put(_hash, message)
-        msg = _('Sending transaction to cosigning pool...')
+
+        msg = _("Sending transaction to cosigning pool...")
         WaitingDialog(self.window, msg, send_messages_task, on_success, on_failure)
 
     def on_receive(self, keyhash, message):
         self.logger.info(f"signal arrived for {keyhash}")
-        for key, _hash in self.keys:
+        for _key, _hash in self.keys:
             if _hash == keyhash:
                 break
         else:
@@ -242,19 +247,30 @@ class CosignerWallet(Logger):
         window = self.window
         wallet = self.wallet
         if isinstance(wallet.keystore, keystore.Hardware_KeyStore):
-            window.show_warning(_('An encrypted transaction was retrieved from cosigning pool.') + '\n' +
-                                _('However, hardware wallets do not support message decryption, '
-                                  'which makes them not compatible with the current design of cosigner pool.'))
+            window.show_warning(
+                _("An encrypted transaction was retrieved from cosigning pool.")
+                + "\n"
+                + _(
+                    "However, hardware wallets do not support message decryption, "
+                    "which makes them not compatible with the current design of cosigner pool."
+                )
+            )
             return
         elif wallet.has_keystore_encryption():
-            password = window.password_dialog(_('An encrypted transaction was retrieved from cosigning pool.') + '\n' +
-                                              _('Please enter your password to decrypt it.'))
+            password = window.password_dialog(
+                _("An encrypted transaction was retrieved from cosigning pool.")
+                + "\n"
+                + _("Please enter your password to decrypt it.")
+            )
             if not password:
                 return
         else:
             password = None
-            if not window.question(_("An encrypted transaction was retrieved from cosigning pool.") + '\n' +
-                                   _("Do you want to open it now?")):
+            if not window.question(
+                _("An encrypted transaction was retrieved from cosigning pool.")
+                + "\n"
+                + _("Do you want to open it now?")
+            ):
                 return
 
         xprv = wallet.keystore.get_master_private_key(password)
@@ -264,14 +280,16 @@ class CosignerWallet(Logger):
             privkey = BIP32Node.from_xkey(xprv).eckey
             message = privkey.decrypt_message(message)
         except Exception as e:
-            self.logger.exception('')
-            window.show_error(_('Error decrypting message') + ':\n' + repr(e))
+            self.logger.exception("")
+            window.show_error(_("Error decrypting message") + ":\n" + repr(e))
             return
 
         self.listener.clear(keyhash)
         try:
             tx = tx_from_any(message)
         except SerializationError as e:
-            window.show_error(_("Electrum was unable to deserialize the transaction:") + "\n" + str(e))
+            window.show_error(
+                _("Electrum was unable to deserialize the transaction:") + "\n" + str(e)
+            )
             return
         show_transaction(tx, parent=window, prompt_if_unsaved=True)

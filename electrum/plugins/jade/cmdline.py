@@ -1,9 +1,12 @@
 from electrum.plugin import hook
-from .jade import JadePlugin
+
 from ..hw_wallet import CmdLineHandler
+from .jade import JadePlugin
+
 
 class Plugin(JadePlugin):
     handler = CmdLineHandler()
+
     @hook
     def init_keystore(self, keystore):
         if not isinstance(keystore, self.keystore_class):

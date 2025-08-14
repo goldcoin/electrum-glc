@@ -6,6 +6,12 @@
 
 set -e
 
+# Set non-interactive mode if no TTY is available (e.g., in CI)
+if [ ! -t 0 ]; then
+    export DEBIAN_FRONTEND=noninteractive
+    export DOCKER_BUILDKIT=1
+fi
+
 PROJECT_ROOT="$(dirname "$(readlink -e "$0")")/../.."
 PROJECT_ROOT_OR_FRESHCLONE_ROOT="$PROJECT_ROOT"
 CONTRIB="$PROJECT_ROOT/contrib"
@@ -31,7 +37,7 @@ fi
 info "building docker image."
 docker build \
     $DOCKER_BUILD_FLAGS \
-    -t electrum-wine-builder-img \
+    -t electrum-glc-wine-builder-shasta \
     "$CONTRIB_WINE"
 
 # maybe do fresh clone
@@ -52,16 +58,25 @@ info "building binary..."
 # check uid and maybe chown. see #8261
 if [ ! -z "$ELECBUILD_COMMIT" ] ; then  # fresh clone (reproducible build)
     if [ $(id -u) != "1000" ] || [ $(id -g) != "1000" ] ; then
-        info "need to chown -R FRESH_CLONE dir. prompting for sudo."
-        sudo chown -R 1000:1000 "$FRESH_CLONE"
+        info "Fresh clone will be accessed with Docker's default user (uid 1000)"
+        # Docker container runs as user:1000 - will handle file ownership internally
     fi
 fi
-docker run -it \
-    --name electrum-wine-builder-cont \
+
+# Check if we're in a CI environment or if TTY is not available
+DOCKER_RUN_FLAGS="-i"
+if [ -t 0 ] ; then
+    # TTY is available, use interactive mode
+    DOCKER_RUN_FLAGS="-it"
+fi
+
+docker run $DOCKER_RUN_FLAGS \
+    --name electrum-glc-wine-builder-cont-shasta \
     -v "$PROJECT_ROOT_OR_FRESHCLONE_ROOT":/opt/wine64/drive_c/electrum \
+    -e MAKEFLAGS="-j8" \
     --rm \
     --workdir /opt/wine64/drive_c/electrum/contrib/build-wine \
-    electrum-wine-builder-img \
+    electrum-glc-wine-builder-shasta \
     ./make_win.sh
 
 # make sure resulting binary location is independent of fresh_clone

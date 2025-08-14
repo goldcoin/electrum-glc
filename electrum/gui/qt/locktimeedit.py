@@ -4,17 +4,24 @@
 
 import time
 from datetime import datetime
-from typing import Optional, Any
+from typing import Any
 
-from PyQt5.QtCore import Qt, QDateTime, pyqtSignal
-from PyQt5.QtGui import QPalette, QPainter
-from PyQt5.QtWidgets import (QWidget, QLineEdit, QStyle, QStyleOptionFrame, QComboBox,
-                             QHBoxLayout, QDateTimeEdit)
+from PyQt5.QtCore import QDateTime, Qt, pyqtSignal
+from PyQt5.QtGui import QPainter
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QDateTimeEdit,
+    QHBoxLayout,
+    QLineEdit,
+    QStyle,
+    QStyleOptionFrame,
+    QWidget,
+)
 
+from electrum.bitcoin import NLOCKTIME_BLOCKHEIGHT_MAX, NLOCKTIME_MAX, NLOCKTIME_MIN
 from electrum.i18n import _
-from electrum.bitcoin import NLOCKTIME_MIN, NLOCKTIME_MAX, NLOCKTIME_BLOCKHEIGHT_MAX
 
-from .util import char_width_in_lineedit, ColorScheme
+from .util import ColorScheme, char_width_in_lineedit
 
 
 class LockTimeEdit(QWidget):
@@ -70,7 +77,7 @@ class LockTimeEdit(QWidget):
         self.locktime_date_e.dateTimeChanged.connect(self.valueEdited.emit)
         self.combo.currentIndexChanged.connect(self.valueEdited.emit)
 
-    def get_locktime(self) -> Optional[int]:
+    def get_locktime(self) -> int | None:
         return self.editor.get_locktime()
 
     def set_locktime(self, x: Any) -> None:
@@ -81,7 +88,7 @@ class _LockTimeEditor:
     min_allowed_value = NLOCKTIME_MIN
     max_allowed_value = NLOCKTIME_MAX
 
-    def get_locktime(self) -> Optional[int]:
+    def get_locktime(self) -> int | None:
         raise NotImplementedError()
 
     def set_locktime(self, x: Any) -> None:
@@ -107,17 +114,17 @@ class LockTimeRawEdit(QLineEdit, _LockTimeEditor):
 
     def numbify(self):
         text = self.text().strip()
-        chars = '0123456789'
+        chars = "0123456789"
         pos = self.cursorPosition()
-        pos = len(''.join([i for i in text[:pos] if i in chars]))
-        s = ''.join([i for i in text if i in chars])
+        pos = len("".join([i for i in text[:pos] if i in chars]))
+        s = "".join([i for i in text if i in chars])
         self.set_locktime(s)
         # setText sets Modified to False.  Instead we want to remember
         # if updates were because of user modification.
         self.setModified(self.hasFocus())
         self.setCursorPosition(pos)
 
-    def get_locktime(self) -> Optional[int]:
+    def get_locktime(self) -> int | None:
         try:
             return int(str(self.text()))
         except Exception:
@@ -127,7 +134,7 @@ class LockTimeRawEdit(QLineEdit, _LockTimeEditor):
         try:
             x = int(x)
         except Exception:
-            self.setText('')
+            self.setText("")
             return
         x = max(x, self.min_allowed_value)
         x = min(x, self.max_allowed_value)
@@ -159,7 +166,7 @@ def get_max_allowed_timestamp() -> int:
     try:
         datetime.fromtimestamp(ts)
     except (OSError, OverflowError):
-        ts = 2 ** 31 - 1  # INT32_MAX
+        ts = 2**31 - 1  # INT32_MAX
         datetime.fromtimestamp(ts)  # test if raises
     return ts
 
@@ -174,7 +181,7 @@ class LockTimeDateEdit(QDateTimeEdit, _LockTimeEditor):
         self.setMaximumDateTime(datetime.fromtimestamp(self.max_allowed_value))
         self.setDateTime(QDateTime.currentDateTime())
 
-    def get_locktime(self) -> Optional[int]:
+    def get_locktime(self) -> int | None:
         dt = self.dateTime().toPyDateTime()
         locktime = int(time.mktime(dt.timetuple()))
         return locktime

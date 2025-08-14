@@ -1,0 +1,206 @@
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+💬 [0;34mINFO:[0m  Clearing /home/shasta/git/electrum-glc/contrib/build-wine/../../contrib/build-wine/dist...
+💬 [0;34mINFO:[0m  building docker image.
+💬 [0;34mINFO:[0m  not doing fresh clone.
+💬 [0;34mINFO:[0m  building binary...
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+💬 [0;34mINFO:[0m  Clearing /opt/wine64/drive_c/electrum/contrib/build-wine/build and /opt/wine64/drive_c/electrum/contrib/build-wine/dist...
+💬 [0;34mINFO:[0m  libsecp256k1 already built, skipping
+💬 [0;34mINFO:[0m  libzbar already built, skipping
+💬 [0;34mINFO:[0m  libusb already built, skipping
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+💬 [0;34mINFO:[0m  Booting wine.
+💬 [0;34mINFO:[0m  Installing Python.
+Installing core...
+Installing dev...
+Installing exe...
+Installing lib...
+Installing pip...
+💬 [0;34mINFO:[0m  pip not found, installing pip manually...
+Unhandled exception: unimplemented function propsys.dll.VariantToString called in 64-bit code (0x0000007b013c0e).
+Register dump:
+ rip:000000007b013c0e rsp:000000000679bc10 rbp:000000000679be70 eflags:00000202 (   - --  I   - - - )
+ rax:000000000679bc50 rbx:000000007b60ed84 rcx:000000000679bc30 rdx:0000000000000001
+ rsi:000000000679bd20 rdi:000000000679bc60  r8:0000000000000002  r9:000000000679bd10 r10:000000000037fc78
+ r11:000000006e7ac48c r12:0000000000000000 r13:0000000000000000 r14:000000000035e798 r15:0000000000000000
+Stack dump:
+0x0000000679bc10:  000000000679bc30 0000000002f782fe
+0x0000000679bc20:  000000000679bc54 00000000039d38a0
+0x0000000679bc30:  0000000180000100 0000000000000000
+0x0000000679bc40:  000000007b013c0e 0000000200000002
+0x0000000679bc50:  000000006494a000 000000006494adaa
+0x0000000679bc60:  000000000679bdf0 0000000000000002
+0x0000000679bc70:  0000000000f87100 000000000679bdf0
+0x0000000679bc80:  000000000679bdf8 0000000000000000
+0x0000000679bc90:  000000006e7a08c0 00000000039d38a0
+0x0000000679bca0:  0000000000000020 000000006e7898f0
+0x0000000679bcb0:  0000000000000000 000000000679bdc8
+0x0000000679bcc0:  00000000039d38a0 000000006e78c7f0
+Backtrace:
+=>0 0x0000007b013c0e RaiseException+0x46(code=<internal error>, flags=<internal error>, count=<is not available>, args=<internal error>) [Z:\usr\src\packages\BUILD\dlls\kernelbase\debug.c:302] in kernelbase (0x0000000679be70)
+  1 0x00000064948ce5 __wine_spec_unimplemented_stub+0x35(module=<internal error>, function=<internal error>) [Z:\usr\src\packages\BUILD\dlls\winecrt0\stub.c:32] in propsys (0x0000000679be70)
+  2 0x00000064941e87 in propsys (+0x1e87) (0x0000000679be70)
+0x0000007b013c0e RaiseException+0x46 [Z:\usr\src\packages\BUILD\dlls\kernelbase\debug.c:302] in kernelbase: nop	
+Unable to access file 'Z:\usr\src\packages\BUILD\dlls\kernelbase\debug.c'
+Modules:
+Module	Address					Debug info	Name (108 modules)
+PE	00000000017c0000-00000000017cf000	Deferred        python3
+PE	00000000017d0000-00000000017e5000	Deferred        _bz2.pyd
+PE	00000000017f0000-0000000001818000	Deferred        _lzma.pyd
+PE	0000000001920000-0000000001936000	Deferred        _socket.pyd
+PE	0000000001940000-00000000019da000	Deferred        iphlpapi
+PE	0000000001e00000-0000000002084000	Deferred        rpcrt4
+PE	0000000002090000-0000000002099000	Deferred        select.pyd
+PE	00000000020a0000-00000000020a9000	Deferred        _queue.pyd
+PE	00000000025b0000-00000000025f0000	Deferred        _decimal.pyd
+PE	00000000025f0000-00000000025fb000	Deferred        _wmi.pyd
+PE	00000000028a0000-00000000028ab000	Deferred        libffi-8
+PE	00000000029b0000-0000000002f63000	Deferred        user32
+PE	0000000002f70000-000000000347e000	Deferred        oleaut32
+PE	0000000003480000-00000000034a0000	Deferred        _ctypes.pyd
+PE	00000000034a0000-00000000034b1000	Deferred        _hashlib.pyd
+PE	00000000034c0000-00000000034ed000	Deferred        _ssl.pyd
+PE	00000000034f0000-00000000034f8000	Deferred        _uuid.pyd
+PE	0000000003500000-0000000003532000	Deferred        pyexpat.pyd
+PE	0000000004670000-0000000004b73000	Deferred        libcrypto-3
+PE	0000000004b80000-0000000005925000	Deferred        shell32
+PE	0000000005a30000-0000000005db6000	Deferred        crypt32
+PE	0000000005dc0000-0000000005e83000	Deferred        libssl-3
+PE	0000000006090000-00000000061a7000	Deferred        unicodedata.pyd
+PE	0000000006fe0000-0000000007132000	Deferred        dxgi
+PE	0000000007140000-000000000876d000	Deferred        wined3d
+PE	0000000008770000-0000000008cd7000	Deferred        comctl32
+PE	00000000618c0000-00000000618de000	Deferred        vcruntime140
+PE	0000000062240000-00000000622ea000	Deferred        ws2_32
+PE	0000000063680000-00000000637a2000	Deferred        shlwapi
+PE	0000000064680000-00000000646b1000	Deferred        compstui
+PE	0000000064940000-00000000649c6000	Dwarf-4         propsys
+PE	0000000064a00000-0000000064a64000	Deferred        imm32
+PE	0000000065040000-0000000065102000	Deferred        winspool
+PE	0000000067880000-00000000678cb000	Deferred        dnsapi
+PE	0000000068680000-00000000686d3000	Deferred        win32u
+PE	0000000068740000-0000000068adb000	Deferred        ucrtbase
+PE	0000000069580000-00000000698a9000	Deferred        msvcrt
+PE	0000000069f80000-000000006a0b3000	Deferred        advapi32
+PE	000000006c240000-000000006c2ff000	Deferred        sechost
+PE	000000006c380000-000000006c623000	Deferred        gdi32
+PE	000000006cb40000-000000006d0ca000	Deferred        ole32
+PE	000000006d480000-000000006d4a0000	Deferred        nsi
+PE	000000006d500000-000000006d5c0000	Deferred        uxtheme
+PE	000000006d8c0000-000000006da56000	Deferred        combase
+PE	000000006db00000-000000006db0c000	Deferred        vcruntime140_1
+PE	000000006e780000-000000006e8e6000	Deferred        wbemprox
+PE	000000006eb40000-000000006ed3d000	Deferred        setupapi
+PE	000000006ef00000-000000006ef1f000	Deferred        version
+PE	000000006f100000-000000006f155000	Deferred        shcore
+PE	000000006f900000-000000006f956000	Deferred        bcrypt
+PE	000000007a800000-000000007ad5b000	Deferred        opengl32
+PE	000000007b000000-000000007b5e9000	Dwarf-4         kernelbase
+PE	000000007b600000-000000007b792000	Deferred        kernel32
+ELF	000000007d000000-000000007d005000	Deferred        <wine-loader>
+PE	0000000140000000-000000014001a000	Deferred        python
+PE	0000000170000000-000000017035f000	Deferred        ntdll
+PE	0000000180000000-00000001806a5000	Deferred        python312
+ELF	000074425f893000-000074425f8a7000	Deferred        libnss_files.so.2
+ELF	000074425f8a7000-000074425f8cd000	Deferred        libgpg-error.so.0
+ELF	000074425f8cd000-000074425f9ed000	Deferred        libgcrypt.so.20
+ELF	000074425f9ed000-000074425fa10000	Deferred        liblz4.so.1
+ELF	000074425fa10000-000074425faeb000	Deferred        libzstd.so.1
+ELF	000074425faeb000-000074425faf5000	Deferred        librt.so.1
+ELF	000074425faf5000-000074425fbaa000	Deferred        libsystemd.so.0
+ELF	000074425fbaa000-000074425fbb1000	Deferred        libkeyutils.so.1
+ELF	000074425fbb1000-000074425fc06000	Deferred        libdbus-1.so.3
+ELF	000074425fc06000-000074425fc15000	Deferred        libkrb5support.so.0
+ELF	000074425fc15000-000074425fc1b000	Deferred        libcom_err.so.2
+ELF	000074425fc1b000-000074425fc4b000	Deferred        libk5crypto.so.3
+ELF	000074425fc4b000-000074425fd25000	Deferred        libkrb5.so.3
+ELF	000074425fd25000-000074425fd39000	Deferred        libavahi-client.so.3
+ELF	000074425fd39000-000074425fd47000	Deferred        libavahi-common.so.3
+ELF	000074425fd47000-000074425fd9a000	Deferred        libgssapi_krb5.so.2
+ELF	000074425fd9a000-000074425fe36000	Deferred        libcups.so.2
+ELF	000074425fe44000-000074425fe4a000	Deferred        winspool.so
+ELF	000074425fe4a000-000074425ff7b000	Deferred        opengl32.so
+ELF	000074425ffc1000-000074425fff0000	Deferred        libexpat.so.1
+ELF	000074425fff0000-0000744260036000	Deferred        libfontconfig.so.1
+ELF	0000744260036000-0000744260059000	Deferred        libbrotlicommon.so.1
+ELF	0000744260059000-0000744260067000	Deferred        libbrotlidec.so.1
+ELF	0000744260067000-0000744260084000	Deferred        libz.so.1
+ELF	0000744260084000-00007442600be000	Deferred        libpng16.so.16
+ELF	00007442600be000-0000744260181000	Deferred        libfreetype.so.6
+ELF	0000744260181000-00007442602c5000	Deferred        libm.so.6
+ELF	00007442602c5000-0000744260481000	Deferred        win32u.so
+ELF	0000744260481000-000074426049b000	Deferred        libresolv.so.2
+ELF	000074426049e000-00007442604a5000	Deferred        crypt32.so
+ELF	00007442604a9000-00007442604b5000	Deferred        libffi.so.7
+ELF	00007442604b5000-0000744260536000	Deferred        libgmp.so.10
+ELF	0000744260536000-000074426057f000	Deferred        libhogweed.so.6
+ELF	000074426057f000-00007442605c7000	Deferred        libnettle.so.8
+ELF	00007442605c7000-00007442605dd000	Deferred        libtasn1.so.6
+ELF	00007442605dd000-000074426075f000	Deferred        libunistring.so.2
+ELF	000074426075f000-0000744260780000	Deferred        libidn2.so.0
+ELF	0000744260780000-00007442608b4000	Deferred        libp11-kit.so.0
+ELF	00007442608b4000-0000744260ab4000	Deferred        libgnutls.so.30
+ELF	0000744260ab4000-0000744260abd000	Deferred        libuuid.so.1
+ELF	0000744260abd000-0000744260ac2000	Deferred        dnsapi.so
+ELF	0000744260ac2000-0000744260acd000	Deferred        bcrypt.so
+ELF	0000744260acd000-0000744260ad3000	Deferred        ws2_32.so
+ELF	0000744260bd3000-0000744260d4a000	Dwarf           libwine.so.1
+ELF	0000744261015000-000074426103d000	Deferred        liblzma.so.5
+ELF	000074426103d000-0000744261058000	Deferred        libunwind.so.8
+ELF	0000744261058000-000074426111e000	Deferred        ntdll.so
+ELF	0000744261121000-00007442612f6000	Deferred        libc.so.6
+ELF	00007442612f6000-00007442612fc000	Deferred        libdl.so.2
+ELF	00007442612fc000-000074426131e000	Deferred        libpthread.so.0
+ELF	000074426132e000-000074426135b000	Deferred        ld-linux-x86-64.so.2
+Threads:
+process  tid      prio    name (all IDs are in hex)
+00000030 services.exe
+	00000034    0     
+	00000038    0     wine_rpcrt4_server
+	0000006c    0     wine_rpcrt4_io
+	000000ac    0     wine_rpcrt4_io
+	000000c0    0     wine_rpcrt4_io
+	000000f4    0     wine_rpcrt4_io
+	00000110    0     wine_rpcrt4_io
+0000004c explorer.exe
+	00000050    0     
+00000064 winedevice.exe
+	00000068    0     
+	00000074    0     
+	00000078    0     wine_sechost_service
+	0000007c    0     
+	00000080    0     
+	000000d0    0     
+000000a4 svchost.exe
+	000000a8    0     
+	000000b0    0     
+	000000b4    0     wine_sechost_service
+000000b8 plugplay.exe
+	000000bc    0     
+	000000c4    0     
+	000000c8    0     wine_sechost_service
+	000000cc    0     wine_rpcrt4_server
+	00000120    0     wine_rpcrt4_io
+000000ec winedevice.exe
+	000000f0    0     
+	000000f8    0     
+	000000fc    0     wine_sechost_service
+	00000100    0     
+	00000104    0     
+	00000114    0     
+	00000118    0     
+	0000011c    0     
+000001e8 start.exe
+	000001ec    0     
+000001f0 (D) C:\python3\python.exe
+	000001f4    0     
+	000001f8    0 <== 
+	00000204    0     
+System information:
+    Wine build: wine-8.0.1
+    Platform: x86_64
+    Version: Windows 7
+    Host system: Linux
+    Host version: 6.8.0-71-generic
+🗯 [0;31mERROR:[0m Failed to install pip
+🗯 [0;31mERROR:[0m prepare-wine failed

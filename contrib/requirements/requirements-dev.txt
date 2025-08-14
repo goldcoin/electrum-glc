@@ -1,0 +1,36 @@
+# Development tools and code quality requirements
+# Install with: pip install -r contrib/requirements/requirements-dev.txt
+
+# Code formatters
+black==24.8.0
+isort==5.13.2
+
+# Linters
+ruff==0.6.2
+flake8==7.1.0
+flake8-bugbear==24.4.26
+bandit==1.7.9
+
+# Type checking
+mypy==1.11.1
+types-requests
+types-protobuf
+types-PyYAML
+types-jsonschema
+
+# Testing
+pytest==8.3.2
+pytest-cov==5.0.0
+pytest-benchmark==4.0.0
+hypothesis==6.108.5
+mutmut==2.4.5
+
+# Pre-commit
+pre-commit==3.8.0
+
+# Documentation
+sphinx==7.4.7
+sphinx-rtd-theme==2.0.0
+
+# Security scanning
+safety==3.2.4

@@ -22,22 +22,22 @@
 import asyncio
 import json
 import locale
-import traceback
-import sys
 import queue
-from typing import NamedTuple, Optional
+import sys
+import traceback
+from typing import NamedTuple
 
-from .version import ELECTRUM_VERSION
 from . import constants
 from .i18n import _
-from .util import make_aiohttp_session, error_text_str_to_safe_str
-from .logging import describe_os_version, Logger, get_git_version
+from .logging import Logger, describe_os_version, get_git_version
+from .util import error_text_str_to_safe_str, make_aiohttp_session
+from .version import ELECTRUM_VERSION
 
 
 class CrashReportResponse(NamedTuple):
-    status: Optional[str]
+    status: str | None
     text: str
-    url: Optional[str]
+    url: str | None
 
 
 class BaseCrashReporter(Logger):
@@ -56,14 +56,18 @@ class BaseCrashReporter(Logger):
   <li>Locale: {locale}</li>
 </ul>
     """
-    CRASH_MESSAGE = _('Something went wrong while executing Electrum.')
-    CRASH_TITLE = _('Sorry!')
-    REQUEST_HELP_MESSAGE = _('To help us diagnose and fix the problem, you can send us a bug report that contains '
-                             'useful debug information:')
+    CRASH_MESSAGE = _("Something went wrong while executing Electrum.")
+    CRASH_TITLE = _("Sorry!")
+    REQUEST_HELP_MESSAGE = _(
+        "To help us diagnose and fix the problem, you can send us a bug report that contains "
+        "useful debug information:"
+    )
     DESCRIBE_ERROR_MESSAGE = _("Please briefly describe what led to the error (optional):")
     ASK_CONFIRM_SEND = _("Do you want to send this report?")
-    USER_COMMENT_PLACEHOLDER = _("Do not enter sensitive/private information here. "
-                                 "The report will be visible on the public issue tracker.")
+    USER_COMMENT_PLACEHOLDER = _(
+        "Do not enter sensitive/private information here. "
+        "The report will be visible on the public issue tracker."
+    )
 
     def __init__(self, exctype, value, tb):
         Logger.__init__(self)
@@ -71,7 +75,10 @@ class BaseCrashReporter(Logger):
 
     def send_report(self, asyncio_loop, proxy, *, timeout=None) -> CrashReportResponse:
         # FIXME the caller needs to catch generic "Exception", as this method does not have a well-defined API...
-        if constants.net.GENESIS[-4:] not in ["4943", "e26f"] and ".electrum.org" in BaseCrashReporter.report_server:
+        if (
+            constants.net.GENESIS[-4:] not in ["4943", "e26f"]
+            and ".electrum.org" in BaseCrashReporter.report_server
+        ):
             # Gah! Some kind of altcoin wants to send us crash reports.
             raise Exception(_("Missing report URL."))
         report = self.get_traceback_info()
@@ -80,7 +87,8 @@ class BaseCrashReporter(Logger):
         coro = self.do_post(proxy, BaseCrashReporter.report_server + "/crash.json", data=report)
         response = asyncio.run_coroutine_threadsafe(coro, asyncio_loop).result(timeout)
         self.logger.info(
-            f"Crash report sent. Got response [DO NOT TRUST THIS MESSAGE]: {error_text_str_to_safe_str(response)}")
+            f"Crash report sent. Got response [DO NOT TRUST THIS MESSAGE]: {error_text_str_to_safe_str(response)}"
+        )
         response = json.loads(response)
         assert isinstance(response, dict), type(response)
         # sanitize URL
@@ -108,15 +116,11 @@ class BaseCrashReporter(Logger):
         stack = traceback.extract_tb(self.exc_args[2])
         readable_trace = self.__get_traceback_str_to_send()
         id = {
-            "file": stack[-1].filename if len(stack) else '<no stack>',
-            "name": stack[-1].name if len(stack) else '<no stack>',
-            "type": self.exc_args[0].__name__
+            "file": stack[-1].filename if len(stack) else "<no stack>",
+            "name": stack[-1].name if len(stack) else "<no stack>",
+            "type": self.exc_args[0].__name__,
         }
-        return {
-            "exc_string": exc_string,
-            "stack": readable_trace,
-            "id": id
-        }
+        return {"exc_string": exc_string, "stack": readable_trace, "id": id}
 
     def get_additional_info(self):
         args = {
@@ -125,7 +129,7 @@ class BaseCrashReporter(Logger):
             "os": describe_os_version(),
             "wallet_type": "unknown",
             "locale": locale.getdefaultlocale()[0] or "?",
-            "description": self.get_user_description()
+            "description": self.get_user_description(),
         }
         try:
             args["wallet_type"] = self.get_wallet_type()
@@ -207,5 +211,6 @@ def trigger_crash():
         raise TestingException("triggered crash for testing purposes")
 
     import threading
+
     t = threading.Thread(target=crash_test)
     t.start()

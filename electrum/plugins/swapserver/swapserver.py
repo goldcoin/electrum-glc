@@ -32,20 +32,20 @@ from electrum.plugin import BasePlugin, hook
 from .server import SwapServer
 
 if TYPE_CHECKING:
-    from electrum.simple_config import SimpleConfig
     from electrum.daemon import Daemon
+    from electrum.simple_config import SimpleConfig
     from electrum.wallet import Abstract_Wallet
 
 
 class SwapServerPlugin(BasePlugin):
 
-    def __init__(self, parent, config: 'SimpleConfig', name):
+    def __init__(self, parent, config: "SimpleConfig", name):
         BasePlugin.__init__(self, parent, config, name)
         self.config = config
         self.server = None
 
     @hook
-    def daemon_wallet_loaded(self, daemon: 'Daemon', wallet: 'Abstract_Wallet'):
+    def daemon_wallet_loaded(self, daemon: "Daemon", wallet: "Abstract_Wallet"):
         # we use the first wallet loaded
         if self.server is not None:
             return
@@ -53,7 +53,6 @@ class SwapServerPlugin(BasePlugin):
             return
 
         self.server = SwapServer(self.config, wallet)
-        sm = wallet.lnworker.swap_manager
         for coro in [
             self.server.run(),
         ]:

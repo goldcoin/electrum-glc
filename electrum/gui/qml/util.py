@@ -1,13 +1,13 @@
 import math
+import queue
 import re
 import sys
-import queue
-
+from collections.abc import Callable
 from functools import wraps
 from time import time
-from typing import Callable, Optional, NamedTuple, Tuple
+from typing import NamedTuple
 
-from PyQt6.QtCore import pyqtSignal, QThread
+from PyQt6.QtCore import QThread, pyqtSignal
 
 from electrum.i18n import _
 from electrum.logging import Logger
@@ -22,7 +22,7 @@ class QtEventListener(EventListener):
         EventListener.register_callbacks(self)
 
     def unregister_callbacks(self):
-        #self.qt_callback_signal.disconnect()
+        # self.qt_callback_signal.disconnect()
         EventListener.unregister_callbacks(self)
 
     def on_qt_callback_signal(self, args):
@@ -36,7 +36,8 @@ def qt_event_listener(func):
 
     @wraps(func)
     def decorator(self, *args):
-        self.qt_callback_signal.emit( (func,) + args)
+        self.qt_callback_signal.emit((func, *args))
+
     return decorator
 
 
@@ -45,7 +46,7 @@ def qt_event_listener(func):
 def status_update_timer_interval(exp):
     # very roughly according to util.age
     exp_in = int(exp - time())
-    exp_in_min = int(exp_in/60)
+    exp_in_min = int(exp_in / 60)
 
     interval = 0
     if exp_in < 0:
@@ -61,7 +62,7 @@ def status_update_timer_interval(exp):
 
 
 # TODO: copied from qt password_dialog.py, move to common code
-def check_password_strength(password: str) -> Tuple[int, str]:
+def check_password_strength(password: str) -> tuple[int, str]:
     """Check the strength of the password entered by the user and return back the same
     :param password: password entered by user in New Password
     :return: password strength Weak or Medium or Strong"""
@@ -70,8 +71,8 @@ def check_password_strength(password: str) -> Tuple[int, str]:
     num = re.search("[0-9]", password) is not None and re.match("^[0-9]*$", password) is None
     caps = password != password.upper() and password != password.lower()
     extra = re.match("^[a-zA-Z0-9]*$", password) is None
-    score = len(password)*(n + caps + num + extra)/20
-    password_strength = {0: _('Weak'), 1: _('Medium'), 2: _('Strong'), 3: _('Very Strong')}
+    score = len(password) * (n + caps + num + extra) / 20
+    password_strength = {0: _("Weak"), 1: _("Medium"), 2: _("Strong"), 3: _("Very Strong")}
     return min(3, int(score)), password_strength[min(3, int(score))]
 
 
@@ -82,10 +83,10 @@ class TaskThread(QThread, Logger):
 
     class Task(NamedTuple):
         task: Callable
-        cb_success: Optional[Callable]
-        cb_done: Optional[Callable]
-        cb_error: Optional[Callable]
-        cancel: Optional[Callable] = None
+        cb_success: Callable | None
+        cb_done: Callable | None
+        cb_error: Callable | None
+        cancel: Callable | None = None
 
     doneSig = pyqtSignal(object, object, object)
 
@@ -101,7 +102,7 @@ class TaskThread(QThread, Logger):
 
     def add(self, task, on_success=None, on_done=None, on_error=None, *, cancel=None):
         if self._stopping:
-            self.logger.warning(f"stopping or already stopped but tried to add new task.")
+            self.logger.warning("stopping or already stopped but tried to add new task.")
             return
         on_error = on_error or self.on_error
         task_ = TaskThread.Task(task, on_success, on_done, on_error, cancel=cancel)

@@ -43,15 +43,14 @@ import sys
 import threading
 import time
 import traceback
-from typing import Optional
 
 # 3rd-party dependency:
 from pygments import highlight
-from pygments.lexers import PythonLexer
 from pygments.formatters import HtmlFormatter
+from pygments.lexers import PythonLexer
 
 
-def _thread_from_id(ident) -> Optional[threading.Thread]:
+def _thread_from_id(ident) -> threading.Thread | None:
     return threading._active.get(ident)
 
 
@@ -64,13 +63,17 @@ def stacktraces():
         for filename, lineno, name, line in traceback.extract_stack(stack):
             code.append(f'File: "{filename}", line {lineno}, in {name}')
             if line:
-                code.append("  %s" % (line.strip()))
+                code.append(f"  {line.strip()}")
 
-    return highlight("\n".join(code), PythonLexer(), HtmlFormatter(
-        full=False,
-        # style="native",
-        noclasses=True,
-    ))
+    return highlight(
+        "\n".join(code),
+        PythonLexer(),
+        HtmlFormatter(
+            full=False,
+            # style="native",
+            noclasses=True,
+        ),
+    )
 
 
 class TraceDumper(threading.Thread):
@@ -87,7 +90,7 @@ class TraceDumper(threading.Thread):
             (Then delete the file to force update.)
         @param interval: In seconds: how often to update the trace file.
         """
-        assert (interval > 0.1)
+        assert interval > 0.1
         self.auto = auto
         self.interval = interval
         self.fpath = os.path.abspath(fpath)
@@ -125,7 +128,7 @@ def trace_start(fpath, interval=5, *, auto=True):
         _tracer.daemon = True
         _tracer.start()
     else:
-        raise Exception("Already tracing to %s" % _tracer.fpath)
+        raise Exception(f"Already tracing to {_tracer.fpath}")
 
 
 def trace_stop():

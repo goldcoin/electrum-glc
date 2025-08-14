@@ -23,29 +23,34 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import TYPE_CHECKING
 import copy
+from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt, QUrl
-from PyQt5.QtGui import QTextCharFormat, QFont
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QTextBrowser
+from PyQt5.QtGui import QFont, QTextCharFormat
+from PyQt5.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout
 
 from electrum.i18n import _
 
-from .util import WindowModalDialog, ButtonsLineEdit, ShowQRLineEdit, ColorScheme, Buttons, CloseButton, MONOSPACE_FONT, WWLabel
-from .history_list import HistoryList, HistoryModel
-from .qrtextedit import ShowQRTextEdit
-from .transaction_dialog import TxOutputColoring, QTextBrowserWithDefaultSize
+from .transaction_dialog import QTextBrowserWithDefaultSize, TxOutputColoring
+from .util import (
+    MONOSPACE_FONT,
+    Buttons,
+    CloseButton,
+    ColorScheme,
+    WindowModalDialog,
+    WWLabel,
+)
 
 if TYPE_CHECKING:
     from electrum.transaction import PartialTxInput
-    from .main_window import ElectrumWindow
 
+    from .main_window import ElectrumWindow
 
 
 class UTXODialog(WindowModalDialog):
 
-    def __init__(self, window: 'ElectrumWindow', utxo: 'PartialTxInput'):
+    def __init__(self, window: "ElectrumWindow", utxo: "PartialTxInput"):
         WindowModalDialog.__init__(self, window, _("Coin Privacy Analysis"))
         self.main_window = window
         self.config = window.config
@@ -57,15 +62,27 @@ class UTXODialog(WindowModalDialog):
         self.parents_list.anchorClicked.connect(self.open_tx)  # send links to our handler
         self.parents_list.setFont(QFont(MONOSPACE_FONT))
         self.parents_list.setReadOnly(True)
-        self.parents_list.setTextInteractionFlags(self.parents_list.textInteractionFlags() | Qt.LinksAccessibleByMouse | Qt.LinksAccessibleByKeyboard)
+        self.parents_list.setTextInteractionFlags(
+            self.parents_list.textInteractionFlags()
+            | Qt.LinksAccessibleByMouse
+            | Qt.LinksAccessibleByKeyboard
+        )
         self.txo_color_parent = TxOutputColoring(
-            legend=_("Direct parent"), color=ColorScheme.BLUE, tooltip=_("Direct parent"))
+            legend=_("Direct parent"), color=ColorScheme.BLUE, tooltip=_("Direct parent")
+        )
         self.txo_color_uncle = TxOutputColoring(
-            legend=_("Address reuse"), color=ColorScheme.RED, tooltip=_("Address reuse"))
+            legend=_("Address reuse"), color=ColorScheme.RED, tooltip=_("Address reuse")
+        )
 
         vbox = QVBoxLayout()
         vbox.addWidget(QLabel(_("Output point") + ": " + str(self.utxo.short_id)))
-        vbox.addWidget(QLabel(_("Amount") + ": " + self.main_window.format_amount_and_units(self.utxo.value_sats())))
+        vbox.addWidget(
+            QLabel(
+                _("Amount")
+                + ": "
+                + self.main_window.format_amount_and_units(self.utxo.value_sats())
+            )
+        )
         self.stats_label = WWLabel()
         vbox.addWidget(self.stats_label)
         vbox.addWidget(self.parents_list)
@@ -90,56 +107,59 @@ class UTXODialog(WindowModalDialog):
         ext = QTextCharFormat()
 
         if num_parents < 200:
-            ASCII_EDGE   = '└─'
-            ASCII_BRANCH = '├─'
-            ASCII_PIPE   = '│ '
-            ASCII_SPACE  = '  '
+            ASCII_EDGE = "└─"
+            ASCII_BRANCH = "├─"
+            ASCII_PIPE = "│ "
+            ASCII_SPACE = "  "
         else:
-            ASCII_EDGE   = '└'
-            ASCII_BRANCH = '├'
-            ASCII_PIPE   = '│'
-            ASCII_SPACE  = ' '
+            ASCII_EDGE = "└"
+            ASCII_BRANCH = "├"
+            ASCII_PIPE = "│"
+            ASCII_SPACE = " "
 
         self.parents_list.clear()
         self.num_reuse = 0
+
         def print_ascii_tree(_txid, prefix, is_last, is_uncle):
             if _txid not in parents:
                 return
             tx_mined_info = self.wallet.adb.get_tx_height(_txid)
             tx_height = tx_mined_info.height
             tx_pos = tx_mined_info.txpos
-            key = "%dx%d"%(tx_height, tx_pos) if tx_pos is not None else _txid[0:8]
+            key = "%dx%d" % (tx_height, tx_pos) if tx_pos is not None else _txid[0:8]
             label = self.wallet.get_label_for_txid(_txid) or ""
             if _txid not in parents_copy:
-                label = '[duplicate]'
-            c = '' if _txid == txid else (ASCII_EDGE if is_last else ASCII_BRANCH)
+                label = "[duplicate]"
+            c = "" if _txid == txid else (ASCII_EDGE if is_last else ASCII_BRANCH)
             cursor.insertText(prefix + c, ext)
             if is_uncle:
                 self.num_reuse += 1
                 lnk = QTextCharFormat(self.txo_color_uncle.text_char_format)
             else:
                 lnk = QTextCharFormat(self.txo_color_parent.text_char_format)
-            lnk.setToolTip(_('Click to open, right-click for menu'))
+            lnk.setToolTip(_("Click to open, right-click for menu"))
             lnk.setAnchorHref(_txid)
-            #lnk.setAnchorNames([a_name])
+            # lnk.setAnchorNames([a_name])
             lnk.setAnchor(True)
             lnk.setUnderlineStyle(QTextCharFormat.SingleUnderline)
             cursor.insertText(key, lnk)
             cursor.insertText(" ", ext)
             cursor.insertText(label, ext)
             cursor.insertBlock()
-            next_prefix = '' if txid == _txid else prefix + (ASCII_SPACE if is_last else ASCII_PIPE)
-            parents_list, uncle_list = parents_copy.pop(_txid, ([],[]))
+            next_prefix = "" if txid == _txid else prefix + (ASCII_SPACE if is_last else ASCII_PIPE)
+            parents_list, uncle_list = parents_copy.pop(_txid, ([], []))
             for i, p in enumerate(parents_list + uncle_list):
-                is_last = (i == len(parents_list) + len(uncle_list)- 1)
-                is_uncle = (i > len(parents_list) - 1)
+                is_last = i == len(parents_list) + len(uncle_list) - 1
+                is_uncle = i > len(parents_list) - 1
                 print_ascii_tree(p, next_prefix, is_last, is_uncle)
 
         # recursively build the tree
-        print_ascii_tree(txid, '', False, False)
+        print_ascii_tree(txid, "", False, False)
         msg = _("This UTXO has {} parent transactions in your wallet.").format(num_parents)
         if self.num_reuse:
-            msg += '\n' + _('This does not include transactions that are downstream of address reuse.')
+            msg += "\n" + _(
+                "This does not include transactions that are downstream of address reuse."
+            )
         self.stats_label.setText(msg)
         self.txo_color_parent.legend_label.setVisible(True)
         self.txo_color_uncle.legend_label.setVisible(bool(self.num_reuse))

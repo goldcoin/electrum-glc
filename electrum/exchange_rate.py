@@ -1,44 +1,81 @@
 import asyncio
-from datetime import datetime
-import inspect
-import sys
-import os
-import json
-import time
 import csv
 import decimal
+import inspect
+import json
+import os
+import sys
+import time
+from collections.abc import Mapping, Sequence
+from datetime import datetime
 from decimal import Decimal
-from typing import Sequence, Optional, Mapping, Dict, Union, Any
+from typing import Union
 
-from aiorpcx.curio import timeout_after, TaskTimeout, ignore_after
 import aiohttp
+from aiorpcx.curio import ignore_after, timeout_after
 
 from . import util
 from .bitcoin import COIN
 from .i18n import _
-from .util import (ThreadJob, make_dir, log_exceptions, OldTaskGroup,
-                   make_aiohttp_session, resource_path, EventListener, event_listener, to_decimal,
-                   timestamp_to_datetime)
-from .util import NetworkRetryManager
+from .logging import Logger
 from .network import Network
 from .simple_config import SimpleConfig
-from .logging import Logger
-
+from .util import (
+    EventListener,
+    NetworkRetryManager,
+    OldTaskGroup,
+    ThreadJob,
+    event_listener,
+    log_exceptions,
+    make_aiohttp_session,
+    make_dir,
+    resource_path,
+    timestamp_to_datetime,
+    to_decimal,
+)
 
 # See https://en.wikipedia.org/wiki/ISO_4217
-CCY_PRECISIONS = {'BHD': 3, 'BIF': 0, 'BYR': 0, 'CLF': 4, 'CLP': 0,
-                  'CVE': 0, 'DJF': 0, 'GNF': 0, 'IQD': 3, 'ISK': 0,
-                  'JOD': 3, 'JPY': 0, 'KMF': 0, 'KRW': 0, 'KWD': 3,
-                  'LYD': 3, 'MGA': 1, 'MRO': 1, 'OMR': 3, 'PYG': 0,
-                  'RWF': 0, 'TND': 3, 'UGX': 0, 'UYI': 0, 'VND': 0,
-                  'VUV': 0, 'XAF': 0, 'XAU': 4, 'XOF': 0, 'XPF': 0,
-                  # Cryptocurrencies
-                  'BTC': 8, 'LTC': 8, 'XRP': 6, 'ETH': 18,
-                  }
+CCY_PRECISIONS = {
+    "BHD": 3,
+    "BIF": 0,
+    "BYR": 0,
+    "CLF": 4,
+    "CLP": 0,
+    "CVE": 0,
+    "DJF": 0,
+    "GNF": 0,
+    "IQD": 3,
+    "ISK": 0,
+    "JOD": 3,
+    "JPY": 0,
+    "KMF": 0,
+    "KRW": 0,
+    "KWD": 3,
+    "LYD": 3,
+    "MGA": 1,
+    "MRO": 1,
+    "OMR": 3,
+    "PYG": 0,
+    "RWF": 0,
+    "TND": 3,
+    "UGX": 0,
+    "UYI": 0,
+    "VND": 0,
+    "VUV": 0,
+    "XAF": 0,
+    "XAU": 4,
+    "XOF": 0,
+    "XPF": 0,
+    # Cryptocurrencies
+    "BTC": 8,
+    "LTC": 8,
+    "XRP": 6,
+    "ETH": 18,
+}
 
-SPOT_RATE_REFRESH_TARGET = 150      # approx. every 2.5 minutes, try to refresh spot price
-SPOT_RATE_CLOSE_TO_STALE = 450      # try harder to fetch an update if price is getting old
-SPOT_RATE_EXPIRY = 600              # spot price becomes stale after 10 minutes -> we no longer show/use it
+SPOT_RATE_REFRESH_TARGET = 150  # approx. every 2.5 minutes, try to refresh spot price
+SPOT_RATE_CLOSE_TO_STALE = 450  # try harder to fetch an update if price is getting old
+SPOT_RATE_EXPIRY = 600  # spot price becomes stale after 10 minutes -> we no longer show/use it
 
 
 class ExchangeBase(Logger):
@@ -53,7 +90,7 @@ class ExchangeBase(Logger):
 
     async def get_raw(self, site, get_string):
         # APIs must have https
-        url = ''.join(['https://', site, get_string])
+        url = "".join(["https://", site, get_string])
         network = Network.get_instance()
         proxy = network.proxy if network else None
         async with make_aiohttp_session(proxy) as session:
@@ -63,7 +100,7 @@ class ExchangeBase(Logger):
 
     async def get_json(self, site, get_string):
         # APIs must have https
-        url = ''.join(['https://', site, get_string])
+        url = "".join(["https://", site, get_string])
         network = Network.get_instance()
         proxy = network.proxy if network else None
         async with make_aiohttp_session(proxy) as session:
@@ -74,7 +111,7 @@ class ExchangeBase(Logger):
 
     async def get_csv(self, site, get_string):
         raw = await self.get_raw(site, get_string)
-        reader = csv.DictReader(raw.split('\n'))
+        reader = csv.DictReader(raw.split("\n"))
         return list(reader)
 
     def name(self):
@@ -84,26 +121,27 @@ class ExchangeBase(Logger):
         try:
             self.logger.info(f"getting fx quotes for {ccy}")
             self._quotes = await self.get_rates(ccy)
-            assert all(isinstance(rate, (Decimal, type(None))) for rate in self._quotes.values()), \
-                f"fx rate must be Decimal, got {self._quotes}"
-        except (aiohttp.ClientError, asyncio.TimeoutError, OSError) as e:
-            self.logger.info(f"failed fx quotes: {repr(e)}")
+            assert all(
+                isinstance(rate, Decimal | type(None)) for rate in self._quotes.values()
+            ), f"fx rate must be Decimal, got {self._quotes}"
+        except (TimeoutError, aiohttp.ClientError, OSError) as e:
+            self.logger.info(f"failed fx quotes: {e!r}")
             self.on_quotes()
         except Exception as e:
-            self.logger.exception(f"failed fx quotes: {repr(e)}")
+            self.logger.exception(f"failed fx quotes: {e!r}")
             self.on_quotes()
         else:
             self.logger.info("received fx quotes")
             self._quotes_timestamp = time.time()
             self.on_quotes(received_new_data=True)
 
-    def read_historical_rates(self, ccy: str, cache_dir: str) -> Optional[dict]:
-        filename = os.path.join(cache_dir, self.name() + '_'+ ccy)
+    def read_historical_rates(self, ccy: str, cache_dir: str) -> dict | None:
+        filename = os.path.join(cache_dir, self.name() + "_" + ccy)
         if not os.path.exists(filename):
             return None
         timestamp = os.stat(filename).st_mtime
         try:
-            with open(filename, 'r', encoding='utf-8') as f:
+            with open(filename, encoding="utf-8") as f:
                 h = json.loads(f.read())
         except Exception:
             return None
@@ -111,7 +149,7 @@ class ExchangeBase(Logger):
             return None
         # cast rates to str
         h = {date_str: str(rate) for (date_str, rate) in h.items()}
-        h['timestamp'] = timestamp
+        h["timestamp"] = timestamp
         self._history[ccy] = h
         self.on_history()
         return h
@@ -122,18 +160,18 @@ class ExchangeBase(Logger):
             self.logger.info(f"requesting fx history for {ccy}")
             h = await self.request_history(ccy)
             self.logger.info(f"received fx history for {ccy}")
-        except (aiohttp.ClientError, asyncio.TimeoutError, OSError) as e:
-            self.logger.info(f"failed fx history: {repr(e)}")
+        except (TimeoutError, aiohttp.ClientError, OSError) as e:
+            self.logger.info(f"failed fx history: {e!r}")
             return
         except Exception as e:
-            self.logger.exception(f"failed fx history: {repr(e)}")
+            self.logger.exception(f"failed fx history: {e!r}")
             return
         # cast rates to str
         h = {date_str: str(rate) for (date_str, rate) in h.items()}
-        filename = os.path.join(cache_dir, self.name() + '_' + ccy)
-        with open(filename, 'w', encoding='utf-8') as f:
+        filename = os.path.join(cache_dir, self.name() + "_" + ccy)
+        with open(filename, "w", encoding="utf-8") as f:
             f.write(json.dumps(h))
-        h['timestamp'] = time.time()
+        h["timestamp"] = time.time()
         self._history[ccy] = h
         self.on_history()
 
@@ -143,42 +181,43 @@ class ExchangeBase(Logger):
         h = self._history.get(ccy)
         if h is None:
             h = self.read_historical_rates(ccy, cache_dir)
-        if h is None or h['timestamp'] < time.time() - 24*3600:
+        if h is None or h["timestamp"] < time.time() - 24 * 3600:
             util.get_asyncio_loop().create_task(self.get_historical_rates_safe(ccy, cache_dir))
 
     def history_ccys(self) -> Sequence[str]:
         return []
 
     def historical_rate(self, ccy: str, d_t: datetime) -> Decimal:
-        date_str = d_t.strftime('%Y-%m-%d')
-        rate = self._history.get(ccy, {}).get(date_str) or 'NaN'
+        date_str = d_t.strftime("%Y-%m-%d")
+        rate = self._history.get(ccy, {}).get(date_str) or "NaN"
         try:
             return Decimal(rate)
         except Exception:  # guard against garbage coming from exchange
-            #self.logger.debug(f"found corrupted historical_rate: {rate=!r}. for {ccy=} at {date_str}")
-            return Decimal('NaN')
+            # self.logger.debug(f"found corrupted historical_rate: {rate=!r}. for {ccy=} at {date_str}")
+            return Decimal("NaN")
 
-    async def request_history(self, ccy: str) -> Dict[str, Union[str, float]]:
+    async def request_history(self, ccy: str) -> dict[str, Union[str, float]]:
         raise NotImplementedError()  # implemented by subclasses
 
-    async def get_rates(self, ccy: str) -> Mapping[str, Optional[Decimal]]:
+    async def get_rates(self, ccy: str) -> Mapping[str, Decimal | None]:
         raise NotImplementedError()  # implemented by subclasses
 
     async def get_currencies(self) -> Sequence[str]:
-        rates = await self.get_rates('')
-        return sorted([str(a) for (a, b) in rates.items() if b is not None and len(a)==3])
+        rates = await self.get_rates("")
+        return sorted([str(a) for (a, b) in rates.items() if b is not None and len(a) == 3])
 
     def get_cached_spot_quote(self, ccy: str) -> Decimal:
         """Returns the cached exchange rate as a Decimal"""
-        if ccy == 'BTC':
+        if ccy == "BTC":
             return Decimal(1)
         rate = self._quotes.get(ccy)
         if rate is None:
-            return Decimal('NaN')
+            return Decimal("NaN")
         if self._quotes_timestamp + SPOT_RATE_EXPIRY < time.time():
             # Our rate is stale. Probably better to return no rate than an incorrect one.
-            return Decimal('NaN')
+            return Decimal("NaN")
         return Decimal(rate)
+
 
 # class Yadio(ExchangeBase):
 
@@ -343,20 +382,28 @@ class ExchangeBase(Logger):
 class CoinGecko(ExchangeBase):
 
     async def get_rates(self, ccy):
-        json = await self.get_json('api.coingecko.com', '/api/v3/coins/goldcoin?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=false')
-        return dict([(ccy.upper(), to_decimal(d))
-                     for ccy, d in json['market_data']['current_price'].items()])
+        json = await self.get_json(
+            "api.coingecko.com",
+            "/api/v3/coins/goldcoin?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=false",
+        )
+        return {
+            ccy.upper(): to_decimal(d)
+                for ccy, d in json["market_data"]["current_price"].items()
+        }
 
     def history_ccys(self):
         # CoinGecko seems to have historical data for all ccys it supports
         return CURRENCIES[self.name()]
 
     async def request_history(self, ccy):
-        history = await self.get_json('api.coingecko.com',
-                                      '/api/v3/coins/goldcoin/market_chart?vs_currency=%s&days=max' % ccy)
+        history = await self.get_json(
+            "api.coingecko.com", f"/api/v3/coins/goldcoin/market_chart?vs_currency={ccy}&days=max"
+        )
 
-        return dict([(timestamp_to_datetime(h[0]/1000, utc=True).strftime('%Y-%m-%d'), str(h[1]))
-                     for h in history['prices']])
+        return {
+            timestamp_to_datetime(h[0] / 1000, utc=True).strftime("%Y-%m-%d"): str(h[1])
+                for h in history["prices"]
+        }
 
 
 # class CointraderMonitor(ExchangeBase):
@@ -456,20 +503,22 @@ def dictinvert(d):
             keys.append(k)
     return inv
 
+
 def get_exchanges_and_currencies():
     # load currencies.json from disk
-    path = resource_path('currencies.json')
+    path = resource_path("currencies.json")
     try:
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, encoding="utf-8") as f:
             return json.loads(f.read())
     except Exception:
         pass
     # or if not present, generate it now.
     print("cannot find currencies.json. will regenerate it now.")
     d = {}
-    is_exchange = lambda obj: (inspect.isclass(obj)
-                               and issubclass(obj, ExchangeBase)
-                               and obj != ExchangeBase)
+    def is_exchange(obj):
+        return (
+            inspect.isclass(obj) and issubclass(obj, ExchangeBase) and obj != ExchangeBase
+        )
     exchanges = dict(inspect.getmembers(sys.modules[__name__], is_exchange))
 
     async def get_currencies_safe(name, exchange):
@@ -485,12 +534,13 @@ def get_exchanges_and_currencies():
                 for name, klass in exchanges.items():
                     exchange = klass(None, None)
                     await group.spawn(get_currencies_safe(name, exchange))
+
     loop = util.get_asyncio_loop()
     try:
         loop.run_until_complete(query_all_exchanges_for_their_ccys_over_network())
-    except Exception as e:
+    except Exception:
         pass
-    with open(path, 'w', encoding='utf-8') as f:
+    with open(path, "w", encoding="utf-8") as f:
         f.write(json.dumps(d, indent=4, sort_keys=True))
     return d
 
@@ -527,7 +577,7 @@ class FxThread(ThreadJob, EventListener, NetworkRetryManager[str]):
         self.history_used_spot = False
         self.ccy_combo = None
         self.hist_checkbox = None
-        self.cache_dir = os.path.join(config.path, 'cache')  # type: str
+        self.cache_dir = os.path.join(config.path, "cache")  # type: str
         self._trigger = asyncio.Event()
         self._trigger.set()
         self.set_exchange(self.config_exchange())
@@ -566,7 +616,7 @@ class FxThread(ThreadJob, EventListener, NetworkRetryManager[str]):
         text = text.replace(",", util.THOUSANDS_SEP)
         if dp_loc == -1:
             return text
-        return text[:dp_loc] + util.DECIMAL_POINT + text[dp_loc+1:]
+        return text[:dp_loc] + util.DECIMAL_POINT + text[dp_loc + 1 :]
 
     def ccy_precision(self, ccy=None) -> int:
         return CCY_PRECISIONS.get(self.ccy if ccy is None else ccy, 2)
@@ -584,7 +634,10 @@ class FxThread(ThreadJob, EventListener, NetworkRetryManager[str]):
             if manually_triggered and self.has_history():  # maybe refresh historical prices
                 self.exchange.get_historical_rates(self.ccy, self.cache_dir)
             now = time.time()
-            if not manually_triggered and self.exchange._quotes_timestamp + SPOT_RATE_REFRESH_TARGET > now:
+            if (
+                not manually_triggered
+                and self.exchange._quotes_timestamp + SPOT_RATE_REFRESH_TARGET > now
+            ):
                 continue  # last quote still fresh
             # If the last quote is relatively recent, we poll at fixed time intervals.
             # Once it gets close to cache expiry, we change to an exponential backoff, to try to get
@@ -611,7 +664,7 @@ class FxThread(ThreadJob, EventListener, NetworkRetryManager[str]):
         return self.can_have_history() and self.config.FX_HISTORY_RATES
 
     def get_currency(self) -> str:
-        '''Use when dynamic fetching is needed'''
+        """Use when dynamic fetching is needed"""
         return self.config.FX_CURRENCY
 
     def config_exchange(self):
@@ -629,7 +682,9 @@ class FxThread(ThreadJob, EventListener, NetworkRetryManager[str]):
         loop.call_soon_threadsafe(self._trigger.set)
 
     def set_exchange(self, name):
-        class_ = globals().get(name) or globals().get(self.config.cv.FX_EXCHANGE.get_default_value())
+        class_ = globals().get(name) or globals().get(
+            self.config.cv.FX_EXCHANGE.get_default_value()
+        )
         self.logger.info(f"using exchange {name}")
         if self.config_exchange() != name:
             self.config.FX_EXCHANGE = name
@@ -643,56 +698,56 @@ class FxThread(ThreadJob, EventListener, NetworkRetryManager[str]):
     def on_quotes(self, *, received_new_data: bool = False):
         if received_new_data:
             self._clear_addr_retry_times()
-        util.trigger_callback('on_quotes')
+        util.trigger_callback("on_quotes")
 
     def on_history(self):
-        util.trigger_callback('on_history')
+        util.trigger_callback("on_history")
 
     def exchange_rate(self) -> Decimal:
         """Returns the exchange rate as a Decimal"""
         if not self.is_enabled():
-            return Decimal('NaN')
+            return Decimal("NaN")
         return self.exchange.get_cached_spot_quote(self.ccy)
 
-    def format_amount(self, btc_balance, *, timestamp: int = None) -> str:
+    def format_amount(self, btc_balance, *, timestamp: int | None = None) -> str:
         if timestamp is None:
             rate = self.exchange_rate()
         else:
             rate = self.timestamp_rate(timestamp)
-        return '' if rate.is_nan() else "%s" % self.value_str(btc_balance, rate)
+        return "" if rate.is_nan() else f"{self.value_str(btc_balance, rate)}"
 
-    def format_amount_and_units(self, btc_balance, *, timestamp: int = None) -> str:
+    def format_amount_and_units(self, btc_balance, *, timestamp: int | None = None) -> str:
         if timestamp is None:
             rate = self.exchange_rate()
         else:
             rate = self.timestamp_rate(timestamp)
-        return '' if rate.is_nan() else "%s %s" % (self.value_str(btc_balance, rate), self.ccy)
+        return "" if rate.is_nan() else f"{self.value_str(btc_balance, rate)} {self.ccy}"
 
     def get_fiat_status_text(self, btc_balance, base_unit, decimal_point):
         rate = self.exchange_rate()
         if rate.is_nan():
             return _("  (No FX rate available)")
         amount = 1000 if decimal_point == 0 else 1
-        value = self.value_str(amount * COIN / (10**(8 - decimal_point)), rate)
+        value = self.value_str(amount * COIN / (10 ** (8 - decimal_point)), rate)
         return " %d %s~%s %s" % (amount, base_unit, value, self.ccy)
 
     def fiat_value(self, satoshis, rate) -> Decimal:
-        return Decimal('NaN') if satoshis is None else Decimal(satoshis) / COIN * Decimal(rate)
+        return Decimal("NaN") if satoshis is None else Decimal(satoshis) / COIN * Decimal(rate)
 
-    def value_str(self, satoshis, rate, *, add_thousands_sep: bool = None) -> str:
+    def value_str(self, satoshis, rate, *, add_thousands_sep: bool | None = None) -> str:
         fiat_val = self.fiat_value(satoshis, rate)
         return self.format_fiat(fiat_val, add_thousands_sep=add_thousands_sep)
 
-    def format_fiat(self, value: Decimal, *, add_thousands_sep: bool = None) -> str:
+    def format_fiat(self, value: Decimal, *, add_thousands_sep: bool | None = None) -> str:
         if value.is_nan():
             return _("No data")
         if add_thousands_sep is None:
             add_thousands_sep = True
         return self.ccy_amount_str(value, add_thousands_sep=add_thousands_sep)
 
-    def history_rate(self, d_t: Optional[datetime]) -> Decimal:
+    def history_rate(self, d_t: datetime | None) -> Decimal:
         if d_t is None:
-            return Decimal('NaN')
+            return Decimal("NaN")
         rate = self.exchange.historical_rate(self.ccy, d_t)
         # Frequently there is no rate for today, until tomorrow :)
         # Use spot quotes in that case
@@ -700,19 +755,22 @@ class FxThread(ThreadJob, EventListener, NetworkRetryManager[str]):
             rate = self.exchange.get_cached_spot_quote(self.ccy)
             self.history_used_spot = True
         if rate is None:
-            rate = 'NaN'
+            rate = "NaN"
         return Decimal(rate)
 
-    def historical_value_str(self, satoshis, d_t: Optional[datetime]) -> str:
+    def historical_value_str(self, satoshis, d_t: datetime | None) -> str:
         return self.format_fiat(self.historical_value(satoshis, d_t))
 
-    def historical_value(self, satoshis, d_t: Optional[datetime]) -> Decimal:
+    def historical_value(self, satoshis, d_t: datetime | None) -> Decimal:
         return self.fiat_value(satoshis, self.history_rate(d_t))
 
-    def timestamp_rate(self, timestamp: Optional[int]) -> Decimal:
+    def timestamp_rate(self, timestamp: int | None) -> Decimal:
         from .util import timestamp_to_datetime
+
         date = timestamp_to_datetime(timestamp)
         return self.history_rate(date)
 
 
-assert globals().get(SimpleConfig.FX_EXCHANGE.get_default_value()), f"default exchange {SimpleConfig.FX_EXCHANGE.get_default_value()} does not exist"
+assert globals().get(
+    SimpleConfig.FX_EXCHANGE.get_default_value()
+), f"default exchange {SimpleConfig.FX_EXCHANGE.get_default_value()} does not exist"

@@ -1,21 +1,29 @@
 from functools import partial
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import QPushButton, QLabel, QVBoxLayout, QWidget, QGridLayout
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QGridLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
-from electrum.gui.qt.util import (WindowModalDialog, CloseButton, Buttons, getOpenFileName,
-                                  getSaveFileName)
 from electrum.gui.qt.main_window import ElectrumWindow
-
+from electrum.gui.qt.util import (
+    CloseButton,
+    WindowModalDialog,
+    getOpenFileName,
+    getSaveFileName,
+)
+from electrum.gui.qt.wizard.wallet import (
+    WCHWUninitialized,
+    WCHWUnlock,
+    WCHWXPub,
+    WCScriptAndDerivation,
+)
 from electrum.i18n import _
 from electrum.plugin import hook
 from electrum.wallet import Multisig_Wallet
 
-from .coldcard import ColdcardPlugin, xfp2str
-from ..hw_wallet.qt import QtHandlerBase, QtPluginBase
 from ..hw_wallet.plugin import only_hook_if_libraries_available
-from electrum.gui.qt.wizard.wallet import WCScriptAndDerivation, WCHWXPub, WCHWUninitialized, WCHWUnlock
+from ..hw_wallet.qt import QtHandlerBase, QtPluginBase
+from .coldcard import ColdcardPlugin, xfp2str
 
 if TYPE_CHECKING:
     from electrum.gui.qt.wizard.wallet import QENewWalletWizard
@@ -38,9 +46,13 @@ class Plugin(ColdcardPlugin, QtPluginBase):
             return
         for keystore in wallet.get_keystores():
             if type(keystore) == self.keystore_class:
+
                 def show_address(keystore=keystore):
-                    keystore.thread.add(partial(self.show_address, wallet, addrs[0], keystore=keystore))
-                device_name = "{} ({})".format(self.device, keystore.label)
+                    keystore.thread.add(
+                        partial(self.show_address, wallet, addrs[0], keystore=keystore)
+                    )
+
+                device_name = f"{self.device} ({keystore.label})"
                 menu.addAction(_("Show on {}").format(device_name), show_address)
 
     @only_hook_if_libraries_available
@@ -64,8 +76,8 @@ class Plugin(ColdcardPlugin, QtPluginBase):
 
     def export_multisig_setup(self, main_window, wallet):
 
-        basename = wallet.basename().rsplit('.', 1)[0]        # trim .json
-        name = f'{basename}-cc-export.txt'.replace(' ', '-')
+        basename = wallet.basename().rsplit(".", 1)[0]  # trim .json
+        name = f"{basename}-cc-export.txt".replace(" ", "-")
         fileName = getSaveFileName(
             parent=main_window,
             title=_("Select where to save the setup file"),
@@ -74,7 +86,7 @@ class Plugin(ColdcardPlugin, QtPluginBase):
             config=self.config,
         )
         if fileName:
-            with open(fileName, "wt") as f:
+            with open(fileName, "w") as f:
                 ColdcardPlugin.export_ms_wallet(wallet, f, basename)
             main_window.show_message(_("Wallet setup file exported successfully"))
 
@@ -84,17 +96,17 @@ class Plugin(ColdcardPlugin, QtPluginBase):
         CKCCSettingsDialog(window, self, keystore).exec_()
 
     @hook
-    def init_wallet_wizard(self, wizard: 'QENewWalletWizard'):
+    def init_wallet_wizard(self, wizard: "QENewWalletWizard"):
         self.extend_wizard(wizard)
 
     # insert coldcard pages in new wallet wizard
-    def extend_wizard(self, wizard: 'QENewWalletWizard'):
+    def extend_wizard(self, wizard: "QENewWalletWizard"):
         super().extend_wizard(wizard)
         views = {
-            'coldcard_start': {'gui': WCScriptAndDerivation},
-            'coldcard_xpub': {'gui': WCHWXPub},
-            'coldcard_not_initialized': {'gui': WCHWUninitialized},
-            'coldcard_unlock': {'gui': WCHWUnlock}
+            "coldcard_start": {"gui": WCScriptAndDerivation},
+            "coldcard_xpub": {"gui": WCHWXPub},
+            "coldcard_not_initialized": {"gui": WCHWUninitialized},
+            "coldcard_unlock": {"gui": WCHWUnlock},
         }
         wizard.navmap_merge(views)
 
@@ -103,21 +115,21 @@ class Coldcard_Handler(QtHandlerBase):
     MESSAGE_DIALOG_TITLE = _("Coldcard Status")
 
     def __init__(self, win):
-        super(Coldcard_Handler, self).__init__(win, 'Coldcard')
+        super().__init__(win, "Coldcard")
 
 
 class CKCCSettingsDialog(WindowModalDialog):
 
     def __init__(self, window: ElectrumWindow, plugin, keystore):
         title = _("{} Settings").format(plugin.device)
-        super(CKCCSettingsDialog, self).__init__(window, title)
+        super().__init__(window, title)
         self.setMaximumWidth(540)
 
         # Note: Coldcard may **not** be connected at present time. Keep working!
 
         devmgr = plugin.device_manager()
-        #config = devmgr.config
-        #handler = keystore.handler
+        # config = devmgr.config
+        # handler = keystore.handler
         self.thread = thread = keystore.thread
         self.keystore = keystore
         assert isinstance(window, ElectrumWindow), f"{type(window)}"
@@ -139,37 +151,41 @@ class CKCCSettingsDialog(WindowModalDialog):
         grid.setColumnStretch(2, 1)
 
         # see <http://doc.qt.io/archives/qt-4.8/richtext-html-subset.html>
-        title = QLabel('''<center>
+        title = QLabel(
+            """<center>
 <span style="font-size: x-large">Coldcard Wallet</span>
 <br><span style="font-size: medium">from Coinkite Inc.</span>
-<br><a href="https://coldcardwallet.com">coldcardwallet.com</a>''')
+<br><a href="https://coldcardwallet.com">coldcardwallet.com</a>"""
+        )
         title.setTextInteractionFlags(Qt.LinksAccessibleByMouse)
 
-        grid.addWidget(title, 0,0, 1,2, Qt.AlignHCenter)
+        grid.addWidget(title, 0, 0, 1, 2, Qt.AlignHCenter)
         y = 3
 
         rows = [
-            ('xfp', _("Master Fingerprint")),
-            ('serial', _("USB Serial")),
-            ('fw_version', _("Firmware Version")),
-            ('fw_built', _("Build Date")),
-            ('bl_version', _("Bootloader")),
+            ("xfp", _("Master Fingerprint")),
+            ("serial", _("USB Serial")),
+            ("fw_version", _("Firmware Version")),
+            ("fw_built", _("Build Date")),
+            ("bl_version", _("Bootloader")),
         ]
-        for row_num, (member_name, label) in enumerate(rows):
+        for _row_num, (member_name, label) in enumerate(rows):
             # XXX we know xfp already, even if not connected
-            widget = QLabel('<tt>000000000000')
+            widget = QLabel("<tt>000000000000")
             widget.setTextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard)
 
-            grid.addWidget(QLabel(label), y, 0, 1,1, Qt.AlignRight)
+            grid.addWidget(QLabel(label), y, 0, 1, 1, Qt.AlignRight)
             grid.addWidget(widget, y, 1, 1, 1, Qt.AlignLeft)
             setattr(self, member_name, widget)
             y += 1
         body_layout.addLayout(grid)
 
-        upg_btn = QPushButton(_('Upgrade'))
-        #upg_btn.setDefault(False)
+        upg_btn = QPushButton(_("Upgrade"))
+
+        # upg_btn.setDefault(False)
         def _start_upgrade():
             thread.add(connect_and_doit, on_success=self.start_upgrade)
+
         upg_btn.clicked.connect(_start_upgrade)
 
         y += 3
@@ -184,25 +200,25 @@ class CKCCSettingsDialog(WindowModalDialog):
 
     def show_placeholders(self, unclear_arg):
         # device missing, so hide lots of detail.
-        self.xfp.setText('<tt>%s' % self.keystore.get_root_fingerprint())
-        self.serial.setText('(not connected)')
-        self.fw_version.setText('')
-        self.fw_built.setText('')
-        self.bl_version.setText('')
+        self.xfp.setText(f"<tt>{self.keystore.get_root_fingerprint()}")
+        self.serial.setText("(not connected)")
+        self.fw_version.setText("")
+        self.fw_built.setText("")
+        self.bl_version.setText("")
 
     def show_values(self, client):
 
         dev = client.dev
 
-        self.xfp.setText('<tt>%s' % xfp2str(dev.master_fingerprint))
-        self.serial.setText('<tt>%s' % dev.serial)
+        self.xfp.setText(f"<tt>{xfp2str(dev.master_fingerprint)}")
+        self.serial.setText(f"<tt>{dev.serial}")
 
         # ask device for versions: allow extras for future
         fw_date, fw_rel, bl_rel, *rfu = client.get_version()
 
-        self.fw_version.setText('<tt>%s' % fw_rel)
-        self.fw_built.setText('<tt>%s' % fw_date)
-        self.bl_version.setText('<tt>%s' % bl_rel)
+        self.fw_version.setText(f"<tt>{fw_rel}")
+        self.fw_built.setText(f"<tt>{fw_date}")
+        self.bl_version.setText(f"<tt>{bl_rel}")
 
     def start_upgrade(self, client):
         # ask for a filename (must have already downloaded it)
@@ -217,14 +233,14 @@ class CKCCSettingsDialog(WindowModalDialog):
         if not fileName:
             return
 
-        from ckcc.utils import dfu_parse
-        from ckcc.sigheader import FW_HEADER_SIZE, FW_HEADER_OFFSET, FW_HEADER_MAGIC
-        from ckcc.protocol import CCProtocolPacker
-        from hashlib import sha256
         import struct
 
+        from ckcc.protocol import CCProtocolPacker
+        from ckcc.sigheader import FW_HEADER_MAGIC, FW_HEADER_OFFSET, FW_HEADER_SIZE
+        from ckcc.utils import dfu_parse
+
         try:
-            with open(fileName, 'rb') as fd:
+            with open(fileName, "rb") as fd:
 
                 # unwrap firmware from the DFU
                 offset, size, *ignored = dfu_parse(fd)
@@ -233,13 +249,13 @@ class CKCCSettingsDialog(WindowModalDialog):
                 firmware = fd.read(size)
 
             hpos = FW_HEADER_OFFSET
-            hdr = bytes(firmware[hpos:hpos + FW_HEADER_SIZE])        # needed later too
+            hdr = bytes(firmware[hpos : hpos + FW_HEADER_SIZE])  # needed later too
             magic = struct.unpack_from("<I", hdr)[0]
 
             if magic != FW_HEADER_MAGIC:
                 raise ValueError("Bad magic")
         except Exception as exc:
-            self.window.show_error("Does not appear to be a Coldcard firmware file.\n\n%s" % exc)
+            self.window.show_error(f"Does not appear to be a Coldcard firmware file.\n\n{exc}")
             return
 
         # TODO:
@@ -247,14 +263,16 @@ class CKCCSettingsDialog(WindowModalDialog):
         # - warn them about the reboot?
         # - length checks
         # - add progress local bar
-        self.window.show_message("Ready to Upgrade.\n\nBe patient. Unit will reboot itself when complete.")
+        self.window.show_message(
+            "Ready to Upgrade.\n\nBe patient. Unit will reboot itself when complete."
+        )
 
         def doit():
             dlen, _ = dev.upload_file(firmware, verify=True)
             assert dlen == len(firmware)
 
             # append the firmware header a second time
-            result = dev.send_recv(CCProtocolPacker.upload(size, size+FW_HEADER_SIZE, hdr))
+            dev.send_recv(CCProtocolPacker.upload(size, size + FW_HEADER_SIZE, hdr))
 
             # make it reboot into bootloader which might install it
             dev.send_recv(CCProtocolPacker.reboot())

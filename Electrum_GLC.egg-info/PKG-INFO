@@ -1,0 +1,20 @@
+Metadata-Version: 2.1
+Name: Electrum-GLC
+Version: 4.5.0
+Summary: Lightweight Goldcoin Wallet
+Home-page: https://electrum.org
+Author: Thomas Voegtlin
+Author-email: Thomas Voegtlin <thomasv@electrum.org>
+License: MIT
+Requires-Python: >=3.11.0
+Provides-Extra: hardware
+Provides-Extra: gui
+Provides-Extra: crypto
+Provides-Extra: tests
+Provides-Extra: full
+Provides-Extra: fast
+Provides-Extra: scrypt
+License-File: LICENCE
+License-File: AUTHORS
+
+Lightweight Bitcoin Wallet

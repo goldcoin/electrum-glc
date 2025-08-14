@@ -23,33 +23,30 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import sys
 import ctypes
 import os
-from typing import List
+import sys
 from enum import IntEnum
 
 from ..logging import get_logger
-
 from . import MissingLib
 from .abstract_base import AbstractQrCodeReader, QrCodeResult
 
-
 _logger = get_logger(__name__)
 
-if 'ANDROID_DATA' in os.environ:
-    LIBNAME = 'libzbar.so'
-elif sys.platform == 'darwin':
-    LIBNAME = 'libzbar.0.dylib'
-elif sys.platform in ('windows', 'win32'):
-    LIBNAME = 'libzbar-0.dll'
+if "ANDROID_DATA" in os.environ:
+    LIBNAME = "libzbar.so"
+elif sys.platform == "darwin":
+    LIBNAME = "libzbar.0.dylib"
+elif sys.platform in ("windows", "win32"):
+    LIBNAME = "libzbar-0.dll"
 else:
-    LIBNAME = 'libzbar.so.0'
+    LIBNAME = "libzbar.so.0"
 
 try:
     try:
-        LIBZBAR = ctypes.cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), '..', LIBNAME))
-    except OSError as e:
+        LIBZBAR = ctypes.cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), "..", LIBNAME))
+    except OSError:
         LIBZBAR = ctypes.cdll.LoadLibrary(LIBNAME)
 
     LIBZBAR.zbar_image_create.restype = ctypes.c_void_p
@@ -57,11 +54,21 @@ try:
     LIBZBAR.zbar_image_scanner_get_results.restype = ctypes.c_void_p
     LIBZBAR.zbar_symbol_set_first_symbol.restype = ctypes.c_void_p
     LIBZBAR.zbar_symbol_get_data.restype = ctypes.POINTER(ctypes.c_char_p)
-    LIBZBAR.zbar_image_scanner_set_config.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+    LIBZBAR.zbar_image_scanner_set_config.argtypes = [
+        ctypes.c_void_p,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+    ]
     LIBZBAR.zbar_image_set_sequence.argtypes = [ctypes.c_void_p, ctypes.c_int]
     LIBZBAR.zbar_image_set_size.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
     LIBZBAR.zbar_image_set_format.argtypes = [ctypes.c_void_p, ctypes.c_int]
-    LIBZBAR.zbar_image_set_data.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p]
+    LIBZBAR.zbar_image_set_data.argtypes = [
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        ctypes.c_int,
+        ctypes.c_void_p,
+    ]
     LIBZBAR.zbar_image_scanner_recycle_image.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
     LIBZBAR.zbar_scan_image.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
     LIBZBAR.zbar_image_scanner_get_results.argtypes = [ctypes.c_void_p]
@@ -75,13 +82,14 @@ try:
     LIBZBAR.zbar_image_scanner_destroy.argtypes = [ctypes.c_void_p]
     LIBZBAR.zbar_image_destroy.argtypes = [ctypes.c_void_p]
 
-    #if is_verbose:
-        #LIBZBAR.zbar_set_verbosity(100)
+    # if is_verbose:
+    # LIBZBAR.zbar_set_verbosity(100)
 except OSError:
     _logger.exception("Failed to load zbar")
     LIBZBAR = None
 
 FOURCC_Y800 = 0x30303859
+
 
 @ctypes.CFUNCTYPE(None, ctypes.c_void_p)
 def zbar_cleanup(image):
@@ -89,10 +97,12 @@ def zbar_cleanup(image):
     Do nothing, this is just so zbar doesn't try to manage our QImage buffers
     """
 
+
 class ZbarSymbolType(IntEnum):
     """
     Supported symbol types, see zbar_symbol_type_e in zbar.h
     """
+
     EAN2 = 2
     EAN5 = 5
     EAN8 = 8
@@ -113,11 +123,14 @@ class ZbarSymbolType(IntEnum):
     CODE93 = 93
     CODE128 = 128
 
+
 class ZbarConfig(IntEnum):
     """
     Supported configuration options, see zbar_config_e in zbar.h
     """
+
     ENABLE = 0
+
 
 class ZbarQrCodeReader(AbstractQrCodeReader):
     """
@@ -126,7 +139,7 @@ class ZbarQrCodeReader(AbstractQrCodeReader):
 
     def __init__(self):
         if not LIBZBAR:
-            raise MissingLib('Zbar library not found')
+            raise MissingLib("Zbar library not found")
         # Set up zbar
         self.zbar_scanner = LIBZBAR.zbar_image_scanner_create()
         self.zbar_image = LIBZBAR.zbar_image_create()
@@ -136,17 +149,24 @@ class ZbarQrCodeReader(AbstractQrCodeReader):
             LIBZBAR.zbar_image_scanner_set_config(self.zbar_scanner, sym_type, ZbarConfig.ENABLE, 0)
 
         # Enable only QR codes
-        LIBZBAR.zbar_image_scanner_set_config(self.zbar_scanner, ZbarSymbolType.QRCODE,
-                                              ZbarConfig.ENABLE, 1)
+        LIBZBAR.zbar_image_scanner_set_config(
+            self.zbar_scanner, ZbarSymbolType.QRCODE, ZbarConfig.ENABLE, 1
+        )
 
     def __del__(self):
         if LIBZBAR:
             LIBZBAR.zbar_image_scanner_destroy(self.zbar_scanner)
             LIBZBAR.zbar_image_destroy(self.zbar_image)
 
-    def read_qr_code(self, buffer: ctypes.c_void_p, buffer_size: int,
-                     rowlen_bytes: int,  # this param is ignored in this implementation
-                     width: int, height: int, frame_id: int = -1) -> List[QrCodeResult]:
+    def read_qr_code(
+        self,
+        buffer: ctypes.c_void_p,
+        buffer_size: int,
+        rowlen_bytes: int,  # this param is ignored in this implementation
+        width: int,
+        height: int,
+        frame_id: int = -1,
+    ) -> list[QrCodeResult]:
         LIBZBAR.zbar_image_set_sequence(self.zbar_image, frame_id)
         LIBZBAR.zbar_image_set_size(self.zbar_image, width, height)
         LIBZBAR.zbar_image_set_format(self.zbar_image, FOURCC_Y800)
@@ -162,11 +182,11 @@ class ZbarQrCodeReader(AbstractQrCodeReader):
             symbol_data_len = LIBZBAR.zbar_symbol_get_data_length(symbol)
             symbol_data_ptr = LIBZBAR.zbar_symbol_get_data(symbol)
             symbol_data_bytes = ctypes.string_at(symbol_data_ptr, symbol_data_len)
-            symbol_data = symbol_data_bytes.decode('utf-8')
+            symbol_data = symbol_data_bytes.decode("utf-8")
 
             symbol_loc = []
             symbol_loc_len = LIBZBAR.zbar_symbol_get_loc_size(symbol)
-            for i in range(0, symbol_loc_len):
+            for i in range(symbol_loc_len):
                 # Normalize the coordinates into 0..1 range by dividing by width / height
                 symbol_loc_x = LIBZBAR.zbar_symbol_get_loc_x(symbol, i)
                 symbol_loc_y = LIBZBAR.zbar_symbol_get_loc_y(symbol, i)
@@ -175,7 +195,10 @@ class ZbarQrCodeReader(AbstractQrCodeReader):
             # Find the center by getting the average values of the corners x and y coordinates
             symbol_loc_sum_x = sum([l[0] for l in symbol_loc])
             symbol_loc_sum_y = sum([l[1] for l in symbol_loc])
-            symbol_loc_center = (int(symbol_loc_sum_x / symbol_loc_len), int(symbol_loc_sum_y / symbol_loc_len))
+            symbol_loc_center = (
+                int(symbol_loc_sum_x / symbol_loc_len),
+                int(symbol_loc_sum_y / symbol_loc_len),
+            )
 
             res.append(QrCodeResult(symbol_data, symbol_loc_center, symbol_loc))
 

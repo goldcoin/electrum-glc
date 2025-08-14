@@ -1,4 +1,4 @@
-from PyQt6.QtCore import pyqtSignal, pyqtProperty, QSortFilterProxyModel, QModelIndex, pyqtSlot
+from PyQt6.QtCore import QModelIndex, QSortFilterProxyModel, pyqtProperty, pyqtSignal, pyqtSlot
 
 from electrum.logging import get_logger
 
@@ -12,6 +12,7 @@ class QEFilterProxyModel(QSortFilterProxyModel):
         self.setSourceModel(parent_model)
 
     countChanged = pyqtSignal()
+
     @pyqtProperty(int, notify=countChanged)
     def count(self):
         return self.rowCount(QModelIndex())

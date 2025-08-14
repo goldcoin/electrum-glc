@@ -1,7 +1,6 @@
-import random
 import math
-from typing import List, Tuple, Dict, NamedTuple
-from collections import defaultdict
+import random
+from typing import NamedTuple
 
 from .lnutil import NoPathFound
 
@@ -16,11 +15,12 @@ MAX_PARTS = 5  # maximum number of parts for splitting
 
 
 # maps a channel (channel_id, node_id) to the funds it has available
-ChannelsFundsInfo = Dict[Tuple[bytes, bytes], int]
+ChannelsFundsInfo = dict[tuple[bytes, bytes], int]
 
 
-class SplitConfig(dict, Dict[Tuple[bytes, bytes], List[int]]):
+class SplitConfig(dict[tuple[bytes, bytes], list[int]]):
     """maps a channel (channel_id, node_id) to a list of amounts"""
+
     def number_parts(self) -> int:
         return sum([len(v) for v in self.values() if sum(v)])
 
@@ -37,7 +37,7 @@ class SplitConfig(dict, Dict[Tuple[bytes, bytes], List[int]]):
     def is_any_amount_smaller_than_min_part_size(self) -> bool:
         smaller = False
         for amounts in self.values():
-            if any([amount < MIN_PART_SIZE_MSAT for amount in amounts]):
+            if any(amount < MIN_PART_SIZE_MSAT for amount in amounts):
                 smaller |= True
         return smaller
 
@@ -47,7 +47,7 @@ class SplitConfigRating(NamedTuple):
     rating: float
 
 
-def split_amount_normal(total_amount: int, num_parts: int) -> List[int]:
+def split_amount_normal(total_amount: int, num_parts: int) -> list[int]:
     """Splits an amount into about `num_parts` parts, where the parts are split
     randomly (normally distributed around amount/num_parts with certain spread)."""
     parts = []
@@ -62,27 +62,29 @@ def split_amount_normal(total_amount: int, num_parts: int) -> List[int]:
     return parts
 
 
-def remove_duplicates(configs: List[SplitConfig]) -> List[SplitConfig]:
+def remove_duplicates(configs: list[SplitConfig]) -> list[SplitConfig]:
     unique_configs = set()
     for config in configs:
         # sort keys and values
         config_sorted_values = {k: sorted(v) for k, v in config.items()}
-        config_sorted_keys = {k: config_sorted_values[k] for k in sorted(config_sorted_values.keys())}
+        config_sorted_keys = {
+            k: config_sorted_values[k] for k in sorted(config_sorted_values.keys())
+        }
         hashable_config = tuple((c, tuple(sorted(config[c]))) for c in config_sorted_keys)
         unique_configs.add(hashable_config)
     unique_configs = [SplitConfig({c[0]: list(c[1]) for c in config}) for config in unique_configs]
     return unique_configs
 
 
-def remove_multiple_nodes(configs: List[SplitConfig]) -> List[SplitConfig]:
+def remove_multiple_nodes(configs: list[SplitConfig]) -> list[SplitConfig]:
     return [config for config in configs if config.number_nonzero_nodes() == 1]
 
 
-def remove_single_part_configs(configs: List[SplitConfig]) -> List[SplitConfig]:
+def remove_single_part_configs(configs: list[SplitConfig]) -> list[SplitConfig]:
     return [config for config in configs if config.number_parts() != 1]
 
 
-def remove_single_channel_splits(configs: List[SplitConfig]) -> List[SplitConfig]:
+def remove_single_channel_splits(configs: list[SplitConfig]) -> list[SplitConfig]:
     filtered = []
     for config in configs:
         for v in config.values():
@@ -92,9 +94,7 @@ def remove_single_channel_splits(configs: List[SplitConfig]) -> List[SplitConfig
     return filtered
 
 
-def rate_config(
-        config: SplitConfig,
-        channels_with_funds: ChannelsFundsInfo) -> float:
+def rate_config(config: SplitConfig, channels_with_funds: ChannelsFundsInfo) -> float:
     """Defines an objective function to rate a configuration.
 
     We calculate the normalized L2 norm for a configuration and
@@ -109,7 +109,9 @@ def rate_config(
         funds = channels_with_funds[channel]
         if amounts:
             for amount in amounts:
-                rating += amount * amount / (total_amount * total_amount)  # penalty to favor equal distribution of amounts
+                rating += (
+                    amount * amount / (total_amount * total_amount)
+                )  # penalty to favor equal distribution of amounts
                 rating += PART_PENALTY * PART_PENALTY  # penalty for each part
             decay = funds / EXHAUST_DECAY_FRACTION
             rating += math.exp((sum(amounts) - funds) / decay)  # penalty for channel exhaustion
@@ -117,11 +119,12 @@ def rate_config(
 
 
 def suggest_splits(
-        amount_msat: int, channels_with_funds: ChannelsFundsInfo,
-        exclude_single_part_payments=False,
-        exclude_multinode_payments=False,
-        exclude_single_channel_splits=False
-) -> List[SplitConfigRating]:
+    amount_msat: int,
+    channels_with_funds: ChannelsFundsInfo,
+    exclude_single_part_payments=False,
+    exclude_multinode_payments=False,
+    exclude_single_channel_splits=False,
+) -> list[SplitConfigRating]:
     """Breaks amount_msat into smaller pieces and distributes them over the
     channels according to the funds they can send.
 
@@ -166,7 +169,7 @@ def suggest_splits(
                         if distribute_amount == 0:
                             break
             if config.total_config_amount() != amount_msat:
-                raise NoPathFound('Cannot distribute payment over channels.')
+                raise NoPathFound("Cannot distribute payment over channels.")
             if target_parts > 1 and config.is_any_amount_smaller_than_min_part_size():
                 continue
             assert config.total_config_amount() == amount_msat
@@ -184,10 +187,9 @@ def suggest_splits(
     if exclude_single_channel_splits:
         configs = remove_single_channel_splits(configs)
 
-    rated_configs = [SplitConfigRating(
-        config=c,
-        rating=rate_config(c, channels_with_funds)
-    ) for c in configs]
+    rated_configs = [
+        SplitConfigRating(config=c, rating=rate_config(c, channels_with_funds)) for c in configs
+    ]
     rated_configs.sort(key=lambda x: x.rating)
 
     return rated_configs

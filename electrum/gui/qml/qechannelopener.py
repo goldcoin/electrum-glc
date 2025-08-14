@@ -1,21 +1,20 @@
 import threading
-from concurrent.futures import CancelledError
 from asyncio.exceptions import TimeoutError
-from typing import TYPE_CHECKING, Optional
+from concurrent.futures import CancelledError
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject
+from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
 
-from electrum.i18n import _
-from electrum.gui import messages
-from electrum.util import bfh
-from electrum.lnutil import extract_nodeid, ConnStringFormatError
 from electrum.bitcoin import DummyAddress
+from electrum.gui import messages
+from electrum.i18n import _
+from electrum.lnutil import ConnStringFormatError, extract_nodeid
 from electrum.lnworker import hardcoded_trampoline_nodes
 from electrum.logging import get_logger
+from electrum.util import bfh
 
 from .auth import AuthMixin, auth_protect
-from .qetxfinalizer import QETxFinalizer
 from .qetxdetails import QETxDetails
+from .qetxfinalizer import QETxFinalizer
 from .qetypes import QEAmount
 from .qewallet import QEWallet
 
@@ -23,12 +22,13 @@ from .qewallet import QEWallet
 class QEChannelOpener(QObject, AuthMixin):
     _logger = get_logger(__name__)
 
-    validationError = pyqtSignal([str,str], arguments=['code','message'])
-    conflictingBackup = pyqtSignal([str], arguments=['message'])
-    channelOpening = pyqtSignal([str], arguments=['peer'])
-    channelOpenError = pyqtSignal([str], arguments=['message'])
-    channelOpenSuccess = pyqtSignal([str, bool, int, bool],
-                                    arguments=['cid', 'has_onchain_backup', 'min_depth', 'tx_complete'])
+    validationError = pyqtSignal([str, str], arguments=["code", "message"])
+    conflictingBackup = pyqtSignal([str], arguments=["message"])
+    channelOpening = pyqtSignal([str], arguments=["peer"])
+    channelOpenError = pyqtSignal([str], arguments=["message"])
+    channelOpenSuccess = pyqtSignal(
+        [str, bool, int, bool], arguments=["cid", "has_onchain_backup", "min_depth", "tx_complete"]
+    )
 
     dataChanged = pyqtSignal()  # generic notify signal
 
@@ -47,6 +47,7 @@ class QEChannelOpener(QObject, AuthMixin):
         self._connect_str_resolved = None
 
     walletChanged = pyqtSignal()
+
     @pyqtProperty(QEWallet, notify=walletChanged)
     def wallet(self):
         return self._wallet
@@ -58,6 +59,7 @@ class QEChannelOpener(QObject, AuthMixin):
             self.walletChanged.emit()
 
     connectStrChanged = pyqtSignal()
+
     @pyqtProperty(str, notify=connectStrChanged)
     def connectStr(self):
         return self._connect_str
@@ -65,12 +67,13 @@ class QEChannelOpener(QObject, AuthMixin):
     @connectStr.setter
     def connectStr(self, connect_str: str):
         if self._connect_str != connect_str:
-            self._logger.debug('connectStr set -> %s' % connect_str)
+            self._logger.debug(f"connectStr set -> {connect_str}")
             self._connect_str = connect_str
             self.connectStrChanged.emit()
             self.validate()
 
     amountChanged = pyqtSignal()
+
     @pyqtProperty(QEAmount, notify=amountChanged)
     def amount(self):
         return self._amount
@@ -83,16 +86,19 @@ class QEChannelOpener(QObject, AuthMixin):
             self.validate()
 
     validChanged = pyqtSignal()
+
     @pyqtProperty(bool, notify=validChanged)
     def valid(self):
         return self._valid
 
     finalizerChanged = pyqtSignal()
+
     @pyqtProperty(QETxFinalizer, notify=finalizerChanged)
     def finalizer(self):
         return self._finalizer
 
     txDetailsChanged = pyqtSignal()
+
     @pyqtProperty(QETxDetails, notify=txDetailsChanged)
     def txDetails(self):
         return self._txdetails
@@ -107,7 +113,7 @@ class QEChannelOpener(QObject, AuthMixin):
         """side-effects: sets self._valid, self._node_pubkey, self._connect_str_resolved"""
         connect_str_valid = False
         if self._connect_str:
-            self._logger.debug(f'checking if {self._connect_str=!r} is valid')
+            self._logger.debug(f"checking if {self._connect_str=!r} is valid")
             if not self._wallet.wallet.config.LIGHTNING_USE_GOSSIP:
                 # using trampoline: connect_str is the name of a trampoline node
                 peer_addr = hardcoded_trampoline_nodes()[self._connect_str]
@@ -129,7 +135,7 @@ class QEChannelOpener(QObject, AuthMixin):
             self.validChanged.emit()
             return
 
-        self._logger.debug(f'amount={self._amount}')
+        self._logger.debug(f"amount={self._amount}")
         if not self._amount or not (self._amount.satsInt > 0 or self._amount.isMax):
             self._valid = False
             self.validChanged.emit()
@@ -143,7 +149,7 @@ class QEChannelOpener(QObject, AuthMixin):
         try:
             extract_nodeid(connect_str)
         except ConnStringFormatError as e:
-            self._logger.debug(f'invalid connect_str. {e!r}')
+            self._logger.debug(f"invalid connect_str. {e!r}")
             return False
         return True
 
@@ -154,25 +160,27 @@ class QEChannelOpener(QObject, AuthMixin):
         if not self.valid:
             return
 
-        self._logger.debug(f'Connect String: {self._connect_str!r}')
+        self._logger.debug(f"Connect String: {self._connect_str!r}")
 
         lnworker = self._wallet.wallet.lnworker
         if lnworker.has_conflicting_backup_with(self._node_pubkey) and not confirm_backup_conflict:
             self.conflictingBackup.emit(messages.MGS_CONFLICTING_BACKUP_INSTANCE)
             return
 
-        amount = '!' if self._amount.isMax else self._amount.satsInt
-        self._logger.debug('amount = %s' % str(amount))
+        amount = "!" if self._amount.isMax else self._amount.satsInt
+        self._logger.debug(f"amount = {amount!s}")
 
         coins = self._wallet.wallet.get_spendable_coins(None, nonlocal_only=True)
 
-        mktx = lambda amt: lnworker.mktx_for_open_channel(
-            coins=coins,
-            funding_sat=amt,
-            node_id=self._node_pubkey,
-            fee_est=None)
+        def mktx(amt):
+            return lnworker.mktx_for_open_channel(
+                    coins=coins, funding_sat=amt, node_id=self._node_pubkey, fee_est=None
+                )
 
-        acpt = lambda tx: self.do_open_channel(tx, self._connect_str_resolved, self._wallet.password)
+        def acpt(tx):
+            return self.do_open_channel(
+                    tx, self._connect_str_resolved, self._wallet.password
+                )
 
         self._finalizer = QETxFinalizer(self, make_tx=mktx, accept=acpt)
         self._finalizer.canRbf = False
@@ -180,12 +188,12 @@ class QEChannelOpener(QObject, AuthMixin):
         self._finalizer.wallet = self._wallet
         self.finalizerChanged.emit()
 
-    @auth_protect(message=_('Open Lightning channel?'))
+    @auth_protect(message=_("Open Lightning channel?"))
     def do_open_channel(self, funding_tx, conn_str, password):
         """
         conn_str: a connection string that extract_nodeid can parse, i.e. cannot be a trampoline name
         """
-        self._logger.debug('opening channel')
+        self._logger.debug("opening channel")
         # read funding_sat from tx; converts '!' to int value
         funding_sat = funding_tx.output_value_for_address(DummyAddress.CHANNEL)
         lnworker = self._wallet.wallet.lnworker
@@ -198,10 +206,15 @@ class QEChannelOpener(QObject, AuthMixin):
                     funding_tx=funding_tx,
                     funding_sat=funding_sat,
                     push_amt_sat=0,
-                    password=password)
-                self._logger.debug('opening channel succeeded')
-                self.channelOpenSuccess.emit(chan.channel_id.hex(), chan.has_onchain_backup(),
-                                             chan.constraints.funding_txn_minimum_depth, funding_tx.is_complete())
+                    password=password,
+                )
+                self._logger.debug("opening channel succeeded")
+                self.channelOpenSuccess.emit(
+                    chan.channel_id.hex(),
+                    chan.has_onchain_backup(),
+                    chan.constraints.funding_txn_minimum_depth,
+                    funding_tx.is_complete(),
+                )
 
                 # TODO: handle incomplete TX
                 # if not funding_tx.is_complete():
@@ -211,7 +224,7 @@ class QEChannelOpener(QObject, AuthMixin):
                 #     self.txDetailsChanged.emit()
 
             except (CancelledError, TimeoutError):
-                error = _('Could not connect to channel peer')
+                error = _("Could not connect to channel peer")
             except Exception as e:
                 error = str(e)
                 if not error:
@@ -221,7 +234,7 @@ class QEChannelOpener(QObject, AuthMixin):
                     self._logger.exception("Problem opening channel: %s", error)
                     self.channelOpenError.emit(error)
 
-        self._logger.debug('starting open thread')
+        self._logger.debug("starting open thread")
         self.channelOpening.emit(conn_str)
         threading.Thread(target=open_thread, daemon=True).start()
 

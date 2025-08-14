@@ -21,22 +21,33 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import sys
 import html
-from typing import TYPE_CHECKING, Optional, Set
+import sys
+from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import QObject
 import PyQt5.QtCore as QtCore
-from PyQt5.QtWidgets import (QWidget, QLabel, QPushButton, QTextEdit,
-                             QMessageBox, QHBoxLayout, QVBoxLayout)
+from PyQt5.QtCore import QObject
+from PyQt5.QtWidgets import (
+    QHBoxLayout,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
-from electrum.i18n import _
-from electrum.base_crash_reporter import BaseCrashReporter, EarlyExceptionsQueue, CrashReportResponse
-from electrum.logging import Logger
 from electrum import constants
+from electrum.base_crash_reporter import (
+    BaseCrashReporter,
+    CrashReportResponse,
+    EarlyExceptionsQueue,
+)
+from electrum.i18n import _
+from electrum.logging import Logger
 from electrum.network import Network
 
-from .util import MessageBoxMixin, read_QIcon, WaitingDialog, font_height
+from .util import MessageBoxMixin, WaitingDialog, font_height, read_QIcon
 
 if TYPE_CHECKING:
     from electrum.simple_config import SimpleConfig
@@ -46,20 +57,20 @@ if TYPE_CHECKING:
 class Exception_Window(BaseCrashReporter, QWidget, MessageBoxMixin, Logger):
     _active_window = None
 
-    def __init__(self, config: 'SimpleConfig', exctype, value, tb):
+    def __init__(self, config: "SimpleConfig", exctype, value, tb):
         BaseCrashReporter.__init__(self, exctype, value, tb)
         self.network = Network.get_instance()
         self.config = config
 
         QWidget.__init__(self)
-        self.setWindowTitle('Electrum - ' + _('An Error Occurred'))
+        self.setWindowTitle("Electrum - " + _("An Error Occurred"))
         self.setMinimumSize(600, 300)
 
         Logger.__init__(self)
 
         main_box = QVBoxLayout()
 
-        heading = QLabel('<h2>' + BaseCrashReporter.CRASH_TITLE + '</h2>')
+        heading = QLabel("<h2>" + BaseCrashReporter.CRASH_TITLE + "</h2>")
         main_box.addWidget(heading)
         main_box.addWidget(QLabel(BaseCrashReporter.CRASH_MESSAGE))
 
@@ -67,9 +78,14 @@ class Exception_Window(BaseCrashReporter, QWidget, MessageBoxMixin, Logger):
 
         collapse_info = QPushButton(_("Show report contents"))
         collapse_info.clicked.connect(
-            lambda: self.msg_box(QMessageBox.NoIcon,
-                                 self, _("Report contents"), self.get_report_string(),
-                                 rich_text=True))
+            lambda: self.msg_box(
+                QMessageBox.NoIcon,
+                self,
+                _("Report contents"),
+                self.get_report_string(),
+                rich_text=True,
+            )
+        )
 
         main_box.addWidget(collapse_info)
 
@@ -84,16 +100,16 @@ class Exception_Window(BaseCrashReporter, QWidget, MessageBoxMixin, Logger):
 
         buttons = QHBoxLayout()
 
-        report_button = QPushButton(_('Send Bug Report'))
+        report_button = QPushButton(_("Send Bug Report"))
         report_button.clicked.connect(self.send_report)
         report_button.setIcon(read_QIcon("tab_send.png"))
         buttons.addWidget(report_button)
 
-        never_button = QPushButton(_('Never'))
+        never_button = QPushButton(_("Never"))
         never_button.clicked.connect(self.show_never)
         buttons.addWidget(never_button)
 
-        close_button = QPushButton(_('Not Now'))
+        close_button = QPushButton(_("Not Now"))
         close_button.clicked.connect(self.close)
         buttons.addWidget(close_button)
 
@@ -107,24 +123,29 @@ class Exception_Window(BaseCrashReporter, QWidget, MessageBoxMixin, Logger):
             text = response.text
             if response.url:
                 text += f" You can track further progress on <a href='{response.url}'>GitHub</a>."
-            self.show_message(parent=self,
-                              title=_("Crash report"),
-                              msg=text,
-                              rich_text=True)
+            self.show_message(parent=self, title=_("Crash report"), msg=text, rich_text=True)
             self.close()
+
         def on_failure(exc_info):
             e = exc_info[1]
-            self.logger.error('There was a problem with the automatic reporting', exc_info=exc_info)
-            self.show_critical(parent=self,
-                               msg=(_('There was a problem with the automatic reporting:') + '<br/>' +
-                                    repr(e)[:120] + '<br/><br/>' +
-                                    _("Please report this issue manually") +
-                                    f' <a href="{constants.GIT_REPO_ISSUES_URL}">on GitHub</a>.'),
-                               rich_text=True)
+            self.logger.error("There was a problem with the automatic reporting", exc_info=exc_info)
+            self.show_critical(
+                parent=self,
+                msg=(
+                    _("There was a problem with the automatic reporting:")
+                    + "<br/>"
+                    + repr(e)[:120]
+                    + "<br/><br/>"
+                    + _("Please report this issue manually")
+                    + f' <a href="{constants.GIT_REPO_ISSUES_URL}">on GitHub</a>.'
+                ),
+                rich_text=True,
+            )
 
         proxy = self.network.proxy
-        task = lambda: BaseCrashReporter.send_report(self, self.network.asyncio_loop, proxy)
-        msg = _('Sending crash report...')
+        def task():
+            return BaseCrashReporter.send_report(self, self.network.asyncio_loop, proxy)
+        msg = _("Sending crash report...")
         WaitingDialog(self, msg, task, on_success, on_failure)
 
     def on_close(self):
@@ -164,7 +185,7 @@ class Exception_Hook(QObject, Logger):
 
     _INSTANCE = None  # type: Optional[Exception_Hook]  # singleton
 
-    def __init__(self, *, config: 'SimpleConfig'):
+    def __init__(self, *, config: "SimpleConfig"):
         QObject.__init__(self)
         Logger.__init__(self)
         assert self._INSTANCE is None, "Exception_Hook is supposed to be a singleton"
@@ -176,7 +197,7 @@ class Exception_Hook(QObject, Logger):
         EarlyExceptionsQueue.set_hook_as_ready()
 
     @classmethod
-    def maybe_setup(cls, *, config: 'SimpleConfig', wallet: 'Abstract_Wallet' = None) -> None:
+    def maybe_setup(cls, *, config: "SimpleConfig", wallet: "Abstract_Wallet" = None) -> None:
         if not config.SHOW_CRASH_REPORTER:
             EarlyExceptionsQueue.set_hook_as_ready()  # flush already queued exceptions
             return
@@ -186,5 +207,5 @@ class Exception_Hook(QObject, Logger):
             cls._INSTANCE.wallet_types_seen.add(wallet.wallet_type)
 
     def handler(self, *exc_info):
-        self.logger.error('exception caught by crash reporter', exc_info=exc_info)
+        self.logger.error("exception caught by crash reporter", exc_info=exc_info)
         self._report_exception.emit(self.config, *exc_info)

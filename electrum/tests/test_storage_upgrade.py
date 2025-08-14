@@ -1,22 +1,18 @@
-import shutil
-import tempfile
-import os
-import json
-from typing import Optional
-import asyncio
 import inspect
+import json
+import os
 
 import electrum
-from electrum.wallet_db import WalletDBUpgrader, WalletDB, WalletRequiresUpgrade, WalletRequiresSplit
-from electrum.wallet import Wallet
-from electrum import constants
-from electrum import util
 from electrum.plugin import Plugins
-from electrum.simple_config import SimpleConfig
+from electrum.wallet import Wallet
+from electrum.wallet_db import (
+    WalletDB,
+    WalletRequiresSplit,
+    WalletRequiresUpgrade,
+)
 
 from . import as_testnet
 from .test_wallet import WalletTestCase
-
 
 WALLET_FILES_DIR = os.path.join(os.path.dirname(__file__), "test_storage_upgrade")
 
@@ -29,14 +25,13 @@ class TestStorageUpgrade(WalletTestCase):
         test_method_name = inspect.stack()[1][3]
         assert isinstance(test_method_name, str)
         assert test_method_name.startswith("test_upgrade_from_")
-        fname = test_method_name[len("test_upgrade_from_"):]
+        fname = test_method_name[len("test_upgrade_from_") :]
         test_vector_file = os.path.join(WALLET_FILES_DIR, fname)
-        with open(test_vector_file, "r") as f:
+        with open(test_vector_file) as f:
             wallet_str = f.read()
         return wallet_str
 
-
-##########
+    ##########
 
     async def test_upgrade_from_client_1_9_8_seeded(self):
         """note: this wallet file is not valid json: it tests the ast.literal_eval()
@@ -46,7 +41,7 @@ class TestStorageUpgrade(WalletTestCase):
         await self._upgrade_storage(wallet_str)
 
     # TODO pre-2.0 mixed wallets are not split currently
-    #async def test_upgrade_from_client_1_9_8_mixed(self):
+    # async def test_upgrade_from_client_1_9_8_mixed(self):
     #    wallet_str = "{'addr_history':{'15V7MsQK2vjF5aEXLVG11qi2eZPZsXdnYc':[],'177hEYTccmuYH8u68pYfaLteTxwJrVgvJj':[],'1DjtUCcQwwzA3GSPA7Kd79PMnri7tLDPYC':[],'1PGEgaPG1XJqmuSj68GouotWeYkCtwo4wm':[],'1PAgpPxnL42Hp3cWxmSfdChPqqGiM8g7zj':[],'1DgrwN2JCDZ6uPMSvSz8dPeUtaxLxWM2kf':[],'1H3mPXHFzA8UbvhQVabcDjYw3CPb3djvxs':[],'1HocPduHmQUJerpdaLG8DnmxvnDCVQwWsa':[]},'accounts_expanded':{},'master_public_key':'756d1fe6ded28d43d4fea902a9695feb785447514d6e6c3bdf369f7c3432fdde4409e4efbffbcf10084d57c5a98d1f34d20ac1f133bdb64fa02abf4f7bde1dfb','use_encryption':False,'seed':'2605aafe50a45bdf2eb155302437e678','accounts':{0:{0:['1DjtUCcQwwzA3GSPA7Kd79PMnri7tLDPYC','1PAgpPxnL42Hp3cWxmSfdChPqqGiM8g7zj','177hEYTccmuYH8u68pYfaLteTxwJrVgvJj','1PGEgaPG1XJqmuSj68GouotWeYkCtwo4wm','15V7MsQK2vjF5aEXLVG11qi2eZPZsXdnYc'],1:['1H3mPXHFzA8UbvhQVabcDjYw3CPb3djvxs','1HocPduHmQUJerpdaLG8DnmxvnDCVQwWsa','1DgrwN2JCDZ6uPMSvSz8dPeUtaxLxWM2kf'],'mpk':'756d1fe6ded28d43d4fea902a9695feb785447514d6e6c3bdf369f7c3432fdde4409e4efbffbcf10084d57c5a98d1f34d20ac1f133bdb64fa02abf4f7bde1dfb'}},'imported_keys':{'15CyDgLffJsJgQrhcyooFH4gnVDG82pUrA':'5JyVyXU1LiRXATvRTQvR9Kp8Rx1X84j2x49iGkjSsXipydtByUq','1Exet2BhHsFxKTwhnfdsBMkPYLGvobxuW6':'L3Gi6EQLvYw8gEEUckmqawkevfj9s8hxoQDFveQJGZHTfyWnbk1U','1364Js2VG66BwRdkaoxAaFtdPb1eQgn8Dr':'L2sED74axVXC4H8szBJ4rQJrkfem7UMc6usLCPUoEWxDCFGUaGUM'},'seed_version':4}"
     #    await self._upgrade_storage(wallet_str, accounts=2)
 
@@ -303,8 +298,7 @@ class TestStorageUpgrade(WalletTestCase):
         db = await self._upgrade_storage(wallet_str)
         wallet = Wallet(db, config=self.config)
         wallet.import_private_keys(
-            ["p2wpkh:L1cgMEnShp73r9iCukoPE3MogLeueNYRD9JVsfT1zVHyPBR3KqBY"],
-            password=None
+            ["p2wpkh:L1cgMEnShp73r9iCukoPE3MogLeueNYRD9JVsfT1zVHyPBR3KqBY"], password=None
         )
         await wallet.stop()
 
@@ -313,13 +307,13 @@ class TestStorageUpgrade(WalletTestCase):
         wallet_str = self._get_wallet_str()
         await self._upgrade_storage(wallet_str)
 
-##########
+    ##########
 
-    plugins: 'electrum.plugin.Plugins'
+    plugins: "electrum.plugin.Plugins"
 
     def setUp(self):
         super().setUp()
-        gui_name = 'cmdline'
+        gui_name = "cmdline"
         # TODO it's probably wasteful to load all plugins... only need Trezor
         self.plugins = Plugins(self.config, gui_name)
 
@@ -328,24 +322,18 @@ class TestStorageUpgrade(WalletTestCase):
         self.plugins.stopped_event.wait()
         super().tearDown()
 
-    async def _upgrade_storage(self, wallet_json, accounts=1) -> Optional[WalletDB]:
+    async def _upgrade_storage(self, wallet_json, accounts=1) -> WalletDB | None:
         if accounts == 1:
             # test manual upgrades
             try:
-                db = self._load_db_from_json_string(
-                    wallet_json=wallet_json,
-                    upgrade=False)
+                db = self._load_db_from_json_string(wallet_json=wallet_json, upgrade=False)
             except WalletRequiresUpgrade:
-                db = self._load_db_from_json_string(
-                    wallet_json=wallet_json,
-                    upgrade=True)
+                db = self._load_db_from_json_string(wallet_json=wallet_json, upgrade=True)
                 await self._sanity_check_upgraded_db(db)
             return db
         else:
             try:
-                db = self._load_db_from_json_string(
-                    wallet_json=wallet_json,
-                    upgrade=False)
+                db = self._load_db_from_json_string(wallet_json=wallet_json, upgrade=False)
             except WalletRequiresSplit as e:
                 split_data = e._split_data
                 self.assertEqual(accounts, len(split_data))

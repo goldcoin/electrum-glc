@@ -1,14 +1,15 @@
-from typing import Optional
 
+import PyQt5.QtGui as QtGui
 import qrcode
 import qrcode.exceptions
-
+from PyQt5.QtCore import QRect, Qt
 from PyQt5.QtGui import QColor, QPen
-import PyQt5.QtGui as QtGui
-from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtWidgets import (
-    QApplication, QVBoxLayout, QTextEdit, QHBoxLayout, QPushButton, QWidget,
-    QFileDialog,
+    QApplication,
+    QHBoxLayout,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
 )
 
 from electrum.i18n import _
@@ -54,13 +55,12 @@ class QRCodeWidget(QWidget):
 
         self.update()
 
-
     def paintEvent(self, e):
         if not self.data:
             return
 
         black = QColor(0, 0, 0, 255)
-        grey  = QColor(196, 196, 196, 255)
+        grey = QColor(196, 196, 196, 255)
         white = QColor(255, 255, 255, 255)
         black_pen = QPen(black) if self.isEnabled() else QPen(grey)
         black_pen.setJoinStyle(Qt.MiterJoin)
@@ -82,15 +82,15 @@ class QRCodeWidget(QWidget):
         r = qp.viewport()
         framesize = min(r.width(), r.height())
         self._framesize = framesize
-        boxsize = int(framesize/(k + 2))
+        boxsize = int(framesize / (k + 2))
         if boxsize < 2:
-            qp.drawText(0, 20, 'Cannot draw QR code:')
-            qp.drawText(0, 40, 'Boxsize too small')
+            qp.drawText(0, 20, "Cannot draw QR code:")
+            qp.drawText(0, 40, "Boxsize too small")
             qp.end()
             return
-        size = k*boxsize
-        left = (framesize - size)/2
-        top = (framesize - size)/2
+        size = k * boxsize
+        left = (framesize - size) / 2
+        top = (framesize - size) / 2
         # Draw white background with margin
         qp.setBrush(white)
         qp.setPen(white)
@@ -102,8 +102,8 @@ class QRCodeWidget(QWidget):
             for c in range(k):
                 if matrix[r][c]:
                     qp.drawRect(
-                        int(left+c*boxsize), int(top+r*boxsize),
-                        boxsize - 1, boxsize - 1)
+                        int(left + c * boxsize), int(top + r * boxsize), boxsize - 1, boxsize - 1
+                    )
         qp.end()
 
     def grab(self) -> QtGui.QPixmap:
@@ -120,15 +120,15 @@ class QRCodeWidget(QWidget):
 class QRDialog(WindowModalDialog):
 
     def __init__(
-            self,
-            *,
-            data,
-            parent=None,
-            title="",
-            show_text=False,
-            help_text=None,
-            show_copy_text_btn=False,
-            config: SimpleConfig,
+        self,
+        *,
+        data,
+        parent=None,
+        title="",
+        show_text=False,
+        help_text=None,
+        show_copy_text_btn=False,
+        config: SimpleConfig,
     ):
         WindowModalDialog.__init__(self, parent, title)
         self.config = config
@@ -157,7 +157,7 @@ class QRDialog(WindowModalDialog):
             if not filename:
                 return
             p = qrw.grab()
-            p.save(filename, 'png')
+            p.save(filename, "png")
             self.show_message(_("QR code saved to file") + " " + filename)
 
         def copy_image_to_clipboard():

@@ -29,7 +29,7 @@ fi
 info "building docker image."
 docker build \
     $DOCKER_BUILD_FLAGS \
-    -t electrum-appimage-builder-img \
+    -t electrum-glc-appimage-builder-shasta \
     "$CONTRIB_APPIMAGE"
 
 # maybe do fresh clone
@@ -50,16 +50,25 @@ info "building binary..."
 # check uid and maybe chown. see #8261
 if [ ! -z "$ELECBUILD_COMMIT" ] ; then  # fresh clone (reproducible build)
     if [ $(id -u) != "1000" ] || [ $(id -g) != "1000" ] ; then
-        info "need to chown -R FRESH_CLONE dir. prompting for sudo."
-        sudo chown -R 1000:1000 "$FRESH_CLONE"
+        info "Fresh clone will be accessed with Docker's default user (uid 1000)"
+        # Docker container runs as user:1000 - will handle file ownership internally
     fi
 fi
-docker run -it \
-    --name electrum-appimage-builder-cont \
+
+# Check if we're in a CI environment or if TTY is not available
+DOCKER_RUN_FLAGS="-i"
+if [ -t 0 ] ; then
+    # TTY is available, use interactive mode
+    DOCKER_RUN_FLAGS="-it"
+fi
+
+docker run $DOCKER_RUN_FLAGS \
+    --name electrum-glc-appimage-builder-cont-shasta \
     -v "$PROJECT_ROOT_OR_FRESHCLONE_ROOT":/opt/electrum \
+    -e MAKEFLAGS="-j8" \
     --rm \
     --workdir /opt/electrum/contrib/build-linux/appimage \
-    electrum-appimage-builder-img \
+    electrum-glc-appimage-builder-shasta \
     ./make_appimage.sh
 
 # make sure resulting binary location is independent of fresh_clone

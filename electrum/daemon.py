@@ -22,39 +22,48 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import asyncio
 import ast
+import asyncio
 import errno
+import json
 import os
-import time
-import traceback
+import socket
 import sys
 import threading
-from typing import Dict, Optional, Tuple, Iterable, Callable, Union, Sequence, Mapping, TYPE_CHECKING
+import time
 from base64 import b64decode, b64encode
-from collections import defaultdict
-import json
-import socket
+from typing import (
+    TYPE_CHECKING,
+    Optional,
+    Union,
+)
 
 import aiohttp
-from aiohttp import web, client_exceptions
-from aiorpcx import timeout_after, TaskTimeout, ignore_after
+from aiohttp import web
+from aiorpcx import ignore_after
 
-from . import util
-from .network import Network
-from .util import (json_decode, to_bytes, to_string, profiler, standardize_path, constant_time_compare, InvalidPassword)
-from .invoices import PR_PAID, PR_EXPIRED
-from .util import log_exceptions, ignore_exceptions, randrange, OldTaskGroup
-from .util import EventListener, event_listener
-from .wallet import Wallet, Abstract_Wallet
-from .storage import WalletStorage
-from .wallet_db import WalletDB, WalletRequiresSplit, WalletRequiresUpgrade, WalletUnfinished
-from .commands import known_commands, Commands
-from .simple_config import SimpleConfig
+from . import GuiImportError, util
+from .commands import Commands, known_commands
 from .exchange_rate import FxThread
-from .logging import get_logger, Logger
-from . import GuiImportError
-from .plugin import run_hook, Plugins
+from .logging import Logger, get_logger
+from .network import Network
+from .plugin import Plugins, run_hook
+from .simple_config import SimpleConfig
+from .storage import WalletStorage
+from .util import (
+    InvalidPassword,
+    OldTaskGroup,
+    constant_time_compare,
+    json_decode,
+    log_exceptions,
+    profiler,
+    randrange,
+    standardize_path,
+    to_bytes,
+    to_string,
+)
+from .wallet import Abstract_Wallet, Wallet
+from .wallet_db import WalletDB, WalletUnfinished
 
 if TYPE_CHECKING:
     from electrum import gui
@@ -66,32 +75,36 @@ _logger = get_logger(__name__)
 class DaemonNotRunning(Exception):
     pass
 
+
 def get_rpcsock_defaultpath(config: SimpleConfig):
-    return os.path.join(config.path, 'daemon_rpc_socket')
+    return os.path.join(config.path, "daemon_rpc_socket")
+
 
 def get_rpcsock_default_type(config: SimpleConfig):
     if config.RPC_PORT:
-        return 'tcp'
+        return "tcp"
     # Use unix domain sockets when available,
     # with the extra paranoia that in case windows "implements" them,
     # we want to test it before making it the default there.
-    if hasattr(socket, 'AF_UNIX') and sys.platform != 'win32':
-        return 'unix'
-    return 'tcp'
+    if hasattr(socket, "AF_UNIX") and sys.platform != "win32":
+        return "unix"
+    return "tcp"
+
 
 def get_lockfile(config: SimpleConfig):
-    return os.path.join(config.path, 'daemon')
+    return os.path.join(config.path, "daemon")
+
 
 def remove_lockfile(lockfile):
     os.unlink(lockfile)
 
 
 def get_file_descriptor(config: SimpleConfig):
-    '''Tries to create the lockfile, using O_EXCL to
+    """Tries to create the lockfile, using O_EXCL to
     prevent races.  If it succeeds, it returns the FD.
     Otherwise, try and connect to the server specified in the lockfile.
     If this succeeds, the server is returned.  Otherwise, remove the
-    lockfile and try again.'''
+    lockfile and try again."""
     lockfile = get_lockfile(config)
     while True:
         try:
@@ -99,12 +112,11 @@ def get_file_descriptor(config: SimpleConfig):
         except OSError:
             pass
         try:
-            request(config, 'ping')
+            request(config, "ping")
             return None
         except DaemonNotRunning:
             # Couldn't connect; remove lockfile and try again.
             remove_lockfile(lockfile)
-
 
 
 def request(config: SimpleConfig, endpoint, args=(), timeout: Union[float, int] = 60):
@@ -115,32 +127,39 @@ def request(config: SimpleConfig, endpoint, args=(), timeout: Union[float, int] 
         try:
             with open(lockfile) as f:
                 socktype, address, create_time = ast.literal_eval(f.read())
-                if socktype == 'unix':
+                if socktype == "unix":
                     path = address
                     (host, port) = "127.0.0.1", 0
                     # We still need a host and port for e.g. HTTP Host header
-                elif socktype == 'tcp':
+                elif socktype == "tcp":
                     (host, port) = address
                 else:
                     raise Exception(f"corrupt lockfile; socktype={socktype!r}")
         except Exception:
             raise DaemonNotRunning()
         rpc_user, rpc_password = get_rpc_credentials(config)
-        server_url = 'http://%s:%d' % (host, port)
+        server_url = "http://%s:%d" % (host, port)
         auth = aiohttp.BasicAuth(login=rpc_user, password=rpc_password)
         loop = util.get_asyncio_loop()
+
         async def request_coroutine(
-            *, socktype=socktype, path=path, auth=auth, server_url=server_url, endpoint=endpoint,
+            *,
+            socktype=socktype,
+            path=path,
+            auth=auth,
+            server_url=server_url,
+            endpoint=endpoint,
         ):
-            if socktype == 'unix':
+            if socktype == "unix":
                 connector = aiohttp.UnixConnector(path=path)
-            elif socktype == 'tcp':
-                connector = None # This will transform into TCP.
+            elif socktype == "tcp":
+                connector = None  # This will transform into TCP.
             else:
                 raise Exception(f"impossible socktype ({socktype!r})")
             async with aiohttp.ClientSession(auth=auth, connector=connector) as session:
                 c = util.JsonRPCClient(session, server_url)
                 return await c.request(endpoint, *args)
+
         try:
             fut = asyncio.run_coroutine_threadsafe(request_coroutine(), loop)
             return fut.result(timeout=timeout)
@@ -158,24 +177,23 @@ def wait_until_daemon_becomes_ready(*, config: SimpleConfig, timeout=5) -> bool:
         if time.monotonic() > t0 + timeout:
             return False  # timeout
         try:
-            request(config, 'ping')
+            request(config, "ping")
             return True  # success
         except DaemonNotRunning:
             time.sleep(0.05)
             continue
 
 
-def get_rpc_credentials(config: SimpleConfig) -> Tuple[str, str]:
+def get_rpc_credentials(config: SimpleConfig) -> tuple[str, str]:
     rpc_user = config.RPC_USERNAME or None
     rpc_password = config.RPC_PASSWORD or None
     if rpc_user is None or rpc_password is None:
-        rpc_user = 'user'
+        rpc_user = "user"
         bits = 128
         nbytes = bits // 8 + (bits % 8 > 0)
         pw_int = randrange(pow(2, bits))
-        pw_b64 = b64encode(
-            pw_int.to_bytes(nbytes, 'big'), b'-_')
-        rpc_password = to_string(pw_b64, 'ascii')
+        pw_b64 = b64encode(pw_int.to_bytes(nbytes, "big"), b"-_")
+        rpc_password = to_string(pw_b64, "ascii")
         config.RPC_USERNAME = rpc_user
         config.RPC_PASSWORD = rpc_password
     return rpc_user, rpc_password
@@ -184,11 +202,14 @@ def get_rpc_credentials(config: SimpleConfig) -> Tuple[str, str]:
 class AuthenticationError(Exception):
     pass
 
+
 class AuthenticationInvalidOrMissing(AuthenticationError):
     pass
 
+
 class AuthenticationCredentialsInvalid(AuthenticationError):
     pass
+
 
 class AuthenticatedServer(Logger):
 
@@ -204,72 +225,79 @@ class AuthenticatedServer(Logger):
         self._methods[f.__name__] = f
 
     async def authenticate(self, headers):
-        if self.rpc_password == '':
+        if self.rpc_password == "":
             # RPC authentication is disabled
             return
-        auth_string = headers.get('Authorization', None)
+        auth_string = headers.get("Authorization", None)
         if auth_string is None:
-            raise AuthenticationInvalidOrMissing('CredentialsMissing')
-        basic, _, encoded = auth_string.partition(' ')
-        if basic != 'Basic':
-            raise AuthenticationInvalidOrMissing('UnsupportedType')
-        encoded = to_bytes(encoded, 'utf8')
-        credentials = to_string(b64decode(encoded), 'utf8')
-        username, _, password = credentials.partition(':')
-        if not (constant_time_compare(username, self.rpc_user)
-                and constant_time_compare(password, self.rpc_password)):
+            raise AuthenticationInvalidOrMissing("CredentialsMissing")
+        basic, _, encoded = auth_string.partition(" ")
+        if basic != "Basic":
+            raise AuthenticationInvalidOrMissing("UnsupportedType")
+        encoded = to_bytes(encoded, "utf8")
+        credentials = to_string(b64decode(encoded), "utf8")
+        username, _, password = credentials.partition(":")
+        if not (
+            constant_time_compare(username, self.rpc_user)
+            and constant_time_compare(password, self.rpc_password)
+        ):
             await asyncio.sleep(0.050)
-            raise AuthenticationCredentialsInvalid('Invalid Credentials')
+            raise AuthenticationCredentialsInvalid("Invalid Credentials")
 
     async def handle(self, request):
         async with self.auth_lock:
             try:
                 await self.authenticate(request.headers)
             except AuthenticationInvalidOrMissing:
-                return web.Response(headers={"WWW-Authenticate": "Basic realm=Electrum"},
-                                    text='Unauthorized', status=401)
+                return web.Response(
+                    headers={"WWW-Authenticate": "Basic realm=Electrum"},
+                    text="Unauthorized",
+                    status=401,
+                )
             except AuthenticationCredentialsInvalid:
-                return web.Response(text='Forbidden', status=403)
+                return web.Response(text="Forbidden", status=403)
         try:
             request = await request.text()
             request = json.loads(request)
-            method = request['method']
-            _id = request['id']
-            params = request.get('params', [])  # type: Union[Sequence, Mapping]
+            method = request["method"]
+            _id = request["id"]
+            params = request.get("params", [])  # type: Union[Sequence, Mapping]
             if method not in self._methods:
                 raise Exception(f"attempting to use unregistered method: {method}")
             f = self._methods[method]
-        except Exception as e:
+        except Exception:
             self.logger.exception("invalid request")
-            return web.Response(text='Invalid Request', status=500)
+            return web.Response(text="Invalid Request", status=500)
         response = {
-            'id': _id,
-            'jsonrpc': '2.0',
+            "id": _id,
+            "jsonrpc": "2.0",
         }
         try:
             if isinstance(params, dict):
-                response['result'] = await f(**params)
+                response["result"] = await f(**params)
             else:
-                response['result'] = await f(*params)
+                response["result"] = await f(*params)
         except BaseException as e:
             self.logger.exception("internal error while executing RPC")
-            response['error'] = {
-                'code': 1,
-                'message': str(e),
+            response["error"] = {
+                "code": 1,
+                "message": str(e),
             }
         return web.json_response(response)
 
 
 class CommandsServer(AuthenticatedServer):
 
-    def __init__(self, daemon: 'Daemon', fd):
+    def __init__(self, daemon: "Daemon", fd):
         rpc_user, rpc_password = get_rpc_credentials(daemon.config)
         AuthenticatedServer.__init__(self, rpc_user, rpc_password)
         self.daemon = daemon
         self.fd = fd
         self.config = daemon.config
         sockettype = self.config.RPC_SOCKET_TYPE
-        self.socktype = sockettype if sockettype != 'auto' else get_rpcsock_default_type(self.config)
+        self.socktype = (
+            sockettype if sockettype != "auto" else get_rpcsock_default_type(self.config)
+        )
         self.sockpath = self.config.RPC_SOCKET_FILEPATH or get_rpcsock_defaultpath(self.config)
         self.host = self.config.RPC_HOST
         self.port = self.config.RPC_PORT
@@ -277,15 +305,17 @@ class CommandsServer(AuthenticatedServer):
         self.app.router.add_post("/", self.handle)
         self.register_method(self.ping)
         self.register_method(self.gui)
-        self.cmd_runner = Commands(config=self.config, network=self.daemon.network, daemon=self.daemon)
+        self.cmd_runner = Commands(
+            config=self.config, network=self.daemon.network, daemon=self.daemon
+        )
         for cmdname in known_commands:
             self.register_method(getattr(self.cmd_runner, cmdname))
         self.register_method(self.run_cmdline)
 
     def _socket_config_str(self) -> str:
-        if self.socktype == 'unix':
+        if self.socktype == "unix":
             return f"<socket type={self.socktype}, path={self.sockpath}>"
-        elif self.socktype == 'tcp':
+        elif self.socktype == "tcp":
             return f"<socket type={self.socktype}, host={self.host}, port={self.port}>"
         else:
             raise Exception(f"unknown socktype '{self.socktype!r}'")
@@ -293,24 +323,26 @@ class CommandsServer(AuthenticatedServer):
     async def run(self):
         self.runner = web.AppRunner(self.app)
         await self.runner.setup()
-        if self.socktype == 'unix':
+        if self.socktype == "unix":
             site = web.UnixSite(self.runner, self.sockpath)
-        elif self.socktype == 'tcp':
+        elif self.socktype == "tcp":
             site = web.TCPSite(self.runner, self.host, self.port)
         else:
             raise Exception(f"unknown socktype '{self.socktype!r}'")
         try:
             await site.start()
         except Exception as e:
-            raise Exception(f"failed to start CommandsServer at {self._socket_config_str()}. got exc: {e!r}") from None
+            raise Exception(
+                f"failed to start CommandsServer at {self._socket_config_str()}. got exc: {e!r}"
+            ) from None
         socket = site._server.sockets[0]
-        if self.socktype == 'unix':
+        if self.socktype == "unix":
             addr = self.sockpath
-        elif self.socktype == 'tcp':
+        elif self.socktype == "tcp":
             addr = socket.getsockname()
         else:
             raise Exception(f"impossible socktype ({self.socktype!r})")
-        os.write(self.fd, bytes(repr((self.socktype, addr, time.time())), 'utf8'))
+        os.write(self.fd, bytes(repr((self.socktype, addr, time.time())), "utf8"))
         os.close(self.fd)
         self.logger.info(f"now running and listening. socktype={self.socktype}, addr={addr}")
 
@@ -322,9 +354,11 @@ class CommandsServer(AuthenticatedServer):
         #        while self.config is the config of the long-lived daemon process.
         #       "config_options" should have priority.
         if self.daemon.gui_object:
-            if hasattr(self.daemon.gui_object, 'new_window'):
-                path = config_options.get('wallet_path') or self.config.get_wallet_path(use_gui_last_wallet=True)
-                self.daemon.gui_object.new_window(path, config_options.get('url'))
+            if hasattr(self.daemon.gui_object, "new_window"):
+                path = config_options.get("wallet_path") or self.config.get_wallet_path(
+                    use_gui_last_wallet=True
+                )
+                self.daemon.gui_object.new_window(path, config_options.get("url"))
                 response = "ok"
             else:
                 response = "error: current GUI does not support multiple windows"
@@ -333,7 +367,7 @@ class CommandsServer(AuthenticatedServer):
         return response
 
     async def run_cmdline(self, config_options):
-        cmdname = config_options['cmd']
+        cmdname = config_options["cmd"]
         cmd = known_commands[cmdname]
         # arguments passed to function
         args = [config_options.get(x) for x in cmd.params]
@@ -343,22 +377,22 @@ class CommandsServer(AuthenticatedServer):
         kwargs = {}
         for x in cmd.options:
             kwargs[x] = config_options.get(x)
-        if 'wallet_path' in cmd.options:
-            kwargs['wallet_path'] = config_options.get('wallet_path')
-        elif 'wallet' in cmd.options:
-            kwargs['wallet'] = config_options.get('wallet_path')
+        if "wallet_path" in cmd.options:
+            kwargs["wallet_path"] = config_options.get("wallet_path")
+        elif "wallet" in cmd.options:
+            kwargs["wallet"] = config_options.get("wallet_path")
         func = getattr(self.cmd_runner, cmd.name)
         # fixme: not sure how to retrieve message in jsonrpcclient
         try:
             result = await func(*args, **kwargs)
         except Exception as e:
-            result = {'error':str(e)}
+            result = {"error": str(e)}
         return result
 
 
 class WatchTowerServer(AuthenticatedServer):
 
-    def __init__(self, network: 'Network', port:int):
+    def __init__(self, network: "Network", port: int):
         self.port = port
         self.config = network.config
         self.network = network
@@ -374,7 +408,7 @@ class WatchTowerServer(AuthenticatedServer):
     async def run(self):
         self.runner = web.AppRunner(self.app)
         await self.runner.setup()
-        site = web.TCPSite(self.runner, host='localhost', port=self.port)
+        site = web.TCPSite(self.runner, host="localhost", port=self.port)
         await site.start()
         self.logger.info(f"running and listening on port {self.port}")
 
@@ -385,13 +419,11 @@ class WatchTowerServer(AuthenticatedServer):
         return await self.lnwatcher.sweepstore.add_sweep_tx(*args)
 
 
-
-
 class Daemon(Logger):
 
-    network: Optional[Network] = None
-    gui_object: Optional['gui.BaseElectrumGui'] = None
-    watchtower: Optional['WatchTowerServer'] = None
+    network: Network | None = None
+    gui_object: Optional["gui.BaseElectrumGui"] = None
+    watchtower: Optional["WatchTowerServer"] = None
 
     @profiler
     def __init__(
@@ -408,10 +440,12 @@ class Daemon(Logger):
         if fd is None and listen_jsonrpc:
             fd = get_file_descriptor(config)
             if fd is None:
-                raise Exception('failed to lock daemon; already running?')
-        if 'wallet_path' in config.cmdline_options:
-            self.logger.warning("Ignoring parameter 'wallet_path' for daemon. "
-                                "Use the load_wallet command instead.")
+                raise Exception("failed to lock daemon; already running?")
+        if "wallet_path" in config.cmdline_options:
+            self.logger.warning(
+                "Ignoring parameter 'wallet_path' for daemon. "
+                "Use the load_wallet command instead."
+            )
         self._plugins = None  # type: Optional[Plugins]
         self.asyncio_loop = util.get_asyncio_loop()
         if not self.config.NETWORK_OFFLINE:
@@ -433,7 +467,9 @@ class Daemon(Logger):
         self.commands_server = None
         if listen_jsonrpc:
             self.commands_server = CommandsServer(self, fd)
-            asyncio.run_coroutine_threadsafe(self.taskgroup.spawn(self.commands_server.run()), self.asyncio_loop)
+            asyncio.run_coroutine_threadsafe(
+                self.taskgroup.spawn(self.commands_server.run()), self.asyncio_loop
+            )
 
     @log_exceptions
     async def _run(self):
@@ -451,13 +487,15 @@ class Daemon(Logger):
             self._stopping_soon_or_errored.set()
 
     def start_network(self):
-        self.logger.info(f"starting network.")
+        self.logger.info("starting network.")
         assert not self.config.NETWORK_OFFLINE
         assert self.network
         # server-side watchtower
         if watchtower_port := self.config.WATCHTOWER_SERVER_PORT:
             self.watchtower = WatchTowerServer(self.network, watchtower_port)
-            asyncio.run_coroutine_threadsafe(self.taskgroup.spawn(self.watchtower.run), self.asyncio_loop)
+            asyncio.run_coroutine_threadsafe(
+                self.taskgroup.spawn(self.watchtower.run), self.asyncio_loop
+            )
 
         self.network.start(jobs=[self.fx.run])
         # prepare lightning functionality, also load channel db early
@@ -476,13 +514,14 @@ class Daemon(Logger):
         return str(path)
 
     def with_wallet_lock(func):
-        def func_wrapper(self: 'Daemon', *args, **kwargs):
+        def func_wrapper(self: "Daemon", *args, **kwargs):
             with self._wallet_lock:
                 return func(self, *args, **kwargs)
+
         return func_wrapper
 
     @with_wallet_lock
-    def load_wallet(self, path, password, *, upgrade=False) -> Optional[Abstract_Wallet]:
+    def load_wallet(self, path, password, *, upgrade=False) -> Abstract_Wallet | None:
         path = standardize_path(path)
         wallet_key = self._wallet_key_from_path(path)
         # wizard will be launched if we return
@@ -496,19 +535,19 @@ class Daemon(Logger):
     @staticmethod
     @profiler
     def _load_wallet(
-            path,
-            password,
-            *,
-            upgrade: bool = False,
-            config: SimpleConfig,
-    ) -> Optional[Abstract_Wallet]:
+        path,
+        password,
+        *,
+        upgrade: bool = False,
+        config: SimpleConfig,
+    ) -> Abstract_Wallet | None:
         path = standardize_path(path)
         storage = WalletStorage(path)
         if not storage.file_exists():
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
         if storage.is_encrypted():
             if not password:
-                raise InvalidPassword('No password given')
+                raise InvalidPassword("No password given")
             storage.decrypt(password)
         # read data, pass it to db
         db = WalletDB(storage.read(), storage=storage, upgrade=upgrade)
@@ -522,14 +561,14 @@ class Daemon(Logger):
         path = wallet.storage.path
         wallet_key = self._wallet_key_from_path(path)
         self._wallets[wallet_key] = wallet
-        run_hook('daemon_wallet_loaded', self, wallet)
+        run_hook("daemon_wallet_loaded", self, wallet)
 
-    def get_wallet(self, path: str) -> Optional[Abstract_Wallet]:
+    def get_wallet(self, path: str) -> Abstract_Wallet | None:
         wallet_key = self._wallet_key_from_path(path)
         return self._wallets.get(wallet_key)
 
     @with_wallet_lock
-    def get_wallets(self) -> Dict[str, Abstract_Wallet]:
+    def get_wallets(self) -> dict[str, Abstract_Wallet]:
         return dict(self._wallets)  # copy
 
     def delete_wallet(self, path: str) -> bool:
@@ -557,7 +596,7 @@ class Daemon(Logger):
 
     def run_daemon(self):
         # init plugins
-        self._plugins = Plugins(self.config, 'cmdline')
+        self._plugins = Plugins(self.config, "cmdline")
         # block until we are stopping
         try:
             self._stopping_soon_or_errored.wait()
@@ -581,7 +620,7 @@ class Daemon(Logger):
                 self.gui_object.stop()
             self.logger.info("stopping all wallets")
             async with OldTaskGroup() as group:
-                for k, wallet in self._wallets.items():
+                for _k, wallet in self._wallets.items():
                     await group.spawn(wallet.stop())
             self.logger.info("stopping network and taskgroup")
             async with ignore_after(2):
@@ -603,32 +642,36 @@ class Daemon(Logger):
 
     def run_gui(self) -> None:
         assert self.config
-        threading.current_thread().name = 'GUI'
+        threading.current_thread().name = "GUI"
         gui_name = self.config.GUI_NAME
-        if gui_name in ['lite', 'classic']:
-            gui_name = 'qt'
+        if gui_name in ["lite", "classic"]:
+            gui_name = "qt"
         self._plugins = Plugins(self.config, gui_name)  # init plugins
-        self.logger.info(f'launching GUI: {gui_name}')
+        self.logger.info(f"launching GUI: {gui_name}")
         try:
             try:
-                gui = __import__('electrum.gui.' + gui_name, fromlist=['electrum'])
+                gui = __import__("electrum.gui." + gui_name, fromlist=["electrum"])
             except GuiImportError as e:
                 sys.exit(str(e))
-            self.gui_object = gui.ElectrumGui(config=self.config, daemon=self, plugins=self._plugins)
+            self.gui_object = gui.ElectrumGui(
+                config=self.config, daemon=self, plugins=self._plugins
+            )
             if not self._stop_entered:
                 self.gui_object.main()
             else:
                 # If daemon.stop() was called before gui_object got created, stop gui now.
                 self.gui_object.stop()
         except BaseException as e:
-            self.logger.error(f'GUI raised exception: {repr(e)}. shutting down.')
+            self.logger.error(f"GUI raised exception: {e!r}. shutting down.")
             raise
         finally:
             # app will exit now
             asyncio.run_coroutine_threadsafe(self.stop(), self.asyncio_loop).result()
 
     @with_wallet_lock
-    def _check_password_for_directory(self, *, old_password, new_password=None, wallet_dir: str) -> Tuple[bool, bool]:
+    def _check_password_for_directory(
+        self, *, old_password, new_password=None, wallet_dir: str
+    ) -> tuple[bool, bool]:
         """Checks password against all wallets (in dir), returns whether they can be unified and whether they are already.
         If new_password is not None, update all wallet passwords to new_password.
         """
@@ -652,7 +695,7 @@ class Daemon(Logger):
                 except util.InvalidPassword:
                     pass
                 except Exception:
-                    self.logger.exception(f'failed to load wallet at {path!r}:')
+                    self.logger.exception(f"failed to load wallet at {path!r}:")
             if wallet is None:
                 failed.append(path)
                 continue
@@ -669,7 +712,7 @@ class Daemon(Logger):
                 failed.append(path)
                 continue
             if new_password:
-                self.logger.info(f'updating password for wallet: {path!r}')
+                self.logger.info(f"updating password for wallet: {path!r}")
                 wallet.update_password(old_password_real, new_password, encrypt_storage=True)
         can_be_unified = failed == []
         is_unified = can_be_unified and is_unified
@@ -677,11 +720,11 @@ class Daemon(Logger):
 
     @with_wallet_lock
     def update_password_for_directory(
-            self,
-            *,
-            old_password,
-            new_password,
-            wallet_dir: Optional[str] = None,
+        self,
+        *,
+        old_password,
+        new_password,
+        wallet_dir: str | None = None,
     ) -> bool:
         """returns whether password is unified"""
         if new_password is None:
@@ -690,11 +733,13 @@ class Daemon(Logger):
         if wallet_dir is None:
             wallet_dir = os.path.dirname(self.config.get_wallet_path())
         can_be_unified, is_unified = self._check_password_for_directory(
-            old_password=old_password, new_password=None, wallet_dir=wallet_dir)
+            old_password=old_password, new_password=None, wallet_dir=wallet_dir
+        )
         if not can_be_unified:
             return False
         if is_unified and old_password == new_password:
             return True
         self._check_password_for_directory(
-            old_password=old_password, new_password=new_password, wallet_dir=wallet_dir)
+            old_password=old_password, new_password=new_password, wallet_dir=wallet_dir
+        )
         return True

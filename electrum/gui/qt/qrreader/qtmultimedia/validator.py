@@ -23,19 +23,17 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import List, Dict, Callable, Any
 from abc import ABC, abstractmethod
 
-from PyQt5.QtGui import QColor
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QColor
 
+from electrum.gui.qt.util import ColorScheme, QColorLerp
 from electrum.i18n import _
 from electrum.qrreader import QrCodeResult
 
-from electrum.gui.qt.util import ColorScheme, QColorLerp
 
-
-class QrReaderValidatorResult():
+class QrReaderValidatorResult:
     """
     Result of a QR code validator
     """
@@ -46,13 +44,13 @@ class QrReaderValidatorResult():
         self.message: str = None
         self.message_color: QColor = None
 
-        self.simple_result : str = None
+        self.simple_result: str = None
 
-        self.result_usable: Dict[QrCodeResult, bool] = {}
-        self.result_colors: Dict[QrCodeResult, QColor] = {}
-        self.result_messages: Dict[QrCodeResult, str] = {}
+        self.result_usable: dict[QrCodeResult, bool] = {}
+        self.result_colors: dict[QrCodeResult, QColor] = {}
+        self.result_messages: dict[QrCodeResult, str] = {}
 
-        self.selected_results: List[QrCodeResult] = []
+        self.selected_results: list[QrCodeResult] = []
 
 
 class AbstractQrReaderValidator(ABC):
@@ -61,10 +59,11 @@ class AbstractQrReaderValidator(ABC):
     """
 
     @abstractmethod
-    def validate_results(self, results: List[QrCodeResult]) -> QrReaderValidatorResult:
+    def validate_results(self, results: list[QrCodeResult]) -> QrReaderValidatorResult:
         """
         Checks a list of QR code results for usable codes.
         """
+
 
 class QrReaderValidatorCounting(AbstractQrReaderValidator):
     """
@@ -72,9 +71,9 @@ class QrReaderValidatorCounting(AbstractQrReaderValidator):
     of detection counts in `result_counts`.
     """
 
-    result_counts: Dict[QrCodeResult, int] = {}
+    result_counts: dict[QrCodeResult, int] = {}
 
-    def validate_results(self, results: List[QrCodeResult]) -> QrReaderValidatorResult:
+    def validate_results(self, results: list[QrCodeResult]) -> QrReaderValidatorResult:
         res = QrReaderValidatorResult()
 
         for result in results:
@@ -95,6 +94,7 @@ class QrReaderValidatorCounting(AbstractQrReaderValidator):
 
         return res
 
+
 class QrReaderValidatorColorizing(QrReaderValidatorCounting):
     """
     This QR code result validator doesn't directly accept any results but colorizes the results
@@ -106,7 +106,7 @@ class QrReaderValidatorColorizing(QrReaderValidatorCounting):
 
     strong_count: int = 10
 
-    def validate_results(self, results: List[QrCodeResult]) -> QrReaderValidatorResult:
+    def validate_results(self, results: list[QrCodeResult]) -> QrReaderValidatorResult:
         res = super().validate_results(results)
 
         # Colorize the QR code results by their detection counts
@@ -121,13 +121,14 @@ class QrReaderValidatorColorizing(QrReaderValidatorCounting):
 
         return res
 
+
 class QrReaderValidatorStrong(QrReaderValidatorColorizing):
     """
     This QR code result validator doesn't directly accept any results but passes every strong
     detection in the return values `selected_results`.
     """
 
-    def validate_results(self, results: List[QrCodeResult]) -> QrReaderValidatorResult:
+    def validate_results(self, results: list[QrCodeResult]) -> QrReaderValidatorResult:
         res = super().validate_results(results)
 
         for result in results:
@@ -136,6 +137,7 @@ class QrReaderValidatorStrong(QrReaderValidatorColorizing):
                 break
 
         return res
+
 
 class QrReaderValidatorCounted(QrReaderValidatorStrong):
     """
@@ -148,19 +150,21 @@ class QrReaderValidatorCounted(QrReaderValidatorStrong):
         self.minimum = minimum
         self.maximum = maximum
 
-    def validate_results(self, results: List[QrCodeResult]) -> QrReaderValidatorResult:
+    def validate_results(self, results: list[QrCodeResult]) -> QrReaderValidatorResult:
         res = super().validate_results(results)
 
         num_results = len(res.selected_results)
         if num_results < self.minimum:
             if num_results > 0:
-                res.message = _('Too few QR codes detected.')
+                res.message = _("Too few QR codes detected.")
                 res.message_color = ColorScheme.RED.as_color()
         elif num_results > self.maximum:
-            res.message = _('Too many QR codes detected.')
+            res.message = _("Too many QR codes detected.")
             res.message_color = ColorScheme.RED.as_color()
         else:
             res.accepted = True
-            res.simple_result = (results and results[0].data) or ''  # hack added by calin just to take the first one
+            res.simple_result = (
+                results and results[0].data
+            ) or ""  # hack added by calin just to take the first one
 
         return res

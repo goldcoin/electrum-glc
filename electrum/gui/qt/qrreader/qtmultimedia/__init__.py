@@ -23,17 +23,27 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Mapping
+from collections.abc import Mapping
 
-from .camera_dialog import (QrReaderCameraDialog, CameraError, NoCamerasFound,
-                            NoCameraResolutionsFound)
-from .validator import (QrReaderValidatorResult, AbstractQrReaderValidator,
-                        QrReaderValidatorCounting, QrReaderValidatorColorizing,
-                        QrReaderValidatorStrong, QrReaderValidatorCounted)
+from .camera_dialog import (
+    CameraError,
+    NoCameraResolutionsFound,
+    NoCamerasFound,
+    QrReaderCameraDialog,
+)
+from .validator import (
+    AbstractQrReaderValidator,
+    QrReaderValidatorColorizing,
+    QrReaderValidatorCounted,
+    QrReaderValidatorCounting,
+    QrReaderValidatorResult,
+    QrReaderValidatorStrong,
+)
 
 
 def find_system_cameras() -> Mapping[str, str]:
     """Returns a camera_description -> camera_path map."""
     from PyQt5.QtMultimedia import QCameraInfo
+
     system_cameras = QCameraInfo.availableCameras()
     return {cam.description(): cam.deviceName() for cam in system_cameras}

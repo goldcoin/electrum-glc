@@ -22,27 +22,31 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import os
-import threading
-import stat
-import hashlib
 import base64
+import hashlib
+import os
+import stat
 import zlib
 from enum import IntEnum
-from typing import Optional
 
 from . import ecc
-from .util import (profiler, InvalidPassword, WalletFileException, bfh, standardize_path,
-                   test_read_write_permissions, os_chmod)
-
-from .wallet_db import WalletDB
 from .logging import Logger
+from .util import (
+    InvalidPassword,
+    WalletFileException,
+    bfh,
+    os_chmod,
+    standardize_path,
+    test_read_write_permissions,
+)
 
 
 def get_derivation_used_for_hw_device_encryption():
-    return ("m"
-            "/4541509'"      # ascii 'ELE'  as decimal ("BIP43 purpose")
-            "/1112098098'")  # ascii 'BIE2' as decimal
+    return (
+        "m"
+        "/4541509'"  # ascii 'ELE'  as decimal ("BIP43 purpose")
+        "/1112098098'"
+    )  # ascii 'BIE2' as decimal
 
 
 class StorageEncryptionVersion(IntEnum):
@@ -51,7 +55,8 @@ class StorageEncryptionVersion(IntEnum):
     XPUB_PASSWORD = 2
 
 
-class StorageReadWriteError(Exception): pass
+class StorageReadWriteError(Exception):
+    pass
 
 
 # TODO: Rename to Storage
@@ -63,10 +68,10 @@ class WalletStorage(Logger):
         self._file_exists = bool(self.path and os.path.exists(self.path))
         self.logger.info(f"wallet path {self.path}")
         self.pubkey = None
-        self.decrypted = ''
+        self.decrypted = ""
         try:
             test_read_write_permissions(self.path)
-        except IOError as e:
+        except OSError as e:
             raise StorageReadWriteError(e) from e
         if self.file_exists():
             with open(self.path, "rb") as f:
@@ -75,7 +80,7 @@ class WalletStorage(Logger):
                 self.init_pos = self.pos
             self._encryption_version = self._init_encryption_version()
         else:
-            self.raw = ''
+            self.raw = ""
             self._encryption_version = StorageEncryptionVersion.PLAINTEXT
             self.pos = 0
             self.init_pos = 0
@@ -85,7 +90,7 @@ class WalletStorage(Logger):
 
     def write(self, data: str) -> None:
         s = self.encrypt_before_writing(data)
-        temp_path = "%s.tmp.%s" % (self.path, os.getpid())
+        temp_path = f"{self.path}.tmp.{os.getpid()}"
         with open(temp_path, "wb") as f:
             f.write(s.encode("utf-8"))
             self.pos = f.seek(0, os.SEEK_END)
@@ -104,7 +109,7 @@ class WalletStorage(Logger):
         self.logger.info(f"saved {self.path}")
 
     def append(self, data: str) -> None:
-        """ append data to file. for the moment, only non-encrypted file"""
+        """append data to file. for the moment, only non-encrypted file"""
         assert not self.is_encrypted()
         with open(self.path, "rb+") as f:
             pos = f.seek(0, os.SEEK_END)
@@ -153,9 +158,9 @@ class WalletStorage(Logger):
     def _init_encryption_version(self):
         try:
             magic = base64.b64decode(self.raw)[0:4]
-            if magic == b'BIE1':
+            if magic == b"BIE1":
                 return StorageEncryptionVersion.USER_PASSWORD
-            elif magic == b'BIE2':
+            elif magic == b"BIE2":
                 return StorageEncryptionVersion.XPUB_PASSWORD
             else:
                 return StorageEncryptionVersion.PLAINTEXT
@@ -166,18 +171,18 @@ class WalletStorage(Logger):
     def get_eckey_from_password(password):
         if password is None:
             password = ""
-        secret = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), b'', iterations=1024)
+        secret = hashlib.pbkdf2_hmac("sha512", password.encode("utf-8"), b"", iterations=1024)
         ec_key = ecc.ECPrivkey.from_arbitrary_size_secret(secret)
         return ec_key
 
     def _get_encryption_magic(self):
         v = self._encryption_version
         if v == StorageEncryptionVersion.USER_PASSWORD:
-            return b'BIE1'
+            return b"BIE1"
         elif v == StorageEncryptionVersion.XPUB_PASSWORD:
-            return b'BIE2'
+            return b"BIE2"
         else:
-            raise WalletFileException('no encryption magic for version: %s' % v)
+            raise WalletFileException(f"no encryption magic for version: {v}")
 
     def decrypt(self, password) -> None:
         """Raises an InvalidPassword exception on invalid password"""
@@ -187,9 +192,9 @@ class WalletStorage(Logger):
         if self.raw:
             enc_magic = self._get_encryption_magic()
             s = zlib.decompress(ec_key.decrypt_message(self.raw, enc_magic))
-            s = s.decode('utf8')
+            s = s.decode("utf8")
         else:
-            s = ''
+            s = ""
         self.pubkey = ec_key.get_public_key_hex()
         self.decrypted = s
 
@@ -197,15 +202,15 @@ class WalletStorage(Logger):
         s = plaintext
         if self.pubkey:
             self.decrypted = plaintext
-            s = bytes(s, 'utf8')
+            s = bytes(s, "utf8")
             c = zlib.compress(s, level=zlib.Z_BEST_SPEED)
             enc_magic = self._get_encryption_magic()
             public_key = ecc.ECPubkey(bfh(self.pubkey))
             s = public_key.encrypt_message(c, enc_magic)
-            s = s.decode('utf8')
+            s = s.decode("utf8")
         return s
 
-    def check_password(self, password: Optional[str]) -> None:
+    def check_password(self, password: str | None) -> None:
         """Raises an InvalidPassword exception on invalid password"""
         if not self.is_encrypted():
             if password is not None:
@@ -233,4 +238,3 @@ class WalletStorage(Logger):
 
     def basename(self) -> str:
         return os.path.basename(self.path)
-

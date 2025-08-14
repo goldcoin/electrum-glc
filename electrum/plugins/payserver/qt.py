@@ -25,11 +25,13 @@
 
 from functools import partial
 from typing import TYPE_CHECKING
+
 from PyQt5 import QtWidgets
 
+from electrum.gui.qt.util import Buttons, EnterButton, OkButton, WindowModalDialog, webopen
 from electrum.i18n import _
 from electrum.plugin import hook
-from electrum.gui.qt.util import WindowModalDialog, OkButton, Buttons, EnterButton, webopen
+
 from .payserver import PayServerPlugin
 
 if TYPE_CHECKING:
@@ -41,7 +43,7 @@ class Plugin(PayServerPlugin):
     _init_qt_received = False
 
     @hook
-    def init_qt(self, gui: 'ElectrumGui'):
+    def init_qt(self, gui: "ElectrumGui"):
         if self._init_qt_received:  # only need/want the first signal
             return
         self._init_qt_received = True
@@ -54,9 +56,7 @@ class Plugin(PayServerPlugin):
         return True
 
     def settings_widget(self, window: WindowModalDialog):
-        return EnterButton(
-            _('Settings'),
-            partial(self.settings_dialog, window))
+        return EnterButton(_("Settings"), partial(self.settings_dialog, window))
 
     def settings_dialog(self, window: WindowModalDialog):
         if self.config.NETWORK_OFFLINE:
@@ -66,8 +66,8 @@ class Plugin(PayServerPlugin):
         form = QtWidgets.QFormLayout(None)
         addr = self.config.PAYSERVER_ADDRESS
         assert self.server
-        url = self.server.base_url + self.server.root + '/create_invoice.html'
-        self.help_button = QtWidgets.QPushButton('View sample invoice creation form')
+        url = self.server.base_url + self.server.root + "/create_invoice.html"
+        self.help_button = QtWidgets.QPushButton("View sample invoice creation form")
         self.help_button.clicked.connect(lambda: webopen(url))
         address_e = QtWidgets.QLineEdit(addr)
         keyfile_e = QtWidgets.QLineEdit(self.config.SSL_KEYFILE_PATH)
@@ -86,7 +86,7 @@ class Plugin(PayServerPlugin):
             self.config.SSL_KEYFILE_PATH = str(keyfile_e.text())
             self.config.SSL_CERTFILE_PATH = str(certfile_e.text())
             # fixme: restart the server
-            window.show_message('Please restart Electrum to enable those changes')
+            window.show_message("Please restart Electrum to enable those changes")
 
     @hook
     def receive_list_menu(self, parent, menu, key):

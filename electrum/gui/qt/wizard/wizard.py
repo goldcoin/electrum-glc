@@ -3,32 +3,48 @@ import threading
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal, pyqtSlot, QSize
+from PyQt5.QtCore import QSize, Qt, QTimer, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import (QDialog, QPushButton, QWidget, QLabel, QVBoxLayout, QScrollArea,
-                             QHBoxLayout, QLayout, QStackedWidget)
+from PyQt5.QtWidgets import (
+    QDialog,
+    QHBoxLayout,
+    QLabel,
+    QLayout,
+    QPushButton,
+    QScrollArea,
+    QStackedWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
+from electrum.gui.qt.util import Buttons, MessageBoxMixin, WWLabel, icon_path
 from electrum.i18n import _
 from electrum.logging import get_logger
-from electrum.gui.qt.util import Buttons, icon_path, MessageBoxMixin, WWLabel
 
 if TYPE_CHECKING:
-    from electrum.simple_config import SimpleConfig
     from electrum.gui.qt import QElectrumApplication
+    from electrum.simple_config import SimpleConfig
     from electrum.wizard import WizardViewState
 
 
 class QEAbstractWizard(QDialog, MessageBoxMixin):
-    """ Concrete subclasses of QEAbstractWizard must also inherit from a concrete AbstractWizard subclass.
-        QEAbstractWizard forms the base for all QtWidgets GUI based wizards, while AbstractWizard defines
-        the base for non-gui wizard flow navigation functionality.
+    """Concrete subclasses of QEAbstractWizard must also inherit from a concrete AbstractWizard subclass.
+    QEAbstractWizard forms the base for all QtWidgets GUI based wizards, while AbstractWizard defines
+    the base for non-gui wizard flow navigation functionality.
     """
+
     _logger = get_logger(__name__)
 
     requestNext = pyqtSignal()
     requestPrev = pyqtSignal()
 
-    def __init__(self, config: 'SimpleConfig', app: 'QElectrumApplication', *, start_viewstate: 'WizardViewState' = None):
+    def __init__(
+        self,
+        config: "SimpleConfig",
+        app: "QElectrumApplication",
+        *,
+        start_viewstate: "WizardViewState" = None,
+    ):
         QDialog.__init__(self, None)
         self.app = app
         self.config = config
@@ -100,7 +116,7 @@ class QEAbstractWizard(QDialog, MessageBoxMixin):
         outer_vbox.addLayout(Buttons(self.back_button, self.next_button))
 
         self.icon_filename = None
-        self.set_icon('electrum.png')
+        self.set_icon("electrum.png")
 
         self.start_viewstate = start_viewstate
 
@@ -137,12 +153,12 @@ class QEAbstractWizard(QDialog, MessageBoxMixin):
         try:
             page = comp(self.main_widget, self)
         except Exception as e:
-            self._logger.error(f'not a class: {comp!r}')
+            self._logger.error(f"not a class: {comp!r}")
             raise e
         page.wizard_data = copy.deepcopy(wdata)
         page.params = params
         page.updated.connect(self.on_page_updated)
-        self._logger.debug(f'load_next_component: {page=!r}')
+        self._logger.debug(f"load_next_component: {page=!r}")
 
         # add to stack and update wizard
         self.main_widget.setCurrentIndex(self.main_widget.addWidget(page))
@@ -158,8 +174,9 @@ class QEAbstractWizard(QDialog, MessageBoxMixin):
 
     def set_icon(self, filename):
         prior_filename, self.icon_filename = self.icon_filename, filename
-        self.logo.setPixmap(QPixmap(icon_path(filename))
-                            .scaledToWidth(60, mode=Qt.SmoothTransformation))
+        self.logo.setPixmap(
+            QPixmap(icon_path(filename)).scaledToWidth(60, mode=Qt.SmoothTransformation)
+        )
         return prior_filename
 
     def can_go_back(self) -> bool:
@@ -167,17 +184,17 @@ class QEAbstractWizard(QDialog, MessageBoxMixin):
 
     def update(self):
         page = self.main_widget.currentWidget()
-        self.title.setText(f'<b>{page.title}</b>' if page.title else '')
-        self.back_button.setText(_('Back') if self.can_go_back() else _('Cancel'))
+        self.title.setText(f"<b>{page.title}</b>" if page.title else "")
+        self.back_button.setText(_("Back") if self.can_go_back() else _("Cancel"))
         self.back_button.setEnabled(not page.busy)
-        self.next_button.setText(_('Next') if not self.is_last(page.wizard_data) else _('Finish'))
+        self.next_button.setText(_("Next") if not self.is_last(page.wizard_data) else _("Finish"))
         self.next_button.setEnabled(not page.busy and page.valid)
         self.main_widget.setVisible(not page.busy and not bool(page.error))
         self.please_wait.setVisible(page.busy)
         self.please_wait_l.setText(page.busy_msg if page.busy_msg else _("Please wait..."))
         self.error_msg.setText(str(page.error))
         self.error.setVisible(not page.busy and bool(page.error))
-        icon = page.params.get('icon', icon_path('electrum.png'))
+        icon = page.params.get("icon", icon_path("electrum.png"))
         if icon != self.icon_filename:
             self.set_icon(icon)
 
@@ -205,12 +222,12 @@ class QEAbstractWizard(QDialog, MessageBoxMixin):
             next = self.submit(wd)
             self.load_next_component(next.view, next.wizard_data, next.params)
 
-    def start_wizard(self) -> 'WizardViewState':
+    def start_wizard(self) -> "WizardViewState":
         self.start()
         return self._current
 
     def view_to_component(self, view) -> QWidget:
-        return self.navmap[view]['gui']
+        return self.navmap[view]["gui"]
 
     def submit(self, wizard_data) -> dict:
         wdata = wizard_data.copy()
@@ -226,21 +243,28 @@ class QEAbstractWizard(QDialog, MessageBoxMixin):
         return self.is_last_view(self._current.view, wdata)
 
     def is_finalized(self, wizard_data: dict) -> bool:
-        ''' Final check before closing the wizard. '''
+        """Final check before closing the wizard."""
         return True
 
 
 class WizardComponent(QWidget):
     updated = pyqtSignal(object)
 
-    def __init__(self, parent: QWidget, wizard: QEAbstractWizard, *, title: str = None, layout: QLayout = None):
+    def __init__(
+        self,
+        parent: QWidget,
+        wizard: QEAbstractWizard,
+        *,
+        title: str | None = None,
+        layout: QLayout = None,
+    ):
         super().__init__(parent)
         self.setLayout(layout if layout else QVBoxLayout(self))
         self.wizard_data = {}
-        self.title = title if title is not None else 'No title'
-        self.busy_msg = ''
+        self.title = title if title is not None else "No title"
+        self.busy_msg = ""
         self.wizard = wizard
-        self._error = ''
+        self._error = ""
         self._valid = False
         self._busy = False
 

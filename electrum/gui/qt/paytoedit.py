@@ -24,18 +24,17 @@
 # SOFTWARE.
 
 from functools import partial
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QTimer, QSize
-from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5.QtGui import QFontMetrics, QFont
-from PyQt5.QtWidgets import QApplication, QTextEdit, QWidget, QLineEdit, QStackedLayout, QSizePolicy
+from PyQt5.QtCore import QSize, Qt, QTimer, pyqtSignal
+from PyQt5.QtGui import QFont, QFontMetrics
+from PyQt5.QtWidgets import QLineEdit, QStackedLayout, QTextEdit, QWidget
 
-from electrum.payment_identifier import PaymentIdentifier
 from electrum.logging import Logger
+from electrum.payment_identifier import PaymentIdentifier
 
 from . import util
-from .util import MONOSPACE_FONT, GenericInputHandler, editor_contextMenuEvent, ColorScheme
+from .util import MONOSPACE_FONT, ColorScheme, GenericInputHandler, editor_contextMenuEvent
 
 if TYPE_CHECKING:
     from .send_tab import SendTab
@@ -56,7 +55,7 @@ class ResizingTextEdit(QTextEdit):
 
     def __init__(self):
         QTextEdit.__init__(self)
-        self._text = ''
+        self._text = ""
         self.setAcceptRichText(False)
         self.textChanged.connect(self.on_text_changed)
         document = self.document()
@@ -98,12 +97,12 @@ class PayToEdit(QWidget, Logger, GenericInputHandler):
     paymentIdentifierChanged = pyqtSignal()
     textChanged = pyqtSignal()
 
-    def __init__(self, send_tab: 'SendTab'):
+    def __init__(self, send_tab: "SendTab"):
         QWidget.__init__(self, parent=send_tab)
         Logger.__init__(self)
         GenericInputHandler.__init__(self)
 
-        self._text = ''
+        self._text = ""
         self._layout = QStackedLayout()
         self.setLayout(self._layout)
 
@@ -208,11 +207,11 @@ class PayToEdit(QWidget, Logger, GenericInputHandler):
         self.text_edit.setToolTip(tt)
 
     def try_payment_identifier(self, text) -> None:
-        '''set payment identifier only if valid, else exception'''
+        """set payment identifier only if valid, else exception"""
         text = text.strip()
         pi = PaymentIdentifier(self.send_tab.wallet, text)
         if not pi.is_valid():
-            raise InvalidPaymentIdentifier('Invalid payment identifier')
+            raise InvalidPaymentIdentifier("Invalid payment identifier")
         self.set_payment_identifier(text)
 
     def set_payment_identifier(self, text) -> None:
@@ -257,15 +256,15 @@ class PayToEdit(QWidget, Logger, GenericInputHandler):
 
     def setFrozen(self, b) -> None:
         self.setReadOnly(b)
-        self.setStyleSheet(ColorScheme.LIGHTBLUE.as_stylesheet(True) if b else '')
+        self.setStyleSheet(ColorScheme.LIGHTBLUE.as_stylesheet(True) if b else "")
 
     def isFrozen(self):
         return self.isReadOnly()
 
     def do_clear(self) -> None:
         self.set_paytomany(False)
-        self.setText('')
-        self.setToolTip('')
+        self.setText("")
+        self.setToolTip("")
         self.payment_identifier = None
 
     def setGreen(self) -> None:

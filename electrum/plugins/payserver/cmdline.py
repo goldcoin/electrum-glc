@@ -26,6 +26,6 @@
 
 from .payserver import PayServerPlugin
 
+
 class Plugin(PayServerPlugin):
     pass
-

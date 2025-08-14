@@ -1,21 +1,19 @@
 import asyncio
-import qrcode
-from qrcode.exceptions import DataOverflowError
-
 import math
 import urllib
 
+import qrcode
 from PIL import ImageQt
-
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject, QRect
-from PyQt6.QtGui import QImage, QColor
-from PyQt6.QtQuick import QQuickImageProvider
+from PyQt6.QtCore import QObject, QRect, pyqtProperty, pyqtSignal, pyqtSlot
+from PyQt6.QtGui import QColor, QImage
 from PyQt6.QtMultimedia import QVideoSink
+from PyQt6.QtQuick import QQuickImageProvider
+from qrcode.exceptions import DataOverflowError
 
+from electrum.i18n import _
 from electrum.logging import get_logger
 from electrum.qrreader import get_qr_reader
-from electrum.i18n import _
-from electrum.util import profiler, get_asyncio_loop
+from electrum.util import get_asyncio_loop, profiler
 
 
 class QEQRParser(QObject):
@@ -56,7 +54,7 @@ class QEQRParser(QObject):
         self.busyChanged.emit()
 
         if not videoframe.isValid():
-            self._logger.debug('invalid frame')
+            self._logger.debug("invalid frame")
             return
 
         async def co_parse_qr(frame):
@@ -81,8 +79,8 @@ class QEQRParser(QObject):
             frame_y800.bytesPerLine(),
             frame_y800.width(),
             frame_y800.height(),
-            self.frame_id
-            )
+            self.frame_id,
+        )
 
         if len(self.qrreader_res) > 0:
             result = self.qrreader_res[0]
@@ -109,7 +107,7 @@ class QEQRParser(QObject):
     @pyqtProperty(str, notify=dataChanged)
     def data(self):
         if not self._data:
-            return ''
+            return ""
         return self._data.data
 
     @pyqtSlot()
@@ -134,7 +132,7 @@ class QEQRImageProvider(QQuickImageProvider):
         # (unknown schemes might be found when a colon is in a serialized TX, which
         # leads to mangling of the tx, so we check for supported schemes.)
         uri = urllib.parse.urlparse(qstr)
-        if uri.scheme and uri.scheme in ['bitcoin', 'lightning']:
+        if uri.scheme and uri.scheme in ["bitcoin", "lightning"]:
             # urlencode request parameters
             query = urllib.parse.parse_qs(uri.query)
             query = urllib.parse.urlencode(query, doseq=True, quote_via=urllib.parse.quote)
@@ -148,18 +146,18 @@ class QEQRImageProvider(QQuickImageProvider):
         pixelsize = min(self._max_size, 400)
         try:
             modules = 17 + 4 * qr.best_fit() + qr.border * 2
-            qr.box_size = math.floor(pixelsize/modules)
+            qr.box_size = math.floor(pixelsize / modules)
 
             qr.make(fit=True)
 
-            pimg = qr.make_image(fill_color='black', back_color='white')
+            pimg = qr.make_image(fill_color="black", back_color="white")
             self.qimg = ImageQt.ImageQt(pimg)
         except DataOverflowError:
             # fake it
             modules = 17 + qr.border * 2
-            box_size = math.floor(pixelsize/modules)
+            box_size = math.floor(pixelsize / modules)
             self.qimg = QImage(box_size * modules, box_size * modules, QImage.Format.Format_RGB32)
-            self.qimg.fill(QColor('gray'))
+            self.qimg.fill(QColor("gray"))
         return self.qimg, self.qimg.size()
 
 
@@ -171,7 +169,7 @@ class QEQRImageProviderHelper(QObject):
         super().__init__(parent)
         self._max_size = max_size
 
-    @pyqtSlot(str, result='QVariantMap')
+    @pyqtSlot(str, result="QVariantMap")
     def getDimensions(self, qstr):
         qr = qrcode.QRCode(version=1, border=2)
         qr.add_data(qstr)
@@ -186,14 +184,14 @@ class QEQRImageProviderHelper(QObject):
             modules = 17 + qr.border * 2
             valid = False
 
-        qr.box_size = math.floor(pixelsize/modules)
+        qr.box_size = math.floor(pixelsize / modules)
         # calculate icon width in modules
         icon_modules = int(modules / 5)
-        icon_modules += (icon_modules+1) % 2  # force odd
+        icon_modules += (icon_modules + 1) % 2  # force odd
 
         return {
-            'modules': modules,
-            'box_size': qr.box_size,
-            'icon_modules': icon_modules,
-            'valid': valid
+            "modules": modules,
+            "box_size": qr.box_size,
+            "icon_modules": icon_modules,
+            "valid": valid,
         }

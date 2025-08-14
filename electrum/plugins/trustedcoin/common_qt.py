@@ -1,23 +1,21 @@
-import threading
-import socket
 import base64
-import sys
+import threading
 from typing import TYPE_CHECKING
 
 from electrum.gui.common_qt import get_qt_major_version
 
 if (qt_ver := get_qt_major_version()) == 5:
-    from PyQt5.QtCore import pyqtSignal, pyqtProperty, pyqtSlot
+    from PyQt5.QtCore import pyqtProperty, pyqtSignal, pyqtSlot
 elif qt_ver == 6:
-    from PyQt6.QtCore import pyqtSignal, pyqtProperty, pyqtSlot
+    from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot
 else:
     raise Exception(f"unexpected {qt_ver=}")
 
-from electrum.i18n import _
 from electrum.bip32 import BIP32Node
-
-from .trustedcoin import (server, ErrorConnectingServer, MOBILE_DISCLAIMER, TrustedCoinException)
 from electrum.gui.common_qt.plugins import PluginQObject
+from electrum.i18n import _
+
+from .trustedcoin import MOBILE_DISCLAIMER, ErrorConnectingServer, TrustedCoinException, server
 
 if TYPE_CHECKING:
     from electrum.wizard import NewWalletWizard
@@ -25,9 +23,9 @@ if TYPE_CHECKING:
 
 class TrustedcoinPluginQObject(PluginQObject):
     canSignWithoutServerChanged = pyqtSignal()
-    termsAndConditionsRetrieved = pyqtSignal([str], arguments=['message'])
-    termsAndConditionsError = pyqtSignal([str], arguments=['message'])
-    otpError = pyqtSignal([str], arguments=['message'])
+    termsAndConditionsRetrieved = pyqtSignal([str], arguments=["message"])
+    termsAndConditionsError = pyqtSignal([str], arguments=["message"])
+    otpError = pyqtSignal([str], arguments=["message"])
     otpSuccess = pyqtSignal()
     disclaimerChanged = pyqtSignal()
     keystoreChanged = pyqtSignal()
@@ -36,29 +34,29 @@ class TrustedcoinPluginQObject(PluginQObject):
     billingModelChanged = pyqtSignal()
 
     remoteKeyStateChanged = pyqtSignal()
-    remoteKeyError = pyqtSignal([str], arguments=['message'])
+    remoteKeyError = pyqtSignal([str], arguments=["message"])
 
     requestOtp = pyqtSignal()
 
-    def __init__(self, plugin, wizard: 'NewWalletWizard', parent):
+    def __init__(self, plugin, wizard: "NewWalletWizard", parent):
         super().__init__(plugin, parent)
         self.wizard = wizard
         self._canSignWithoutServer = False
-        self._otpSecret = ''
-        self._shortId = ''
+        self._otpSecret = ""
+        self._shortId = ""
         self._billingModel = []
-        self._remoteKeyState = ''
+        self._remoteKeyState = ""
         self._verifyingOtp = False
 
     @pyqtProperty(str, notify=disclaimerChanged)
     def disclaimer(self):
-        return '\n\n'.join(MOBILE_DISCLAIMER)
+        return "\n\n".join(MOBILE_DISCLAIMER)
 
     @pyqtProperty(bool, notify=canSignWithoutServerChanged)
     def canSignWithoutServer(self):
         return self._canSignWithoutServer
 
-    @pyqtProperty('QVariantMap', notify=keystoreChanged)
+    @pyqtProperty("QVariantMap", notify=keystoreChanged)
     def keystore(self):
         return self._keystore
 
@@ -84,7 +82,7 @@ class TrustedcoinPluginQObject(PluginQObject):
             self._remoteKeyState = new_state
             self.remoteKeyStateChanged.emit()
 
-    @pyqtProperty('QVariantList', notify=billingModelChanged)
+    @pyqtProperty("QVariantList", notify=billingModelChanged)
     def billingModel(self):
         return self._billingModel
 
@@ -95,11 +93,7 @@ class TrustedcoinPluginQObject(PluginQObject):
         for k, v in sorted(price_per_tx.items()):
             if k == 1:
                 continue
-            item = {
-                'text': 'Pay every %d transactions' % k,
-                'value': k,
-                'sats_per_tx': v / k
-            }
+            item = {"text": "Pay every %d transactions" % k, "value": k, "sats_per_tx": v / k}
             billingModel.append(item)
 
         self._billingModel = billingModel
@@ -109,12 +103,12 @@ class TrustedcoinPluginQObject(PluginQObject):
     def fetchTermsAndConditions(self):
         def fetch_task():
             try:
-                self.plugin.logger.debug('TOS')
+                self.plugin.logger.debug("TOS")
                 tos = server.get_terms_of_service()
-            except ErrorConnectingServer as e:
-                self.termsAndConditionsError.emit(_('Error connecting to server'))
+            except ErrorConnectingServer:
+                self.termsAndConditionsError.emit(_("Error connecting to server"))
             except Exception as e:
-                self.termsAndConditionsError.emit('%s: %s' % (_('Error'), repr(e)))
+                self.termsAndConditionsError.emit("{}: {}".format(_("Error"), repr(e)))
             else:
                 self.termsAndConditionsRetrieved.emit(tos)
             finally:
@@ -129,8 +123,8 @@ class TrustedcoinPluginQObject(PluginQObject):
 
     @pyqtSlot(str)
     def createKeystore(self, email):
-        self.remoteKeyState = ''
-        self._otpSecret = ''
+        self.remoteKeyState = ""
+        self._otpSecret = ""
         self.otpSecretChanged.emit()
 
         wizard_data = self.wizard.get_wizard_data()
@@ -139,40 +133,44 @@ class TrustedcoinPluginQObject(PluginQObject):
 
         def create_remote_key_task():
             try:
-                self.plugin.logger.debug('create remote key')
+                self.plugin.logger.debug("create remote key")
                 r = server.create(xpub1, xpub2, email)
 
-                otp_secret = r['otp_secret']
-                _xpub3 = r['xpubkey_cosigner']
-                _id = r['id']
-            except (socket.error, ErrorConnectingServer) as e:
-                self.remoteKeyState = 'error'
-                self.remoteKeyError.emit(f'Network error: {str(e)}')
+                otp_secret = r["otp_secret"]
+                _xpub3 = r["xpubkey_cosigner"]
+                _id = r["id"]
+            except (OSError, ErrorConnectingServer) as e:
+                self.remoteKeyState = "error"
+                self.remoteKeyError.emit(f"Network error: {e!s}")
             except TrustedCoinException as e:
                 if e.status_code == 409:
-                    self.remoteKeyState = 'wallet_known'
+                    self.remoteKeyState = "wallet_known"
                     self._shortId = short_id
                     self.shortIdChanged.emit()
                 else:
-                    self.remoteKeyState = 'error'
+                    self.remoteKeyState = "error"
                     self.logger.warning(str(e))
-                    self.remoteKeyError.emit(f'Service error: {str(e)}')
+                    self.remoteKeyError.emit(f"Service error: {e!s}")
             except (KeyError, TypeError) as e:  # catch any assumptions
-                self.remoteKeyState = 'error'
-                self.remoteKeyError.emit(f'Error: {str(e)}')
+                self.remoteKeyState = "error"
+                self.remoteKeyError.emit(f"Error: {e!s}")
                 self.logger.error(str(e))
             else:
                 if short_id != _id:
-                    self.remoteKeyState = 'error'
-                    self.logger.error("unexpected trustedcoin short_id: expected {}, received {}".format(short_id, _id))
-                    self.remoteKeyError.emit('Unexpected short_id')
+                    self.remoteKeyState = "error"
+                    self.logger.error(
+                        f"unexpected trustedcoin short_id: expected {short_id}, received {_id}"
+                    )
+                    self.remoteKeyError.emit("Unexpected short_id")
                     return
                 if xpub3 != _xpub3:
-                    self.remoteKeyState = 'error'
-                    self.logger.error("unexpected trustedcoin xpub3: expected {}, received {}".format(xpub3, _xpub3))
-                    self.remoteKeyError.emit('Unexpected trustedcoin xpub3')
+                    self.remoteKeyState = "error"
+                    self.logger.error(
+                        f"unexpected trustedcoin xpub3: expected {xpub3}, received {_xpub3}"
+                    )
+                    self.remoteKeyError.emit("Unexpected trustedcoin xpub3")
                     return
-                self.remoteKeyState = 'new'
+                self.remoteKeyState = "new"
                 self._otpSecret = otp_secret
                 self.otpSecretChanged.emit()
                 self._shortId = short_id
@@ -190,7 +188,7 @@ class TrustedcoinPluginQObject(PluginQObject):
 
     @pyqtSlot()
     def resetOtpSecret(self):
-        self.remoteKeyState = ''
+        self.remoteKeyState = ""
 
         wizard_data = self.wizard.get_wizard_data()
 
@@ -198,10 +196,10 @@ class TrustedcoinPluginQObject(PluginQObject):
 
         def reset_otp_task():
             try:
-                self.plugin.logger.debug('reset_otp')
+                self.plugin.logger.debug("reset_otp")
                 r = server.get_challenge(short_id)
-                challenge = r.get('challenge')
-                message = 'TRUSTEDCOIN CHALLENGE: ' + challenge
+                challenge = r.get("challenge")
+                message = "TRUSTEDCOIN CHALLENGE: " + challenge
 
                 def f(xprv):
                     rootnode = BIP32Node.from_xkey(xprv)
@@ -211,15 +209,15 @@ class TrustedcoinPluginQObject(PluginQObject):
 
                 signatures = [f(x) for x in [xprv1, xprv2]]
                 r = server.reset_auth(short_id, challenge, signatures)
-                otp_secret = r.get('otp_secret')
-            except (socket.error, ErrorConnectingServer) as e:
-                self.remoteKeyState = 'error'
-                self.remoteKeyError.emit(f'Network error: {str(e)}')
+                otp_secret = r.get("otp_secret")
+            except (OSError, ErrorConnectingServer) as e:
+                self.remoteKeyState = "error"
+                self.remoteKeyError.emit(f"Network error: {e!s}")
             except Exception as e:
-                self.remoteKeyState = 'error'
-                self.remoteKeyError.emit(f'Error: {str(e)}')
+                self.remoteKeyState = "error"
+                self.remoteKeyError.emit(f"Error: {e!s}")
             else:
-                self.remoteKeyState = 'reset'
+                self.remoteKeyState = "reset"
                 self._otpSecret = otp_secret
                 self.otpSecretChanged.emit()
             finally:
@@ -238,20 +236,20 @@ class TrustedcoinPluginQObject(PluginQObject):
 
         def check_otp_task():
             try:
-                self.plugin.logger.debug(f'check OTP, shortId={short_id}, otp={otp}')
+                self.plugin.logger.debug(f"check OTP, shortId={short_id}, otp={otp}")
                 server.auth(short_id, otp)
             except TrustedCoinException as e:
                 if e.status_code == 400:  # invalid OTP
-                    self.plugin.logger.debug('Invalid one-time password.')
-                    self.otpError.emit(_('Invalid one-time password.'))
+                    self.plugin.logger.debug("Invalid one-time password.")
+                    self.otpError.emit(_("Invalid one-time password."))
                 else:
                     self.plugin.logger.error(str(e))
-                    self.otpError.emit(f'Service error: {str(e)}')
+                    self.otpError.emit(f"Service error: {e!s}")
             except Exception as e:
                 self.plugin.logger.error(str(e))
-                self.otpError.emit(f'Error: {str(e)}')
+                self.otpError.emit(f"Error: {e!s}")
             else:
-                self.plugin.logger.debug('OTP verify success')
+                self.plugin.logger.debug("OTP verify success")
                 self.otpSuccess.emit()
             finally:
                 self._busy = False

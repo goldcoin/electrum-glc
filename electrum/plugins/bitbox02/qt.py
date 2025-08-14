@@ -2,19 +2,23 @@ import threading
 from functools import partial
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QMetaObject, Q_RETURN_ARG, pyqtSlot, pyqtSignal
-from PyQt5.QtWidgets import QLabel, QVBoxLayout, QLineEdit, QHBoxLayout
+from PyQt5.QtCore import Q_RETURN_ARG, QMetaObject, Qt, pyqtSlot
+from PyQt5.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QVBoxLayout
 
+from electrum.gui.qt.util import ButtonsTextEdit, OkButton, WindowModalDialog
+from electrum.gui.qt.wizard.wallet import (
+    WCHWUninitialized,
+    WCHWUnlock,
+    WCHWXPub,
+    WCScriptAndDerivation,
+)
 from electrum.i18n import _
 from electrum.plugin import hook
 from electrum.util import UserCancelled, UserFacingException
 
-from .bitbox02 import BitBox02Plugin
+from ..hw_wallet.plugin import OperationCancelled, only_hook_if_libraries_available
 from ..hw_wallet.qt import QtHandlerBase, QtPluginBase
-from ..hw_wallet.plugin import only_hook_if_libraries_available, OperationCancelled
-
-from electrum.gui.qt.wizard.wallet import WCScriptAndDerivation, WCHWUnlock, WCHWUninitialized, WCHWXPub
-from electrum.gui.qt.util import WindowModalDialog, OkButton, ButtonsTextEdit
+from .bitbox02 import BitBox02Plugin
 
 if TYPE_CHECKING:
     from electrum.gui.qt.wizard.wallet import QENewWalletWizard
@@ -41,7 +45,7 @@ class Plugin(BitBox02Plugin, QtPluginBase):
                         partial(self.show_address, wallet, addrs[0], keystore=keystore)
                     )
 
-                device_name = "{} ({})".format(self.device, keystore.label)
+                device_name = f"{self.device} ({keystore.label})"
                 menu.addAction(_("Show on {}").format(device_name), show_address)
 
     @only_hook_if_libraries_available
@@ -53,25 +57,23 @@ class Plugin(BitBox02Plugin, QtPluginBase):
             return
 
         def on_button_click():
-            keystore.thread.add(
-                partial(self.show_xpub, keystore=keystore)
-            )
+            keystore.thread.add(partial(self.show_xpub, keystore=keystore))
 
-        device_name = "{} ({})".format(self.device, keystore.label)
+        device_name = f"{self.device} ({keystore.label})"
         mpk_text.addButton("eye1.png", on_button_click, _("Show on {}").format(device_name))
 
     @hook
-    def init_wallet_wizard(self, wizard: 'QENewWalletWizard'):
+    def init_wallet_wizard(self, wizard: "QENewWalletWizard"):
         self.extend_wizard(wizard)
 
     # insert bitbox02 pages in new wallet wizard
-    def extend_wizard(self, wizard: 'QENewWalletWizard'):
+    def extend_wizard(self, wizard: "QENewWalletWizard"):
         super().extend_wizard(wizard)
         views = {
-            'bitbox02_start': {'gui': WCBitbox02ScriptAndDerivation},
-            'bitbox02_xpub': {'gui': WCHWXPub},
-            'bitbox02_not_initialized': {'gui': WCHWUninitialized},
-            'bitbox02_unlock': {'gui': WCHWUnlock}
+            "bitbox02_start": {"gui": WCBitbox02ScriptAndDerivation},
+            "bitbox02_xpub": {"gui": WCHWXPub},
+            "bitbox02_not_initialized": {"gui": WCHWUninitialized},
+            "bitbox02_unlock": {"gui": WCHWUnlock},
         }
         wizard.navmap_merge(views)
 
@@ -80,10 +82,12 @@ class BitBox02_Handler(QtHandlerBase):
     MESSAGE_DIALOG_TITLE = _("BitBox02 Status")
 
     def __init__(self, win):
-        super(BitBox02_Handler, self).__init__(win, "BitBox02")
+        super().__init__(win, "BitBox02")
 
     def name_multisig_account(self):
-        return QMetaObject.invokeMethod(self, "_name_multisig_account", Qt.BlockingQueuedConnection, Q_RETURN_ARG(str))
+        return QMetaObject.invokeMethod(
+            self, "_name_multisig_account", Qt.BlockingQueuedConnection, Q_RETURN_ARG(str)
+        )
 
     @pyqtSlot(result=str)
     def _name_multisig_account(self):
@@ -117,12 +121,12 @@ class WCBitbox02ScriptAndDerivation(WCScriptAndDerivation):
     def __init__(self, parent, wizard):
         WCScriptAndDerivation.__init__(self, parent, wizard)
         self._busy = True
-        self.title = ''
+        self.title = ""
         self.client = None
 
     def on_ready(self):
         super().on_ready()
-        _name, _info = self.wizard_data['hardware_device']
+        _name, _info = self.wizard_data["hardware_device"]
         plugin = self.wizard.plugins.get_plugin(_info.plugin_name)
 
         device_id = _info.device.id_
@@ -140,10 +144,10 @@ class WCBitbox02ScriptAndDerivation(WCScriptAndDerivation):
         def check_task():
             try:
                 self.client.pairing_dialog()
-                self.title = _('Script type and Derivation path')
+                self.title = _("Script type and Derivation path")
                 self.valid = True
             except (UserCancelled, OperationCancelled):
-                self.error = _('Cancelled')
+                self.error = _("Cancelled")
                 self.wizard.requestPrev.emit()
             except UserFacingException as e:
                 self.error = str(e)

@@ -34,11 +34,12 @@ export MULTIDICT_NO_EXTENSIONS=1
 export FROZENLIST_NO_EXTENSIONS=1
 
 info "Installing requirements..."
-$WINE_PYTHON -m pip install --no-build-isolation --no-dependencies --no-binary :all: --no-warn-script-location \
-    --cache-dir "$WINE_PIP_CACHE_DIR" -r "$CONTRIB"/deterministic-build/requirements.txt
+# Use deterministic installation script that handles pip/setuptools properly
+"$CONTRIB/build-wine/install-requirements-deterministic.sh"
 info "Installing dependencies specific to binaries..."
-# TODO tighten "--no-binary :all:" (but we don't have a C compiler...)
-$WINE_PYTHON -m pip install --no-build-isolation --no-dependencies --no-warn-script-location \
+# Install binary dependencies (including scrypt 0.9.4)
+# Use --only-binary for scrypt to avoid compilation issues in Wine
+$WINE_PYTHON -m pip install --no-build-isolation --no-dependencies --only-binary=scrypt --no-warn-script-location \
     --cache-dir "$WINE_PIP_CACHE_DIR" -r "$CONTRIB"/deterministic-build/requirements-binaries.txt
 info "Installing hardware wallet requirements..."
 $WINE_PYTHON -m pip install --no-build-isolation --no-dependencies --no-warn-script-location \
@@ -58,7 +59,7 @@ rm -rf dist/
 
 # build standalone and portable versions
 info "Running pyinstaller..."
-ELECTRUM_CMDLINE_NAME="$NAME_ROOT-$VERSION" wine "$WINE_PYHOME/scripts/pyinstaller.exe" --noconfirm --ascii --clean deterministic.spec
+ELECTRUM_CMDLINE_NAME="$NAME_ROOT-$VERSION" $WINE_PYTHON -m PyInstaller --noconfirm --clean deterministic.spec
 
 # set timestamps in dist, in order to make the installer reproducible
 pushd dist

@@ -23,51 +23,58 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import asyncio
-import contextlib
 import enum
-import os.path
-import time
-import sys
-import platform
-import queue
-import traceback
-import os
-import webbrowser
+from collections.abc import Iterable, Sequence
 from decimal import Decimal
-from functools import partial, lru_cache, wraps
-from typing import (NamedTuple, Callable, Optional, TYPE_CHECKING, Union, List, Dict, Any,
-                    Sequence, Iterable, Tuple, Type)
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Optional,
+    Union,
+)
 
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import (QFont, QColor, QCursor, QPixmap, QStandardItem, QImage,
-                         QPalette, QIcon, QFontMetrics, QShowEvent, QPainter, QHelpEvent, QMouseEvent)
-from PyQt5.QtCore import (Qt, QPersistentModelIndex, QModelIndex, pyqtSignal,
-                          QCoreApplication, QItemSelectionModel, QThread,
-                          QSortFilterProxyModel, QSize, QLocale, QAbstractItemModel,
-                          QEvent, QRect, QPoint, QObject)
-from PyQt5.QtWidgets import (QPushButton, QLabel, QMessageBox, QHBoxLayout,
-                             QAbstractItemView, QVBoxLayout, QLineEdit,
-                             QStyle, QDialog, QGroupBox, QButtonGroup, QRadioButton,
-                             QFileDialog, QWidget, QToolButton, QTreeView, QPlainTextEdit,
-                             QHeaderView, QApplication, QToolTip, QTreeWidget, QStyledItemDelegate,
-                             QMenu, QStyleOptionViewItem, QLayout, QLayoutItem, QAbstractButton,
-                             QGraphicsEffect, QGraphicsScene, QGraphicsPixmapItem, QSizePolicy, QAction)
-
-from electrum.i18n import _, languages
-from electrum.util import FileImportFailed, FileExportFailed, make_aiohttp_session, resource_path
-from electrum.util import EventListener, event_listener
-from electrum.invoices import PR_UNPAID, PR_PAID, PR_EXPIRED, PR_INFLIGHT, PR_UNKNOWN, PR_FAILED, PR_ROUTING, PR_UNCONFIRMED
-from electrum.logging import Logger
-from electrum.qrreader import MissingQrDetectionLib
-from electrum.simple_config import ConfigVarWithConfig
+from PyQt5.QtCore import (
+    QAbstractItemModel,
+    QEvent,
+    QItemSelectionModel,
+    QModelIndex,
+    QPersistentModelIndex,
+    QPoint,
+    QSize,
+    QSortFilterProxyModel,
+    Qt,
+)
+from PyQt5.QtGui import (
+    QHelpEvent,
+    QMouseEvent,
+    QPainter,
+    QShowEvent,
+    QStandardItem,
+)
+from PyQt5.QtWidgets import (
+    QAbstractItemView,
+    QAction,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QMenu,
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
+    QToolButton,
+    QTreeView,
+    QWidget,
+)
 
 from electrum.gui import messages
+from electrum.i18n import _
+from electrum.simple_config import ConfigVarWithConfig
 
 from .util import read_QIcon
 
 if TYPE_CHECKING:
     from electrum import SimpleConfig
+
     from .main_window import ElectrumWindow
 
 
@@ -78,7 +85,7 @@ class MyMenu(QMenu):
         self.setToolTipsVisible(True)
         self.config = config
 
-    def addToggle(self, text: str, callback, *, tooltip='') -> QAction:
+    def addToggle(self, text: str, callback, *, tooltip="") -> QAction:
         m = self.addAction(text, callback)
         m.setCheckable(True)
         m.setToolTip(tooltip)
@@ -86,10 +93,10 @@ class MyMenu(QMenu):
 
     def addConfig(
         self,
-        configvar: 'ConfigVarWithConfig',
+        configvar: "ConfigVarWithConfig",
         *,
         callback=None,
-        short_desc: Optional[str] = None,
+        short_desc: str | None = None,
     ) -> QAction:
         assert isinstance(configvar, ConfigVarWithConfig), configvar
         if short_desc is None:
@@ -103,14 +110,14 @@ class MyMenu(QMenu):
             m.setToolTip(messages.to_rtf(long_desc))
         return m
 
-    def _do_toggle_config(self, configvar: 'ConfigVarWithConfig', *, callback):
+    def _do_toggle_config(self, configvar: "ConfigVarWithConfig", *, callback):
         b = configvar.get()
         configvar.set(not b)
         if callback:
             callback()
 
 
-def create_toolbar_with_menu(config: 'SimpleConfig', title):
+def create_toolbar_with_menu(config: "SimpleConfig", title):
     menu = MyMenu(config)
     toolbar_button = QToolButton()
     toolbar_button.setIcon(read_QIcon("preferences.png"))
@@ -122,7 +129,6 @@ def create_toolbar_with_menu(config: 'SimpleConfig', title):
     toolbar.addStretch()
     toolbar.addWidget(toolbar_button)
     return toolbar, menu
-
 
 
 class MySortModel(QSortFilterProxyModel):
@@ -144,16 +150,19 @@ class MySortModel(QSortFilterProxyModel):
         except Exception:
             return v1 < v2
 
+
 class ElectrumItemDelegate(QStyledItemDelegate):
-    def __init__(self, tv: 'MyTreeView'):
+    def __init__(self, tv: "MyTreeView"):
         super().__init__(tv)
         self.tv = tv
         self.opened = None
+
         def on_closeEditor(editor: QLineEdit, hint):
             self.opened = None
             self.tv.is_editor_open = False
             if self.tv._pending_update:
                 self.tv.update()
+
         def on_commitData(editor: QLineEdit):
             new_text = editor.text()
             idx = QModelIndex(self.opened)
@@ -161,6 +170,7 @@ class ElectrumItemDelegate(QStyledItemDelegate):
             edit_key = self.tv.get_edit_key_from_coordinate(row, col)
             assert edit_key is not None, (idx.row(), idx.column())
             self.tv.on_edited(idx, edit_key=edit_key, text=new_text)
+
         self.closeEditor.connect(on_closeEditor)
         self.commitData.connect(on_commitData)
 
@@ -179,7 +189,13 @@ class ElectrumItemDelegate(QStyledItemDelegate):
             # and now paint on top of that
             custom_data.paint(painter, option.rect)
 
-    def helpEvent(self, evt: QHelpEvent, view: QAbstractItemView, option: QStyleOptionViewItem, idx: QModelIndex) -> bool:
+    def helpEvent(
+        self,
+        evt: QHelpEvent,
+        view: QAbstractItemView,
+        option: QStyleOptionViewItem,
+        idx: QModelIndex,
+    ) -> bool:
         custom_data = idx.data(MyTreeView.ROLE_CUSTOM_PAINT)
         if custom_data is None:
             return super().helpEvent(evt, view, option, idx)
@@ -197,12 +213,13 @@ class ElectrumItemDelegate(QStyledItemDelegate):
             default_size = super().sizeHint(option, idx)
             return custom_data.sizeHint(default_size)
 
+
 class MyTreeView(QTreeView):
 
     ROLE_CLIPBOARD_DATA = Qt.UserRole + 100
-    ROLE_CUSTOM_PAINT   = Qt.UserRole + 101
-    ROLE_EDIT_KEY       = Qt.UserRole + 102
-    ROLE_FILTER_DATA    = Qt.UserRole + 103
+    ROLE_CUSTOM_PAINT = Qt.UserRole + 101
+    ROLE_EDIT_KEY = Qt.UserRole + 102
+    ROLE_FILTER_DATA = Qt.UserRole + 103
 
     filter_columns: Iterable[int]
 
@@ -212,15 +229,15 @@ class MyTreeView(QTreeView):
             # this is overridden to get a 0-based counter
             return count
 
-    Columns: Type[BaseColumnsEnum]
+    Columns: type[BaseColumnsEnum]
 
     def __init__(
         self,
         *,
-        parent: Optional[QWidget] = None,
-        main_window: Optional['ElectrumWindow'] = None,
-        stretch_column: Optional[int] = None,
-        editable_columns: Optional[Sequence[int]] = None,
+        parent: QWidget | None = None,
+        main_window: Optional["ElectrumWindow"] = None,
+        stretch_column: int | None = None,
+        editable_columns: Sequence[int] | None = None,
     ):
         parent = parent or main_window
         super().__init__(parent)
@@ -253,7 +270,7 @@ class MyTreeView(QTreeView):
         self._forced_update = False
 
         self._default_bg_brush = QStandardItem().background()
-        self.proxy = None # history, and address tabs use a proxy
+        self.proxy = None  # history, and address tabs use a proxy
 
     def create_menu(self, position: QPoint) -> None:
         pass
@@ -264,7 +281,7 @@ class MyTreeView(QTreeView):
 
     def selected_in_column(self, column: int):
         items = self.selectionModel().selectedIndexes()
-        return list(x for x in items if x.column() == column)
+        return [x for x in items if x.column() == column]
 
     def get_role_data_for_current_item(self, *, col, role) -> Any:
         idx = self.selectionModel().currentIndex()
@@ -273,7 +290,7 @@ class MyTreeView(QTreeView):
         if item:
             return item.data(role)
 
-    def item_from_index(self, idx: QModelIndex) -> Optional[QStandardItem]:
+    def item_from_index(self, idx: QModelIndex) -> QStandardItem | None:
         model = self.model()
         if isinstance(model, QSortFilterProxyModel):
             idx = model.mapToSource(idx)
@@ -292,9 +309,11 @@ class MyTreeView(QTreeView):
         if set_current:
             assert isinstance(set_current, QPersistentModelIndex)
             assert set_current.isValid()
-            self.selectionModel().select(QModelIndex(set_current), QItemSelectionModel.SelectCurrent)
+            self.selectionModel().select(
+                QModelIndex(set_current), QItemSelectionModel.SelectCurrent
+            )
 
-    def update_headers(self, headers: Union[List[str], Dict[int, str]]):
+    def update_headers(self, headers: Union[list[str], dict[int, str]]):
         # headers is either a list of column names, or a dict: (col_idx->col_name)
         if not isinstance(headers, dict):  # convert to dict
             headers = dict(enumerate(headers))
@@ -302,7 +321,11 @@ class MyTreeView(QTreeView):
         self.original_model().setHorizontalHeaderLabels(col_names)
         self.header().setStretchLastSection(False)
         for col_idx in headers:
-            sm = QHeaderView.Stretch if col_idx == self.stretch_column else QHeaderView.ResizeToContents
+            sm = (
+                QHeaderView.Stretch
+                if col_idx == self.stretch_column
+                else QHeaderView.ResizeToContents
+            )
             self.header().setSectionResizeMode(col_idx, sm)
 
     def keyPressEvent(self, event):
@@ -402,7 +425,7 @@ class MyTreeView(QTreeView):
         for row in range(self.model().rowCount()):
             self.hide_row(row)
 
-    def create_toolbar(self, config: 'SimpleConfig'):
+    def create_toolbar(self, config: "SimpleConfig"):
         return
 
     def create_toolbar_buttons(self):
@@ -419,7 +442,8 @@ class MyTreeView(QTreeView):
 
     configvar_show_toolbar = None  # type: Optional[ConfigVarWithConfig]
     _toolbar_checkbox = None  # type: Optional[QAction]
-    def show_toolbar(self, state: bool = None):
+
+    def show_toolbar(self, state: bool | None = None):
         if state is None:  # get value from config
             if self.configvar_show_toolbar:
                 state = self.configvar_show_toolbar.get()
@@ -458,15 +482,18 @@ class MyTreeView(QTreeView):
             clipboard_data = item_col.data(self.ROLE_CLIPBOARD_DATA)
             if clipboard_data is None:
                 clipboard_data = item_col.text().strip()
-            cc.addAction(column_title,
-                         lambda text=clipboard_data, title=column_title:
-                         self.place_text_on_clipboard(text, title=title))
+            cc.addAction(
+                column_title,
+                lambda text=clipboard_data, title=column_title: self.place_text_on_clipboard(
+                    text, title=title
+                ),
+            )
         return cc
 
-    def place_text_on_clipboard(self, text: str, *, title: str = None) -> None:
+    def place_text_on_clipboard(self, text: str, *, title: str | None = None) -> None:
         self.main_window.do_copy(text, title=title)
 
-    def showEvent(self, e: 'QShowEvent'):
+    def showEvent(self, e: "QShowEvent"):
         super().showEvent(e)
         if e.isAccepted() and self._pending_update:
             self._forced_update = True
@@ -475,14 +502,13 @@ class MyTreeView(QTreeView):
 
     def maybe_defer_update(self) -> bool:
         """Returns whether we should defer an update/refresh."""
-        defer = (not self._forced_update
-                 and (not self.isVisible() or self.is_editor_open))
+        defer = not self._forced_update and (not self.isVisible() or self.is_editor_open)
         # side-effect: if we decide to defer update, the state will become stale:
         self._pending_update = defer
         return defer
 
-    def find_row_by_key(self, key) -> Optional[int]:
-        for row in range(0, self.std_model.rowCount()):
+    def find_row_by_key(self, key) -> int | None:
+        for row in range(self.std_model.rowCount()):
             item = self.std_model.item(row, 0)
             if item.data(self.key_role) == key:
                 return row
@@ -490,7 +516,7 @@ class MyTreeView(QTreeView):
     def refresh_all(self):
         if self.maybe_defer_update():
             return
-        for row in range(0, self.std_model.rowCount()):
+        for row in range(self.std_model.rowCount()):
             item = self.std_model.item(row, 0)
             key = item.data(self.key_role)
             self.refresh_row(key, row)
@@ -508,5 +534,3 @@ class MyTreeView(QTreeView):
         if row is not None:
             self.std_model.takeRow(row)
         self.hide_if_empty()
-
-

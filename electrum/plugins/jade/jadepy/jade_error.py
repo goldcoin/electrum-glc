@@ -17,8 +17,15 @@ class JadeError(Exception):
         self.data = data
 
     def __repr__(self):
-        return "JadeError: " + str(self.code) + " - " + self.message \
-            + " (Data: " + repr(self.data) + ")"
+        return (
+            "JadeError: "
+            + str(self.code)
+            + " - "
+            + self.message
+            + " (Data: "
+            + repr(self.data)
+            + ")"
+        )
 
     def __str__(self):
         return repr(self)
