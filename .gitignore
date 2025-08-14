@@ -56,3 +56,4 @@ test-builds/
 *.msi
 *.dmg
 *.AppImage
+release-builds/
