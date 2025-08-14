@@ -34,8 +34,22 @@ export MULTIDICT_NO_EXTENSIONS=1
 export FROZENLIST_NO_EXTENSIONS=1
 
 info "Installing requirements..."
+
+# First, install pip and setuptools from wheels (they have the correct hashes)
+info "Installing pip and setuptools from wheels..."
+$WINE_PYTHON -m pip install --no-build-isolation --no-dependencies --no-warn-script-location \
+    --cache-dir "$WINE_PIP_CACHE_DIR" \
+    --only-binary=pip,setuptools \
+    pip==24.0 setuptools==69.0.3
+
+# Now install the rest with --no-binary :all: but excluding pip and setuptools
+info "Installing other requirements from source..."
+# Create a temporary requirements file without pip and setuptools
+grep -v "^pip==" "$CONTRIB"/deterministic-build/requirements.txt | grep -v "^setuptools==" > /tmp/requirements-no-pip-setuptools.txt
+
 $WINE_PYTHON -m pip install --no-build-isolation --no-dependencies --no-binary :all: --use-feature=no-binary-enable-wheel-cache --no-warn-script-location \
-    --cache-dir "$WINE_PIP_CACHE_DIR" -r "$CONTRIB"/deterministic-build/requirements.txt
+    --cache-dir "$WINE_PIP_CACHE_DIR" -r /tmp/requirements-no-pip-setuptools.txt
+
 info "Installing dependencies specific to binaries..."
 # Install binary dependencies (including scrypt 0.9.4)
 # Use --only-binary for scrypt to avoid compilation issues in Wine
@@ -71,7 +85,7 @@ info "building NSIS installer"
 makensis -DPRODUCT_VERSION=$VERSION electrum.nsi
 
 cd dist
-mv electrum-setup.exe $NAME_ROOT-$VERSION-setup.exe
+mv electrum-glc-setup.exe $NAME_ROOT-$VERSION-setup.exe
 cd ..
 
 info "Padding binaries to 8-byte boundaries, and fixing COFF image checksum in PE header"

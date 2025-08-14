@@ -1,0 +1,5 @@
+# Debian Bullseye snapshot for deterministic builds
+# Using specific snapshot date for reproducibility
+deb [check-valid-until=no] https://snapshot.debian.org/archive/debian/20230601T000000Z/ bullseye main contrib non-free
+deb [check-valid-until=no] https://snapshot.debian.org/archive/debian-security/20230601T000000Z/ bullseye-security main contrib non-free
+deb [check-valid-until=no] https://snapshot.debian.org/archive/debian/20230601T000000Z/ bullseye-updates main contrib non-free

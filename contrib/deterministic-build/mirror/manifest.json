@@ -1,0 +1,570 @@
+{
+  "packages": {
+    "PyQt5-5.15.9": {
+      "filename": "PyQt5-5.15.9-cp37-abi3-macosx_10_13_x86_64.whl",
+      "hash": "883ba5c8a348be78c8be6a3d3ba014c798e679503bce00d76c666c2dc6afe828",
+      "name": "PyQt5",
+      "path": "packages/python/wheels/PyQt5-5.15.9-cp37-abi3-macosx_10_13_x86_64.whl",
+      "type": "wheel",
+      "version": "5.15.9"
+    },
+    "PyQt5-Qt5-5.15.2": {
+      "filename": "PyQt5_Qt5-5.15.2-py3-none-manylinux2014_x86_64.whl",
+      "hash": "1988f364ec8caf87a6ee5d5a3a5210d57539988bf8e84714c7d60972692e2f4a",
+      "name": "PyQt5-Qt5",
+      "path": "packages/python/wheels/PyQt5_Qt5-5.15.2-py3-none-manylinux2014_x86_64.whl",
+      "type": "wheel",
+      "version": "5.15.2"
+    },
+    "PyQt5-sip-12.12.1": {
+      "filename": "PyQt5_sip-12.12.1-cp39-cp39-win32.whl",
+      "hash": "0e30f6c9b99161d8a524d8b7aa5a001be5fe002797151c27414066b838beaa4e",
+      "name": "PyQt5-sip",
+      "path": "packages/python/wheels/PyQt5_sip-12.12.1-cp39-cp39-win32.whl",
+      "type": "wheel",
+      "version": "12.12.1"
+    },
+    "QDarkStyle-3.1": {
+      "filename": "QDarkStyle-3.1.tar.gz",
+      "hash": "600584d625343e0ddd128de08393d3c35637786a49827f174d29aa7caa8279c1",
+      "name": "QDarkStyle",
+      "path": "packages/python/source/QDarkStyle-3.1.tar.gz",
+      "type": "source",
+      "version": "3.1"
+    },
+    "QtPy-2.3.0": {
+      "filename": "QtPy-2.3.0.tar.gz",
+      "hash": "0603c9c83ccc035a4717a12908bf6bc6cb22509827ea2ec0e94c2da7c9ed57c5",
+      "name": "QtPy",
+      "path": "packages/python/source/QtPy-2.3.0.tar.gz",
+      "type": "source",
+      "version": "2.3.0"
+    },
+    "aiohttp-3.8.3": {
+      "filename": "aiohttp-3.8.3.tar.gz",
+      "hash": "3828fb41b7203176b82fe5d699e0d845435f2374750a44b480ea6b930f6be269",
+      "name": "aiohttp",
+      "path": "packages/python/source/aiohttp-3.8.3.tar.gz",
+      "type": "source",
+      "version": "3.8.3"
+    },
+    "aiohttp-socks-0.8.4": {
+      "filename": "aiohttp_socks-0.8.4.tar.gz",
+      "hash": "6b611d4ce838e9cf2c2fed5e0dba447cc84824a6cba95dc5747606201da46cb4",
+      "name": "aiohttp-socks",
+      "path": "packages/python/source/aiohttp_socks-0.8.4.tar.gz",
+      "type": "source",
+      "version": "0.8.4"
+    },
+    "aiorpcX-0.22.1": {
+      "filename": "aiorpcX-0.22.1.tar.gz",
+      "hash": "6026f7bed3432e206589c94dcf599be8cd85b5736b118c7275845c1bd922a553",
+      "name": "aiorpcX",
+      "path": "packages/python/source/aiorpcX-0.22.1.tar.gz",
+      "type": "source",
+      "version": "0.22.1"
+    },
+    "aiosignal-1.3.1": {
+      "filename": "aiosignal-1.3.1.tar.gz",
+      "hash": "54cd96e15e1649b75d6c87526a6ff0b6c1b0dd3459f43d9ca11d48c339b68cfc",
+      "name": "aiosignal",
+      "path": "packages/python/source/aiosignal-1.3.1.tar.gz",
+      "type": "source",
+      "version": "1.3.1"
+    },
+    "altgraph-0.17.3": {
+      "filename": "altgraph-0.17.3.tar.gz",
+      "hash": "ad33358114df7c9416cdb8fa1eaa5852166c505118717021c6a8c7c7abbd03dd",
+      "name": "altgraph",
+      "path": "packages/python/source/altgraph-0.17.3.tar.gz",
+      "type": "source",
+      "version": "0.17.3"
+    },
+    "async-timeout-4.0.2": {
+      "filename": "async-timeout-4.0.2.tar.gz",
+      "hash": "2163e1640ddb52b7a8c80d0a67a08587e5d245cc9c553a74a847056bc2976b15",
+      "name": "async-timeout",
+      "path": "packages/python/source/async-timeout-4.0.2.tar.gz",
+      "type": "source",
+      "version": "4.0.2"
+    },
+    "attrs-22.1.0": {
+      "filename": "attrs-22.1.0.tar.gz",
+      "hash": "29adc2665447e5191d0e7c568fde78b21f9672d344281d0c6e1ab085429b22b6",
+      "name": "attrs",
+      "path": "packages/python/source/attrs-22.1.0.tar.gz",
+      "type": "source",
+      "version": "22.1.0"
+    },
+    "base58-2.1.1": {
+      "filename": "base58-2.1.1-py3-none-any.whl",
+      "hash": "11a36f4d3ce51dfc1043f3218591ac4eb1ceb172919cebe05b52a5bcc8d245c2",
+      "name": "base58",
+      "path": "packages/python/wheels/base58-2.1.1-py3-none-any.whl",
+      "type": "wheel",
+      "version": "2.1.1"
+    },
+    "bitbox02-6.2.0": {
+      "filename": "bitbox02-6.2.0-py3-none-any.whl",
+      "hash": "5a8290bd270468ccdf2e6ff7174d25ea2b2f191e19734a79aa573c2b982c266f",
+      "name": "bitbox02",
+      "path": "packages/python/wheels/bitbox02-6.2.0-py3-none-any.whl",
+      "type": "wheel",
+      "version": "6.2.0"
+    },
+    "bitstring-3.1.9": {
+      "filename": "bitstring-3.1.9.tar.gz",
+      "hash": "a5848a3f63111785224dca8bb4c0a75b62ecdef56a042c8d6be74b16f7e860e7",
+      "name": "bitstring",
+      "path": "packages/python/source/bitstring-3.1.9.tar.gz",
+      "type": "source",
+      "version": "3.1.9"
+    },
+    "cbor-1.0.0": {
+      "filename": "cbor-1.0.0.tar.gz",
+      "hash": "13225a262ddf5615cbd9fd55a76a0d53069d18b07d2e9f19c39e6acb8609bbb6",
+      "name": "cbor",
+      "path": "packages/python/source/cbor-1.0.0.tar.gz",
+      "type": "source",
+      "version": "1.0.0"
+    },
+    "certifi-2023.11.17": {
+      "filename": "certifi-2023.11.17.tar.gz",
+      "hash": "9b469f3a900bf28dc19b8cfbf8019bf47f7fdd1a65a1d4ffb98fc14166beb4d1",
+      "name": "certifi",
+      "path": "packages/python/source/certifi-2023.11.17.tar.gz",
+      "type": "source",
+      "version": "2023.11.17"
+    },
+    "cffi-1.15.1": {
+      "filename": "cffi-1.15.1-cp38-cp38-win_amd64.whl",
+      "hash": "00a9ed42e88df81ffae7a8ab6d9356b371399b91dbdf0c3cb1e84c03a13aceb5",
+      "name": "cffi",
+      "path": "packages/python/wheels/cffi-1.15.1-cp38-cp38-win_amd64.whl",
+      "type": "wheel",
+      "version": "1.15.1"
+    },
+    "charset-normalizer-2.1.1": {
+      "filename": "charset-normalizer-2.1.1.tar.gz",
+      "hash": "5a3d016c7c547f69d6f81fb0db9449ce888b418b5b9952cc5e6e66843e9dd845",
+      "name": "charset-normalizer",
+      "path": "packages/python/source/charset-normalizer-2.1.1.tar.gz",
+      "type": "source",
+      "version": "2.1.1"
+    },
+    "ckcc-protocol-1.4.0": {
+      "filename": "ckcc_protocol-1.4.0-py3-none-any.whl",
+      "hash": "c5fcc4705b4b78ec515b39549642570a660142407fa684c278cb0aea8122defa",
+      "name": "ckcc-protocol",
+      "path": "packages/python/wheels/ckcc_protocol-1.4.0-py3-none-any.whl",
+      "type": "wheel",
+      "version": "1.4.0"
+    },
+    "click-8.1.3": {
+      "filename": "click-8.1.3.tar.gz",
+      "hash": "7682dc8afb30297001674575ea00d1814d808d6a36af415a82bd481d37ba7b8e",
+      "name": "click",
+      "path": "packages/python/source/click-8.1.3.tar.gz",
+      "type": "source",
+      "version": "8.1.3"
+    },
+    "colorama-0.4.5": {
+      "filename": "colorama-0.4.5-py2.py3-none-any.whl",
+      "hash": "854bf444933e37f5824ae7bfc1e98d5bce2ebe4160d46b5edf346a89358e99da",
+      "name": "colorama",
+      "path": "packages/python/wheels/colorama-0.4.5-py2.py3-none-any.whl",
+      "type": "wheel",
+      "version": "0.4.5"
+    },
+    "construct-2.10.68": {
+      "filename": "construct-2.10.68.tar.gz",
+      "hash": "7b2a3fd8e5f597a5aa1d614c3bd516fa065db01704c72a1efaaeec6ef23d8b45",
+      "name": "construct",
+      "path": "packages/python/source/construct-2.10.68.tar.gz",
+      "type": "source",
+      "version": "2.10.68"
+    },
+    "construct-classes-0.1.2": {
+      "filename": "construct-classes-0.1.2.tar.gz",
+      "hash": "72ac1abbae5bddb4918688713f991f5a7fb6c9b593646a82f4bf3ac53de7eeb5",
+      "name": "construct-classes",
+      "path": "packages/python/source/construct-classes-0.1.2.tar.gz",
+      "type": "source",
+      "version": "0.1.2"
+    },
+    "cryptography-38.0.3": {
+      "filename": "cryptography-38.0.3-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "hash": "068147f32fa662c81aebab95c74679b401b12b57494872886eb5c1139250ec5d",
+      "name": "cryptography",
+      "path": "packages/python/wheels/cryptography-38.0.3-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "type": "wheel",
+      "version": "38.0.3"
+    },
+    "dnspython-2.2.1": {
+      "filename": "dnspython-2.2.1.tar.gz",
+      "hash": "0f7569a4a6ff151958b64304071d370daa3243d15941a7beedf0c9fe5105603e",
+      "name": "dnspython",
+      "path": "packages/python/source/dnspython-2.2.1.tar.gz",
+      "type": "source",
+      "version": "2.2.1"
+    },
+    "ecdsa-0.18.0": {
+      "filename": "ecdsa-0.18.0.tar.gz",
+      "hash": "190348041559e21b22a1d65cee485282ca11a6f81d503fddb84d5017e9ed1e49",
+      "name": "ecdsa",
+      "path": "packages/python/source/ecdsa-0.18.0.tar.gz",
+      "type": "source",
+      "version": "0.18.0"
+    },
+    "flit-core-3.8.0": {
+      "filename": "flit_core-3.8.0-py3-none-any.whl",
+      "hash": "64a29ec845164a6abe1136bf4bc5ae012bdfe758ed42fc7571a9059a7c80bd83",
+      "name": "flit-core",
+      "path": "packages/python/wheels/flit_core-3.8.0-py3-none-any.whl",
+      "type": "wheel",
+      "version": "3.8.0"
+    },
+    "frozenlist-1.3.3": {
+      "filename": "frozenlist-1.3.3.tar.gz",
+      "hash": "58bcc55721e8a90b88332d6cd441261ebb22342e238296bb330968952fbb3a6a",
+      "name": "frozenlist",
+      "path": "packages/python/source/frozenlist-1.3.3.tar.gz",
+      "type": "source",
+      "version": "1.3.3"
+    },
+    "future-0.18.3": {
+      "filename": "future-0.18.3.tar.gz",
+      "hash": "34a17436ed1e96697a86f9de3d15a3b0be01d8bc8de9c1dffd59fb8234ed5307",
+      "name": "future",
+      "path": "packages/python/source/future-0.18.3.tar.gz",
+      "type": "source",
+      "version": "0.18.3"
+    },
+    "hidapi-0.14.0": {
+      "filename": "hidapi-0.14.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+      "hash": "01929fbbe206ebcb0bad9b8e925e16de0aa8f872bf80a263f599e519866d9900",
+      "name": "hidapi",
+      "path": "packages/python/wheels/hidapi-0.14.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+      "type": "wheel",
+      "version": "0.14.0"
+    },
+    "idna-3.4": {
+      "filename": "idna-3.4.tar.gz",
+      "hash": "814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4",
+      "name": "idna",
+      "path": "packages/python/source/idna-3.4.tar.gz",
+      "type": "source",
+      "version": "3.4"
+    },
+    "jsonpatch-1.33": {
+      "filename": "jsonpatch-1.33.tar.gz",
+      "hash": "9fcd4009c41e6d12348b4a0ff2563ba56a2923a7dfee731d004e212e1ee5030c",
+      "name": "jsonpatch",
+      "path": "packages/python/source/jsonpatch-1.33.tar.gz",
+      "type": "source",
+      "version": "1.33"
+    },
+    "jsonpointer-2.3": {
+      "filename": "jsonpointer-2.3.tar.gz",
+      "hash": "97cba51526c829282218feb99dab1b1e6bdf8efd1c43dc9d57be093c0d69c99a",
+      "name": "jsonpointer",
+      "path": "packages/python/source/jsonpointer-2.3.tar.gz",
+      "type": "source",
+      "version": "2.3"
+    },
+    "keepkey-6.3.1": {
+      "filename": "keepkey-6.3.1-py3-none-any.whl",
+      "hash": "88e2b5291c85c8e8567732f675697b88241082884aa1aba32257f35ee722fc09",
+      "name": "keepkey",
+      "path": "packages/python/wheels/keepkey-6.3.1-py3-none-any.whl",
+      "type": "wheel",
+      "version": "6.3.1"
+    },
+    "ledger-bitcoin-0.2.1": {
+      "filename": "ledger_bitcoin-0.2.1.tar.gz",
+      "hash": "01697fab6333ceca4d228eb27f7d12f763e033f620b1bfb5949b20ec0b33b6ca",
+      "name": "ledger-bitcoin",
+      "path": "packages/python/source/ledger_bitcoin-0.2.1.tar.gz",
+      "type": "source",
+      "version": "0.2.1"
+    },
+    "ledgercomm-1.1.2": {
+      "filename": "ledgercomm-1.1.2.tar.gz",
+      "hash": "8b338f6f0bfedf85eaf26a6af7e41120685dfb3e2956718948c9d83a4b5155bb",
+      "name": "ledgercomm",
+      "path": "packages/python/source/ledgercomm-1.1.2.tar.gz",
+      "type": "source",
+      "version": "1.1.2"
+    },
+    "libusb1-3.0.0": {
+      "filename": "libusb1-3.0.0-py3-none-win32.whl",
+      "hash": "083f75e5d15cb5e2159e64c308c5317284eae926a820d6dce53a9505d18be3b2",
+      "name": "libusb1",
+      "path": "packages/python/wheels/libusb1-3.0.0-py3-none-win32.whl",
+      "type": "wheel",
+      "version": "3.0.0"
+    },
+    "mnemonic-0.20": {
+      "filename": "mnemonic-0.20.tar.gz",
+      "hash": "7c6fb5639d779388027a77944680aee4870f0fcd09b1e42a5525ee2ce4c625f6",
+      "name": "mnemonic",
+      "path": "packages/python/source/mnemonic-0.20.tar.gz",
+      "type": "source",
+      "version": "0.20"
+    },
+    "multidict-6.0.2": {
+      "filename": "multidict-6.0.2.tar.gz",
+      "hash": "5ff3bd75f38e4c43f1f470f2df7a4d430b821c4ce22be384e1459cb57d6bb013",
+      "name": "multidict",
+      "path": "packages/python/source/multidict-6.0.2.tar.gz",
+      "type": "source",
+      "version": "6.0.2"
+    },
+    "noiseprotocol-0.3.1": {
+      "filename": "noiseprotocol-0.3.1-py3-none-any.whl",
+      "hash": "2e1a603a38439636cf0ffd8b3e8b12cee27d368a28b41be7dbe568b2abb23111",
+      "name": "noiseprotocol",
+      "path": "packages/python/wheels/noiseprotocol-0.3.1-py3-none-any.whl",
+      "type": "wheel",
+      "version": "0.3.1"
+    },
+    "packaging-21.3": {
+      "filename": "packaging-21.3.tar.gz",
+      "hash": "dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb",
+      "name": "packaging",
+      "path": "packages/python/source/packaging-21.3.tar.gz",
+      "type": "source",
+      "version": "21.3"
+    },
+    "pefile-2022.5.30": {
+      "filename": "pefile-2022.5.30.tar.gz",
+      "hash": "a5488a3dd1fd021ce33f969780b88fe0f7eebb76eb20996d7318f307612a045b",
+      "name": "pefile",
+      "path": "packages/python/source/pefile-2022.5.30.tar.gz",
+      "type": "source",
+      "version": "2022.5.30"
+    },
+    "pip-22.3.1": {
+      "filename": "pip-22.3.1.tar.gz",
+      "hash": "65fd48317359f3af8e593943e6ae1506b66325085ea64b706a998c6e83eeaf38",
+      "name": "pip",
+      "path": "packages/python/source/pip-22.3.1.tar.gz",
+      "type": "source",
+      "version": "22.3.1"
+    },
+    "pip-24.0": {
+      "filename": "pip-24.0-py3-none-any.whl",
+      "hash": "ba0d021a166865d2265246961bec0152ff124de910c5cc39f1156ce3fa7c69dc",
+      "name": "pip",
+      "path": "packages/python/wheels/pip-24.0-py3-none-any.whl",
+      "type": "wheel",
+      "version": "24.0"
+    },
+    "poetry-core-1.3.2": {
+      "filename": "poetry-core-1.3.2.tar.gz",
+      "hash": "0ab006a40cb38d6a38b97264f6835da2f08a96912f2728ce668e9ac6a34f686f",
+      "name": "poetry-core",
+      "path": "packages/python/source/poetry-core-1.3.2.tar.gz",
+      "type": "source",
+      "version": "1.3.2"
+    },
+    "protobuf-3.20.3": {
+      "filename": "protobuf-3.20.3.tar.gz",
+      "hash": "2e3427429c9cffebf259491be0af70189607f365c2f41c7c3764af6f337105f2",
+      "name": "protobuf",
+      "path": "packages/python/source/protobuf-3.20.3.tar.gz",
+      "type": "source",
+      "version": "3.20.3"
+    },
+    "pyaes-1.6.1": {
+      "filename": "pyaes-1.6.1.tar.gz",
+      "hash": "02c1b1405c38d3c370b085fb952dd8bea3fadcee6411ad99f312cc129c536d8f",
+      "name": "pyaes",
+      "path": "packages/python/source/pyaes-1.6.1.tar.gz",
+      "type": "source",
+      "version": "1.6.1"
+    },
+    "pycparser-2.21": {
+      "filename": "pycparser-2.21-py2.py3-none-any.whl",
+      "hash": "8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9",
+      "name": "pycparser",
+      "path": "packages/python/wheels/pycparser-2.21-py2.py3-none-any.whl",
+      "type": "wheel",
+      "version": "2.21"
+    },
+    "pyinstaller-hooks-contrib-2022.13": {
+      "filename": "pyinstaller-hooks-contrib-2022.13.tar.gz",
+      "hash": "e06d0881e599d94dc39c6ed1917f0ad9b1858a2478b9892faac18bd48bcdc2de",
+      "name": "pyinstaller-hooks-contrib",
+      "path": "packages/python/source/pyinstaller-hooks-contrib-2022.13.tar.gz",
+      "type": "source",
+      "version": "2022.13"
+    },
+    "pyparsing-3.0.9": {
+      "filename": "pyparsing-3.0.9.tar.gz",
+      "hash": "2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb",
+      "name": "pyparsing",
+      "path": "packages/python/source/pyparsing-3.0.9.tar.gz",
+      "type": "source",
+      "version": "3.0.9"
+    },
+    "pyserial-3.5": {
+      "filename": "pyserial-3.5.tar.gz",
+      "hash": "3c77e014170dfffbd816e6ffc205e9842efb10be9f58ec16d3e8675b4925cddb",
+      "name": "pyserial",
+      "path": "packages/python/source/pyserial-3.5.tar.gz",
+      "type": "source",
+      "version": "3.5"
+    },
+    "python-socks-2.4.3": {
+      "filename": "python-socks-2.4.3.tar.gz",
+      "hash": "135430ae36d582dc834c983696c5f66177aa5b587407f540985d616ef2e0c701",
+      "name": "python-socks",
+      "path": "packages/python/source/python-socks-2.4.3.tar.gz",
+      "type": "source",
+      "version": "2.4.3"
+    },
+    "pywin32-ctypes-0.2.0": {
+      "filename": "pywin32-ctypes-0.2.0.tar.gz",
+      "hash": "24ffc3b341d457d48e8922352130cf2644024a4ff09762a2261fd34c36ee5942",
+      "name": "pywin32-ctypes",
+      "path": "packages/python/source/pywin32-ctypes-0.2.0.tar.gz",
+      "type": "source",
+      "version": "0.2.0"
+    },
+    "qrcode-7.3.1": {
+      "filename": "qrcode-7.3.1.tar.gz",
+      "hash": "375a6ff240ca9bd41adc070428b5dfc1dcfbb0f2507f1ac848f6cded38956578",
+      "name": "qrcode",
+      "path": "packages/python/source/qrcode-7.3.1.tar.gz",
+      "type": "source",
+      "version": "7.3.1"
+    },
+    "requests-2.28.1": {
+      "filename": "requests-2.28.1.tar.gz",
+      "hash": "7c5599b102feddaa661c826c56ab4fee28bfd17f5abca1ebbe3e7f19d7c97983",
+      "name": "requests",
+      "path": "packages/python/source/requests-2.28.1.tar.gz",
+      "type": "source",
+      "version": "2.28.1"
+    },
+    "safet-0.1.5": {
+      "filename": "safet-0.1.5.tar.gz",
+      "hash": "a7fd4b68bb1bc6185298af665c8e8e00e2bb2bcbddbb22844ead929b845c635e",
+      "name": "safet",
+      "path": "packages/python/source/safet-0.1.5.tar.gz",
+      "type": "source",
+      "version": "0.1.5"
+    },
+    "scrypt-0.9.4": {
+      "filename": "scrypt-0.9.4.tar.gz",
+      "hash": "0d212010ba8c2e55475ba6258f30cee4da0432017514d8f6e855b7f1f8c55c77",
+      "name": "scrypt",
+      "path": "packages/python/source/scrypt-0.9.4.tar.gz",
+      "type": "source",
+      "version": "0.9.4"
+    },
+    "semver-2.13.0": {
+      "filename": "semver-2.13.0-py2.py3-none-any.whl",
+      "hash": "ced8b23dceb22134307c1b8abfa523da14198793d9787ac838e70e29e77458d4",
+      "name": "semver",
+      "path": "packages/python/wheels/semver-2.13.0-py2.py3-none-any.whl",
+      "type": "wheel",
+      "version": "2.13.0"
+    },
+    "setuptools-65.5.1": {
+      "filename": "setuptools-65.5.1.tar.gz",
+      "hash": "e197a19aa8ec9722928f2206f8de752def0e4c9fc6953527360d1c36d94ddb2f",
+      "name": "setuptools",
+      "path": "packages/python/source/setuptools-65.5.1.tar.gz",
+      "type": "source",
+      "version": "65.5.1"
+    },
+    "setuptools-69.0.3": {
+      "filename": "setuptools-69.0.3-py3-none-any.whl",
+      "hash": "385eb4edd9c9d5c17540511303e39a147ce2fc04bc55289c322b9e5904fe2c05",
+      "name": "setuptools",
+      "path": "packages/python/wheels/setuptools-69.0.3-py3-none-any.whl",
+      "type": "wheel",
+      "version": "69.0.3"
+    },
+    "setuptools-scm-7.0.5": {
+      "filename": "setuptools_scm-7.0.5.tar.gz",
+      "hash": "031e13af771d6f892b941adb6ea04545bbf91ebc5ce68c78aaf3fff6e1fb4844",
+      "name": "setuptools-scm",
+      "path": "packages/python/source/setuptools_scm-7.0.5.tar.gz",
+      "type": "source",
+      "version": "7.0.5"
+    },
+    "simple-rlp-0.1.3": {
+      "filename": "simple-rlp-0.1.3.tar.gz",
+      "hash": "2df1d2b769f0a0177d26231ab8be16e65e3546b17bb0a9a490efd3517c082876",
+      "name": "simple-rlp",
+      "path": "packages/python/source/simple-rlp-0.1.3.tar.gz",
+      "type": "source",
+      "version": "0.1.3"
+    },
+    "six-1.16.0": {
+      "filename": "six-1.16.0.tar.gz",
+      "hash": "1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926",
+      "name": "six",
+      "path": "packages/python/source/six-1.16.0.tar.gz",
+      "type": "source",
+      "version": "1.16.0"
+    },
+    "tomli-2.0.1": {
+      "filename": "tomli-2.0.1-py3-none-any.whl",
+      "hash": "939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc",
+      "name": "tomli",
+      "path": "packages/python/wheels/tomli-2.0.1-py3-none-any.whl",
+      "type": "wheel",
+      "version": "2.0.1"
+    },
+    "trezor-0.13.8": {
+      "filename": "trezor-0.13.8-py3-none-any.whl",
+      "hash": "0bd22f761622199df99f8dada3327a94e68542d0b4b5ccfdfaca133308616c86",
+      "name": "trezor",
+      "path": "packages/python/wheels/trezor-0.13.8-py3-none-any.whl",
+      "type": "wheel",
+      "version": "0.13.8"
+    },
+    "typing-extensions-4.4.0": {
+      "filename": "typing_extensions-4.4.0.tar.gz",
+      "hash": "1511434bb92bf8dd198c12b1cc812e800d4181cfcb867674e0f8279cc93087aa",
+      "name": "typing-extensions",
+      "path": "packages/python/source/typing_extensions-4.4.0.tar.gz",
+      "type": "source",
+      "version": "4.4.0"
+    },
+    "urllib3-1.26.12": {
+      "filename": "urllib3-1.26.12.tar.gz",
+      "hash": "3fa96cf423e6987997fc326ae8df396db2a8b7c667747d47ddd8ecba91f4a74e",
+      "name": "urllib3",
+      "path": "packages/python/source/urllib3-1.26.12.tar.gz",
+      "type": "source",
+      "version": "1.26.12"
+    },
+    "wheel-0.38.4": {
+      "filename": "wheel-0.38.4.tar.gz",
+      "hash": "965f5259b566725405b05e7cf774052044b1ed30119b5d586b2703aafe8719ac",
+      "name": "wheel",
+      "path": "packages/python/source/wheel-0.38.4.tar.gz",
+      "type": "source",
+      "version": "0.38.4"
+    },
+    "yarl-1.8.1": {
+      "filename": "yarl-1.8.1.tar.gz",
+      "hash": "af887845b8c2e060eb5605ff72b6f2dd2aab7a761379373fd89d314f4752abbf",
+      "name": "yarl",
+      "path": "packages/python/source/yarl-1.8.1.tar.gz",
+      "type": "source",
+      "version": "1.8.1"
+    }
+  },
+  "python": {},
+  "version": "1.0",
+  "wine": {
+    "components": [],
+    "python_version": "3.11.9"
+  }
+}
