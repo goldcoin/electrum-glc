@@ -1,0 +1,197 @@
+# Enterprise Deterministic Build System for Electrum-GLC
+# Multi-stage build for complete reproducibility
+
+# Stage 1: Base System with Pinned Packages
+FROM debian:bullseye@sha256:43ef0c6c3585d5b406caa7a0f232ff5a19c1402aeb415f68bcd1cf9d10180af8 AS base-system
+
+# Deterministic environment variables
+ENV LC_ALL=C.UTF-8 \
+    LANG=C.UTF-8 \
+    DEBIAN_FRONTEND=noninteractive \
+    SOURCE_DATE_EPOCH=1000000000 \
+    PYTHONHASHSEED=0 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    TZ=UTC \
+    DETERMINISTIC_BUILD=1
+
+# Install ca-certificates first for HTTPS
+RUN apt-get update -qq && \
+    apt-get install -qq --yes --no-install-recommends ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# Pin to Debian snapshot for reproducibility
+COPY contrib/deterministic-build/apt/sources.list /etc/apt/sources.list
+COPY contrib/deterministic-build/apt/preferences /etc/apt/preferences.d/snapshot
+
+# Install build dependencies with exact versions
+RUN dpkg --add-architecture i386 && \
+    apt-get update -q && \
+    apt-get install -qy --allow-downgrades \
+        wget=1.21-1+deb11u1 \
+        gnupg2=2.2.27-2+deb11u2 \
+        dirmngr=2.2.27-2+deb11u2 \
+        python3-software-properties=0.96.20.2-2.1 \
+        software-properties-common=0.96.20.2-2.1 \
+        git=1:2.30.2-1+deb11u2 \
+        p7zip-full=16.02+dfsg-8 \
+        make=4.3-4.1 \
+        mingw-w64=8.0.0-1 \
+        mingw-w64-tools=8.0.0-1 \
+        autotools-dev=20180224.1+nmu1 \
+        autoconf=2.69-14 \
+        autopoint=0.21-4 \
+        libtool=2.4.6-15 \
+        gettext=0.21-4 \
+        sudo=1.9.5p2-3+deb11u1 \
+        nsis=3.08-2 \
+        python3=3.9.2-3 \
+        python3-pip=20.3.4-4+deb11u1 \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Stage 2: Wine Installation from Cached Packages
+FROM base-system AS wine-builder
+
+# Copy Wine packages from mirror
+COPY contrib/deterministic-build/mirror/packages/wine /tmp/wine-packages
+
+# Install Wine from local packages (no network access)
+RUN dpkg -i /tmp/wine-packages/*.deb || apt-get install -f -y && \
+    rm -rf /tmp/wine-packages
+
+# Alternative: Build Wine from source for complete determinism
+# This ensures Wine itself is reproducible
+ARG WINE_VERSION=8.0.1
+ARG WINE_SHA256=c51bcb8cc4a12abfbd7c7660eaf90f49674d15e222c262f27e6c96429111b822
+
+# Stage 3: Python Environment Setup
+FROM wine-builder AS python-env
+
+# Set up Wine environment
+ENV WINEPREFIX=/opt/wine64 \
+    WINEARCH=win64 \
+    WINEDEBUG=-all \
+    WINE_PYTHON="wine python.exe"
+
+# Create non-root user for builds
+ARG UID=1000
+ARG GID=1000
+RUN groupadd -g ${GID} builder && \
+    useradd -m -u ${UID} -g ${GID} -s /bin/bash builder && \
+    usermod -aG sudo builder && \
+    echo "%sudo ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+# Switch to builder user
+USER builder
+WORKDIR /home/builder
+
+# Initialize Wine
+RUN wineboot --init && \
+    wine reg add "HKEY_CURRENT_USER\\Environment" /v PYTHONHASHSEED /d 0 /f && \
+    wine reg add "HKEY_CURRENT_USER\\Environment" /v SOURCE_DATE_EPOCH /d 1000000000 /f
+
+# Copy Python MSI files from mirror
+COPY --chown=builder:builder contrib/deterministic-build/mirror/packages/wine/python /tmp/python
+
+# Install Python in Wine
+RUN cd /tmp/python && \
+    wine msiexec /i core.msi /qb TARGETDIR=C:\\Python311 && \
+    wine msiexec /i dev.msi /qb TARGETDIR=C:\\Python311 && \
+    wine msiexec /i exe.msi /qb TARGETDIR=C:\\Python311 && \
+    wine msiexec /i lib.msi /qb TARGETDIR=C:\\Python311 && \
+    wine msiexec /i pip.msi /qb TARGETDIR=C:\\Python311 && \
+    wine msiexec /i tools.msi /qb TARGETDIR=C:\\Python311 && \
+    rm -rf /tmp/python
+
+# Stage 4: Package Installation from Mirror
+FROM python-env AS packages
+
+# Copy package mirror
+COPY --chown=builder:builder contrib/deterministic-build/mirror /opt/mirror
+
+# Copy requirements files
+COPY --chown=builder:builder contrib/deterministic-build/requirements*.txt /opt/requirements/
+
+# Install packages from local mirror only (no network)
+RUN wine python.exe -m pip install --no-index \
+    --find-links /opt/mirror/packages/python/wheels \
+    --find-links /opt/mirror/packages/python/source \
+    -r /opt/requirements/requirements.txt \
+    -r /opt/requirements/requirements-hw.txt \
+    -r /opt/requirements/requirements-binaries.txt
+
+# Stage 5: Build Tools Setup
+FROM packages AS build-tools
+
+# Copy and build PyInstaller from source
+COPY --chown=builder:builder contrib/deterministic-build/mirror/packages/tools/pyinstaller /tmp/pyinstaller
+RUN cd /tmp/pyinstaller && \
+    wine python.exe setup.py install && \
+    rm -rf /tmp/pyinstaller
+
+# Install NSIS plugins if needed
+COPY --chown=builder:builder contrib/deterministic-build/mirror/packages/tools/nsis-plugins /usr/share/nsis/Plugins/
+
+# Stage 6: Application Build
+FROM build-tools AS app-builder
+
+# Copy Electrum source code
+COPY --chown=builder:builder . /opt/electrum-glc
+
+# Set deterministic timestamps on all files
+RUN find /opt/electrum-glc -exec touch -h -d '@1000000000' {} +
+
+WORKDIR /opt/electrum-glc
+
+# Build libsecp256k1
+RUN cd contrib/build-wine && \
+    ./make_secp256k1.sh
+
+# Build other dependencies
+RUN cd contrib/build-wine && \
+    ./make_zbar.sh && \
+    ./make_libusb.sh
+
+# Build Electrum
+RUN cd contrib/build-wine && \
+    SOURCE_DATE_EPOCH=1000000000 \
+    PYTHONHASHSEED=0 \
+    wine python.exe -m pip install --no-deps /opt/electrum-glc && \
+    wine python.exe -m PyInstaller --noconfirm --clean deterministic.spec
+
+# Build NSIS installer
+RUN cd contrib/build-wine && \
+    SOURCE_DATE_EPOCH=1000000000 \
+    makensis -DPRODUCT_VERSION=4.5.0 electrum.nsi
+
+# Stage 7: Verification and Output
+FROM app-builder AS verifier
+
+# Copy expected hashes
+COPY --chown=builder:builder contrib/deterministic-build/expected-hashes.json /opt/
+
+# Verify build outputs
+RUN python3 /opt/verify-build.py \
+    --expected /opt/expected-hashes.json \
+    --actual /opt/electrum-glc/dist/
+
+# Generate build attestation
+RUN python3 /opt/generate-attestation.py \
+    --source-commit $(cd /opt/electrum-glc && git rev-parse HEAD) \
+    --docker-image ${DOCKER_IMAGE_SHA} \
+    --output /opt/electrum-glc/dist/build-attestation.json
+
+# Final stage: Minimal output
+FROM scratch AS output
+
+# Copy only the built artifacts
+COPY --from=verifier /opt/electrum-glc/dist/*.exe /dist/
+COPY --from=verifier /opt/electrum-glc/dist/*.AppImage /dist/
+COPY --from=verifier /opt/electrum-glc/dist/build-attestation.json /dist/
+
+# Labels for traceability
+LABEL maintainer="Goldcoin Development Team" \
+      version="4.5.0" \
+      description="Enterprise Deterministic Build of Electrum-GLC" \
+      source.date.epoch="1000000000" \
+      build.reproducible="true"

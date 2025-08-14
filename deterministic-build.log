@@ -1,0 +1,181 @@
+==================================================
+  Electrum-GLC Enterprise Deterministic Build
+  Version: 4.5.0
+  Date: 2025-08-14 11:39:35 UTC
+==================================================
+
+[0;34m[INFO][0m Checking prerequisites...
+[0;32m[SUCCESS][0m All prerequisites met
+[0;34m[INFO][0m Setting up build directories...
+[0;32m[SUCCESS][0m Directories created
+[0;34m[INFO][0m Creating package mirror...
+[0;34m[INFO][0m Package mirror already exists, verifying...
+=== Electrum-GLC Package Mirror Creator ===
+Mirror directory: /home/shasta/git/electrum-glc/contrib/deterministic-build/mirror
+
+=== Mirroring Python Packages ===
+
+Processing requirements.txt...
+
+Processing requirements-build-base.txt...
+
+Processing requirements-build-wine.txt...
+
+Processing requirements-binaries.txt...
+
+Processing requirements-hw.txt...
+
+Found 70 unique packages to mirror
+✓ aiohttp-3.8.3 already mirrored
+✓ aiohttp-socks-0.8.4 already mirrored
+✓ aiorpcX-0.22.1 already mirrored
+✓ aiosignal-1.3.1 already mirrored
+✓ async-timeout-4.0.2 already mirrored
+✓ attrs-22.1.0 already mirrored
+✓ bitstring-3.1.9 already mirrored
+✓ certifi-2023.11.17 already mirrored
+✓ charset-normalizer-2.1.1 already mirrored
+✓ dnspython-2.2.1 already mirrored
+✓ frozenlist-1.3.3 already mirrored
+✓ idna-3.4 already mirrored
+✓ jsonpatch-1.33 already mirrored
+✓ jsonpointer-2.3 already mirrored
+✓ multidict-6.0.2 already mirrored
+✓ packaging-21.3 already mirrored
+✓ pip-24.0 already mirrored
+✓ protobuf-3.20.3 already mirrored
+✓ pyparsing-3.0.9 already mirrored
+✓ python-socks-2.4.3 already mirrored
+✓ QDarkStyle-3.1 already mirrored
+✓ qrcode-7.3.1 already mirrored
+✓ QtPy-2.3.0 already mirrored
+✓ setuptools-69.0.3 already mirrored
+✓ wheel-0.38.4 already mirrored
+✓ yarl-1.8.1 already mirrored
+✓ flit-core-3.8.0 already mirrored
+✓ poetry-core-1.3.2 already mirrored
+✓ setuptools-scm-7.0.5 already mirrored
+✓ tomli-2.0.1 already mirrored
+✓ typing-extensions-4.4.0 already mirrored
+✓ altgraph-0.17.3 already mirrored
+✓ future-0.18.3 already mirrored
+✓ pefile-2022.5.30 already mirrored
+✓ pip-22.3.1 already mirrored
+✓ pyinstaller-hooks-contrib-2022.13 already mirrored
+✓ pywin32-ctypes-0.2.0 already mirrored
+✓ setuptools-65.5.1 already mirrored
+✓ cffi-1.15.1 already mirrored
+✓ cryptography-38.0.3 already mirrored
+✓ pycparser-2.21 already mirrored
+✓ PyQt5-5.15.9 already mirrored
+✓ PyQt5-Qt5-5.15.2 already mirrored
+✓ PyQt5-sip-12.12.1 already mirrored
+✓ scrypt-0.9.4 already mirrored
+✓ base58-2.1.1 already mirrored
+✓ bitbox02-6.2.0 already mirrored
+✓ cbor-1.0.0 already mirrored
+✓ ckcc-protocol-1.4.0 already mirrored
+✓ click-8.1.3 already mirrored
+✓ colorama-0.4.5 already mirrored
+✓ construct-2.10.68 already mirrored
+✓ construct-classes-0.1.2 already mirrored
+✓ ecdsa-0.18.0 already mirrored
+✓ hidapi-0.14.0 already mirrored
+✓ keepkey-6.3.1 already mirrored
+✓ ledger-bitcoin-0.2.1 already mirrored
+✓ ledgercomm-1.1.2 already mirrored
+✓ libusb1-3.0.0 already mirrored
+✓ mnemonic-0.20 already mirrored
+✓ noiseprotocol-0.3.1 already mirrored
+✓ pyaes-1.6.1 already mirrored
+✓ pyserial-3.5 already mirrored
+✓ requests-2.28.1 already mirrored
+✓ safet-0.1.5 already mirrored
+✓ semver-2.13.0 already mirrored
+✓ simple-rlp-0.1.3 already mirrored
+✓ six-1.16.0 already mirrored
+✓ trezor-0.13.8 already mirrored
+✓ urllib3-1.26.12 already mirrored
+
+=== Mirroring Wine Components ===
+
+Note: Wine component mirroring requires manual download of Python MSI files
+Please download Python 3.11.9 MSI files from python.org
+✓ Manifest saved to /home/shasta/git/electrum-glc/contrib/deterministic-build/mirror/manifest.json
+
+=== Verifying Package Mirror ===
+✓ Verified: PyQt5-5.15.9
+✓ Verified: PyQt5-Qt5-5.15.2
+✓ Verified: PyQt5-sip-12.12.1
+✓ Verified: QDarkStyle-3.1
+✓ Verified: QtPy-2.3.0
+✓ Verified: aiohttp-3.8.3
+✓ Verified: aiohttp-socks-0.8.4
+✓ Verified: aiorpcX-0.22.1
+✓ Verified: aiosignal-1.3.1
+✓ Verified: altgraph-0.17.3
+✓ Verified: async-timeout-4.0.2
+✓ Verified: attrs-22.1.0
+✓ Verified: base58-2.1.1
+✓ Verified: bitbox02-6.2.0
+✓ Verified: bitstring-3.1.9
+✓ Verified: cbor-1.0.0
+✓ Verified: certifi-2023.11.17
+✓ Verified: cffi-1.15.1
+✓ Verified: charset-normalizer-2.1.1
+✓ Verified: ckcc-protocol-1.4.0
+✓ Verified: click-8.1.3
+✓ Verified: colorama-0.4.5
+✓ Verified: construct-2.10.68
+✓ Verified: construct-classes-0.1.2
+✓ Verified: cryptography-38.0.3
+✓ Verified: dnspython-2.2.1
+✓ Verified: ecdsa-0.18.0
+✓ Verified: flit-core-3.8.0
+✓ Verified: frozenlist-1.3.3
+✓ Verified: future-0.18.3
+✓ Verified: hidapi-0.14.0
+✓ Verified: idna-3.4
+✓ Verified: jsonpatch-1.33
+✓ Verified: jsonpointer-2.3
+✓ Verified: keepkey-6.3.1
+✓ Verified: ledger-bitcoin-0.2.1
+✓ Verified: ledgercomm-1.1.2
+✓ Verified: libusb1-3.0.0
+✓ Verified: mnemonic-0.20
+✓ Verified: multidict-6.0.2
+✓ Verified: noiseprotocol-0.3.1
+✓ Verified: packaging-21.3
+✓ Verified: pefile-2022.5.30
+✓ Verified: pip-22.3.1
+✓ Verified: pip-24.0
+✓ Verified: poetry-core-1.3.2
+✓ Verified: protobuf-3.20.3
+✓ Verified: pyaes-1.6.1
+✓ Verified: pycparser-2.21
+✓ Verified: pyinstaller-hooks-contrib-2022.13
+✓ Verified: pyparsing-3.0.9
+✓ Verified: pyserial-3.5
+✓ Verified: python-socks-2.4.3
+✓ Verified: pywin32-ctypes-0.2.0
+✓ Verified: qrcode-7.3.1
+✓ Verified: requests-2.28.1
+✓ Verified: safet-0.1.5
+✓ Verified: scrypt-0.9.4
+✓ Verified: semver-2.13.0
+✓ Verified: setuptools-65.5.1
+✓ Verified: setuptools-69.0.3
+✓ Verified: setuptools-scm-7.0.5
+✓ Verified: simple-rlp-0.1.3
+✓ Verified: six-1.16.0
+✓ Verified: tomli-2.0.1
+✓ Verified: trezor-0.13.8
+✓ Verified: typing-extensions-4.4.0
+✓ Verified: urllib3-1.26.12
+✓ Verified: wheel-0.38.4
+✓ Verified: yarl-1.8.1
+
+✓ Package mirror created successfully!
+[0;32m[SUCCESS][0m Package mirror ready
+[0;34m[INFO][0m Preparing build context...
+cp: cannot copy a directory, '/home/shasta/git/electrum-glc/contrib', into itself, '/home/shasta/git/electrum-glc/contrib/deterministic-build/build/context/contrib'
