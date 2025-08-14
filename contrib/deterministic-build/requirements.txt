@@ -31,7 +31,7 @@ multidict==6.0.2 \
 packaging==21.3 \
     --hash=sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb
 pip==24.0 \
-    --hash=sha256:ba0d021a166865d2265246961bec0152ff124de910c5cc39f1156ce3fa7c69dc
+    --hash=sha256:ea9bd1a847e8c5774a5777bb398c19e80bcd4e2aa16a4b301b718fe6f593aba2
 protobuf==3.20.3 \
     --hash=sha256:2e3427429c9cffebf259491be0af70189607f365c2f41c7c3764af6f337105f2
 pyparsing==3.0.9 \
@@ -45,7 +45,7 @@ qrcode==7.3.1 \
 QtPy==2.3.0 \
     --hash=sha256:0603c9c83ccc035a4717a12908bf6bc6cb22509827ea2ec0e94c2da7c9ed57c5
 setuptools==69.0.3 \
-    --hash=sha256:385eb4edd9c9d5c17540511303e39a147ce2fc04bc55289c322b9e5904fe2c05
+    --hash=sha256:be1af57fc409f93647f2e8e4573a142ed38724b8cdd389706a867bb4efcf1e78
 wheel==0.38.4 \
     --hash=sha256:965f5259b566725405b05e7cf774052044b1ed30119b5d586b2703aafe8719ac
 yarl==1.8.1 \

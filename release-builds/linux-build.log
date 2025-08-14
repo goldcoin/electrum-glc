@@ -1,0 +1,2595 @@
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+💬 [0;34mINFO:[0m  building docker image.
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.67kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:buster@sha256:233c3bbc892229c82da7231980d50adceba4db56a08c0b7053a4852782703459
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 55B done
+#3 DONE 0.0s
+
+#4 [ 1/10] FROM docker.io/library/debian:buster@sha256:233c3bbc892229c82da7231980d50adceba4db56a08c0b7053a4852782703459
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 264B done
+#5 DONE 0.0s
+
+#6 [ 2/10] RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list &&     echo "deb http://archive.debian.org/debian-security buster/updates main" >> /etc/apt/sources.list &&     apt update -qq > /dev/null && apt install -qq --yes --no-install-recommends     ca-certificates
+#6 CACHED
+
+#7 [ 3/10] COPY apt.sources.list /etc/apt/sources.list
+#7 DONE 0.4s
+
+#8 [ 4/10] COPY apt.preferences /etc/apt/preferences.d/snapshot
+#8 DONE 0.0s
+
+#9 [ 5/10] RUN apt-get update -q &&     apt-get install -qy --allow-downgrades         sudo         git         wget         make         autotools-dev         autoconf         libtool         autopoint         pkg-config         xz-utils         libssl-dev         libssl1.1         openssl         zlib1g-dev         libffi-dev         libncurses5-dev         libncurses5         libtinfo-dev         libtinfo5         libsqlite3-dev         libusb-1.0-0-dev         libudev-dev         libudev1         gettext         libzbar0         libdbus-1-3         xutils-dev         libxkbcommon0         libxkbcommon-x11-0         libxcb1-dev         libxcb-xinerama0         libxcb-randr0         libxcb-render0         libxcb-shm0         libxcb-shape0         libxcb-sync1         libxcb-xfixes0         libxcb-xkb1         libxcb-icccm4         libxcb-image0         libxcb-keysyms1         libxcb-util0         libxcb-render-util0         libx11-xcb1         libc6-dev         libc6         libc-dev-bin         &&     rm -rf /var/lib/apt/lists/* &&     apt-get autoremove -y &&     apt-get clean
+#9 0.222 Hit:1 http://archive.debian.org/debian buster InRelease
+#9 0.222 Hit:2 http://archive.debian.org/debian-security buster/updates InRelease
+#9 0.505 Reading package lists...
+#9 1.197 Reading package lists...
+#9 1.878 Building dependency tree...
+#9 2.040 Reading state information...
+#9 2.169 libssl1.1 is already the newest version (1.1.1n-0+deb10u6).
+#9 2.169 libssl1.1 set to manually installed.
+#9 2.169 openssl is already the newest version (1.1.1n-0+deb10u6).
+#9 2.169 openssl set to manually installed.
+#9 2.169 The following additional packages will be installed:
+#9 2.169   automake binutils binutils-common binutils-x86-64-linux-gnu bzip2 cpp cpp-8
+#9 2.169   dbus file gcc gcc-8 gettext-base git-man krb5-locales less libapparmor1
+#9 2.169   libasan5 libatomic1 libbinutils libbsd0 libcc1-0 libcroco3 libcurl3-gnutls
+#9 2.169   libdpkg-perl libedit2 liberror-perl libexpat1 libfile-fcntllock-perl
+#9 2.169   libgcc-8-dev libgdbm-compat4 libgdbm6 libglib2.0-0 libglib2.0-data libgomp1
+#9 2.169   libgpm2 libgssapi-krb5-2 libice6 libicu63 libisl19 libitm1 libjpeg62-turbo
+#9 2.170   libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libldap-2.4-2
+#9 2.170   libldap-common liblocale-gettext-perl liblsan0 libltdl-dev libltdl7
+#9 2.170   libmagic-mgc libmagic1 libmpc3 libmpfr6 libmpx2 libncurses-dev libncurses6
+#9 2.170   libncursesw6 libnghttp2-14 libpcre2-8-0 libperl5.28 libpsl5
+#9 2.170   libpthread-stubs0-dev libquadmath0 librtmp1 libsasl2-2 libsasl2-modules
+#9 2.170   libsasl2-modules-db libsigsegv2 libsm6 libsqlite3-0 libssh2-1 libtinfo6
+#9 2.170   libtsan0 libubsan1 libusb-1.0-0 libusb-1.0-doc libv4l-0 libv4lconvert0
+#9 2.170   libx11-6 libx11-data libxau-dev libxau6 libxcb1 libxdmcp-dev libxdmcp6
+#9 2.170   libxext6 libxml2 libxmuu1 linux-libc-dev lsb-base m4 manpages manpages-dev
+#9 2.170   netbase openssh-client patch perl perl-modules-5.28 publicsuffix
+#9 2.170   shared-mime-info x11-common x11proto-core-dev x11proto-dev xauth
+#9 2.170   xdg-user-dirs xkb-data xorg-sgml-doctools
+#9 2.170 Suggested packages:
+#9 2.170   autoconf-archive gnu-standards autoconf-doc binutils-doc bzip2-doc cpp-doc
+#9 2.170   gcc-8-locales default-dbus-session-bus | dbus-session-bus gcc-multilib flex
+#9 2.170   bison gdb gcc-doc gcc-8-multilib gcc-8-doc libgcc1-dbg libgomp1-dbg
+#9 2.170   libitm1-dbg libatomic1-dbg libasan5-dbg liblsan0-dbg libtsan0-dbg
+#9 2.170   libubsan1-dbg libmpx2-dbg libquadmath0-dbg gettext-doc libasprintf-dev
+#9 2.170   libgettextpo-dev git-daemon-run | git-daemon-sysvinit git-doc git-el
+#9 2.170   git-email git-gui gitk gitweb git-cvs git-mediawiki git-svn glibc-doc
+#9 2.170   libc-l10n locales debian-keyring gnupg | gnupg2 sensible-utils bzr gdbm-l10n
+#9 2.170   gpm krb5-doc krb5-user libtool-doc ncurses-doc libsasl2-modules-gssapi-mit
+#9 2.170   | libsasl2-modules-gssapi-heimdal libsasl2-modules-ldap libsasl2-modules-otp
+#9 2.170   libsasl2-modules-sql sqlite3-doc libssl-doc gfortran | fortran95-compiler
+#9 2.170   gcj-jdk libxcb-doc m4-doc make-doc man-browser keychain libpam-ssh
+#9 2.170   monkeysphere ssh-askpass ed diffutils-doc perl-doc libterm-readline-gnu-perl
+#9 2.170   | libterm-readline-perl-perl libb-debug-perl liblocale-codes-perl dpkg-dev
+#9 2.707 The following NEW packages will be installed:
+#9 2.707   autoconf automake autopoint autotools-dev binutils binutils-common
+#9 2.707   binutils-x86-64-linux-gnu bzip2 cpp cpp-8 dbus file gcc gcc-8 gettext
+#9 2.707   gettext-base git git-man krb5-locales less libapparmor1 libasan5 libatomic1
+#9 2.707   libbinutils libbsd0 libc-dev-bin libc6-dev libcc1-0 libcroco3
+#9 2.707   libcurl3-gnutls libdbus-1-3 libdpkg-perl libedit2 liberror-perl libexpat1
+#9 2.708   libffi-dev libfile-fcntllock-perl libgcc-8-dev libgdbm-compat4 libgdbm6
+#9 2.708   libglib2.0-0 libglib2.0-data libgomp1 libgpm2 libgssapi-krb5-2 libice6
+#9 2.708   libicu63 libisl19 libitm1 libjpeg62-turbo libk5crypto3 libkeyutils1
+#9 2.708   libkrb5-3 libkrb5support0 libldap-2.4-2 libldap-common
+#9 2.708   liblocale-gettext-perl liblsan0 libltdl-dev libltdl7 libmagic-mgc libmagic1
+#9 2.708   libmpc3 libmpfr6 libmpx2 libncurses-dev libncurses5 libncurses5-dev
+#9 2.708   libncurses6 libnghttp2-14 libpcre2-8-0 libperl5.28 libpsl5
+#9 2.708   libpthread-stubs0-dev libquadmath0 librtmp1 libsasl2-2 libsasl2-modules
+#9 2.708   libsasl2-modules-db libsigsegv2 libsm6 libsqlite3-0 libsqlite3-dev libssh2-1
+#9 2.708   libssl-dev libtinfo-dev libtinfo5 libtool libtsan0 libubsan1 libudev-dev
+#9 2.708   libusb-1.0-0 libusb-1.0-0-dev libusb-1.0-doc libv4l-0 libv4lconvert0
+#9 2.708   libx11-6 libx11-data libx11-xcb1 libxau-dev libxau6 libxcb-icccm4
+#9 2.708   libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0
+#9 2.708   libxcb-render0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util0
+#9 2.708   libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 libxcb1 libxcb1-dev libxdmcp-dev
+#9 2.708   libxdmcp6 libxext6 libxkbcommon-x11-0 libxkbcommon0 libxml2 libxmuu1
+#9 2.708   libzbar0 linux-libc-dev lsb-base m4 make manpages manpages-dev netbase
+#9 2.709   openssh-client patch perl perl-modules-5.28 pkg-config publicsuffix
+#9 2.709   shared-mime-info sudo wget x11-common x11proto-core-dev x11proto-dev xauth
+#9 2.709   xdg-user-dirs xkb-data xorg-sgml-doctools xutils-dev xz-utils zlib1g-dev
+#9 2.710 The following packages will be upgraded:
+#9 2.710   libc6 libncursesw6 libtinfo6 libudev1
+#9 2.747 4 upgraded, 150 newly installed, 0 to remove and 18 not upgraded.
+#9 2.747 Need to get 89.4 MB of archives.
+#9 2.747 After this operation, 355 MB of additional disk space will be used.
+#9 2.747 Get:1 http://archive.debian.org/debian buster/main amd64 perl-modules-5.28 all 5.28.1-6+deb10u1 [2873 kB]
+#9 2.777 Get:2 http://archive.debian.org/debian-security buster/updates/main amd64 libc6 amd64 2.28-10+deb10u4 [2869 kB]
+#9 2.806 Get:3 http://archive.debian.org/debian buster/main amd64 libgdbm6 amd64 1.18.1-4 [64.7 kB]
+#9 2.807 Get:4 http://archive.debian.org/debian buster/main amd64 libgdbm-compat4 amd64 1.18.1-4 [44.1 kB]
+#9 3.126 Get:5 http://archive.debian.org/debian buster/main amd64 libperl5.28 amd64 5.28.1-6+deb10u1 [3894 kB]
+#9 4.027 Get:6 http://archive.debian.org/debian buster/main amd64 perl amd64 5.28.1-6+deb10u1 [204 kB]
+#9 4.030 Get:7 http://archive.debian.org/debian buster/main amd64 liblocale-gettext-perl amd64 1.07-3+b4 [18.9 kB]
+#9 4.031 Get:8 http://archive.debian.org/debian-security buster/updates/main amd64 libudev1 amd64 241-7~deb10u10 [151 kB]
+#9 4.033 Get:9 http://archive.debian.org/debian-security buster/updates/main amd64 libtinfo6 amd64 6.1+20181013-2+deb10u5 [326 kB]
+#9 4.038 Get:10 http://archive.debian.org/debian-security buster/updates/main amd64 libncursesw6 amd64 6.1+20181013-2+deb10u5 [131 kB]
+#9 4.041 Get:11 http://archive.debian.org/debian-security buster/updates/main amd64 libtinfo5 amd64 6.1+20181013-2+deb10u5 [321 kB]
+#9 4.046 Get:12 http://archive.debian.org/debian buster/main amd64 netbase all 5.6 [19.4 kB]
+#9 4.046 Get:13 http://archive.debian.org/debian-security buster/updates/main amd64 bzip2 amd64 1.0.6-9.2~deb10u2 [48.5 kB]
+#9 4.047 Get:14 http://archive.debian.org/debian buster/main amd64 libapparmor1 amd64 2.13.2-10 [94.7 kB]
+#9 4.049 Get:15 http://archive.debian.org/debian-security buster/updates/main amd64 libdbus-1-3 amd64 1.12.28-0+deb10u1 [219 kB]
+#9 4.053 Get:16 http://archive.debian.org/debian-security buster/updates/main amd64 libexpat1 amd64 2.2.6-2+deb10u7 [108 kB]
+#9 4.055 Get:17 http://archive.debian.org/debian-security buster/updates/main amd64 dbus amd64 1.12.28-0+deb10u1 [240 kB]
+#9 4.059 Get:18 http://archive.debian.org/debian buster/main amd64 libmagic-mgc amd64 1:5.35-4+deb10u2 [242 kB]
+#9 4.063 Get:19 http://archive.debian.org/debian buster/main amd64 libmagic1 amd64 1:5.35-4+deb10u2 [118 kB]
+#9 4.065 Get:20 http://archive.debian.org/debian buster/main amd64 file amd64 1:5.35-4+deb10u2 [66.4 kB]
+#9 4.067 Get:21 http://archive.debian.org/debian buster/main amd64 gettext-base amd64 0.19.8.1-9 [123 kB]
+#9 4.069 Get:22 http://archive.debian.org/debian-security buster/updates/main amd64 krb5-locales all 1.17-3+deb10u6 [95.8 kB]
+#9 4.070 Get:23 http://archive.debian.org/debian-security buster/updates/main amd64 less amd64 487-0.1+deb10u1 [129 kB]
+#9 4.072 Get:24 http://archive.debian.org/debian buster/main amd64 libkeyutils1 amd64 1.6-6 [15.0 kB]
+#9 4.072 Get:25 http://archive.debian.org/debian-security buster/updates/main amd64 libkrb5support0 amd64 1.17-3+deb10u6 [66.1 kB]
+#9 4.073 Get:26 http://archive.debian.org/debian-security buster/updates/main amd64 libk5crypto3 amd64 1.17-3+deb10u6 [122 kB]
+#9 4.386 Get:27 http://archive.debian.org/debian-security buster/updates/main amd64 libkrb5-3 amd64 1.17-3+deb10u6 [369 kB]
+#9 4.390 Get:28 http://archive.debian.org/debian-security buster/updates/main amd64 libgssapi-krb5-2 amd64 1.17-3+deb10u6 [159 kB]
+#9 4.391 Get:29 http://archive.debian.org/debian-security buster/updates/main amd64 libsqlite3-0 amd64 3.27.2-3+deb10u2 [641 kB]
+#9 4.398 Get:30 http://archive.debian.org/debian buster/main amd64 libicu63 amd64 63.1-6+deb10u3 [8293 kB]
+#9 4.467 Get:31 http://archive.debian.org/debian-security buster/updates/main amd64 libxml2 amd64 2.9.4+dfsg1-7+deb10u6 [690 kB]
+#9 4.472 Get:32 http://archive.debian.org/debian buster/main amd64 manpages all 4.16-2 [1295 kB]
+#9 4.482 Get:33 http://archive.debian.org/debian buster/main amd64 libbsd0 amd64 0.9.1-2+deb10u1 [99.5 kB]
+#9 4.483 Get:34 http://archive.debian.org/debian buster/main amd64 libedit2 amd64 3.1-20181209-1 [94.0 kB]
+#9 4.484 Get:35 http://archive.debian.org/debian-security buster/updates/main amd64 openssh-client amd64 1:7.9p1-10+deb10u4 [785 kB]
+#9 4.490 Get:36 http://archive.debian.org/debian-security buster/updates/main amd64 libpcre2-8-0 amd64 10.32-5+deb10u1 [213 kB]
+#9 4.491 Get:37 http://archive.debian.org/debian buster/main amd64 libpsl5 amd64 0.20.2-2 [53.7 kB]
+#9 4.492 Get:38 http://archive.debian.org/debian buster/main amd64 wget amd64 1.20.1-1.1 [902 kB]
+#9 4.499 Get:39 http://archive.debian.org/debian buster/main amd64 xz-utils amd64 5.2.4-1+deb10u1 [183 kB]
+#9 4.500 Get:40 http://archive.debian.org/debian buster/main amd64 libsigsegv2 amd64 2.12-2 [32.8 kB]
+#9 4.501 Get:41 http://archive.debian.org/debian buster/main amd64 m4 amd64 1.4.18-2 [203 kB]
+#9 4.502 Get:42 http://archive.debian.org/debian buster/main amd64 autoconf all 2.69-11 [341 kB]
+#9 4.505 Get:43 http://archive.debian.org/debian buster/main amd64 autotools-dev all 20180224.1 [77.0 kB]
+#9 4.506 Get:44 http://archive.debian.org/debian buster/main amd64 automake all 1:1.16.1-4 [771 kB]
+#9 4.511 Get:45 http://archive.debian.org/debian buster/main amd64 autopoint all 0.19.8.1-9 [434 kB]
+#9 4.515 Get:46 http://archive.debian.org/debian buster/main amd64 binutils-common amd64 2.31.1-16 [2073 kB]
+#9 4.530 Get:47 http://archive.debian.org/debian buster/main amd64 libbinutils amd64 2.31.1-16 [478 kB]
+#9 4.533 Get:48 http://archive.debian.org/debian buster/main amd64 binutils-x86-64-linux-gnu amd64 2.31.1-16 [1823 kB]
+#9 4.547 Get:49 http://archive.debian.org/debian buster/main amd64 binutils amd64 2.31.1-16 [56.8 kB]
+#9 4.548 Get:50 http://archive.debian.org/debian buster/main amd64 libisl19 amd64 0.20-2 [587 kB]
+#9 4.552 Get:51 http://archive.debian.org/debian buster/main amd64 libmpfr6 amd64 4.0.2-1 [775 kB]
+#9 4.557 Get:52 http://archive.debian.org/debian buster/main amd64 libmpc3 amd64 1.1.0-1 [41.3 kB]
+#9 4.558 Get:53 http://archive.debian.org/debian buster/main amd64 cpp-8 amd64 8.3.0-6 [8914 kB]
+#9 4.621 Get:54 http://archive.debian.org/debian buster/main amd64 cpp amd64 4:8.3.0-1 [19.4 kB]
+#9 4.621 Get:55 http://archive.debian.org/debian buster/main amd64 libcc1-0 amd64 8.3.0-6 [46.6 kB]
+#9 4.621 Get:56 http://archive.debian.org/debian buster/main amd64 libgomp1 amd64 8.3.0-6 [75.8 kB]
+#9 4.622 Get:57 http://archive.debian.org/debian buster/main amd64 libitm1 amd64 8.3.0-6 [27.7 kB]
+#9 4.622 Get:58 http://archive.debian.org/debian buster/main amd64 libatomic1 amd64 8.3.0-6 [9032 B]
+#9 4.623 Get:59 http://archive.debian.org/debian buster/main amd64 libasan5 amd64 8.3.0-6 [362 kB]
+#9 4.626 Get:60 http://archive.debian.org/debian buster/main amd64 liblsan0 amd64 8.3.0-6 [131 kB]
+#9 4.627 Get:61 http://archive.debian.org/debian buster/main amd64 libtsan0 amd64 8.3.0-6 [283 kB]
+#9 4.629 Get:62 http://archive.debian.org/debian buster/main amd64 libubsan1 amd64 8.3.0-6 [120 kB]
+#9 4.631 Get:63 http://archive.debian.org/debian buster/main amd64 libmpx2 amd64 8.3.0-6 [11.4 kB]
+#9 4.632 Get:64 http://archive.debian.org/debian buster/main amd64 libquadmath0 amd64 8.3.0-6 [133 kB]
+#9 4.634 Get:65 http://archive.debian.org/debian buster/main amd64 libgcc-8-dev amd64 8.3.0-6 [2298 kB]
+#9 4.650 Get:66 http://archive.debian.org/debian buster/main amd64 gcc-8 amd64 8.3.0-6 [9452 kB]
+#9 4.714 Get:67 http://archive.debian.org/debian buster/main amd64 gcc amd64 4:8.3.0-1 [5196 B]
+#9 4.714 Get:68 http://archive.debian.org/debian-security buster/updates/main amd64 libglib2.0-0 amd64 2.58.3-2+deb10u6 [1263 kB]
+#9 4.724 Get:69 http://archive.debian.org/debian buster/main amd64 libcroco3 amd64 0.6.12-3 [145 kB]
+#9 4.725 Get:70 http://archive.debian.org/debian-security buster/updates/main amd64 libncurses6 amd64 6.1+20181013-2+deb10u5 [102 kB]
+#9 4.726 Get:71 http://archive.debian.org/debian buster/main amd64 gettext amd64 0.19.8.1-9 [1303 kB]
+#9 4.735 Get:72 http://archive.debian.org/debian buster/main amd64 libsasl2-modules-db amd64 2.1.27+dfsg-1+deb10u2 [69.2 kB]
+#9 4.736 Get:73 http://archive.debian.org/debian buster/main amd64 libsasl2-2 amd64 2.1.27+dfsg-1+deb10u2 [106 kB]
+#9 4.736 Get:74 http://archive.debian.org/debian buster/main amd64 libldap-common all 2.4.47+dfsg-3+deb10u7 [90.1 kB]
+#9 4.737 Get:75 http://archive.debian.org/debian buster/main amd64 libldap-2.4-2 amd64 2.4.47+dfsg-3+deb10u7 [224 kB]
+#9 4.739 Get:76 http://archive.debian.org/debian-security buster/updates/main amd64 libnghttp2-14 amd64 1.36.0-2+deb10u3 [86.1 kB]
+#9 4.740 Get:77 http://archive.debian.org/debian buster/main amd64 librtmp1 amd64 2.4+20151223.gitfa8646d.1-2 [60.5 kB]
+#9 4.741 Get:78 http://archive.debian.org/debian-security buster/updates/main amd64 libssh2-1 amd64 1.8.0-2.1+deb10u1 [141 kB]
+#9 4.742 Get:79 http://archive.debian.org/debian-security buster/updates/main amd64 libcurl3-gnutls amd64 7.64.0-4+deb10u9 [333 kB]
+#9 4.745 Get:80 http://archive.debian.org/debian buster/main amd64 liberror-perl all 0.17027-2 [30.9 kB]
+#9 4.745 Get:81 http://archive.debian.org/debian-security buster/updates/main amd64 git-man all 1:2.20.1-2+deb10u9 [1624 kB]
+#9 4.757 Get:82 http://archive.debian.org/debian-security buster/updates/main amd64 git amd64 1:2.20.1-2+deb10u9 [5667 kB]
+#9 4.796 Get:83 http://archive.debian.org/debian-security buster/updates/main amd64 libc-dev-bin amd64 2.28-10+deb10u4 [276 kB]
+#9 4.798 Get:84 http://archive.debian.org/debian-security buster/updates/main amd64 linux-libc-dev amd64 4.19.316-1 [1625 kB]
+#9 4.810 Get:85 http://archive.debian.org/debian-security buster/updates/main amd64 libc6-dev amd64 2.28-10+deb10u4 [2694 kB]
+#9 4.829 Get:86 http://archive.debian.org/debian buster/main amd64 libdpkg-perl all 1.19.8 [1415 kB]
+#9 4.838 Get:87 http://archive.debian.org/debian buster/main amd64 libffi-dev amd64 3.2.1-9 [156 kB]
+#9 4.840 Get:88 http://archive.debian.org/debian buster/main amd64 libfile-fcntllock-perl amd64 0.22-3+b5 [35.4 kB]
+#9 4.840 Get:89 http://archive.debian.org/debian-security buster/updates/main amd64 libglib2.0-data all 2.58.3-2+deb10u6 [1112 kB]
+#9 4.848 Get:90 http://archive.debian.org/debian buster/main amd64 libgpm2 amd64 1.20.7-5 [35.1 kB]
+#9 4.849 Get:91 http://archive.debian.org/debian buster/main amd64 lsb-base all 10.2019051400 [28.4 kB]
+#9 4.849 Get:92 http://archive.debian.org/debian buster/main amd64 x11-common all 1:7.7+19 [251 kB]
+#9 4.851 Get:93 http://archive.debian.org/debian buster/main amd64 libice6 amd64 2:1.0.9-2 [58.7 kB]
+#9 4.851 Get:94 http://archive.debian.org/debian buster/main amd64 libjpeg62-turbo amd64 1:1.5.2-2+deb10u1 [133 kB]
+#9 4.853 Get:95 http://archive.debian.org/debian buster/main amd64 libltdl7 amd64 2.4.6-9 [390 kB]
+#9 4.856 Get:96 http://archive.debian.org/debian buster/main amd64 libltdl-dev amd64 2.4.6-9 [162 kB]
+#9 4.857 Get:97 http://archive.debian.org/debian-security buster/updates/main amd64 libncurses-dev amd64 6.1+20181013-2+deb10u5 [333 kB]
+#9 4.859 Get:98 http://archive.debian.org/debian-security buster/updates/main amd64 libncurses5 amd64 6.1+20181013-2+deb10u5 [96.1 kB]
+#9 4.884 Get:99 http://archive.debian.org/debian-security buster/updates/main amd64 libncurses5-dev amd64 6.1+20181013-2+deb10u5 [948 B]
+#9 4.884 Get:100 http://archive.debian.org/debian buster/main amd64 libpthread-stubs0-dev amd64 0.4-1 [5344 B]
+#9 4.885 Get:101 http://archive.debian.org/debian buster/main amd64 libsasl2-modules amd64 2.1.27+dfsg-1+deb10u2 [104 kB]
+#9 4.888 Get:102 http://archive.debian.org/debian buster/main amd64 libsm6 amd64 2:1.2.3-1 [35.1 kB]
+#9 4.889 Get:103 http://archive.debian.org/debian-security buster/updates/main amd64 libsqlite3-dev amd64 3.27.2-3+deb10u2 [787 kB]
+#9 4.895 Get:104 http://archive.debian.org/debian-security buster/updates/main amd64 libssl-dev amd64 1.1.1n-0+deb10u6 [1810 kB]
+#9 4.909 Get:105 http://archive.debian.org/debian-security buster/updates/main amd64 libtinfo-dev amd64 6.1+20181013-2+deb10u5 [940 B]
+#9 4.909 Get:106 http://archive.debian.org/debian buster/main amd64 libtool all 2.4.6-9 [547 kB]
+#9 4.913 Get:107 http://archive.debian.org/debian-security buster/updates/main amd64 libudev-dev amd64 241-7~deb10u10 [110 kB]
+#9 4.914 Get:108 http://archive.debian.org/debian buster/main amd64 libusb-1.0-0 amd64 2:1.0.22-2 [55.3 kB]
+#9 4.915 Get:109 http://archive.debian.org/debian buster/main amd64 libusb-1.0-0-dev amd64 2:1.0.22-2 [74.5 kB]
+#9 4.916 Get:110 http://archive.debian.org/debian buster/main amd64 libusb-1.0-doc all 2:1.0.22-2 [182 kB]
+#9 4.918 Get:111 http://archive.debian.org/debian buster/main amd64 libv4lconvert0 amd64 1.16.3-3 [130 kB]
+#9 4.919 Get:112 http://archive.debian.org/debian buster/main amd64 libv4l-0 amd64 1.16.3-3 [95.3 kB]
+#9 4.920 Get:113 http://archive.debian.org/debian buster/main amd64 libxau6 amd64 1:1.0.8-1+b2 [19.9 kB]
+#9 4.920 Get:114 http://archive.debian.org/debian buster/main amd64 libxdmcp6 amd64 1:1.1.2-3 [26.3 kB]
+#9 4.920 Get:115 http://archive.debian.org/debian buster/main amd64 libxcb1 amd64 1.13.1-2 [137 kB]
+#9 4.921 Get:116 http://archive.debian.org/debian-security buster/updates/main amd64 libx11-data all 2:1.6.7-1+deb10u4 [299 kB]
+#9 4.924 Get:117 http://archive.debian.org/debian-security buster/updates/main amd64 libx11-6 amd64 2:1.6.7-1+deb10u4 [758 kB]
+#9 4.930 Get:118 http://archive.debian.org/debian-security buster/updates/main amd64 libx11-xcb1 amd64 2:1.6.7-1+deb10u4 [191 kB]
+#9 4.932 Get:119 http://archive.debian.org/debian buster/main amd64 xorg-sgml-doctools all 1:1.11-1 [21.9 kB]
+#9 4.932 Get:120 http://archive.debian.org/debian buster/main amd64 x11proto-dev all 2018.4-4 [251 kB]
+#9 4.991 Get:121 http://archive.debian.org/debian buster/main amd64 x11proto-core-dev all 2018.4-4 [3128 B]
+#9 4.992 Get:122 http://archive.debian.org/debian buster/main amd64 libxau-dev amd64 1:1.0.8-1+b2 [23.1 kB]
+#9 5.312 Get:123 http://archive.debian.org/debian buster/main amd64 libxcb-icccm4 amd64 0.4.1-1.1 [27.4 kB]
+#9 5.313 Get:124 http://archive.debian.org/debian buster/main amd64 libxcb-shm0 amd64 1.13.1-2 [99.2 kB]
+#9 5.315 Get:125 http://archive.debian.org/debian buster/main amd64 libxcb-util0 amd64 0.3.8-3+b2 [23.0 kB]
+#9 5.475 Get:126 http://archive.debian.org/debian buster/main amd64 libxcb-image0 amd64 0.4.0-1+b2 [24.4 kB]
+#9 5.476 Get:127 http://archive.debian.org/debian buster/main amd64 libxcb-keysyms1 amd64 0.4.0-1+b2 [16.4 kB]
+#9 5.477 Get:128 http://archive.debian.org/debian buster/main amd64 libxcb-randr0 amd64 1.13.1-2 [110 kB]
+#9 5.479 Get:129 http://archive.debian.org/debian buster/main amd64 libxcb-render0 amd64 1.13.1-2 [109 kB]
+#9 5.482 Get:130 http://archive.debian.org/debian buster/main amd64 libxcb-render-util0 amd64 0.3.9-1+b1 [18.3 kB]
+#9 5.482 Get:131 http://archive.debian.org/debian buster/main amd64 libxcb-shape0 amd64 1.13.1-2 [99.5 kB]
+#9 5.485 Get:132 http://archive.debian.org/debian buster/main amd64 libxcb-sync1 amd64 1.13.1-2 [103 kB]
+#9 5.487 Get:133 http://archive.debian.org/debian buster/main amd64 libxcb-xfixes0 amd64 1.13.1-2 [103 kB]
+#9 5.804 Get:134 http://archive.debian.org/debian buster/main amd64 libxcb-xinerama0 amd64 1.13.1-2 [98.9 kB]
+#9 5.805 Get:135 http://archive.debian.org/debian buster/main amd64 libxcb-xkb1 amd64 1.13.1-2 [123 kB]
+#9 5.965 Get:136 http://archive.debian.org/debian buster/main amd64 libxdmcp-dev amd64 1:1.1.2-3 [42.2 kB]
+#9 5.968 Get:137 http://archive.debian.org/debian buster/main amd64 libxcb1-dev amd64 1.13.1-2 [174 kB]
+#9 5.979 Get:138 http://archive.debian.org/debian buster/main amd64 libxext6 amd64 2:1.3.3-1+b2 [52.5 kB]
+#9 5.980 Get:139 http://archive.debian.org/debian buster/main amd64 xkb-data all 2.26-2 [681 kB]
+#9 5.988 Get:140 http://archive.debian.org/debian buster/main amd64 libxkbcommon0 amd64 0.8.2-1 [123 kB]
+#9 5.991 Get:141 http://archive.debian.org/debian buster/main amd64 libxkbcommon-x11-0 amd64 0.8.2-1 [39.4 kB]
+#9 5.992 Get:142 http://archive.debian.org/debian buster/main amd64 libxmuu1 amd64 2:1.1.2-2+b3 [23.9 kB]
+#9 5.997 Get:143 http://archive.debian.org/debian-security buster/updates/main amd64 libzbar0 amd64 0.22-1+deb10u1 [135 kB]
+#9 5.999 Get:144 http://archive.debian.org/debian buster/main amd64 make amd64 4.2.1-1.2 [341 kB]
+#9 6.004 Get:145 http://archive.debian.org/debian buster/main amd64 manpages-dev all 4.16-2 [2232 kB]
+#9 6.026 Get:146 http://archive.debian.org/debian buster/main amd64 patch amd64 2.7.6-3+deb10u1 [126 kB]
+#9 6.027 Get:147 http://archive.debian.org/debian buster/main amd64 pkg-config amd64 0.29-6 [63.5 kB]
+#9 6.028 Get:148 http://archive.debian.org/debian buster/main amd64 publicsuffix all 20220811.1734-0+deb10u1 [127 kB]
+#9 6.030 Get:149 http://archive.debian.org/debian buster/main amd64 shared-mime-info amd64 1.10-1 [766 kB]
+#9 6.038 Get:150 http://archive.debian.org/debian-security buster/updates/main amd64 sudo amd64 1.8.27-1+deb10u6 [1244 kB]
+#9 6.050 Get:151 http://archive.debian.org/debian buster/main amd64 xauth amd64 1:1.0.10-1 [40.3 kB]
+#9 6.050 Get:152 http://archive.debian.org/debian buster/main amd64 xdg-user-dirs amd64 0.17-2 [53.8 kB]
+#9 6.051 Get:153 http://archive.debian.org/debian buster/main amd64 xutils-dev amd64 1:7.7+5+b1 [242 kB]
+#9 6.053 Get:154 http://archive.debian.org/debian-security buster/updates/main amd64 zlib1g-dev amd64 1:1.2.11.dfsg-1+deb10u2 [210 kB]
+#9 6.234 debconf: delaying package configuration, since apt-utils is not installed
+#9 6.261 Fetched 89.4 MB in 3s (26.8 MB/s)
+#9 6.281 Selecting previously unselected package perl-modules-5.28.
+#9 6.281 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 7004 files and directories currently installed.)
+#9 6.289 Preparing to unpack .../perl-modules-5.28_5.28.1-6+deb10u1_all.deb ...
+#9 6.291 Unpacking perl-modules-5.28 (5.28.1-6+deb10u1) ...
+#9 6.654 Preparing to unpack .../libc6_2.28-10+deb10u4_amd64.deb ...
+#9 6.812 Unpacking libc6:amd64 (2.28-10+deb10u4) over (2.28-10+deb10u2) ...
+#9 7.535 Setting up libc6:amd64 (2.28-10+deb10u4) ...
+#9 8.674 Selecting previously unselected package libgdbm6:amd64.
+#9 8.674 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 8375 files and directories currently installed.)
+#9 8.680 Preparing to unpack .../0-libgdbm6_1.18.1-4_amd64.deb ...
+#9 8.682 Unpacking libgdbm6:amd64 (1.18.1-4) ...
+#9 8.715 Selecting previously unselected package libgdbm-compat4:amd64.
+#9 8.716 Preparing to unpack .../1-libgdbm-compat4_1.18.1-4_amd64.deb ...
+#9 8.719 Unpacking libgdbm-compat4:amd64 (1.18.1-4) ...
+#9 8.747 Selecting previously unselected package libperl5.28:amd64.
+#9 8.748 Preparing to unpack .../2-libperl5.28_5.28.1-6+deb10u1_amd64.deb ...
+#9 8.751 Unpacking libperl5.28:amd64 (5.28.1-6+deb10u1) ...
+#9 9.082 Selecting previously unselected package perl.
+#9 9.084 Preparing to unpack .../3-perl_5.28.1-6+deb10u1_amd64.deb ...
+#9 9.093 Unpacking perl (5.28.1-6+deb10u1) ...
+#9 9.131 Selecting previously unselected package liblocale-gettext-perl.
+#9 9.132 Preparing to unpack .../4-liblocale-gettext-perl_1.07-3+b4_amd64.deb ...
+#9 9.135 Unpacking liblocale-gettext-perl (1.07-3+b4) ...
+#9 9.166 Preparing to unpack .../5-libudev1_241-7~deb10u10_amd64.deb ...
+#9 9.173 Unpacking libudev1:amd64 (241-7~deb10u10) over (241-7~deb10u8) ...
+#9 9.227 Setting up libudev1:amd64 (241-7~deb10u10) ...
+#9 9.269 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 8965 files and directories currently installed.)
+#9 9.275 Preparing to unpack .../libtinfo6_6.1+20181013-2+deb10u5_amd64.deb ...
+#9 9.281 Unpacking libtinfo6:amd64 (6.1+20181013-2+deb10u5) over (6.1+20181013-2+deb10u3) ...
+#9 9.325 Setting up libtinfo6:amd64 (6.1+20181013-2+deb10u5) ...
+#9 9.355 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 8965 files and directories currently installed.)
+#9 9.361 Preparing to unpack .../libncursesw6_6.1+20181013-2+deb10u5_amd64.deb ...
+#9 9.368 Unpacking libncursesw6:amd64 (6.1+20181013-2+deb10u5) over (6.1+20181013-2+deb10u3) ...
+#9 9.408 Setting up libncursesw6:amd64 (6.1+20181013-2+deb10u5) ...
+#9 9.446 Selecting previously unselected package libtinfo5:amd64.
+#9 9.446 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 8965 files and directories currently installed.)
+#9 9.452 Preparing to unpack .../000-libtinfo5_6.1+20181013-2+deb10u5_amd64.deb ...
+#9 9.455 Unpacking libtinfo5:amd64 (6.1+20181013-2+deb10u5) ...
+#9 9.491 Selecting previously unselected package netbase.
+#9 9.492 Preparing to unpack .../001-netbase_5.6_all.deb ...
+#9 9.495 Unpacking netbase (5.6) ...
+#9 9.519 Selecting previously unselected package bzip2.
+#9 9.521 Preparing to unpack .../002-bzip2_1.0.6-9.2~deb10u2_amd64.deb ...
+#9 9.523 Unpacking bzip2 (1.0.6-9.2~deb10u2) ...
+#9 9.555 Selecting previously unselected package libapparmor1:amd64.
+#9 9.556 Preparing to unpack .../003-libapparmor1_2.13.2-10_amd64.deb ...
+#9 9.559 Unpacking libapparmor1:amd64 (2.13.2-10) ...
+#9 9.595 Selecting previously unselected package libdbus-1-3:amd64.
+#9 9.597 Preparing to unpack .../004-libdbus-1-3_1.12.28-0+deb10u1_amd64.deb ...
+#9 9.600 Unpacking libdbus-1-3:amd64 (1.12.28-0+deb10u1) ...
+#9 9.643 Selecting previously unselected package libexpat1:amd64.
+#9 9.645 Preparing to unpack .../005-libexpat1_2.2.6-2+deb10u7_amd64.deb ...
+#9 9.648 Unpacking libexpat1:amd64 (2.2.6-2+deb10u7) ...
+#9 9.695 Selecting previously unselected package dbus.
+#9 9.696 Preparing to unpack .../006-dbus_1.12.28-0+deb10u1_amd64.deb ...
+#9 9.710 Unpacking dbus (1.12.28-0+deb10u1) ...
+#9 9.759 Selecting previously unselected package libmagic-mgc.
+#9 9.761 Preparing to unpack .../007-libmagic-mgc_1%3a5.35-4+deb10u2_amd64.deb ...
+#9 9.763 Unpacking libmagic-mgc (1:5.35-4+deb10u2) ...
+#9 9.824 Selecting previously unselected package libmagic1:amd64.
+#9 9.825 Preparing to unpack .../008-libmagic1_1%3a5.35-4+deb10u2_amd64.deb ...
+#9 9.828 Unpacking libmagic1:amd64 (1:5.35-4+deb10u2) ...
+#9 9.858 Selecting previously unselected package file.
+#9 9.859 Preparing to unpack .../009-file_1%3a5.35-4+deb10u2_amd64.deb ...
+#9 9.861 Unpacking file (1:5.35-4+deb10u2) ...
+#9 9.892 Selecting previously unselected package gettext-base.
+#9 9.895 Preparing to unpack .../010-gettext-base_0.19.8.1-9_amd64.deb ...
+#9 9.898 Unpacking gettext-base (0.19.8.1-9) ...
+#9 10.01 Selecting previously unselected package krb5-locales.
+#9 10.01 Preparing to unpack .../011-krb5-locales_1.17-3+deb10u6_all.deb ...
+#9 10.01 Unpacking krb5-locales (1.17-3+deb10u6) ...
+#9 10.04 Selecting previously unselected package less.
+#9 10.05 Preparing to unpack .../012-less_487-0.1+deb10u1_amd64.deb ...
+#9 10.05 Unpacking less (487-0.1+deb10u1) ...
+#9 10.08 Selecting previously unselected package libkeyutils1:amd64.
+#9 10.09 Preparing to unpack .../013-libkeyutils1_1.6-6_amd64.deb ...
+#9 10.09 Unpacking libkeyutils1:amd64 (1.6-6) ...
+#9 10.11 Selecting previously unselected package libkrb5support0:amd64.
+#9 10.11 Preparing to unpack .../014-libkrb5support0_1.17-3+deb10u6_amd64.deb ...
+#9 10.12 Unpacking libkrb5support0:amd64 (1.17-3+deb10u6) ...
+#9 10.15 Selecting previously unselected package libk5crypto3:amd64.
+#9 10.15 Preparing to unpack .../015-libk5crypto3_1.17-3+deb10u6_amd64.deb ...
+#9 10.15 Unpacking libk5crypto3:amd64 (1.17-3+deb10u6) ...
+#9 10.18 Selecting previously unselected package libkrb5-3:amd64.
+#9 10.19 Preparing to unpack .../016-libkrb5-3_1.17-3+deb10u6_amd64.deb ...
+#9 10.19 Unpacking libkrb5-3:amd64 (1.17-3+deb10u6) ...
+#9 10.25 Selecting previously unselected package libgssapi-krb5-2:amd64.
+#9 10.25 Preparing to unpack .../017-libgssapi-krb5-2_1.17-3+deb10u6_amd64.deb ...
+#9 10.25 Unpacking libgssapi-krb5-2:amd64 (1.17-3+deb10u6) ...
+#9 10.29 Selecting previously unselected package libsqlite3-0:amd64.
+#9 10.30 Preparing to unpack .../018-libsqlite3-0_3.27.2-3+deb10u2_amd64.deb ...
+#9 10.30 Unpacking libsqlite3-0:amd64 (3.27.2-3+deb10u2) ...
+#9 10.37 Selecting previously unselected package libicu63:amd64.
+#9 10.37 Preparing to unpack .../019-libicu63_63.1-6+deb10u3_amd64.deb ...
+#9 10.37 Unpacking libicu63:amd64 (63.1-6+deb10u3) ...
+#9 11.00 Selecting previously unselected package libxml2:amd64.
+#9 11.00 Preparing to unpack .../020-libxml2_2.9.4+dfsg1-7+deb10u6_amd64.deb ...
+#9 11.00 Unpacking libxml2:amd64 (2.9.4+dfsg1-7+deb10u6) ...
+#9 11.07 Selecting previously unselected package manpages.
+#9 11.07 Preparing to unpack .../021-manpages_4.16-2_all.deb ...
+#9 11.07 Unpacking manpages (4.16-2) ...
+#9 11.18 Selecting previously unselected package libbsd0:amd64.
+#9 11.18 Preparing to unpack .../022-libbsd0_0.9.1-2+deb10u1_amd64.deb ...
+#9 11.18 Unpacking libbsd0:amd64 (0.9.1-2+deb10u1) ...
+#9 11.22 Selecting previously unselected package libedit2:amd64.
+#9 11.22 Preparing to unpack .../023-libedit2_3.1-20181209-1_amd64.deb ...
+#9 11.22 Unpacking libedit2:amd64 (3.1-20181209-1) ...
+#9 11.25 Selecting previously unselected package openssh-client.
+#9 11.26 Preparing to unpack .../024-openssh-client_1%3a7.9p1-10+deb10u4_amd64.deb ...
+#9 11.26 Unpacking openssh-client (1:7.9p1-10+deb10u4) ...
+#9 11.35 Selecting previously unselected package libpcre2-8-0:amd64.
+#9 11.35 Preparing to unpack .../025-libpcre2-8-0_10.32-5+deb10u1_amd64.deb ...
+#9 11.35 Unpacking libpcre2-8-0:amd64 (10.32-5+deb10u1) ...
+#9 11.40 Selecting previously unselected package libpsl5:amd64.
+#9 11.40 Preparing to unpack .../026-libpsl5_0.20.2-2_amd64.deb ...
+#9 11.40 Unpacking libpsl5:amd64 (0.20.2-2) ...
+#9 11.43 Selecting previously unselected package wget.
+#9 11.43 Preparing to unpack .../027-wget_1.20.1-1.1_amd64.deb ...
+#9 11.43 Unpacking wget (1.20.1-1.1) ...
+#9 11.53 Selecting previously unselected package xz-utils.
+#9 11.53 Preparing to unpack .../028-xz-utils_5.2.4-1+deb10u1_amd64.deb ...
+#9 11.53 Unpacking xz-utils (5.2.4-1+deb10u1) ...
+#9 11.58 Selecting previously unselected package libsigsegv2:amd64.
+#9 11.59 Preparing to unpack .../029-libsigsegv2_2.12-2_amd64.deb ...
+#9 11.59 Unpacking libsigsegv2:amd64 (2.12-2) ...
+#9 11.61 Selecting previously unselected package m4.
+#9 11.61 Preparing to unpack .../030-m4_1.4.18-2_amd64.deb ...
+#9 11.61 Unpacking m4 (1.4.18-2) ...
+#9 11.66 Selecting previously unselected package autoconf.
+#9 11.66 Preparing to unpack .../031-autoconf_2.69-11_all.deb ...
+#9 11.66 Unpacking autoconf (2.69-11) ...
+#9 11.71 Selecting previously unselected package autotools-dev.
+#9 11.72 Preparing to unpack .../032-autotools-dev_20180224.1_all.deb ...
+#9 11.72 Unpacking autotools-dev (20180224.1) ...
+#9 11.75 Selecting previously unselected package automake.
+#9 11.75 Preparing to unpack .../033-automake_1%3a1.16.1-4_all.deb ...
+#9 11.76 Unpacking automake (1:1.16.1-4) ...
+#9 11.83 Selecting previously unselected package autopoint.
+#9 11.83 Preparing to unpack .../034-autopoint_0.19.8.1-9_all.deb ...
+#9 11.83 Unpacking autopoint (0.19.8.1-9) ...
+#9 11.86 Selecting previously unselected package binutils-common:amd64.
+#9 11.86 Preparing to unpack .../035-binutils-common_2.31.1-16_amd64.deb ...
+#9 11.86 Unpacking binutils-common:amd64 (2.31.1-16) ...
+#9 12.07 Selecting previously unselected package libbinutils:amd64.
+#9 12.07 Preparing to unpack .../036-libbinutils_2.31.1-16_amd64.deb ...
+#9 12.07 Unpacking libbinutils:amd64 (2.31.1-16) ...
+#9 12.13 Selecting previously unselected package binutils-x86-64-linux-gnu.
+#9 12.13 Preparing to unpack .../037-binutils-x86-64-linux-gnu_2.31.1-16_amd64.deb ...
+#9 12.13 Unpacking binutils-x86-64-linux-gnu (2.31.1-16) ...
+#9 12.33 Selecting previously unselected package binutils.
+#9 12.34 Preparing to unpack .../038-binutils_2.31.1-16_amd64.deb ...
+#9 12.34 Unpacking binutils (2.31.1-16) ...
+#9 12.37 Selecting previously unselected package libisl19:amd64.
+#9 12.37 Preparing to unpack .../039-libisl19_0.20-2_amd64.deb ...
+#9 12.37 Unpacking libisl19:amd64 (0.20-2) ...
+#9 12.45 Selecting previously unselected package libmpfr6:amd64.
+#9 12.45 Preparing to unpack .../040-libmpfr6_4.0.2-1_amd64.deb ...
+#9 12.45 Unpacking libmpfr6:amd64 (4.0.2-1) ...
+#9 12.49 Selecting previously unselected package libmpc3:amd64.
+#9 12.50 Preparing to unpack .../041-libmpc3_1.1.0-1_amd64.deb ...
+#9 12.50 Unpacking libmpc3:amd64 (1.1.0-1) ...
+#9 12.52 Selecting previously unselected package cpp-8.
+#9 12.53 Preparing to unpack .../042-cpp-8_8.3.0-6_amd64.deb ...
+#9 12.53 Unpacking cpp-8 (8.3.0-6) ...
+#9 13.17 Selecting previously unselected package cpp.
+#9 13.17 Preparing to unpack .../043-cpp_4%3a8.3.0-1_amd64.deb ...
+#9 13.17 Unpacking cpp (4:8.3.0-1) ...
+#9 13.20 Selecting previously unselected package libcc1-0:amd64.
+#9 13.20 Preparing to unpack .../044-libcc1-0_8.3.0-6_amd64.deb ...
+#9 13.20 Unpacking libcc1-0:amd64 (8.3.0-6) ...
+#9 13.23 Selecting previously unselected package libgomp1:amd64.
+#9 13.24 Preparing to unpack .../045-libgomp1_8.3.0-6_amd64.deb ...
+#9 13.24 Unpacking libgomp1:amd64 (8.3.0-6) ...
+#9 13.27 Selecting previously unselected package libitm1:amd64.
+#9 13.27 Preparing to unpack .../046-libitm1_8.3.0-6_amd64.deb ...
+#9 13.27 Unpacking libitm1:amd64 (8.3.0-6) ...
+#9 13.30 Selecting previously unselected package libatomic1:amd64.
+#9 13.30 Preparing to unpack .../047-libatomic1_8.3.0-6_amd64.deb ...
+#9 13.31 Unpacking libatomic1:amd64 (8.3.0-6) ...
+#9 13.33 Selecting previously unselected package libasan5:amd64.
+#9 13.33 Preparing to unpack .../048-libasan5_8.3.0-6_amd64.deb ...
+#9 13.34 Unpacking libasan5:amd64 (8.3.0-6) ...
+#9 13.39 Selecting previously unselected package liblsan0:amd64.
+#9 13.40 Preparing to unpack .../049-liblsan0_8.3.0-6_amd64.deb ...
+#9 13.40 Unpacking liblsan0:amd64 (8.3.0-6) ...
+#9 13.43 Selecting previously unselected package libtsan0:amd64.
+#9 13.44 Preparing to unpack .../050-libtsan0_8.3.0-6_amd64.deb ...
+#9 13.44 Unpacking libtsan0:amd64 (8.3.0-6) ...
+#9 13.49 Selecting previously unselected package libubsan1:amd64.
+#9 13.49 Preparing to unpack .../051-libubsan1_8.3.0-6_amd64.deb ...
+#9 13.50 Unpacking libubsan1:amd64 (8.3.0-6) ...
+#9 13.53 Selecting previously unselected package libmpx2:amd64.
+#9 13.53 Preparing to unpack .../052-libmpx2_8.3.0-6_amd64.deb ...
+#9 13.53 Unpacking libmpx2:amd64 (8.3.0-6) ...
+#9 13.56 Selecting previously unselected package libquadmath0:amd64.
+#9 13.56 Preparing to unpack .../053-libquadmath0_8.3.0-6_amd64.deb ...
+#9 13.57 Unpacking libquadmath0:amd64 (8.3.0-6) ...
+#9 13.61 Selecting previously unselected package libgcc-8-dev:amd64.
+#9 13.61 Preparing to unpack .../054-libgcc-8-dev_8.3.0-6_amd64.deb ...
+#9 13.61 Unpacking libgcc-8-dev:amd64 (8.3.0-6) ...
+#9 13.80 Selecting previously unselected package gcc-8.
+#9 13.81 Preparing to unpack .../055-gcc-8_8.3.0-6_amd64.deb ...
+#9 13.81 Unpacking gcc-8 (8.3.0-6) ...
+#9 14.50 Selecting previously unselected package gcc.
+#9 14.50 Preparing to unpack .../056-gcc_4%3a8.3.0-1_amd64.deb ...
+#9 14.50 Unpacking gcc (4:8.3.0-1) ...
+#9 14.54 Selecting previously unselected package libglib2.0-0:amd64.
+#9 14.54 Preparing to unpack .../057-libglib2.0-0_2.58.3-2+deb10u6_amd64.deb ...
+#9 14.54 Unpacking libglib2.0-0:amd64 (2.58.3-2+deb10u6) ...
+#9 14.67 Selecting previously unselected package libcroco3:amd64.
+#9 14.68 Preparing to unpack .../058-libcroco3_0.6.12-3_amd64.deb ...
+#9 14.68 Unpacking libcroco3:amd64 (0.6.12-3) ...
+#9 14.72 Selecting previously unselected package libncurses6:amd64.
+#9 14.72 Preparing to unpack .../059-libncurses6_6.1+20181013-2+deb10u5_amd64.deb ...
+#9 14.72 Unpacking libncurses6:amd64 (6.1+20181013-2+deb10u5) ...
+#9 14.75 Selecting previously unselected package gettext.
+#9 14.75 Preparing to unpack .../060-gettext_0.19.8.1-9_amd64.deb ...
+#9 14.76 Unpacking gettext (0.19.8.1-9) ...
+#9 14.89 Selecting previously unselected package libsasl2-modules-db:amd64.
+#9 14.89 Preparing to unpack .../061-libsasl2-modules-db_2.1.27+dfsg-1+deb10u2_amd64.deb ...
+#9 14.89 Unpacking libsasl2-modules-db:amd64 (2.1.27+dfsg-1+deb10u2) ...
+#9 14.92 Selecting previously unselected package libsasl2-2:amd64.
+#9 14.92 Preparing to unpack .../062-libsasl2-2_2.1.27+dfsg-1+deb10u2_amd64.deb ...
+#9 14.93 Unpacking libsasl2-2:amd64 (2.1.27+dfsg-1+deb10u2) ...
+#9 14.96 Selecting previously unselected package libldap-common.
+#9 14.96 Preparing to unpack .../063-libldap-common_2.4.47+dfsg-3+deb10u7_all.deb ...
+#9 14.96 Unpacking libldap-common (2.4.47+dfsg-3+deb10u7) ...
+#9 15.00 Selecting previously unselected package libldap-2.4-2:amd64.
+#9 15.00 Preparing to unpack .../064-libldap-2.4-2_2.4.47+dfsg-3+deb10u7_amd64.deb ...
+#9 15.00 Unpacking libldap-2.4-2:amd64 (2.4.47+dfsg-3+deb10u7) ...
+#9 15.05 Selecting previously unselected package libnghttp2-14:amd64.
+#9 15.05 Preparing to unpack .../065-libnghttp2-14_1.36.0-2+deb10u3_amd64.deb ...
+#9 15.06 Unpacking libnghttp2-14:amd64 (1.36.0-2+deb10u3) ...
+#9 15.09 Selecting previously unselected package librtmp1:amd64.
+#9 15.09 Preparing to unpack .../066-librtmp1_2.4+20151223.gitfa8646d.1-2_amd64.deb ...
+#9 15.10 Unpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2) ...
+#9 15.13 Selecting previously unselected package libssh2-1:amd64.
+#9 15.13 Preparing to unpack .../067-libssh2-1_1.8.0-2.1+deb10u1_amd64.deb ...
+#9 15.14 Unpacking libssh2-1:amd64 (1.8.0-2.1+deb10u1) ...
+#9 15.18 Selecting previously unselected package libcurl3-gnutls:amd64.
+#9 15.18 Preparing to unpack .../068-libcurl3-gnutls_7.64.0-4+deb10u9_amd64.deb ...
+#9 15.18 Unpacking libcurl3-gnutls:amd64 (7.64.0-4+deb10u9) ...
+#9 15.23 Selecting previously unselected package liberror-perl.
+#9 15.24 Preparing to unpack .../069-liberror-perl_0.17027-2_all.deb ...
+#9 15.24 Unpacking liberror-perl (0.17027-2) ...
+#9 15.27 Selecting previously unselected package git-man.
+#9 15.28 Preparing to unpack .../070-git-man_1%3a2.20.1-2+deb10u9_all.deb ...
+#9 15.28 Unpacking git-man (1:2.20.1-2+deb10u9) ...
+#9 15.42 Selecting previously unselected package git.
+#9 15.42 Preparing to unpack .../071-git_1%3a2.20.1-2+deb10u9_amd64.deb ...
+#9 15.45 Unpacking git (1:2.20.1-2+deb10u9) ...
+#9 15.95 Selecting previously unselected package libc-dev-bin.
+#9 15.95 Preparing to unpack .../072-libc-dev-bin_2.28-10+deb10u4_amd64.deb ...
+#9 15.95 Unpacking libc-dev-bin (2.28-10+deb10u4) ...
+#9 15.99 Selecting previously unselected package linux-libc-dev:amd64.
+#9 15.99 Preparing to unpack .../073-linux-libc-dev_4.19.316-1_amd64.deb ...
+#9 15.99 Unpacking linux-libc-dev:amd64 (4.19.316-1) ...
+#9 16.15 Selecting previously unselected package libc6-dev:amd64.
+#9 16.15 Preparing to unpack .../074-libc6-dev_2.28-10+deb10u4_amd64.deb ...
+#9 16.15 Unpacking libc6-dev:amd64 (2.28-10+deb10u4) ...
+#9 16.42 Selecting previously unselected package libdpkg-perl.
+#9 16.43 Preparing to unpack .../075-libdpkg-perl_1.19.8_all.deb ...
+#9 16.43 Unpacking libdpkg-perl (1.19.8) ...
+#9 16.48 Selecting previously unselected package libffi-dev:amd64.
+#9 16.49 Preparing to unpack .../076-libffi-dev_3.2.1-9_amd64.deb ...
+#9 16.49 Unpacking libffi-dev:amd64 (3.2.1-9) ...
+#9 16.53 Selecting previously unselected package libfile-fcntllock-perl.
+#9 16.53 Preparing to unpack .../077-libfile-fcntllock-perl_0.22-3+b5_amd64.deb ...
+#9 16.53 Unpacking libfile-fcntllock-perl (0.22-3+b5) ...
+#9 16.55 Selecting previously unselected package libglib2.0-data.
+#9 16.55 Preparing to unpack .../078-libglib2.0-data_2.58.3-2+deb10u6_all.deb ...
+#9 16.56 Unpacking libglib2.0-data (2.58.3-2+deb10u6) ...
+#9 16.84 Selecting previously unselected package libgpm2:amd64.
+#9 16.85 Preparing to unpack .../079-libgpm2_1.20.7-5_amd64.deb ...
+#9 16.85 Unpacking libgpm2:amd64 (1.20.7-5) ...
+#9 16.88 Selecting previously unselected package lsb-base.
+#9 16.88 Preparing to unpack .../080-lsb-base_10.2019051400_all.deb ...
+#9 16.88 Unpacking lsb-base (10.2019051400) ...
+#9 16.91 Selecting previously unselected package x11-common.
+#9 16.92 Preparing to unpack .../081-x11-common_1%3a7.7+19_all.deb ...
+#9 16.92 Unpacking x11-common (1:7.7+19) ...
+#9 16.96 Selecting previously unselected package libice6:amd64.
+#9 16.96 Preparing to unpack .../082-libice6_2%3a1.0.9-2_amd64.deb ...
+#9 16.97 Unpacking libice6:amd64 (2:1.0.9-2) ...
+#9 17.00 Selecting previously unselected package libjpeg62-turbo:amd64.
+#9 17.00 Preparing to unpack .../083-libjpeg62-turbo_1%3a1.5.2-2+deb10u1_amd64.deb ...
+#9 17.00 Unpacking libjpeg62-turbo:amd64 (1:1.5.2-2+deb10u1) ...
+#9 17.05 Selecting previously unselected package libltdl7:amd64.
+#9 17.05 Preparing to unpack .../084-libltdl7_2.4.6-9_amd64.deb ...
+#9 17.05 Unpacking libltdl7:amd64 (2.4.6-9) ...
+#9 17.08 Selecting previously unselected package libltdl-dev:amd64.
+#9 17.08 Preparing to unpack .../085-libltdl-dev_2.4.6-9_amd64.deb ...
+#9 17.09 Unpacking libltdl-dev:amd64 (2.4.6-9) ...
+#9 17.14 Selecting previously unselected package libncurses-dev:amd64.
+#9 17.14 Preparing to unpack .../086-libncurses-dev_6.1+20181013-2+deb10u5_amd64.deb ...
+#9 17.15 Unpacking libncurses-dev:amd64 (6.1+20181013-2+deb10u5) ...
+#9 17.20 Selecting previously unselected package libncurses5:amd64.
+#9 17.21 Preparing to unpack .../087-libncurses5_6.1+20181013-2+deb10u5_amd64.deb ...
+#9 17.21 Unpacking libncurses5:amd64 (6.1+20181013-2+deb10u5) ...
+#9 17.25 Selecting previously unselected package libncurses5-dev:amd64.
+#9 17.25 Preparing to unpack .../088-libncurses5-dev_6.1+20181013-2+deb10u5_amd64.deb ...
+#9 17.25 Unpacking libncurses5-dev:amd64 (6.1+20181013-2+deb10u5) ...
+#9 17.27 Selecting previously unselected package libpthread-stubs0-dev:amd64.
+#9 17.27 Preparing to unpack .../089-libpthread-stubs0-dev_0.4-1_amd64.deb ...
+#9 17.27 Unpacking libpthread-stubs0-dev:amd64 (0.4-1) ...
+#9 17.30 Selecting previously unselected package libsasl2-modules:amd64.
+#9 17.30 Preparing to unpack .../090-libsasl2-modules_2.1.27+dfsg-1+deb10u2_amd64.deb ...
+#9 17.30 Unpacking libsasl2-modules:amd64 (2.1.27+dfsg-1+deb10u2) ...
+#9 17.34 Selecting previously unselected package libsm6:amd64.
+#9 17.34 Preparing to unpack .../091-libsm6_2%3a1.2.3-1_amd64.deb ...
+#9 17.34 Unpacking libsm6:amd64 (2:1.2.3-1) ...
+#9 17.37 Selecting previously unselected package libsqlite3-dev:amd64.
+#9 17.37 Preparing to unpack .../092-libsqlite3-dev_3.27.2-3+deb10u2_amd64.deb ...
+#9 17.37 Unpacking libsqlite3-dev:amd64 (3.27.2-3+deb10u2) ...
+#9 17.48 Selecting previously unselected package libssl-dev:amd64.
+#9 17.48 Preparing to unpack .../093-libssl-dev_1.1.1n-0+deb10u6_amd64.deb ...
+#9 17.48 Unpacking libssl-dev:amd64 (1.1.1n-0+deb10u6) ...
+#9 17.64 Selecting previously unselected package libtinfo-dev:amd64.
+#9 17.64 Preparing to unpack .../094-libtinfo-dev_6.1+20181013-2+deb10u5_amd64.deb ...
+#9 17.65 Unpacking libtinfo-dev:amd64 (6.1+20181013-2+deb10u5) ...
+#9 17.67 Selecting previously unselected package libtool.
+#9 17.67 Preparing to unpack .../095-libtool_2.4.6-9_all.deb ...
+#9 17.68 Unpacking libtool (2.4.6-9) ...
+#9 17.73 Selecting previously unselected package libudev-dev:amd64.
+#9 17.73 Preparing to unpack .../096-libudev-dev_241-7~deb10u10_amd64.deb ...
+#9 17.74 Unpacking libudev-dev:amd64 (241-7~deb10u10) ...
+#9 17.78 Selecting previously unselected package libusb-1.0-0:amd64.
+#9 17.78 Preparing to unpack .../097-libusb-1.0-0_2%3a1.0.22-2_amd64.deb ...
+#9 17.78 Unpacking libusb-1.0-0:amd64 (2:1.0.22-2) ...
+#9 17.81 Selecting previously unselected package libusb-1.0-0-dev:amd64.
+#9 17.81 Preparing to unpack .../098-libusb-1.0-0-dev_2%3a1.0.22-2_amd64.deb ...
+#9 17.81 Unpacking libusb-1.0-0-dev:amd64 (2:1.0.22-2) ...
+#9 17.85 Selecting previously unselected package libusb-1.0-doc.
+#9 17.85 Preparing to unpack .../099-libusb-1.0-doc_2%3a1.0.22-2_all.deb ...
+#9 17.85 Unpacking libusb-1.0-doc (2:1.0.22-2) ...
+#9 17.90 Selecting previously unselected package libv4lconvert0:amd64.
+#9 17.91 Preparing to unpack .../100-libv4lconvert0_1.16.3-3_amd64.deb ...
+#9 17.91 Unpacking libv4lconvert0:amd64 (1.16.3-3) ...
+#9 17.94 Selecting previously unselected package libv4l-0:amd64.
+#9 17.95 Preparing to unpack .../101-libv4l-0_1.16.3-3_amd64.deb ...
+#9 17.95 Unpacking libv4l-0:amd64 (1.16.3-3) ...
+#9 17.98 Selecting previously unselected package libxau6:amd64.
+#9 17.98 Preparing to unpack .../102-libxau6_1%3a1.0.8-1+b2_amd64.deb ...
+#9 17.99 Unpacking libxau6:amd64 (1:1.0.8-1+b2) ...
+#9 18.01 Selecting previously unselected package libxdmcp6:amd64.
+#9 18.02 Preparing to unpack .../103-libxdmcp6_1%3a1.1.2-3_amd64.deb ...
+#9 18.02 Unpacking libxdmcp6:amd64 (1:1.1.2-3) ...
+#9 18.05 Selecting previously unselected package libxcb1:amd64.
+#9 18.05 Preparing to unpack .../104-libxcb1_1.13.1-2_amd64.deb ...
+#9 18.05 Unpacking libxcb1:amd64 (1.13.1-2) ...
+#9 18.08 Selecting previously unselected package libx11-data.
+#9 18.08 Preparing to unpack .../105-libx11-data_2%3a1.6.7-1+deb10u4_all.deb ...
+#9 18.08 Unpacking libx11-data (2:1.6.7-1+deb10u4) ...
+#9 18.15 Selecting previously unselected package libx11-6:amd64.
+#9 18.15 Preparing to unpack .../106-libx11-6_2%3a1.6.7-1+deb10u4_amd64.deb ...
+#9 18.16 Unpacking libx11-6:amd64 (2:1.6.7-1+deb10u4) ...
+#9 18.23 Selecting previously unselected package libx11-xcb1:amd64.
+#9 18.23 Preparing to unpack .../107-libx11-xcb1_2%3a1.6.7-1+deb10u4_amd64.deb ...
+#9 18.23 Unpacking libx11-xcb1:amd64 (2:1.6.7-1+deb10u4) ...
+#9 18.26 Selecting previously unselected package xorg-sgml-doctools.
+#9 18.26 Preparing to unpack .../108-xorg-sgml-doctools_1%3a1.11-1_all.deb ...
+#9 18.26 Unpacking xorg-sgml-doctools (1:1.11-1) ...
+#9 18.29 Selecting previously unselected package x11proto-dev.
+#9 18.29 Preparing to unpack .../109-x11proto-dev_2018.4-4_all.deb ...
+#9 18.29 Unpacking x11proto-dev (2018.4-4) ...
+#9 18.35 Selecting previously unselected package x11proto-core-dev.
+#9 18.36 Preparing to unpack .../110-x11proto-core-dev_2018.4-4_all.deb ...
+#9 18.36 Unpacking x11proto-core-dev (2018.4-4) ...
+#9 18.39 Selecting previously unselected package libxau-dev:amd64.
+#9 18.39 Preparing to unpack .../111-libxau-dev_1%3a1.0.8-1+b2_amd64.deb ...
+#9 18.40 Unpacking libxau-dev:amd64 (1:1.0.8-1+b2) ...
+#9 18.43 Selecting previously unselected package libxcb-icccm4:amd64.
+#9 18.44 Preparing to unpack .../112-libxcb-icccm4_0.4.1-1.1_amd64.deb ...
+#9 18.44 Unpacking libxcb-icccm4:amd64 (0.4.1-1.1) ...
+#9 18.47 Selecting previously unselected package libxcb-shm0:amd64.
+#9 18.48 Preparing to unpack .../113-libxcb-shm0_1.13.1-2_amd64.deb ...
+#9 18.48 Unpacking libxcb-shm0:amd64 (1.13.1-2) ...
+#9 18.51 Selecting previously unselected package libxcb-util0:amd64.
+#9 18.52 Preparing to unpack .../114-libxcb-util0_0.3.8-3+b2_amd64.deb ...
+#9 18.52 Unpacking libxcb-util0:amd64 (0.3.8-3+b2) ...
+#9 18.55 Selecting previously unselected package libxcb-image0:amd64.
+#9 18.55 Preparing to unpack .../115-libxcb-image0_0.4.0-1+b2_amd64.deb ...
+#9 18.55 Unpacking libxcb-image0:amd64 (0.4.0-1+b2) ...
+#9 18.58 Selecting previously unselected package libxcb-keysyms1:amd64.
+#9 18.59 Preparing to unpack .../116-libxcb-keysyms1_0.4.0-1+b2_amd64.deb ...
+#9 18.59 Unpacking libxcb-keysyms1:amd64 (0.4.0-1+b2) ...
+#9 18.62 Selecting previously unselected package libxcb-randr0:amd64.
+#9 18.62 Preparing to unpack .../117-libxcb-randr0_1.13.1-2_amd64.deb ...
+#9 18.63 Unpacking libxcb-randr0:amd64 (1.13.1-2) ...
+#9 18.66 Selecting previously unselected package libxcb-render0:amd64.
+#9 18.67 Preparing to unpack .../118-libxcb-render0_1.13.1-2_amd64.deb ...
+#9 18.67 Unpacking libxcb-render0:amd64 (1.13.1-2) ...
+#9 18.72 Selecting previously unselected package libxcb-render-util0:amd64.
+#9 18.72 Preparing to unpack .../119-libxcb-render-util0_0.3.9-1+b1_amd64.deb ...
+#9 18.72 Unpacking libxcb-render-util0:amd64 (0.3.9-1+b1) ...
+#9 18.75 Selecting previously unselected package libxcb-shape0:amd64.
+#9 18.75 Preparing to unpack .../120-libxcb-shape0_1.13.1-2_amd64.deb ...
+#9 18.76 Unpacking libxcb-shape0:amd64 (1.13.1-2) ...
+#9 18.79 Selecting previously unselected package libxcb-sync1:amd64.
+#9 18.80 Preparing to unpack .../121-libxcb-sync1_1.13.1-2_amd64.deb ...
+#9 18.80 Unpacking libxcb-sync1:amd64 (1.13.1-2) ...
+#9 18.84 Selecting previously unselected package libxcb-xfixes0:amd64.
+#9 18.84 Preparing to unpack .../122-libxcb-xfixes0_1.13.1-2_amd64.deb ...
+#9 18.85 Unpacking libxcb-xfixes0:amd64 (1.13.1-2) ...
+#9 18.88 Selecting previously unselected package libxcb-xinerama0:amd64.
+#9 18.89 Preparing to unpack .../123-libxcb-xinerama0_1.13.1-2_amd64.deb ...
+#9 18.89 Unpacking libxcb-xinerama0:amd64 (1.13.1-2) ...
+#9 18.92 Selecting previously unselected package libxcb-xkb1:amd64.
+#9 18.93 Preparing to unpack .../124-libxcb-xkb1_1.13.1-2_amd64.deb ...
+#9 18.93 Unpacking libxcb-xkb1:amd64 (1.13.1-2) ...
+#9 18.96 Selecting previously unselected package libxdmcp-dev:amd64.
+#9 18.96 Preparing to unpack .../125-libxdmcp-dev_1%3a1.1.2-3_amd64.deb ...
+#9 18.97 Unpacking libxdmcp-dev:amd64 (1:1.1.2-3) ...
+#9 18.99 Selecting previously unselected package libxcb1-dev:amd64.
+#9 19.00 Preparing to unpack .../126-libxcb1-dev_1.13.1-2_amd64.deb ...
+#9 19.00 Unpacking libxcb1-dev:amd64 (1.13.1-2) ...
+#9 19.05 Selecting previously unselected package libxext6:amd64.
+#9 19.05 Preparing to unpack .../127-libxext6_2%3a1.3.3-1+b2_amd64.deb ...
+#9 19.06 Unpacking libxext6:amd64 (2:1.3.3-1+b2) ...
+#9 19.09 Selecting previously unselected package xkb-data.
+#9 19.10 Preparing to unpack .../128-xkb-data_2.26-2_all.deb ...
+#9 19.10 Unpacking xkb-data (2.26-2) ...
+#9 19.22 Selecting previously unselected package libxkbcommon0:amd64.
+#9 19.23 Preparing to unpack .../129-libxkbcommon0_0.8.2-1_amd64.deb ...
+#9 19.23 Unpacking libxkbcommon0:amd64 (0.8.2-1) ...
+#9 19.28 Selecting previously unselected package libxkbcommon-x11-0:amd64.
+#9 19.28 Preparing to unpack .../130-libxkbcommon-x11-0_0.8.2-1_amd64.deb ...
+#9 19.28 Unpacking libxkbcommon-x11-0:amd64 (0.8.2-1) ...
+#9 19.31 Selecting previously unselected package libxmuu1:amd64.
+#9 19.31 Preparing to unpack .../131-libxmuu1_2%3a1.1.2-2+b3_amd64.deb ...
+#9 19.32 Unpacking libxmuu1:amd64 (2:1.1.2-2+b3) ...
+#9 19.34 Selecting previously unselected package libzbar0:amd64.
+#9 19.35 Preparing to unpack .../132-libzbar0_0.22-1+deb10u1_amd64.deb ...
+#9 19.35 Unpacking libzbar0:amd64 (0.22-1+deb10u1) ...
+#9 19.38 Selecting previously unselected package make.
+#9 19.38 Preparing to unpack .../133-make_4.2.1-1.2_amd64.deb ...
+#9 19.39 Unpacking make (4.2.1-1.2) ...
+#9 19.44 Selecting previously unselected package manpages-dev.
+#9 19.45 Preparing to unpack .../134-manpages-dev_4.16-2_all.deb ...
+#9 19.45 Unpacking manpages-dev (4.16-2) ...
+#9 19.75 Selecting previously unselected package patch.
+#9 19.75 Preparing to unpack .../135-patch_2.7.6-3+deb10u1_amd64.deb ...
+#9 19.75 Unpacking patch (2.7.6-3+deb10u1) ...
+#9 19.79 Selecting previously unselected package pkg-config.
+#9 19.80 Preparing to unpack .../136-pkg-config_0.29-6_amd64.deb ...
+#9 19.80 Unpacking pkg-config (0.29-6) ...
+#9 19.83 Selecting previously unselected package publicsuffix.
+#9 19.83 Preparing to unpack .../137-publicsuffix_20220811.1734-0+deb10u1_all.deb ...
+#9 19.83 Unpacking publicsuffix (20220811.1734-0+deb10u1) ...
+#9 19.87 Selecting previously unselected package shared-mime-info.
+#9 19.87 Preparing to unpack .../138-shared-mime-info_1.10-1_amd64.deb ...
+#9 19.88 Unpacking shared-mime-info (1.10-1) ...
+#9 19.97 Selecting previously unselected package sudo.
+#9 19.98 Preparing to unpack .../139-sudo_1.8.27-1+deb10u6_amd64.deb ...
+#9 19.98 Unpacking sudo (1.8.27-1+deb10u6) ...
+#9 20.09 Selecting previously unselected package xauth.
+#9 20.09 Preparing to unpack .../140-xauth_1%3a1.0.10-1_amd64.deb ...
+#9 20.09 Unpacking xauth (1:1.0.10-1) ...
+#9 20.13 Selecting previously unselected package xdg-user-dirs.
+#9 20.14 Preparing to unpack .../141-xdg-user-dirs_0.17-2_amd64.deb ...
+#9 20.14 Unpacking xdg-user-dirs (0.17-2) ...
+#9 20.21 Selecting previously unselected package xutils-dev.
+#9 20.21 Preparing to unpack .../142-xutils-dev_1%3a7.7+5+b1_amd64.deb ...
+#9 20.22 Unpacking xutils-dev (1:7.7+5+b1) ...
+#9 20.27 Selecting previously unselected package zlib1g-dev:amd64.
+#9 20.27 Preparing to unpack .../143-zlib1g-dev_1%3a1.2.11.dfsg-1+deb10u2_amd64.deb ...
+#9 20.27 Unpacking zlib1g-dev:amd64 (1:1.2.11.dfsg-1+deb10u2) ...
+#9 20.33 Setting up perl-modules-5.28 (5.28.1-6+deb10u1) ...
+#9 20.33 Setting up libexpat1:amd64 (2.2.6-2+deb10u7) ...
+#9 20.34 Setting up lsb-base (10.2019051400) ...
+#9 20.35 Setting up libx11-xcb1:amd64 (2:1.6.7-1+deb10u4) ...
+#9 20.35 Setting up libxau6:amd64 (1:1.0.8-1+b2) ...
+#9 20.36 Setting up libkeyutils1:amd64 (1.6-6) ...
+#9 20.37 Setting up libapparmor1:amd64 (2.13.2-10) ...
+#9 20.37 Setting up libpsl5:amd64 (0.20.2-2) ...
+#9 20.38 Setting up libgpm2:amd64 (1.20.7-5) ...
+#9 20.38 Setting up xdg-user-dirs (0.17-2) ...
+#9 20.40 Setting up libmagic-mgc (1:5.35-4+deb10u2) ...
+#9 20.40 Setting up libglib2.0-0:amd64 (2.58.3-2+deb10u6) ...
+#9 20.41 No schema files found: doing nothing.
+#9 20.42 Setting up manpages (4.16-2) ...
+#9 20.42 Setting up libsqlite3-0:amd64 (3.27.2-3+deb10u2) ...
+#9 20.43 Setting up libsasl2-modules:amd64 (2.1.27+dfsg-1+deb10u2) ...
+#9 20.44 Setting up libusb-1.0-doc (2:1.0.22-2) ...
+#9 20.44 Setting up binutils-common:amd64 (2.31.1-16) ...
+#9 20.44 Setting up x11-common (1:7.7+19) ...
+#9 20.55 update-rc.d: warning: start and stop actions are no longer supported; falling back to defaults
+#9 20.56 invoke-rc.d: could not determine current runlevel
+#9 20.56 invoke-rc.d: policy-rc.d denied execution of start.
+#9 20.57 Setting up libnghttp2-14:amd64 (1.36.0-2+deb10u3) ...
+#9 20.58 Setting up libmagic1:amd64 (1:5.35-4+deb10u2) ...
+#9 20.59 Setting up less (487-0.1+deb10u1) ...
+#9 20.69 Setting up linux-libc-dev:amd64 (4.19.316-1) ...
+#9 20.69 Setting up gettext-base (0.19.8.1-9) ...
+#9 20.70 Setting up xkb-data (2.26-2) ...
+#9 20.70 Setting up krb5-locales (1.17-3+deb10u6) ...
+#9 20.71 Setting up file (1:5.35-4+deb10u2) ...
+#9 20.72 Setting up libgomp1:amd64 (8.3.0-6) ...
+#9 20.72 Setting up bzip2 (1.0.6-9.2~deb10u2) ...
+#9 20.73 Setting up libffi-dev:amd64 (3.2.1-9) ...
+#9 20.73 Setting up libldap-common (2.4.47+dfsg-3+deb10u7) ...
+#9 20.74 Setting up libpthread-stubs0-dev:amd64 (0.4-1) ...
+#9 20.75 Setting up libicu63:amd64 (63.1-6+deb10u3) ...
+#9 20.75 Setting up libkrb5support0:amd64 (1.17-3+deb10u6) ...
+#9 20.76 Setting up libsasl2-modules-db:amd64 (2.1.27+dfsg-1+deb10u2) ...
+#9 20.76 Setting up libasan5:amd64 (8.3.0-6) ...
+#9 20.77 Setting up autotools-dev (20180224.1) ...
+#9 20.77 Setting up libglib2.0-data (2.58.3-2+deb10u6) ...
+#9 20.78 Setting up libjpeg62-turbo:amd64 (1:1.5.2-2+deb10u1) ...
+#9 20.78 Setting up libx11-data (2:1.6.7-1+deb10u4) ...
+#9 20.79 Setting up make (4.2.1-1.2) ...
+#9 20.79 Setting up libmpfr6:amd64 (4.0.2-1) ...
+#9 20.80 Setting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2) ...
+#9 20.81 Setting up libncurses6:amd64 (6.1+20181013-2+deb10u5) ...
+#9 20.81 Setting up libdbus-1-3:amd64 (1.12.28-0+deb10u1) ...
+#9 20.82 Setting up dbus (1.12.28-0+deb10u1) ...
+#9 20.96 invoke-rc.d: could not determine current runlevel
+#9 20.97 invoke-rc.d: policy-rc.d denied execution of start.
+#9 20.97 Setting up libsigsegv2:amd64 (2.12-2) ...
+#9 20.97 Setting up xz-utils (5.2.4-1+deb10u1) ...
+#9 20.98 update-alternatives: using /usr/bin/xz to provide /usr/bin/lzma (lzma) in auto mode
+#9 20.99 Setting up libquadmath0:amd64 (8.3.0-6) ...
+#9 21.00 Setting up libssl-dev:amd64 (1.1.1n-0+deb10u6) ...
+#9 21.00 Setting up libmpc3:amd64 (1.1.0-1) ...
+#9 21.01 Setting up libatomic1:amd64 (8.3.0-6) ...
+#9 21.01 Setting up patch (2.7.6-3+deb10u1) ...
+#9 21.02 Setting up autopoint (0.19.8.1-9) ...
+#9 21.03 Setting up sudo (1.8.27-1+deb10u6) ...
+#9 21.05 invoke-rc.d: could not determine current runlevel
+#9 21.06 invoke-rc.d: policy-rc.d denied execution of start.
+#9 21.06 Setting up libudev-dev:amd64 (241-7~deb10u10) ...
+#9 21.08 Setting up libpcre2-8-0:amd64 (10.32-5+deb10u1) ...
+#9 21.08 Setting up libk5crypto3:amd64 (1.17-3+deb10u6) ...
+#9 21.09 Setting up libltdl7:amd64 (2.4.6-9) ...
+#9 21.09 Setting up libsasl2-2:amd64 (2.1.27+dfsg-1+deb10u2) ...
+#9 21.10 Setting up libmpx2:amd64 (8.3.0-6) ...
+#9 21.11 Setting up libubsan1:amd64 (8.3.0-6) ...
+#9 21.11 Setting up libisl19:amd64 (0.20-2) ...
+#9 21.12 Setting up libv4lconvert0:amd64 (1.16.3-3) ...
+#9 21.12 Setting up git-man (1:2.20.1-2+deb10u9) ...
+#9 21.13 Setting up libssh2-1:amd64 (1.8.0-2.1+deb10u1) ...
+#9 21.13 Setting up xorg-sgml-doctools (1:1.11-1) ...
+#9 21.14 Setting up netbase (5.6) ...
+#9 21.16 Setting up libkrb5-3:amd64 (1.17-3+deb10u6) ...
+#9 21.16 Setting up libusb-1.0-0:amd64 (2:1.0.22-2) ...
+#9 21.17 Setting up libbinutils:amd64 (2.31.1-16) ...
+#9 21.17 Setting up cpp-8 (8.3.0-6) ...
+#9 21.18 Setting up libc-dev-bin (2.28-10+deb10u4) ...
+#9 21.19 Setting up libbsd0:amd64 (0.9.1-2+deb10u1) ...
+#9 21.19 Setting up libtinfo5:amd64 (6.1+20181013-2+deb10u5) ...
+#9 21.21 Setting up publicsuffix (20220811.1734-0+deb10u1) ...
+#9 21.21 Setting up libxml2:amd64 (2.9.4+dfsg1-7+deb10u6) ...
+#9 21.22 Setting up libcc1-0:amd64 (8.3.0-6) ...
+#9 21.23 Setting up liblocale-gettext-perl (1.07-3+b4) ...
+#9 21.23 Setting up liblsan0:amd64 (8.3.0-6) ...
+#9 21.24 Setting up libitm1:amd64 (8.3.0-6) ...
+#9 21.24 Setting up libgdbm6:amd64 (1.18.1-4) ...
+#9 21.25 Setting up binutils-x86-64-linux-gnu (2.31.1-16) ...
+#9 21.25 Setting up libtsan0:amd64 (8.3.0-6) ...
+#9 21.26 Setting up libxkbcommon0:amd64 (0.8.2-1) ...
+#9 21.26 Setting up x11proto-dev (2018.4-4) ...
+#9 21.27 Setting up manpages-dev (4.16-2) ...
+#9 21.27 Setting up libice6:amd64 (2:1.0.9-2) ...
+#9 21.28 Setting up libxdmcp6:amd64 (1:1.1.2-3) ...
+#9 21.29 Setting up libxcb1:amd64 (1.13.1-2) ...
+#9 21.29 Setting up libxcb-xfixes0:amd64 (1.13.1-2) ...
+#9 21.30 Setting up libxau-dev:amd64 (1:1.0.8-1+b2) ...
+#9 21.30 Setting up wget (1.20.1-1.1) ...
+#9 21.31 Setting up libxcb-render0:amd64 (1.13.1-2) ...
+#9 21.32 Setting up libedit2:amd64 (3.1-20181209-1) ...
+#9 21.33 Setting up libxcb-keysyms1:amd64 (0.4.0-1+b2) ...
+#9 21.33 Setting up libxcb-shape0:amd64 (1.13.1-2) ...
+#9 21.34 Setting up libldap-2.4-2:amd64 (2.4.47+dfsg-3+deb10u7) ...
+#9 21.34 Setting up libusb-1.0-0-dev:amd64 (2:1.0.22-2) ...
+#9 21.35 Setting up m4 (1.4.18-2) ...
+#9 21.36 Setting up libxcb-render-util0:amd64 (0.3.9-1+b1) ...
+#9 21.36 Setting up libxcb-shm0:amd64 (1.13.1-2) ...
+#9 21.37 Setting up libxcb-icccm4:amd64 (0.4.1-1.1) ...
+#9 21.37 Setting up binutils (2.31.1-16) ...
+#9 21.38 Setting up libxcb-util0:amd64 (0.3.8-3+b2) ...
+#9 21.39 Setting up libncurses5:amd64 (6.1+20181013-2+deb10u5) ...
+#9 21.39 Setting up libxcb-xkb1:amd64 (1.13.1-2) ...
+#9 21.40 Setting up libxcb-image0:amd64 (0.4.0-1+b2) ...
+#9 21.40 Setting up libv4l-0:amd64 (1.16.3-3) ...
+#9 21.41 Setting up libxdmcp-dev:amd64 (1:1.1.2-3) ...
+#9 21.42 Setting up libxcb-xinerama0:amd64 (1.13.1-2) ...
+#9 21.42 Setting up libxcb-sync1:amd64 (1.13.1-2) ...
+#9 21.43 Setting up x11proto-core-dev (2018.4-4) ...
+#9 21.43 Setting up shared-mime-info (1.10-1) ...
+#9 22.74 Setting up libxkbcommon-x11-0:amd64 (0.8.2-1) ...
+#9 22.75 Setting up libgssapi-krb5-2:amd64 (1.17-3+deb10u6) ...
+#9 22.75 Setting up libcroco3:amd64 (0.6.12-3) ...
+#9 22.76 Setting up libgdbm-compat4:amd64 (1.18.1-4) ...
+#9 22.77 Setting up libgcc-8-dev:amd64 (8.3.0-6) ...
+#9 22.77 Setting up libperl5.28:amd64 (5.28.1-6+deb10u1) ...
+#9 22.78 Setting up libxcb-randr0:amd64 (1.13.1-2) ...
+#9 22.79 Setting up cpp (4:8.3.0-1) ...
+#9 22.80 Setting up libc6-dev:amd64 (2.28-10+deb10u4) ...
+#9 22.80 Setting up libx11-6:amd64 (2:1.6.7-1+deb10u4) ...
+#9 22.81 Setting up libsm6:amd64 (2:1.2.3-1) ...
+#9 22.82 Setting up libxmuu1:amd64 (2:1.1.2-2+b3) ...
+#9 22.82 Setting up libncurses-dev:amd64 (6.1+20181013-2+deb10u5) ...
+#9 22.83 Setting up gettext (0.19.8.1-9) ...
+#9 22.83 Setting up gcc-8 (8.3.0-6) ...
+#9 22.84 Setting up libxcb1-dev:amd64 (1.13.1-2) ...
+#9 22.85 Setting up libtool (2.4.6-9) ...
+#9 22.85 Setting up libzbar0:amd64 (0.22-1+deb10u1) ...
+#9 22.86 Setting up openssh-client (1:7.9p1-10+deb10u4) ...
+#9 22.95 Setting up libxext6:amd64 (2:1.3.3-1+b2) ...
+#9 22.96 Setting up libcurl3-gnutls:amd64 (7.64.0-4+deb10u9) ...
+#9 22.97 Setting up gcc (4:8.3.0-1) ...
+#9 22.98 Setting up perl (5.28.1-6+deb10u1) ...
+#9 23.00 Setting up libsqlite3-dev:amd64 (3.27.2-3+deb10u2) ...
+#9 23.01 Setting up libdpkg-perl (1.19.8) ...
+#9 23.02 Setting up autoconf (2.69-11) ...
+#9 23.02 Setting up zlib1g-dev:amd64 (1:1.2.11.dfsg-1+deb10u2) ...
+#9 23.03 Setting up xutils-dev (1:7.7+5+b1) ...
+#9 23.04 Setting up xauth (1:1.0.10-1) ...
+#9 23.04 Setting up libncurses5-dev:amd64 (6.1+20181013-2+deb10u5) ...
+#9 23.05 Setting up automake (1:1.16.1-4) ...
+#9 23.06 update-alternatives: using /usr/bin/automake-1.16 to provide /usr/bin/automake (automake) in auto mode
+#9 23.06 Setting up libtinfo-dev:amd64 (6.1+20181013-2+deb10u5) ...
+#9 23.07 Setting up libfile-fcntllock-perl (0.22-3+b5) ...
+#9 23.08 Setting up liberror-perl (0.17027-2) ...
+#9 23.08 Setting up libltdl-dev:amd64 (2.4.6-9) ...
+#9 23.09 Setting up pkg-config (0.29-6) ...
+#9 23.14 Setting up git (1:2.20.1-2+deb10u9) ...
+#9 23.17 Processing triggers for libc-bin (2.28-10+deb10u2) ...
+#9 23.25 Reading package lists...
+#9 23.26 Building dependency tree...
+#9 23.26 Reading state information...
+#9 23.26 0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+#9 DONE 23.5s
+
+#10 [ 6/10] RUN useradd --uid 1001 --create-home --shell /bin/bash user
+#10 DONE 0.2s
+
+#11 [ 7/10] RUN usermod -append --groups sudo user
+#11 DONE 0.3s
+
+#12 [ 8/10] RUN echo "%sudo ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+#12 DONE 0.2s
+
+#13 [ 9/10] WORKDIR /home/user/wspace
+#13 DONE 0.0s
+
+#14 [10/10] RUN chown --recursive user /home/user/wspace
+#14 DONE 0.3s
+
+#15 exporting to image
+#15 exporting layers
+#15 exporting layers 2.1s done
+#15 writing image sha256:91cb1dadf293d318eb43b4e410eace4a3446cff3a581cc3b6f96ac75844afd02 done
+#15 naming to docker.io/library/electrum-glc-appimage-builder-shasta done
+#15 DONE 2.1s
+💬 [0;34mINFO:[0m  not doing fresh clone.
+💬 [0;34mINFO:[0m  building binary...
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+💬 [0;34mINFO:[0m  downloading some dependencies.
+--2025-08-14 22:29:27--  https://raw.githubusercontent.com/AppImage/pkg2appimage/a9c85b7e61a3a883f4a35c41c5decb5af88b6b5d/functions.sh
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.108.133, 185.199.109.133, 185.199.110.133, ...
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.108.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 16213 (16K) [text/plain]
+Saving to: ‘/opt/electrum/contrib/build-linux/appimage/../../../contrib/build-linux/appimage/.cache/appimage/functions.sh’
+
+     0K .......... .....                                      100% 50.4M=0s
+
+2025-08-14 22:29:27 (50.4 MB/s) - ‘/opt/electrum/contrib/build-linux/appimage/../../../contrib/build-linux/appimage/.cache/appimage/functions.sh’ saved [16213/16213]
+
+--2025-08-14 22:29:27--  https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+Resolving github.com (github.com)... 140.82.121.4
+Connecting to github.com (github.com)|140.82.121.4|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://release-assets.githubusercontent.com/github-production-release-asset/658450330/8575949b-04c5-488a-adb1-4e7e94643e4b?sp=r&sv=2018-11-09&sr=b&spr=https&se=2025-08-14T23%3A22%3A49Z&rscd=attachment%3B+filename%3Dappimagetool-x86_64.AppImage&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2025-08-14T22%3A22%3A36Z&ske=2025-08-14T23%3A22%3A49Z&sks=b&skv=2018-11-09&sig=MISsXKLMxmADsYPmGc2zPLZ4b5OQq9R6fHyKl3OBCRc%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc1NTIxMDg2NywibmJmIjoxNzU1MjEwNTY3LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.Y9voz9WNN-YwK6IbHqASLqqRRrHUUv9hO8vtV0MQfnA&response-content-disposition=attachment%3B%20filename%3Dappimagetool-x86_64.AppImage&response-content-type=application%2Foctet-stream [following]
+--2025-08-14 22:29:28--  https://release-assets.githubusercontent.com/github-production-release-asset/658450330/8575949b-04c5-488a-adb1-4e7e94643e4b?sp=r&sv=2018-11-09&sr=b&spr=https&se=2025-08-14T23%3A22%3A49Z&rscd=attachment%3B+filename%3Dappimagetool-x86_64.AppImage&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2025-08-14T22%3A22%3A36Z&ske=2025-08-14T23%3A22%3A49Z&sks=b&skv=2018-11-09&sig=MISsXKLMxmADsYPmGc2zPLZ4b5OQq9R6fHyKl3OBCRc%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc1NTIxMDg2NywibmJmIjoxNzU1MjEwNTY3LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.Y9voz9WNN-YwK6IbHqASLqqRRrHUUv9hO8vtV0MQfnA&response-content-disposition=attachment%3B%20filename%3Dappimagetool-x86_64.AppImage&response-content-type=application%2Foctet-stream
+Resolving release-assets.githubusercontent.com (release-assets.githubusercontent.com)... 185.199.111.133, 185.199.108.133, 185.199.109.133, ...
+Connecting to release-assets.githubusercontent.com (release-assets.githubusercontent.com)|185.199.111.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 15104504 (14M) [application/octet-stream]
+Saving to: ‘/opt/electrum/contrib/build-linux/appimage/../../../contrib/build-linux/appimage/.cache/appimage/appimagetool’
+
+     0K .......... .......... .......... .......... ..........  0% 36.8M 0s
+    50K .......... .......... .......... .......... ..........  0% 74.9M 0s
+   100K .......... .......... .......... .......... ..........  1% 56.5M 0s
+   150K .......... .......... .......... .......... ..........  1%  114M 0s
+   200K .......... .......... .......... .......... ..........  1%  159M 0s
+   250K .......... .......... .......... .......... ..........  2% 22.4M 0s
+   300K .......... .......... .......... .......... ..........  2% 73.5M 0s
+   350K .......... .......... .......... .......... ..........  2% 45.0M 0s
+   400K .......... .......... .......... .......... ..........  3%  110M 0s
+   450K .......... .......... .......... .......... ..........  3% 86.4M 0s
+   500K .......... .......... .......... .......... ..........  3% 70.3M 0s
+   550K .......... .......... .......... .......... ..........  4% 78.3M 0s
+   600K .......... .......... .......... .......... ..........  4% 23.7M 0s
+   650K .......... .......... .......... .......... ..........  4%  191M 0s
+   700K .......... .......... .......... .......... ..........  5% 60.5M 0s
+   750K .......... .......... .......... .......... ..........  5% 46.3M 0s
+   800K .......... .......... .......... .......... ..........  5% 34.4M 0s
+   850K .......... .......... .......... .......... ..........  6% 30.0M 0s
+   900K .......... .......... .......... .......... ..........  6%  104M 0s
+   950K .......... .......... .......... .......... ..........  6% 27.3M 0s
+  1000K .......... .......... .......... .......... ..........  7% 99.5M 0s
+  1050K .......... .......... .......... .......... ..........  7% 31.0M 0s
+  1100K .......... .......... .......... .......... ..........  7%  118M 0s
+  1150K .......... .......... .......... .......... ..........  8%  119M 0s
+  1200K .......... .......... .......... .......... ..........  8% 21.8M 0s
+  1250K .......... .......... .......... .......... ..........  8%  254M 0s
+  1300K .......... .......... .......... .......... ..........  9% 80.0M 0s
+  1350K .......... .......... .......... .......... ..........  9%  104M 0s
+  1400K .......... .......... .......... .......... ..........  9% 82.3M 0s
+  1450K .......... .......... .......... .......... .......... 10% 46.7M 0s
+  1500K .......... .......... .......... .......... .......... 10%  174M 0s
+  1550K .......... .......... .......... .......... .......... 10%  231M 0s
+  1600K .......... .......... .......... .......... .......... 11%  432M 0s
+  1650K .......... .......... .......... .......... .......... 11% 87.6M 0s
+  1700K .......... .......... .......... .......... .......... 11%  122M 0s
+  1750K .......... .......... .......... .......... .......... 12%  162M 0s
+  1800K .......... .......... .......... .......... .......... 12%  141M 0s
+  1850K .......... .......... .......... .......... .......... 12%  151M 0s
+  1900K .......... .......... .......... .......... .......... 13%  139M 0s
+  1950K .......... .......... .......... .......... .......... 13% 52.7M 0s
+  2000K .......... .......... .......... .......... .......... 13%  154M 0s
+  2050K .......... .......... .......... .......... .......... 14%  103M 0s
+  2100K .......... .......... .......... .......... .......... 14%  315M 0s
+  2150K .......... .......... .......... .......... .......... 14%  343M 0s
+  2200K .......... .......... .......... .......... .......... 15%  420M 0s
+  2250K .......... .......... .......... .......... .......... 15%  113M 0s
+  2300K .......... .......... .......... .......... .......... 15%  118M 0s
+  2350K .......... .......... .......... .......... .......... 16%  179M 0s
+  2400K .......... .......... .......... .......... .......... 16%  117M 0s
+  2450K .......... .......... .......... .......... .......... 16% 54.8M 0s
+  2500K .......... .......... .......... .......... .......... 17%  172M 0s
+  2550K .......... .......... .......... .......... .......... 17%  124M 0s
+  2600K .......... .......... .......... .......... .......... 17%  191M 0s
+  2650K .......... .......... .......... .......... .......... 18%  256M 0s
+  2700K .......... .......... .......... .......... .......... 18%  193M 0s
+  2750K .......... .......... .......... .......... .......... 18% 95.3M 0s
+  2800K .......... .......... .......... .......... .......... 19%  381M 0s
+  2850K .......... .......... .......... .......... .......... 19% 96.0M 0s
+  2900K .......... .......... .......... .......... .......... 19%  201M 0s
+  2950K .......... .......... .......... .......... .......... 20%  281M 0s
+  3000K .......... .......... .......... .......... .......... 20%  102M 0s
+  3050K .......... .......... .......... .......... .......... 21%  212M 0s
+  3100K .......... .......... .......... .......... .......... 21%  171M 0s
+  3150K .......... .......... .......... .......... .......... 21% 33.7M 0s
+  3200K .......... .......... .......... .......... .......... 22%  144M 0s
+  3250K .......... .......... .......... .......... .......... 22%  257M 0s
+  3300K .......... .......... .......... .......... .......... 22%  210M 0s
+  3350K .......... .......... .......... .......... .......... 23%  143M 0s
+  3400K .......... .......... .......... .......... .......... 23%  146M 0s
+  3450K .......... .......... .......... .......... .......... 23% 52.0M 0s
+  3500K .......... .......... .......... .......... .......... 24%  228M 0s
+  3550K .......... .......... .......... .......... .......... 24%  307M 0s
+  3600K .......... .......... .......... .......... .......... 24%  244M 0s
+  3650K .......... .......... .......... .......... .......... 25%  302M 0s
+  3700K .......... .......... .......... .......... .......... 25%  153M 0s
+  3750K .......... .......... .......... .......... .......... 25% 55.6M 0s
+  3800K .......... .......... .......... .......... .......... 26%  284M 0s
+  3850K .......... .......... .......... .......... .......... 26%  288M 0s
+  3900K .......... .......... .......... .......... .......... 26%  268M 0s
+  3950K .......... .......... .......... .......... .......... 27%  155M 0s
+  4000K .......... .......... .......... .......... .......... 27%  121M 0s
+  4050K .......... .......... .......... .......... .......... 27% 96.3M 0s
+  4100K .......... .......... .......... .......... .......... 28%  158M 0s
+  4150K .......... .......... .......... .......... .......... 28%  112M 0s
+  4200K .......... .......... .......... .......... .......... 28%  122M 0s
+  4250K .......... .......... .......... .......... .......... 29%  269M 0s
+  4300K .......... .......... .......... .......... .......... 29% 2.78M 0s
+  4350K .......... .......... .......... .......... .......... 29% 30.0M 0s
+  4400K .......... .......... .......... .......... .......... 30% 85.9M 0s
+  4450K .......... .......... .......... .......... .......... 30% 78.7M 0s
+  4500K .......... .......... .......... .......... .......... 30%  263M 0s
+  4550K .......... .......... .......... .......... .......... 31% 27.4M 0s
+  4600K .......... .......... .......... .......... .......... 31% 79.3M 0s
+  4650K .......... .......... .......... .......... .......... 31% 54.4M 0s
+  4700K .......... .......... .......... .......... .......... 32% 79.3M 0s
+  4750K .......... .......... .......... .......... .......... 32%  364M 0s
+  4800K .......... .......... .......... .......... .......... 32% 83.4M 0s
+  4850K .......... .......... .......... .......... .......... 33% 48.3M 0s
+  4900K .......... .......... .......... .......... .......... 33% 28.6M 0s
+  4950K .......... .......... .......... .......... .......... 33% 45.3M 0s
+  5000K .......... .......... .......... .......... .......... 34%  104M 0s
+  5050K .......... .......... .......... .......... .......... 34% 48.2M 0s
+  5100K .......... .......... .......... .......... .......... 34% 32.1M 0s
+  5150K .......... .......... .......... .......... .......... 35% 30.4M 0s
+  5200K .......... .......... .......... .......... .......... 35% 39.9M 0s
+  5250K .......... .......... .......... .......... .......... 35% 96.4M 0s
+  5300K .......... .......... .......... .......... .......... 36% 50.9M 0s
+  5350K .......... .......... .......... .......... .......... 36% 47.0M 0s
+  5400K .......... .......... .......... .......... .......... 36% 61.1M 0s
+  5450K .......... .......... .......... .......... .......... 37%  295M 0s
+  5500K .......... .......... .......... .......... .......... 37% 30.1M 0s
+  5550K .......... .......... .......... .......... .......... 37% 58.9M 0s
+  5600K .......... .......... .......... .......... .......... 38% 34.4M 0s
+  5650K .......... .......... .......... .......... .......... 38%  245M 0s
+  5700K .......... .......... .......... .......... .......... 38%  372M 0s
+  5750K .......... .......... .......... .......... .......... 39% 58.3M 0s
+  5800K .......... .......... .......... .......... .......... 39%  110M 0s
+  5850K .......... .......... .......... .......... .......... 39%  180M 0s
+  5900K .......... .......... .......... .......... .......... 40% 68.3M 0s
+  5950K .......... .......... .......... .......... .......... 40%  322M 0s
+  6000K .......... .......... .......... .......... .......... 41%  106M 0s
+  6050K .......... .......... .......... .......... .......... 41%  125M 0s
+  6100K .......... .......... .......... .......... .......... 41% 57.2M 0s
+  6150K .......... .......... .......... .......... .......... 42% 79.2M 0s
+  6200K .......... .......... .......... .......... .......... 42%  290M 0s
+  6250K .......... .......... .......... .......... .......... 42%  205M 0s
+  6300K .......... .......... .......... .......... .......... 43%  138M 0s
+  6350K .......... .......... .......... .......... .......... 43%  449M 0s
+  6400K .......... .......... .......... .......... .......... 43%  360M 0s
+  6450K .......... .......... .......... .......... .......... 44%  142M 0s
+  6500K .......... .......... .......... .......... .......... 44% 80.7M 0s
+  6550K .......... .......... .......... .......... .......... 44%  364M 0s
+  6600K .......... .......... .......... .......... .......... 45%  210M 0s
+  6650K .......... .......... .......... .......... .......... 45%  167M 0s
+  6700K .......... .......... .......... .......... .......... 45% 86.2M 0s
+  6750K .......... .......... .......... .......... .......... 46%  115M 0s
+  6800K .......... .......... .......... .......... .......... 46%  171M 0s
+  6850K .......... .......... .......... .......... .......... 46%  239M 0s
+  6900K .......... .......... .......... .......... .......... 47% 95.1M 0s
+  6950K .......... .......... .......... .......... .......... 47% 82.1M 0s
+  7000K .......... .......... .......... .......... .......... 47%  390M 0s
+  7050K .......... .......... .......... .......... .......... 48%  526M 0s
+  7100K .......... .......... .......... .......... .......... 48%  137M 0s
+  7150K .......... .......... .......... .......... .......... 48% 83.7M 0s
+  7200K .......... .......... .......... .......... .......... 49%  200M 0s
+  7250K .......... .......... .......... .......... .......... 49% 85.2M 0s
+  7300K .......... .......... .......... .......... .......... 49%  274M 0s
+  7350K .......... .......... .......... .......... .......... 50%  296M 0s
+  7400K .......... .......... .......... .......... .......... 50% 74.8M 0s
+  7450K .......... .......... .......... .......... .......... 50% 34.2M 0s
+  7500K .......... .......... .......... .......... .......... 51%  169M 0s
+  7550K .......... .......... .......... .......... .......... 51%  222M 0s
+  7600K .......... .......... .......... .......... .......... 51%  437M 0s
+  7650K .......... .......... .......... .......... .......... 52%  164M 0s
+  7700K .......... .......... .......... .......... .......... 52% 76.4M 0s
+  7750K .......... .......... .......... .......... .......... 52%  374M 0s
+  7800K .......... .......... .......... .......... .......... 53%  307M 0s
+  7850K .......... .......... .......... .......... .......... 53%  136M 0s
+  7900K .......... .......... .......... .......... .......... 53%  201M 0s
+  7950K .......... .......... .......... .......... .......... 54%  236M 0s
+  8000K .......... .......... .......... .......... .......... 54% 40.7M 0s
+  8050K .......... .......... .......... .......... .......... 54%  366M 0s
+  8100K .......... .......... .......... .......... .......... 55%  334M 0s
+  8150K .......... .......... .......... .......... .......... 55%  133M 0s
+  8200K .......... .......... .......... .......... .......... 55% 66.0M 0s
+  8250K .......... .......... .......... .......... .......... 56%  294M 0s
+  8300K .......... .......... .......... .......... .......... 56% 51.8M 0s
+  8350K .......... .......... .......... .......... .......... 56%  301M 0s
+  8400K .......... .......... .......... .......... .......... 57% 77.8M 0s
+  8450K .......... .......... .......... .......... .......... 57%  230M 0s
+  8500K .......... .......... .......... .......... .......... 57%  428M 0s
+  8550K .......... .......... .......... .......... .......... 58%  470M 0s
+  8600K .......... .......... .......... .......... .......... 58% 2.88M 0s
+  8650K .......... .......... .......... .......... .......... 58% 25.2M 0s
+  8700K .......... .......... .......... .......... .......... 59% 73.6M 0s
+  8750K .......... .......... .......... .......... .......... 59%  154M 0s
+  8800K .......... .......... .......... .......... .......... 59%  249M 0s
+  8850K .......... .......... .......... .......... .......... 60% 28.7M 0s
+  8900K .......... .......... .......... .......... .......... 60% 73.1M 0s
+  8950K .......... .......... .......... .......... .......... 61% 59.7M 0s
+  9000K .......... .......... .......... .......... .......... 61%  259M 0s
+  9050K .......... .......... .......... .......... .......... 61% 86.1M 0s
+  9100K .......... .......... .......... .......... .......... 62% 62.3M 0s
+  9150K .......... .......... .......... .......... .......... 62% 63.2M 0s
+  9200K .......... .......... .......... .......... .......... 62% 27.5M 0s
+  9250K .......... .......... .......... .......... .......... 63%  125M 0s
+  9300K .......... .......... .......... .......... .......... 63% 47.8M 0s
+  9350K .......... .......... .......... .......... .......... 63% 44.2M 0s
+  9400K .......... .......... .......... .......... .......... 64% 42.9M 0s
+  9450K .......... .......... .......... .......... .......... 64%  135M 0s
+  9500K .......... .......... .......... .......... .......... 64% 16.0M 0s
+  9550K .......... .......... .......... .......... .......... 65%  140M 0s
+  9600K .......... .......... .......... .......... .......... 65% 48.0M 0s
+  9650K .......... .......... .......... .......... .......... 65% 39.8M 0s
+  9700K .......... .......... .......... .......... .......... 66% 61.1M 0s
+  9750K .......... .......... .......... .......... .......... 66%  431M 0s
+  9800K .......... .......... .......... .......... .......... 66% 27.1M 0s
+  9850K .......... .......... .......... .......... .......... 67%  132M 0s
+  9900K .......... .......... .......... .......... .......... 67% 33.7M 0s
+  9950K .......... .......... .......... .......... .......... 67%  136M 0s
+ 10000K .......... .......... .......... .......... .......... 68%  356M 0s
+ 10050K .......... .......... .......... .......... .......... 68% 60.1M 0s
+ 10100K .......... .......... .......... .......... .......... 68%  156M 0s
+ 10150K .......... .......... .......... .......... .......... 69%  160M 0s
+ 10200K .......... .......... .......... .......... .......... 69%  738K 0s
+ 10250K .......... .......... .......... .......... .......... 69%  238M 0s
+ 10300K .......... .......... .......... .......... .......... 70% 68.3M 0s
+ 10350K .......... .......... .......... .......... .......... 70%  227M 0s
+ 10400K .......... .......... .......... .......... .......... 70% 52.3M 0s
+ 10450K .......... .......... .......... .......... .......... 71% 49.2M 0s
+ 10500K .......... .......... .......... .......... .......... 71% 54.4M 0s
+ 10550K .......... .......... .......... .......... .......... 71%  185M 0s
+ 10600K .......... .......... .......... .......... .......... 72% 61.8M 0s
+ 10650K .......... .......... .......... .......... .......... 72% 46.0M 0s
+ 10700K .......... .......... .......... .......... .......... 72% 41.4M 0s
+ 10750K .......... .......... .......... .......... .......... 73% 76.8M 0s
+ 10800K .......... .......... .......... .......... .......... 73%  378M 0s
+ 10850K .......... .......... .......... .......... .......... 73% 46.8M 0s
+ 10900K .......... .......... .......... .......... .......... 74% 53.7M 0s
+ 10950K .......... .......... .......... .......... .......... 74% 69.5M 0s
+ 11000K .......... .......... .......... .......... .......... 74%  172M 0s
+ 11050K .......... .......... .......... .......... .......... 75% 50.8M 0s
+ 11100K .......... .......... .......... .......... .......... 75% 59.7M 0s
+ 11150K .......... .......... .......... .......... .......... 75% 42.0M 0s
+ 11200K .......... .......... .......... .......... .......... 76% 49.4M 0s
+ 11250K .......... .......... .......... .......... .......... 76%  348M 0s
+ 11300K .......... .......... .......... .......... .......... 76% 69.4M 0s
+ 11350K .......... .......... .......... .......... .......... 77% 45.3M 0s
+ 11400K .......... .......... .......... .......... .......... 77% 42.1M 0s
+ 11450K .......... .......... .......... .......... .......... 77% 43.3M 0s
+ 11500K .......... .......... .......... .......... .......... 78% 88.3M 0s
+ 11550K .......... .......... .......... .......... .......... 78%  298M 0s
+ 11600K .......... .......... .......... .......... .......... 78% 37.6M 0s
+ 11650K .......... .......... .......... .......... .......... 79% 82.3M 0s
+ 11700K .......... .......... .......... .......... .......... 79% 47.6M 0s
+ 11750K .......... .......... .......... .......... .......... 79%  220M 0s
+ 11800K .......... .......... .......... .......... .......... 80% 61.3M 0s
+ 11850K .......... .......... .......... .......... .......... 80% 63.3M 0s
+ 11900K .......... .......... .......... .......... .......... 81% 45.3M 0s
+ 11950K .......... .......... .......... .......... .......... 81% 53.5M 0s
+ 12000K .......... .......... .......... .......... .......... 81%  189M 0s
+ 12050K .......... .......... .......... .......... .......... 82% 60.2M 0s
+ 12100K .......... .......... .......... .......... .......... 82% 46.7M 0s
+ 12150K .......... .......... .......... .......... .......... 82% 62.2M 0s
+ 12200K .......... .......... .......... .......... .......... 83%  126M 0s
+ 12250K .......... .......... .......... .......... .......... 83% 52.9M 0s
+ 12300K .......... .......... .......... .......... .......... 83% 37.2M 0s
+ 12350K .......... .......... .......... .......... .......... 84% 17.5M 0s
+ 12400K .......... .......... .......... .......... .......... 84%  193M 0s
+ 12450K .......... .......... .......... .......... .......... 84%  314M 0s
+ 12500K .......... .......... .......... .......... .......... 85% 19.2M 0s
+ 12550K .......... .......... .......... .......... .......... 85%  198M 0s
+ 12600K .......... .......... .......... .......... .......... 85% 8.29M 0s
+ 12650K .......... .......... .......... .......... .......... 86% 63.2M 0s
+ 12700K .......... .......... .......... .......... .......... 86%  300M 0s
+ 12750K .......... .......... .......... .......... .......... 86% 28.1M 0s
+ 12800K .......... .......... .......... .......... .......... 87% 56.7M 0s
+ 12850K .......... .......... .......... .......... .......... 87% 46.6M 0s
+ 12900K .......... .......... .......... .......... .......... 87% 98.1M 0s
+ 12950K .......... .......... .......... .......... .......... 88%  385M 0s
+ 13000K .......... .......... .......... .......... .......... 88%  181M 0s
+ 13050K .......... .......... .......... .......... .......... 88%  149M 0s
+ 13100K .......... .......... .......... .......... .......... 89%  164M 0s
+ 13150K .......... .......... .......... .......... .......... 89%  312M 0s
+ 13200K .......... .......... .......... .......... .......... 89%  282M 0s
+ 13250K .......... .......... .......... .......... .......... 90% 89.7M 0s
+ 13300K .......... .......... .......... .......... .......... 90%  120M 0s
+ 13350K .......... .......... .......... .......... .......... 90%  174M 0s
+ 13400K .......... .......... .......... .......... .......... 91%  219M 0s
+ 13450K .......... .......... .......... .......... .......... 91%  169M 0s
+ 13500K .......... .......... .......... .......... .......... 91%  137M 0s
+ 13550K .......... .......... .......... .......... .......... 92%  310M 0s
+ 13600K .......... .......... .......... .......... .......... 92%  350M 0s
+ 13650K .......... .......... .......... .......... .......... 92%  277M 0s
+ 13700K .......... .......... .......... .......... .......... 93% 83.9M 0s
+ 13750K .......... .......... .......... .......... .......... 93% 52.5M 0s
+ 13800K .......... .......... .......... .......... .......... 93% 78.2M 0s
+ 13850K .......... .......... .......... .......... .......... 94%  175M 0s
+ 13900K .......... .......... .......... .......... .......... 94% 35.2M 0s
+ 13950K .......... .......... .......... .......... .......... 94% 67.3M 0s
+ 14000K .......... .......... .......... .......... .......... 95% 41.4M 0s
+ 14050K .......... .......... .......... .......... .......... 95% 86.6M 0s
+ 14100K .......... .......... .......... .......... .......... 95%  216M 0s
+ 14150K .......... .......... .......... .......... .......... 96% 53.1M 0s
+ 14200K .......... .......... .......... .......... .......... 96% 64.8M 0s
+ 14250K .......... .......... .......... .......... .......... 96% 44.4M 0s
+ 14300K .......... .......... .......... .......... .......... 97% 28.1M 0s
+ 14350K .......... .......... .......... .......... .......... 97%  135M 0s
+ 14400K .......... .......... .......... .......... .......... 97%  196M 0s
+ 14450K .......... .......... .......... .......... .......... 98% 34.6M 0s
+ 14500K .......... .......... .......... .......... .......... 98% 99.5M 0s
+ 14550K .......... .......... .......... .......... .......... 98%  214M 0s
+ 14600K .......... .......... .......... .......... .......... 99% 44.5M 0s
+ 14650K .......... .......... .......... .......... .......... 99% 70.2M 0s
+ 14700K .......... .......... .......... .......... .......... 99% 65.3M 0s
+ 14750K                                                       100%  939G=0.3s
+
+2025-08-14 22:29:28 (49.3 MB/s) - ‘/opt/electrum/contrib/build-linux/appimage/../../../contrib/build-linux/appimage/.cache/appimage/appimagetool’ saved [15104504/15104504]
+
+--2025-08-14 22:29:28--  https://www.python.org/ftp/python/3.12.11/Python-3.12.11.tar.xz
+Resolving www.python.org (www.python.org)... 151.101.192.223, 151.101.0.223, 151.101.64.223, ...
+Connecting to www.python.org (www.python.org)|151.101.192.223|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 20525812 (20M) [application/octet-stream]
+Saving to: ‘/opt/electrum/contrib/build-linux/appimage/../../../contrib/build-linux/appimage/.cache/appimage/Python-3.12.11.tar.xz’
+
+     0K .......... .......... .......... .......... ..........  0%  105M 0s
+    50K .......... .......... .......... .......... ..........  0%  152M 0s
+   100K .......... .......... .......... .......... ..........  0%  195M 0s
+   150K .......... .......... .......... .......... ..........  0% 83.1M 0s
+   200K .......... .......... .......... .......... ..........  1%  310M 0s
+   250K .......... .......... .......... .......... ..........  1% 64.9M 0s
+   300K .......... .......... .......... .......... ..........  1%  243M 0s
+   350K .......... .......... .......... .......... ..........  1%  258M 0s
+   400K .......... .......... .......... .......... ..........  2%  281M 0s
+   450K .......... .......... .......... .......... ..........  2%  266M 0s
+   500K .......... .......... .......... .......... ..........  2%  238M 0s
+   550K .......... .......... .......... .......... ..........  2%  235M 0s
+   600K .......... .......... .......... .......... ..........  3%  308M 0s
+   650K .......... .......... .......... .......... ..........  3%  215M 0s
+   700K .......... .......... .......... .......... ..........  3%  176M 0s
+   750K .......... .......... .......... .......... ..........  3%  241M 0s
+   800K .......... .......... .......... .......... ..........  4%  263M 0s
+   850K .......... .......... .......... .......... ..........  4%  170M 0s
+   900K .......... .......... .......... .......... ..........  4%  268M 0s
+   950K .......... .......... .......... .......... ..........  4%  291M 0s
+  1000K .......... .......... .......... .......... ..........  5%  256M 0s
+  1050K .......... .......... .......... .......... ..........  5%  252M 0s
+  1100K .......... .......... .......... .......... ..........  5%  207M 0s
+  1150K .......... .......... .......... .......... ..........  5%  307M 0s
+  1200K .......... .......... .......... .......... ..........  6%  213M 0s
+  1250K .......... .......... .......... .......... ..........  6%  246M 0s
+  1300K .......... .......... .......... .......... ..........  6%  221M 0s
+  1350K .......... .......... .......... .......... ..........  6%  285M 0s
+  1400K .......... .......... .......... .......... ..........  7%  237M 0s
+  1450K .......... .......... .......... .......... ..........  7%  232M 0s
+  1500K .......... .......... .......... .......... ..........  7%  234M 0s
+  1550K .......... .......... .......... .......... ..........  7%  295M 0s
+  1600K .......... .......... .......... .......... ..........  8%  257M 0s
+  1650K .......... .......... .......... .......... ..........  8%  269M 0s
+  1700K .......... .......... .......... .......... ..........  8%  223M 0s
+  1750K .......... .......... .......... .......... ..........  8%  310M 0s
+  1800K .......... .......... .......... .......... ..........  9%  202M 0s
+  1850K .......... .......... .......... .......... ..........  9%  250M 0s
+  1900K .......... .......... .......... .......... ..........  9%  222M 0s
+  1950K .......... .......... .......... .......... ..........  9%  263M 0s
+  2000K .......... .......... .......... .......... .......... 10%  276M 0s
+  2050K .......... .......... .......... .......... .......... 10%  238M 0s
+  2100K .......... .......... .......... .......... .......... 10%  228M 0s
+  2150K .......... .......... .......... .......... .......... 10%  298M 0s
+  2200K .......... .......... .......... .......... .......... 11%  220M 0s
+  2250K .......... .......... .......... .......... .......... 11%  308M 0s
+  2300K .......... .......... .......... .......... .......... 11%  234M 0s
+  2350K .......... .......... .......... .......... .......... 11%  209M 0s
+  2400K .......... .......... .......... .......... .......... 12%  243M 0s
+  2450K .......... .......... .......... .......... .......... 12%  267M 0s
+  2500K .......... .......... .......... .......... .......... 12%  206M 0s
+  2550K .......... .......... .......... .......... .......... 12%  286M 0s
+  2600K .......... .......... .......... .......... .......... 13%  261M 0s
+  2650K .......... .......... .......... .......... .......... 13%  231M 0s
+  2700K .......... .......... .......... .......... .......... 13%  239M 0s
+  2750K .......... .......... .......... .......... .......... 13%  334M 0s
+  2800K .......... .......... .......... .......... .......... 14%  219M 0s
+  2850K .......... .......... .......... .......... .......... 14%  167M 0s
+  2900K .......... .......... .......... .......... .......... 14%  308M 0s
+  2950K .......... .......... .......... .......... .......... 14%  235M 0s
+  3000K .......... .......... .......... .......... .......... 15%  244M 0s
+  3050K .......... .......... .......... .......... .......... 15%  211M 0s
+  3100K .......... .......... .......... .......... .......... 15%  276M 0s
+  3150K .......... .......... .......... .......... .......... 15%  271M 0s
+  3200K .......... .......... .......... .......... .......... 16%  233M 0s
+  3250K .......... .......... .......... .......... .......... 16%  285M 0s
+  3300K .......... .......... .......... .......... .......... 16%  274M 0s
+  3350K .......... .......... .......... .......... .......... 16%  230M 0s
+  3400K .......... .......... .......... .......... .......... 17%  225M 0s
+  3450K .......... .......... .......... .......... .......... 17%  203M 0s
+  3500K .......... .......... .......... .......... .......... 17%  233M 0s
+  3550K .......... .......... .......... .......... .......... 17%  292M 0s
+  3600K .......... .......... .......... .......... .......... 18%  230M 0s
+  3650K .......... .......... .......... .......... .......... 18%  224M 0s
+  3700K .......... .......... .......... .......... .......... 18%  217M 0s
+  3750K .......... .......... .......... .......... .......... 18%  280M 0s
+  3800K .......... .......... .......... .......... .......... 19%  356M 0s
+  3850K .......... .......... .......... .......... .......... 19%  196M 0s
+  3900K .......... .......... .......... .......... .......... 19%  265M 0s
+  3950K .......... .......... .......... .......... .......... 19%  291M 0s
+  4000K .......... .......... .......... .......... .......... 20%  232M 0s
+  4050K .......... .......... .......... .......... .......... 20%  236M 0s
+  4100K .......... .......... .......... .......... .......... 20%  206M 0s
+  4150K .......... .......... .......... .......... .......... 20%  305M 0s
+  4200K .......... .......... .......... .......... .......... 21%  234M 0s
+  4250K .......... .......... .......... .......... .......... 21%  196M 0s
+  4300K .......... .......... .......... .......... .......... 21%  277M 0s
+  4350K .......... .......... .......... .......... .......... 21%  225M 0s
+  4400K .......... .......... .......... .......... .......... 22%  311M 0s
+  4450K .......... .......... .......... .......... .......... 22%  182M 0s
+  4500K .......... .......... .......... .......... .......... 22%  279M 0s
+  4550K .......... .......... .......... .......... .......... 22%  267M 0s
+  4600K .......... .......... .......... .......... .......... 23%  294M 0s
+  4650K .......... .......... .......... .......... .......... 23%  243M 0s
+  4700K .......... .......... .......... .......... .......... 23%  225M 0s
+  4750K .......... .......... .......... .......... .......... 23%  462M 0s
+  4800K .......... .......... .......... .......... .......... 24%  371M 0s
+  4850K .......... .......... .......... .......... .......... 24%  382M 0s
+  4900K .......... .......... .......... .......... .......... 24%  452M 0s
+  4950K .......... .......... .......... .......... .......... 24%  296M 0s
+  5000K .......... .......... .......... .......... .......... 25%  354M 0s
+  5050K .......... .......... .......... .......... .......... 25%  253M 0s
+  5100K .......... .......... .......... .......... .......... 25%  216M 0s
+  5150K .......... .......... .......... .......... .......... 25%  226M 0s
+  5200K .......... .......... .......... .......... .......... 26%  173M 0s
+  5250K .......... .......... .......... .......... .......... 26%  171M 0s
+  5300K .......... .......... .......... .......... .......... 26%  304M 0s
+  5350K .......... .......... .......... .......... .......... 26%  198M 0s
+  5400K .......... .......... .......... .......... .......... 27%  208M 0s
+  5450K .......... .......... .......... .......... .......... 27%  229M 0s
+  5500K .......... .......... .......... .......... .......... 27%  231M 0s
+  5550K .......... .......... .......... .......... .......... 27%  283M 0s
+  5600K .......... .......... .......... .......... .......... 28%  264M 0s
+  5650K .......... .......... .......... .......... .......... 28%  216M 0s
+  5700K .......... .......... .......... .......... .......... 28%  227M 0s
+  5750K .......... .......... .......... .......... .......... 28%  174M 0s
+  5800K .......... .......... .......... .......... .......... 29%  235M 0s
+  5850K .......... .......... .......... .......... .......... 29%  191M 0s
+  5900K .......... .......... .......... .......... .......... 29%  206M 0s
+  5950K .......... .......... .......... .......... .......... 29%  334M 0s
+  6000K .......... .......... .......... .......... .......... 30%  251M 0s
+  6050K .......... .......... .......... .......... .......... 30%  265M 0s
+  6100K .......... .......... .......... .......... .......... 30%  258M 0s
+  6150K .......... .......... .......... .......... .......... 30%  205M 0s
+  6200K .......... .......... .......... .......... .......... 31%  237M 0s
+  6250K .......... .......... .......... .......... .......... 31%  305M 0s
+  6300K .......... .......... .......... .......... .......... 31%  228M 0s
+  6350K .......... .......... .......... .......... .......... 31%  265M 0s
+  6400K .......... .......... .......... .......... .......... 32%  291M 0s
+  6450K .......... .......... .......... .......... .......... 32%  230M 0s
+  6500K .......... .......... .......... .......... .......... 32%  249M 0s
+  6550K .......... .......... .......... .......... .......... 32%  227M 0s
+  6600K .......... .......... .......... .......... .......... 33%  213M 0s
+  6650K .......... .......... .......... .......... .......... 33%  231M 0s
+  6700K .......... .......... .......... .......... .......... 33%  153M 0s
+  6750K .......... .......... .......... .......... .......... 33%  223M 0s
+  6800K .......... .......... .......... .......... .......... 34%  331M 0s
+  6850K .......... .......... .......... .......... .......... 34%  223M 0s
+  6900K .......... .......... .......... .......... .......... 34%  177M 0s
+  6950K .......... .......... .......... .......... .......... 34%  220M 0s
+  7000K .......... .......... .......... .......... .......... 35%  364M 0s
+  7050K .......... .......... .......... .......... .......... 35%  368M 0s
+  7100K .......... .......... .......... .......... .......... 35%  268M 0s
+  7150K .......... .......... .......... .......... .......... 35%  344M 0s
+  7200K .......... .......... .......... .......... .......... 36%  186M 0s
+  7250K .......... .......... .......... .......... .......... 36%  460M 0s
+  7300K .......... .......... .......... .......... .......... 36%  318M 0s
+  7350K .......... .......... .......... .......... .......... 36%  334M 0s
+  7400K .......... .......... .......... .......... .......... 37%  243M 0s
+  7450K .......... .......... .......... .......... .......... 37%  373M 0s
+  7500K .......... .......... .......... .......... .......... 37%  226M 0s
+  7550K .......... .......... .......... .......... .......... 37%  443M 0s
+  7600K .......... .......... .......... .......... .......... 38%  316M 0s
+  7650K .......... .......... .......... .......... .......... 38%  287M 0s
+  7700K .......... .......... .......... .......... .......... 38%  191M 0s
+  7750K .......... .......... .......... .......... .......... 38%  218M 0s
+  7800K .......... .......... .......... .......... .......... 39%  417M 0s
+  7850K .......... .......... .......... .......... .......... 39%  316M 0s
+  7900K .......... .......... .......... .......... .......... 39%  210M 0s
+  7950K .......... .......... .......... .......... .......... 39%  236M 0s
+  8000K .......... .......... .......... .......... .......... 40%  246M 0s
+  8050K .......... .......... .......... .......... .......... 40%  362M 0s
+  8100K .......... .......... .......... .......... .......... 40%  338M 0s
+  8150K .......... .......... .......... .......... .......... 40%  294M 0s
+  8200K .......... .......... .......... .......... .......... 41%  233M 0s
+  8250K .......... .......... .......... .......... .......... 41%  278M 0s
+  8300K .......... .......... .......... .......... .......... 41%  156M 0s
+  8350K .......... .......... .......... .......... .......... 41%  276M 0s
+  8400K .......... .......... .......... .......... .......... 42%  204M 0s
+  8450K .......... .......... .......... .......... .......... 42%  251M 0s
+  8500K .......... .......... .......... .......... .......... 42%  347M 0s
+  8550K .......... .......... .......... .......... .......... 42%  233M 0s
+  8600K .......... .......... .......... .......... .......... 43%  320M 0s
+  8650K .......... .......... .......... .......... .......... 43%  412M 0s
+  8700K .......... .......... .......... .......... .......... 43%  285M 0s
+  8750K .......... .......... .......... .......... .......... 43%  217M 0s
+  8800K .......... .......... .......... .......... .......... 44%  288M 0s
+  8850K .......... .......... .......... .......... .......... 44%  244M 0s
+  8900K .......... .......... .......... .......... .......... 44%  246M 0s
+  8950K .......... .......... .......... .......... .......... 44%  282M 0s
+  9000K .......... .......... .......... .......... .......... 45%  224M 0s
+  9050K .......... .......... .......... .......... .......... 45%  299M 0s
+  9100K .......... .......... .......... .......... .......... 45%  173M 0s
+  9150K .......... .......... .......... .......... .......... 45%  396M 0s
+  9200K .......... .......... .......... .......... .......... 46%  331M 0s
+  9250K .......... .......... .......... .......... .......... 46%  280M 0s
+  9300K .......... .......... .......... .......... .......... 46%  233M 0s
+  9350K .......... .......... .......... .......... .......... 46%  294M 0s
+  9400K .......... .......... .......... .......... .......... 47%  292M 0s
+  9450K .......... .......... .......... .......... .......... 47%  216M 0s
+  9500K .......... .......... .......... .......... .......... 47%  288M 0s
+  9550K .......... .......... .......... .......... .......... 47%  281M 0s
+  9600K .......... .......... .......... .......... .......... 48%  255M 0s
+  9650K .......... .......... .......... .......... .......... 48%  188M 0s
+  9700K .......... .......... .......... .......... .......... 48%  321M 0s
+  9750K .......... .......... .......... .......... .......... 48%  284M 0s
+  9800K .......... .......... .......... .......... .......... 49%  210M 0s
+  9850K .......... .......... .......... .......... .......... 49%  244M 0s
+  9900K .......... .......... .......... .......... .......... 49%  232M 0s
+  9950K .......... .......... .......... .......... .......... 49%  265M 0s
+ 10000K .......... .......... .......... .......... .......... 50%  230M 0s
+ 10050K .......... .......... .......... .......... .......... 50%  367M 0s
+ 10100K .......... .......... .......... .......... .......... 50%  241M 0s
+ 10150K .......... .......... .......... .......... .......... 50%  281M 0s
+ 10200K .......... .......... .......... .......... .......... 51%  272M 0s
+ 10250K .......... .......... .......... .......... .......... 51%  276M 0s
+ 10300K .......... .......... .......... .......... .......... 51%  255M 0s
+ 10350K .......... .......... .......... .......... .......... 51%  333M 0s
+ 10400K .......... .......... .......... .......... .......... 52%  235M 0s
+ 10450K .......... .......... .......... .......... .......... 52%  197M 0s
+ 10500K .......... .......... .......... .......... .......... 52%  226M 0s
+ 10550K .......... .......... .......... .......... .......... 52%  278M 0s
+ 10600K .......... .......... .......... .......... .......... 53%  242M 0s
+ 10650K .......... .......... .......... .......... .......... 53%  245M 0s
+ 10700K .......... .......... .......... .......... .......... 53%  197M 0s
+ 10750K .......... .......... .......... .......... .......... 53%  292M 0s
+ 10800K .......... .......... .......... .......... .......... 54%  397M 0s
+ 10850K .......... .......... .......... .......... .......... 54%  491M 0s
+ 10900K .......... .......... .......... .......... .......... 54%  294M 0s
+ 10950K .......... .......... .......... .......... .......... 54%  311M 0s
+ 11000K .......... .......... .......... .......... .......... 55%  288M 0s
+ 11050K .......... .......... .......... .......... .......... 55%  419M 0s
+ 11100K .......... .......... .......... .......... .......... 55%  246M 0s
+ 11150K .......... .......... .......... .......... .......... 55%  301M 0s
+ 11200K .......... .......... .......... .......... .......... 56%  224M 0s
+ 11250K .......... .......... .......... .......... .......... 56%  415M 0s
+ 11300K .......... .......... .......... .......... .......... 56%  305M 0s
+ 11350K .......... .......... .......... .......... .......... 56%  570M 0s
+ 11400K .......... .......... .......... .......... .......... 57%  412M 0s
+ 11450K .......... .......... .......... .......... .......... 57%  477M 0s
+ 11500K .......... .......... .......... .......... .......... 57%  370M 0s
+ 11550K .......... .......... .......... .......... .......... 57%  394M 0s
+ 11600K .......... .......... .......... .......... .......... 58%  376M 0s
+ 11650K .......... .......... .......... .......... .......... 58%  624M 0s
+ 11700K .......... .......... .......... .......... .......... 58%  453M 0s
+ 11750K .......... .......... .......... .......... .......... 58%  337M 0s
+ 11800K .......... .......... .......... .......... .......... 59%  535M 0s
+ 11850K .......... .......... .......... .......... .......... 59%  485M 0s
+ 11900K .......... .......... .......... .......... .......... 59%  401M 0s
+ 11950K .......... .......... .......... .......... .......... 59%  476M 0s
+ 12000K .......... .......... .......... .......... .......... 60%  474M 0s
+ 12050K .......... .......... .......... .......... .......... 60%  423M 0s
+ 12100K .......... .......... .......... .......... .......... 60%  330M 0s
+ 12150K .......... .......... .......... .......... .......... 60%  541M 0s
+ 12200K .......... .......... .......... .......... .......... 61%  412M 0s
+ 12250K .......... .......... .......... .......... .......... 61%  538M 0s
+ 12300K .......... .......... .......... .......... .......... 61%  383M 0s
+ 12350K .......... .......... .......... .......... .......... 61%  542M 0s
+ 12400K .......... .......... .......... .......... .......... 62%  440M 0s
+ 12450K .......... .......... .......... .......... .......... 62%  261M 0s
+ 12500K .......... .......... .......... .......... .......... 62%  231M 0s
+ 12550K .......... .......... .......... .......... .......... 62%  520M 0s
+ 12600K .......... .......... .......... .......... .......... 63%  500M 0s
+ 12650K .......... .......... .......... .......... .......... 63%  420M 0s
+ 12700K .......... .......... .......... .......... .......... 63%  354M 0s
+ 12750K .......... .......... .......... .......... .......... 63%  519M 0s
+ 12800K .......... .......... .......... .......... .......... 64%  382M 0s
+ 12850K .......... .......... .......... .......... .......... 64%  375M 0s
+ 12900K .......... .......... .......... .......... .......... 64%  313M 0s
+ 12950K .......... .......... .......... .......... .......... 64%  529M 0s
+ 13000K .......... .......... .......... .......... .......... 65%  404M 0s
+ 13050K .......... .......... .......... .......... .......... 65%  517M 0s
+ 13100K .......... .......... .......... .......... .......... 65%  354M 0s
+ 13150K .......... .......... .......... .......... .......... 65%  532M 0s
+ 13200K .......... .......... .......... .......... .......... 66%  552M 0s
+ 13250K .......... .......... .......... .......... .......... 66%  376M 0s
+ 13300K .......... .......... .......... .......... .......... 66%  363M 0s
+ 13350K .......... .......... .......... .......... .......... 66%  416M 0s
+ 13400K .......... .......... .......... .......... .......... 67%  454M 0s
+ 13450K .......... .......... .......... .......... .......... 67%  332M 0s
+ 13500K .......... .......... .......... .......... .......... 67%  374M 0s
+ 13550K .......... .......... .......... .......... .......... 67%  541M 0s
+ 13600K .......... .......... .......... .......... .......... 68%  483M 0s
+ 13650K .......... .......... .......... .......... .......... 68%  519M 0s
+ 13700K .......... .......... .......... .......... .......... 68%  351M 0s
+ 13750K .......... .......... .......... .......... .......... 68%  390M 0s
+ 13800K .......... .......... .......... .......... .......... 69%  538M 0s
+ 13850K .......... .......... .......... .......... .......... 69%  448M 0s
+ 13900K .......... .......... .......... .......... .......... 69%  373M 0s
+ 13950K .......... .......... .......... .......... .......... 69%  521M 0s
+ 14000K .......... .......... .......... .......... .......... 70%  533M 0s
+ 14050K .......... .......... .......... .......... .......... 70%  528M 0s
+ 14100K .......... .......... .......... .......... .......... 70%  411M 0s
+ 14150K .......... .......... .......... .......... .......... 70%  334M 0s
+ 14200K .......... .......... .......... .......... .......... 71%  408M 0s
+ 14250K .......... .......... .......... .......... .......... 71%  463M 0s
+ 14300K .......... .......... .......... .......... .......... 71%  404M 0s
+ 14350K .......... .......... .......... .......... .......... 71%  459M 0s
+ 14400K .......... .......... .......... .......... .......... 72%  441M 0s
+ 14450K .......... .......... .......... .......... .......... 72%  575M 0s
+ 14500K .......... .......... .......... .......... .......... 72%  361M 0s
+ 14550K .......... .......... .......... .......... .......... 72%  316M 0s
+ 14600K .......... .......... .......... .......... .......... 73%  324M 0s
+ 14650K .......... .......... .......... .......... .......... 73%  439M 0s
+ 14700K .......... .......... .......... .......... .......... 73%  378M 0s
+ 14750K .......... .......... .......... .......... .......... 73%  329M 0s
+ 14800K .......... .......... .......... .......... .......... 74%  490M 0s
+ 14850K .......... .......... .......... .......... .......... 74%  543M 0s
+ 14900K .......... .......... .......... .......... .......... 74%  403M 0s
+ 14950K .......... .......... .......... .......... .......... 74%  311M 0s
+ 15000K .......... .......... .......... .......... .......... 75%  349M 0s
+ 15050K .......... .......... .......... .......... .......... 75%  332M 0s
+ 15100K .......... .......... .......... .......... .......... 75%  314M 0s
+ 15150K .......... .......... .......... .......... .......... 75%  526M 0s
+ 15200K .......... .......... .......... .......... .......... 76%  561M 0s
+ 15250K .......... .......... .......... .......... .......... 76%  439M 0s
+ 15300K .......... .......... .......... .......... .......... 76%  415M 0s
+ 15350K .......... .......... .......... .......... .......... 76%  325M 0s
+ 15400K .......... .......... .......... .......... .......... 77%  377M 0s
+ 15450K .......... .......... .......... .......... .......... 77%  397M 0s
+ 15500K .......... .......... .......... .......... .......... 77%  361M 0s
+ 15550K .......... .......... .......... .......... .......... 77%  475M 0s
+ 15600K .......... .......... .......... .......... .......... 78%  379M 0s
+ 15650K .......... .......... .......... .......... .......... 78%  520M 0s
+ 15700K .......... .......... .......... .......... .......... 78%  373M 0s
+ 15750K .......... .......... .......... .......... .......... 78%  327M 0s
+ 15800K .......... .......... .......... .......... .......... 79%  373M 0s
+ 15850K .......... .......... .......... .......... .......... 79%  318M 0s
+ 15900K .......... .......... .......... .......... .......... 79%  385M 0s
+ 15950K .......... .......... .......... .......... .......... 79%  395M 0s
+ 16000K .......... .......... .......... .......... .......... 80%  417M 0s
+ 16050K .......... .......... .......... .......... .......... 80%  391M 0s
+ 16100K .......... .......... .......... .......... .......... 80%  254M 0s
+ 16150K .......... .......... .......... .......... .......... 80%  328M 0s
+ 16200K .......... .......... .......... .......... .......... 81%  436M 0s
+ 16250K .......... .......... .......... .......... .......... 81%  450M 0s
+ 16300K .......... .......... .......... .......... .......... 81%  243M 0s
+ 16350K .......... .......... .......... .......... .......... 81%  456M 0s
+ 16400K .......... .......... .......... .......... .......... 82%  603M 0s
+ 16450K .......... .......... .......... .......... .......... 82%  433M 0s
+ 16500K .......... .......... .......... .......... .......... 82%  351M 0s
+ 16550K .......... .......... .......... .......... .......... 82%  300M 0s
+ 16600K .......... .......... .......... .......... .......... 83%  533M 0s
+ 16650K .......... .......... .......... .......... .......... 83%  445M 0s
+ 16700K .......... .......... .......... .......... .......... 83%  309M 0s
+ 16750K .......... .......... .......... .......... .......... 83%  608M 0s
+ 16800K .......... .......... .......... .......... .......... 84%  463M 0s
+ 16850K .......... .......... .......... .......... .......... 84%  556M 0s
+ 16900K .......... .......... .......... .......... .......... 84%  225M 0s
+ 16950K .......... .......... .......... .......... .......... 84%  352M 0s
+ 17000K .......... .......... .......... .......... .......... 85%  414M 0s
+ 17050K .......... .......... .......... .......... .......... 85%  428M 0s
+ 17100K .......... .......... .......... .......... .......... 85%  279M 0s
+ 17150K .......... .......... .......... .......... .......... 85%  352M 0s
+ 17200K .......... .......... .......... .......... .......... 86%  535M 0s
+ 17250K .......... .......... .......... .......... .......... 86%  316M 0s
+ 17300K .......... .......... .......... .......... .......... 86%  492M 0s
+ 17350K .......... .......... .......... .......... .......... 86%  368M 0s
+ 17400K .......... .......... .......... .......... .......... 87%  544M 0s
+ 17450K .......... .......... .......... .......... .......... 87%  394M 0s
+ 17500K .......... .......... .......... .......... .......... 87%  258M 0s
+ 17550K .......... .......... .......... .......... .......... 87%  454M 0s
+ 17600K .......... .......... .......... .......... .......... 88%  563M 0s
+ 17650K .......... .......... .......... .......... .......... 88%  470M 0s
+ 17700K .......... .......... .......... .......... .......... 88%  453M 0s
+ 17750K .......... .......... .......... .......... .......... 88%  216M 0s
+ 17800K .......... .......... .......... .......... .......... 89%  329M 0s
+ 17850K .......... .......... .......... .......... .......... 89%  279M 0s
+ 17900K .......... .......... .......... .......... .......... 89%  238M 0s
+ 17950K .......... .......... .......... .......... .......... 89%  279M 0s
+ 18000K .......... .......... .......... .......... .......... 90%  213M 0s
+ 18050K .......... .......... .......... .......... .......... 90%  328M 0s
+ 18100K .......... .......... .......... .......... .......... 90%  236M 0s
+ 18150K .......... .......... .......... .......... .......... 90%  297M 0s
+ 18200K .......... .......... .......... .......... .......... 91%  406M 0s
+ 18250K .......... .......... .......... .......... .......... 91%  470M 0s
+ 18300K .......... .......... .......... .......... .......... 91%  348M 0s
+ 18350K .......... .......... .......... .......... .......... 91%  358M 0s
+ 18400K .......... .......... .......... .......... .......... 92%  488M 0s
+ 18450K .......... .......... .......... .......... .......... 92%  457M 0s
+ 18500K .......... .......... .......... .......... .......... 92%  346M 0s
+ 18550K .......... .......... .......... .......... .......... 92%  478M 0s
+ 18600K .......... .......... .......... .......... .......... 93%  488M 0s
+ 18650K .......... .......... .......... .......... .......... 93%  545M 0s
+ 18700K .......... .......... .......... .......... .......... 93%  482M 0s
+ 18750K .......... .......... .......... .......... .......... 93%  571M 0s
+ 18800K .......... .......... .......... .......... .......... 94%  455M 0s
+ 18850K .......... .......... .......... .......... .......... 94%  556M 0s
+ 18900K .......... .......... .......... .......... .......... 94%  414M 0s
+ 18950K .......... .......... .......... .......... .......... 94%  525M 0s
+ 19000K .......... .......... .......... .......... .......... 95%  341M 0s
+ 19050K .......... .......... .......... .......... .......... 95%  424M 0s
+ 19100K .......... .......... .......... .......... .......... 95%  466M 0s
+ 19150K .......... .......... .......... .......... .......... 95%  573M 0s
+ 19200K .......... .......... .......... .......... .......... 96%  644M 0s
+ 19250K .......... .......... .......... .......... .......... 96%  576M 0s
+ 19300K .......... .......... .......... .......... .......... 96%  426M 0s
+ 19350K .......... .......... .......... .......... .......... 96%  593M 0s
+ 19400K .......... .......... .......... .......... .......... 97%  573M 0s
+ 19450K .......... .......... .......... .......... .......... 97%  549M 0s
+ 19500K .......... .......... .......... .......... .......... 97%  396M 0s
+ 19550K .......... .......... .......... .......... .......... 97%  572M 0s
+ 19600K .......... .......... .......... .......... .......... 98%  362M 0s
+ 19650K .......... .......... .......... .......... .......... 98%  332M 0s
+ 19700K .......... .......... .......... .......... .......... 98%  515M 0s
+ 19750K .......... .......... .......... .......... .......... 98%  582M 0s
+ 19800K .......... .......... .......... .......... .......... 99%  443M 0s
+ 19850K .......... .......... .......... .......... .......... 99%  555M 0s
+ 19900K .......... .......... .......... .......... .......... 99%  483M 0s
+ 19950K .......... .......... .......... .......... .......... 99%  466M 0s
+ 20000K .......... .......... .......... .......... ....      100%  573M=0.07s
+
+2025-08-14 22:29:28 (295 MB/s) - ‘/opt/electrum/contrib/build-linux/appimage/../../../contrib/build-linux/appimage/.cache/appimage/Python-3.12.11.tar.xz’ saved [20525812/20525812]
+
+💬 [0;34mINFO:[0m  building python.
+Parser/tokenizer.c: In function ‘update_fstring_expr’:
+Parser/tokenizer.c:482:29: warning: this statement may fall through [-Wimplicit-fallthrough=]
+     tok_mode->last_expr_end = strlen(tok->start);
+     ~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~
+Parser/tokenizer.c:483:3: note: here
+   case ':':
+   ^~~~
+Python/import.c: In function ‘hashtable_key_from_2_strings.constprop’:
+Python/import.c:938:5: warning: ‘strncpy’ output truncated before terminating nul copying as many bytes from a string as its length [-Wstringop-truncation]
+     strncpy(key, str1_data, str1_len);
+     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Python/import.c:925:27: note: length computed here
+     Py_ssize_t str1_len = strlen(str1_data);
+                           ^~~~~~~~~~~~~~~~~
+The necessary bits to build these optional modules were not found:
+_bz2                  _dbm                  _gdbm              
+_lzma                 _tkinter              _uuid              
+readline                                                       
+To find the necessary bits, look in configure.ac and config.log.
+
+Checked 111 modules (31 built-in, 72 shared, 1 n/a on linux-x86_64, 0 disabled, 7 missing, 0 failed on import)
+💬 [0;34mINFO:[0m  installing python.
+  WARNING: The scripts pip3 and pip3.12 are installed in '/opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/bin' which is not on PATH.
+  Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+💬 [0;34mINFO:[0m  Building secp256k1...
+HEAD is now at 199d27c Merge bitcoin-core/secp256k1#1415: release: Prepare for 0.4.0
+HEAD is now at 199d27c Merge bitcoin-core/secp256k1#1415: release: Prepare for 0.4.0
+libtoolize: putting auxiliary files in AC_CONFIG_AUX_DIR, 'build-aux'.
+libtoolize: copying file 'build-aux/ltmain.sh'
+libtoolize: putting macros in AC_CONFIG_MACRO_DIRS, 'build-aux/m4'.
+libtoolize: copying file 'build-aux/m4/libtool.m4'
+libtoolize: copying file 'build-aux/m4/ltoptions.m4'
+libtoolize: copying file 'build-aux/m4/ltsugar.m4'
+libtoolize: copying file 'build-aux/m4/ltversion.m4'
+libtoolize: copying file 'build-aux/m4/lt~obsolete.m4'
+configure.ac:39: installing 'build-aux/ar-lib'
+configure.ac:37: installing 'build-aux/compile'
+configure.ac:24: installing 'build-aux/config.guess'
+configure.ac:24: installing 'build-aux/config.sub'
+configure.ac:27: installing 'build-aux/install-sh'
+configure.ac:27: installing 'build-aux/missing'
+Makefile.am: installing 'build-aux/depcomp'
+parallel-tests: installing 'build-aux/test-driver'
+checking build system type... x86_64-pc-linux-gnu
+checking host system type... x86_64-pc-linux-gnu
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether build environment is sane... yes
+checking for a thread-safe mkdir -p... /bin/mkdir -p
+checking for gawk... no
+checking for mawk... mawk
+checking whether make sets $(MAKE)... yes
+checking whether make supports nested variables... yes
+checking whether make supports nested variables... (cached) yes
+checking for gcc... gcc
+checking whether the C compiler works... yes
+checking for C compiler default output file name... a.out
+checking for suffix of executables... 
+checking whether we are cross compiling... no
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to accept ISO C89... none needed
+checking whether gcc understands -c and -o together... yes
+checking whether make supports the include directive... yes (GNU style)
+checking dependency style of gcc... gcc3
+checking dependency style of gcc... gcc3
+checking for ar... ar
+checking the archiver (ar) interface... ar
+checking how to print strings... printf
+checking for a sed that does not truncate output... /bin/sed
+checking for grep that handles long lines and -e... /bin/grep
+checking for egrep... /bin/grep -E
+checking for fgrep... /bin/grep -F
+checking for ld used by gcc... /usr/bin/ld
+checking if the linker (/usr/bin/ld) is GNU ld... yes
+checking for BSD- or MS-compatible name lister (nm)... /usr/bin/nm -B
+checking the name lister (/usr/bin/nm -B) interface... BSD nm
+checking whether ln -s works... yes
+checking the maximum length of command line arguments... 1572864
+checking how to convert x86_64-pc-linux-gnu file names to x86_64-pc-linux-gnu format... func_convert_file_noop
+checking how to convert x86_64-pc-linux-gnu file names to toolchain format... func_convert_file_noop
+checking for /usr/bin/ld option to reload object files... -r
+checking for objdump... objdump
+checking how to recognize dependent libraries... pass_all
+checking for dlltool... no
+checking how to associate runtime and link libraries... printf %s\n
+checking for archiver @FILE support... @
+checking for strip... strip
+checking for ranlib... ranlib
+checking command to parse /usr/bin/nm -B output from gcc object... ok
+checking for sysroot... no
+checking for a working dd... /bin/dd
+checking how to truncate binary pipes... /bin/dd bs=4096 count=1
+checking for mt... no
+checking if : is a manifest tool... no
+checking how to run the C preprocessor... gcc -E
+checking for ANSI C header files... yes
+checking for sys/types.h... yes
+checking for sys/stat.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for memory.h... yes
+checking for strings.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for unistd.h... yes
+checking for dlfcn.h... yes
+checking for objdir... .libs
+checking if gcc supports -fno-rtti -fno-exceptions... no
+checking for gcc option to produce PIC... -fPIC -DPIC
+checking if gcc PIC flag -fPIC -DPIC works... yes
+checking if gcc static flag -static works... yes
+checking if gcc supports -c -o file.o... yes
+checking if gcc supports -c -o file.o... (cached) yes
+checking whether the gcc linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+checking whether -lc should be explicitly linked in... no
+checking dynamic linker characteristics... GNU/Linux ld.so
+checking how to hardcode library paths into programs... immediate
+checking whether stripping libraries is possible... yes
+checking if libtool supports shared libraries... yes
+checking whether to build shared libraries... yes
+checking whether to build static libraries... no
+checking if gcc supports -Werror... yes
+checking if gcc supports -std=c89 -pedantic -Wno-long-long -Wnested-externs -Wshadow -Wstrict-prototypes -Wundef... yes
+checking if gcc supports -Wno-overlength-strings... yes
+checking if gcc supports -Wall... yes
+checking if gcc supports -Wno-unused-function... yes
+checking if gcc supports -Wextra... yes
+checking if gcc supports -Wcast-align... yes
+checking if gcc supports -Wcast-align=strict... yes
+checking if gcc supports -Wconditional-uninitialized... no
+checking if gcc supports -Wreserved-identifier... no
+checking if gcc supports -fvisibility=hidden... yes
+checking for valgrind support... 
+checking for x86_64 assembly availability... yes
+configure: ******
+configure: WARNING: experimental build
+configure: Experimental features do not have stable APIs or properties, and may not be safe for production use.
+configure: ******
+checking that generated files are newer than configure... done
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating libsecp256k1.pc
+config.status: executing depfiles commands
+config.status: executing libtool commands
+
+Build Options:
+  with external callbacks = no
+  with benchmarks         = no
+  with tests              = no
+  with ctime tests        = no
+  with coverage           = no
+  with examples           = no
+  module ecdh             = yes
+  module recovery         = yes
+  module extrakeys        = yes
+  module schnorrsig       = yes
+  module ellswift         = yes
+
+  asm                     = x86_64
+  ecmult window size      = 15
+  ecmult gen prec. bits   = 4
+
+  valgrind                = no
+  CC                      = gcc
+  CPPFLAGS                = 
+  SECP_CFLAGS             = -O2  -std=c89 -pedantic -Wno-long-long -Wnested-externs -Wshadow -Wstrict-prototypes -Wundef -Wno-overlength-strings -Wall -Wno-unused-function -Wextra -Wcast-align -Wcast-align=strict -fvisibility=hidden 
+  CFLAGS                  = -g -O2
+  LDFLAGS                 = 
+make  all-am
+make[1]: Entering directory '/opt/electrum/contrib/secp256k1'
+  CC       src/libsecp256k1_la-secp256k1.lo
+  CC       src/libsecp256k1_precomputed_la-precomputed_ecmult.lo
+  CC       src/libsecp256k1_precomputed_la-precomputed_ecmult_gen.lo
+  CCLD     libsecp256k1_precomputed.la
+ar: `u' modifier ignored since `D' is the default (see `U')
+  CCLD     libsecp256k1.la
+make[1]: Leaving directory '/opt/electrum/contrib/secp256k1'
+make  install-am
+make[1]: Entering directory '/opt/electrum/contrib/secp256k1'
+make[2]: Entering directory '/opt/electrum/contrib/secp256k1'
+ /bin/mkdir -p '/opt/electrum/contrib/secp256k1/dist/lib'
+ /bin/mkdir -p '/opt/electrum/contrib/secp256k1/dist/include'
+ /bin/mkdir -p '/opt/electrum/contrib/secp256k1/dist/lib/pkgconfig'
+ /bin/bash ./libtool   --mode=install /usr/bin/install -c   libsecp256k1.la '/opt/electrum/contrib/secp256k1/dist/lib'
+ /usr/bin/install -c -m 644 include/secp256k1.h include/secp256k1_preallocated.h include/secp256k1_ecdh.h include/secp256k1_recovery.h include/secp256k1_extrakeys.h include/secp256k1_schnorrsig.h include/secp256k1_ellswift.h '/opt/electrum/contrib/secp256k1/dist/include'
+ /usr/bin/install -c -m 644 libsecp256k1.pc '/opt/electrum/contrib/secp256k1/dist/lib/pkgconfig'
+libtool: install: /usr/bin/install -c .libs/libsecp256k1.so.2.1.0 /opt/electrum/contrib/secp256k1/dist/lib/libsecp256k1.so.2.1.0
+libtool: install: (cd /opt/electrum/contrib/secp256k1/dist/lib && { ln -s -f libsecp256k1.so.2.1.0 libsecp256k1.so.2 || { rm -f libsecp256k1.so.2 && ln -s libsecp256k1.so.2.1.0 libsecp256k1.so.2; }; })
+libtool: install: (cd /opt/electrum/contrib/secp256k1/dist/lib && { ln -s -f libsecp256k1.so.2.1.0 libsecp256k1.so || { rm -f libsecp256k1.so && ln -s libsecp256k1.so.2.1.0 libsecp256k1.so; }; })
+libtool: install: /usr/bin/install -c .libs/libsecp256k1.lai /opt/electrum/contrib/secp256k1/dist/lib/libsecp256k1.la
+libtool: finish: PATH="/home/user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/sbin" ldconfig -n /opt/electrum/contrib/secp256k1/dist/lib
+----------------------------------------------------------------------
+Libraries have been installed in:
+   /opt/electrum/contrib/secp256k1/dist/lib
+
+If you ever happen to want to link against installed libraries
+in a given directory, LIBDIR, you must either use libtool, and
+specify the full pathname of the library, or use the '-LLIBDIR'
+flag during linking and do at least one of the following:
+   - add LIBDIR to the 'LD_LIBRARY_PATH' environment variable
+     during execution
+   - add LIBDIR to the 'LD_RUN_PATH' environment variable
+     during linking
+   - use the '-Wl,-rpath -Wl,LIBDIR' linker flag
+   - have your system administrator add LIBDIR to '/etc/ld.so.conf'
+
+See any operating system documentation about shared libraries for
+more information, such as the ld(1) and ld.so(8) manual pages.
+----------------------------------------------------------------------
+make[2]: Leaving directory '/opt/electrum/contrib/secp256k1'
+make[1]: Leaving directory '/opt/electrum/contrib/secp256k1'
+'/opt/electrum/contrib/secp256k1/dist/lib/libsecp256k1.so.2' -> '/opt/electrum/contrib/../electrum/libsecp256k1.so.2'
+💬 [0;34mINFO:[0m  libsecp256k1.so.2 has been placed in the inner 'electrum' folder.
+'/opt/electrum/contrib/secp256k1/dist/lib/libsecp256k1.so.2' -> '/opt/electrum/contrib/build-linux/appimage/../../../contrib/build-linux/appimage/.cache/appimage/dlls/libsecp256k1.so.2'
+💬 [0;34mINFO:[0m  building libxcb-util1.
+Cloning into 'util'...
+Submodule 'm4' (https://gitlab.freedesktop.org/xorg/util/xcb-util-m4.git) registered for path 'm4'
+Cloning into '/opt/electrum/contrib/build-linux/appimage/.cache/appimage/libxcb-util1/util/m4'...
+Submodule path 'm4': checked out 'c617eee22ae5c285e79e81ec39ce96862fd3262f'
+HEAD is now at bdba930 Strip trailing whitespace from source files
+M	m4
+Note: checking out 'acf790d7752f36e450d476ad79807d4012ec863b^{commit}'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by performing another checkout.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+
+  git checkout -b <new-branch-name>
+
+HEAD is now at acf790d Release 0.4.0
+autoreconf: Entering directory `.'
+autoreconf: configure.ac: not using Gettext
+autoreconf: running: aclocal -I m4
+autoreconf: configure.ac: tracing
+autoreconf: running: libtoolize --copy
+libtoolize: putting auxiliary files in '.'.
+libtoolize: copying file './ltmain.sh'
+libtoolize: putting macros in AC_CONFIG_MACRO_DIRS, 'm4'.
+libtoolize: copying file 'm4/libtool.m4'
+libtoolize: copying file 'm4/ltoptions.m4'
+libtoolize: copying file 'm4/ltsugar.m4'
+libtoolize: copying file 'm4/ltversion.m4'
+libtoolize: copying file 'm4/lt~obsolete.m4'
+libtoolize: Remember to add 'LT_INIT' to configure.ac.
+autoreconf: running: /usr/bin/autoconf
+autoreconf: running: /usr/bin/autoheader
+autoreconf: running: automake --add-missing --copy --no-force
+configure.ac:10: installing './compile'
+configure.ac:10: installing './config.guess'
+configure.ac:10: installing './config.sub'
+configure.ac:8: installing './install-sh'
+configure.ac:8: installing './missing'
+src/Makefile.am: installing './depcomp'
+autoreconf: Leaving directory `.'
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether build environment is sane... yes
+checking for a thread-safe mkdir -p... /bin/mkdir -p
+checking for gawk... no
+checking for mawk... mawk
+checking whether make sets $(MAKE)... yes
+checking whether make supports nested variables... yes
+checking build system type... x86_64-pc-linux-gnu
+checking host system type... x86_64-pc-linux-gnu
+checking how to print strings... printf
+checking whether make supports the include directive... yes (GNU style)
+checking for gcc... gcc
+checking whether the C compiler works... yes
+checking for C compiler default output file name... a.out
+checking for suffix of executables... 
+checking whether we are cross compiling... no
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to accept ISO C89... none needed
+checking whether gcc understands -c and -o together... yes
+checking dependency style of gcc... gcc3
+checking for a sed that does not truncate output... /bin/sed
+checking for grep that handles long lines and -e... /bin/grep
+checking for egrep... /bin/grep -E
+checking for fgrep... /bin/grep -F
+checking for ld used by gcc... /usr/bin/ld
+checking if the linker (/usr/bin/ld) is GNU ld... yes
+checking for BSD- or MS-compatible name lister (nm)... /usr/bin/nm -B
+checking the name lister (/usr/bin/nm -B) interface... BSD nm
+checking whether ln -s works... yes
+checking the maximum length of command line arguments... 1572864
+checking how to convert x86_64-pc-linux-gnu file names to x86_64-pc-linux-gnu format... func_convert_file_noop
+checking how to convert x86_64-pc-linux-gnu file names to toolchain format... func_convert_file_noop
+checking for /usr/bin/ld option to reload object files... -r
+checking for objdump... objdump
+checking how to recognize dependent libraries... pass_all
+checking for dlltool... no
+checking how to associate runtime and link libraries... printf %s\n
+checking for ar... ar
+checking for archiver @FILE support... @
+checking for strip... strip
+checking for ranlib... ranlib
+checking command to parse /usr/bin/nm -B output from gcc object... ok
+checking for sysroot... no
+checking for a working dd... /bin/dd
+checking how to truncate binary pipes... /bin/dd bs=4096 count=1
+checking for mt... no
+checking if : is a manifest tool... no
+checking how to run the C preprocessor... gcc -E
+checking for ANSI C header files... yes
+checking for sys/types.h... yes
+checking for sys/stat.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for memory.h... yes
+checking for strings.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for unistd.h... yes
+checking for dlfcn.h... yes
+checking for objdir... .libs
+checking if gcc supports -fno-rtti -fno-exceptions... no
+checking for gcc option to produce PIC... -fPIC -DPIC
+checking if gcc PIC flag -fPIC -DPIC works... yes
+checking if gcc static flag -static works... yes
+checking if gcc supports -c -o file.o... yes
+checking if gcc supports -c -o file.o... (cached) yes
+checking whether the gcc linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+checking whether -lc should be explicitly linked in... no
+checking dynamic linker characteristics... GNU/Linux ld.so
+checking how to hardcode library paths into programs... immediate
+checking whether stripping libraries is possible... yes
+checking if libtool supports shared libraries... yes
+checking whether to build shared libraries... yes
+checking whether to build static libraries... yes
+checking for pkg-config... /usr/bin/pkg-config
+checking pkg-config is at least version 0.9.0... yes
+checking for gcc option to accept ISO C99... none needed
+checking whether __clang__ is declared... no
+checking whether __INTEL_COMPILER is declared... no
+checking whether __SUNPRO_C is declared... no
+checking for XCB... yes
+checking whether libxcb was compiled against xcb-proto >= 1.6... checking for gawk... (cached) mawk
+yes
+checking if gcc supports -Werror=unknown-warning-option... no
+checking if gcc supports -Werror=unused-command-line-argument... no
+checking if gcc supports -Wall... yes
+checking if gcc supports -Wpointer-arith... yes
+checking if gcc supports -Wmissing-declarations... yes
+checking if gcc supports -Wformat=2... yes
+checking if gcc supports -Wstrict-prototypes... yes
+checking if gcc supports -Wmissing-prototypes... yes
+checking if gcc supports -Wnested-externs... yes
+checking if gcc supports -Wbad-function-cast... yes
+checking if gcc supports -Wold-style-definition... yes
+checking if gcc supports -Wdeclaration-after-statement... yes
+checking if gcc supports -Wunused... yes
+checking if gcc supports -Wuninitialized... yes
+checking if gcc supports -Wshadow... yes
+checking if gcc supports -Wmissing-noreturn... yes
+checking if gcc supports -Wmissing-format-attribute... yes
+checking if gcc supports -Wredundant-decls... yes
+checking if gcc supports -Wlogical-op... yes
+checking if gcc supports -Werror=implicit... yes
+checking if gcc supports -Werror=nonnull... yes
+checking if gcc supports -Werror=init-self... yes
+checking if gcc supports -Werror=main... yes
+checking if gcc supports -Werror=missing-braces... yes
+checking if gcc supports -Werror=sequence-point... yes
+checking if gcc supports -Werror=return-type... yes
+checking if gcc supports -Werror=trigraphs... yes
+checking if gcc supports -Werror=array-bounds... yes
+checking if gcc supports -Werror=write-strings... yes
+checking if gcc supports -Werror=address... yes
+checking if gcc supports -Werror=int-to-pointer-cast... yes
+checking if gcc supports -Werror=pointer-to-int-cast... yes
+checking if gcc supports -pedantic... yes
+checking if gcc supports -Werror... yes
+checking if gcc supports -Werror=attributes... yes
+checking whether make supports nested variables... (cached) yes
+checking whether to build developer documentation... yes
+checking for doxygen... no
+configure: WARNING: doxygen not found - documentation targets will be skipped
+checking for vasprintf... yes
+checking that generated files are newer than configure... done
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating src/Makefile
+config.status: creating xcb-atom.pc
+config.status: creating xcb-aux.pc
+config.status: creating xcb-event.pc
+config.status: creating xcb-util.pc
+config.status: creating config.h
+config.status: executing depfiles commands
+config.status: executing libtool commands
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether build environment is sane... yes
+checking for a thread-safe mkdir -p... /bin/mkdir -p
+checking for gawk... no
+checking for mawk... mawk
+checking whether make sets $(MAKE)... yes
+checking whether make supports nested variables... yes
+checking build system type... x86_64-pc-linux-gnu
+checking host system type... x86_64-pc-linux-gnu
+checking how to print strings... printf
+checking whether make supports the include directive... yes (GNU style)
+checking for gcc... gcc
+checking whether the C compiler works... yes
+checking for C compiler default output file name... a.out
+checking for suffix of executables... 
+checking whether we are cross compiling... no
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to accept ISO C89... none needed
+checking whether gcc understands -c and -o together... yes
+checking dependency style of gcc... gcc3
+checking for a sed that does not truncate output... /bin/sed
+checking for grep that handles long lines and -e... /bin/grep
+checking for egrep... /bin/grep -E
+checking for fgrep... /bin/grep -F
+checking for ld used by gcc... /usr/bin/ld
+checking if the linker (/usr/bin/ld) is GNU ld... yes
+checking for BSD- or MS-compatible name lister (nm)... /usr/bin/nm -B
+checking the name lister (/usr/bin/nm -B) interface... BSD nm
+checking whether ln -s works... yes
+checking the maximum length of command line arguments... 1572864
+checking how to convert x86_64-pc-linux-gnu file names to x86_64-pc-linux-gnu format... func_convert_file_noop
+checking how to convert x86_64-pc-linux-gnu file names to toolchain format... func_convert_file_noop
+checking for /usr/bin/ld option to reload object files... -r
+checking for objdump... objdump
+checking how to recognize dependent libraries... pass_all
+checking for dlltool... no
+checking how to associate runtime and link libraries... printf %s\n
+checking for ar... ar
+checking for archiver @FILE support... @
+checking for strip... strip
+checking for ranlib... ranlib
+checking command to parse /usr/bin/nm -B output from gcc object... ok
+checking for sysroot... no
+checking for a working dd... /bin/dd
+checking how to truncate binary pipes... /bin/dd bs=4096 count=1
+checking for mt... no
+checking if : is a manifest tool... no
+checking how to run the C preprocessor... gcc -E
+checking for ANSI C header files... yes
+checking for sys/types.h... yes
+checking for sys/stat.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for memory.h... yes
+checking for strings.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for unistd.h... yes
+checking for dlfcn.h... yes
+checking for objdir... .libs
+checking if gcc supports -fno-rtti -fno-exceptions... no
+checking for gcc option to produce PIC... -fPIC -DPIC
+checking if gcc PIC flag -fPIC -DPIC works... yes
+checking if gcc static flag -static works... yes
+checking if gcc supports -c -o file.o... yes
+checking if gcc supports -c -o file.o... (cached) yes
+checking whether the gcc linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+checking whether -lc should be explicitly linked in... no
+checking dynamic linker characteristics... GNU/Linux ld.so
+checking how to hardcode library paths into programs... immediate
+checking whether stripping libraries is possible... yes
+checking if libtool supports shared libraries... yes
+checking whether to build shared libraries... yes
+checking whether to build static libraries... yes
+checking for pkg-config... /usr/bin/pkg-config
+checking pkg-config is at least version 0.9.0... yes
+checking for gcc option to accept ISO C99... none needed
+checking whether __clang__ is declared... no
+checking whether __INTEL_COMPILER is declared... no
+checking whether __SUNPRO_C is declared... no
+checking for XCB... yes
+checking whether libxcb was compiled against xcb-proto >= 1.6... checking for gawk... (cached) mawk
+yes
+checking if gcc supports -Werror=unknown-warning-option... no
+checking if gcc supports -Werror=unused-command-line-argument... no
+checking if gcc supports -Wall... yes
+checking if gcc supports -Wpointer-arith... yes
+checking if gcc supports -Wmissing-declarations... yes
+checking if gcc supports -Wformat=2... yes
+checking if gcc supports -Wstrict-prototypes... yes
+checking if gcc supports -Wmissing-prototypes... yes
+checking if gcc supports -Wnested-externs... yes
+checking if gcc supports -Wbad-function-cast... yes
+checking if gcc supports -Wold-style-definition... yes
+checking if gcc supports -Wdeclaration-after-statement... yes
+checking if gcc supports -Wunused... yes
+checking if gcc supports -Wuninitialized... yes
+checking if gcc supports -Wshadow... yes
+checking if gcc supports -Wmissing-noreturn... yes
+checking if gcc supports -Wmissing-format-attribute... yes
+checking if gcc supports -Wredundant-decls... yes
+checking if gcc supports -Wlogical-op... yes
+checking if gcc supports -Werror=implicit... yes
+checking if gcc supports -Werror=nonnull... yes
+checking if gcc supports -Werror=init-self... yes
+checking if gcc supports -Werror=main... yes
+checking if gcc supports -Werror=missing-braces... yes
+checking if gcc supports -Werror=sequence-point... yes
+checking if gcc supports -Werror=return-type... yes
+checking if gcc supports -Werror=trigraphs... yes
+checking if gcc supports -Werror=array-bounds... yes
+checking if gcc supports -Werror=write-strings... yes
+checking if gcc supports -Werror=address... yes
+checking if gcc supports -Werror=int-to-pointer-cast... yes
+checking if gcc supports -Werror=pointer-to-int-cast... yes
+checking if gcc supports -pedantic... yes
+checking if gcc supports -Werror... yes
+checking if gcc supports -Werror=attributes... yes
+checking whether make supports nested variables... (cached) yes
+checking whether to build developer documentation... yes
+checking for doxygen... no
+configure: WARNING: doxygen not found - documentation targets will be skipped
+checking for vasprintf... yes
+checking that generated files are newer than configure... done
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating src/Makefile
+config.status: creating xcb-atom.pc
+config.status: creating xcb-aux.pc
+config.status: creating xcb-event.pc
+config.status: creating xcb-util.pc
+config.status: creating config.h
+config.status: config.h is unchanged
+config.status: executing depfiles commands
+config.status: executing libtool commands
+Making all in src
+  CC       atoms.lo
+  CC       xcb_aux.lo
+  CC       event.lo
+atoms.c: In function ‘makename’:
+atoms.c:53:2: warning: function ‘makename’ might be a candidate for ‘gnu_printf’ format attribute [-Wsuggest-attribute=format]
+  n = vasprintf(&ret, fmt, ap);
+  ^
+  CCLD     libxcb-util.la
+ar: `u' modifier ignored since `D' is the default (see `U')
+💬 [0;34mINFO:[0m  installing pip.
+Looking in links: /tmp/tmp2t5vvbrk
+Requirement already satisfied: pip in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (25.0.1)
+💬 [0;34mINFO:[0m  Intentionally breaking legacy easy_install.
+💬 [0;34mINFO:[0m  preparing electrum-locale.
+es_ES/electrum.po:2015: 'msgid' and 'msgstr' entries do not both end with '\n'
+es_ES/electrum.po:8385: 'msgid' and 'msgstr' entries do not both end with '\n'
+msgfmt: found 2 fatal errors
+id_ID/electrum.po:1096: 'msgid' and 'msgstr' entries do not both end with '\n'
+msgfmt: found 1 fatal error
+th_TH/electrum.po:1140: 'msgid' and 'msgstr' entries do not both end with '\n'
+msgfmt: found 1 fatal error
+uk_UA/electrum.po:497: 'msgid' and 'msgstr' entries do not both begin with '\n'
+uk_UA/electrum.po:9951: 'msgid' and 'msgstr' entries do not both begin with '\n'
+msgfmt: found 2 fatal errors
+zh_CN/electrum.po:9468: 'msgid' and 'msgstr' entries do not both end with '\n'
+msgfmt: found 1 fatal error
+💬 [0;34mINFO:[0m  Installing build dependencies.
+Collecting flit-core==3.8.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 1))
+  Downloading flit_core-3.8.0-py3-none-any.whl (62 kB)
+Collecting packaging==21.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 4))
+  Downloading packaging-21.3-py3-none-any.whl (40 kB)
+Collecting pip==24.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 7))
+  Downloading pip-24.0-py3-none-any.whl (2.1 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 123.0 MB/s eta 0:00:00
+Collecting poetry-core==1.3.2 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 10))
+  Downloading poetry_core-1.3.2-py3-none-any.whl (531 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 531.3/531.3 kB 50.5 MB/s eta 0:00:00
+Collecting pyparsing==3.0.9 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 13))
+  Downloading pyparsing-3.0.9-py3-none-any.whl (98 kB)
+Collecting setuptools==69.0.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 16))
+  Downloading setuptools-69.0.3-py3-none-any.whl (819 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 819.5/819.5 kB 95.7 MB/s eta 0:00:00
+Collecting setuptools-scm==7.0.5 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 19))
+  Downloading setuptools_scm-7.0.5-py3-none-any.whl (42 kB)
+Collecting tomli==2.0.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 22))
+  Downloading tomli-2.0.1-py3-none-any.whl (12 kB)
+Collecting typing-extensions==4.4.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 25))
+  Downloading typing_extensions-4.4.0-py3-none-any.whl (26 kB)
+Collecting wheel==0.38.4 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-base.txt (line 28))
+  Downloading wheel-0.38.4-py3-none-any.whl (36 kB)
+Installing collected packages: wheel, typing-extensions, tomli, setuptools-scm, setuptools, pyparsing, poetry-core, pip, packaging, flit-core
+  Attempting uninstall: pip
+    Found existing installation: pip 25.0.1
+    Uninstalling pip-25.0.1:
+      Successfully uninstalled pip-25.0.1
+Successfully installed flit-core-3.8.0 packaging-21.3 pip-24.0 poetry-core-1.3.2 pyparsing-3.0.9 setuptools-69.0.3 setuptools-scm-7.0.5 tomli-2.0.1 typing-extensions-4.4.0 wheel-0.38.4
+
+[notice] A new release of pip is available: 24.0 -> 25.2
+[notice] To update, run: /opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/bin/python3.12 -m pip install --upgrade pip
+Collecting Cython==3.0.8 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-appimage.txt (line 1))
+  Downloading Cython-3.0.8.tar.gz (2.7 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.7/2.7 MB 24.3 MB/s eta 0:00:00
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Requirement already satisfied: pip==24.0 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-appimage.txt (line 3)) (24.0)
+Requirement already satisfied: setuptools==69.0.3 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-appimage.txt (line 5)) (69.0.3)
+Requirement already satisfied: wheel==0.38.4 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-build-appimage.txt (line 7)) (0.38.4)
+Building wheels for collected packages: Cython
+  Building wheel for Cython (setup.py): started
+  Building wheel for Cython (setup.py): still running...
+  Building wheel for Cython (setup.py): still running...
+  Building wheel for Cython (setup.py): finished with status 'done'
+  Created wheel for Cython: filename=Cython-3.0.8-cp312-cp312-linux_x86_64.whl size=12738231 sha256=0966ca5032ccbd1ab970342292aa27cc0fc75ec6169e7378704c3bb3a2dc6771
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/b9/2a/ff/772ca2627e01022a8b46de3e24b047b319ce07222e080d098b
+Successfully built Cython
+Installing collected packages: Cython
+Successfully installed Cython-3.0.8
+
+[notice] A new release of pip is available: 24.0 -> 25.2
+[notice] To update, run: /opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/bin/python3.12 -m pip install --upgrade pip
+💬 [0;34mINFO:[0m  installing electrum and its dependencies.
+Collecting aiohttp==3.8.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 1))
+  Downloading aiohttp-3.8.3.tar.gz (7.3 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 7.3/7.3 MB 129.9 MB/s eta 0:00:00
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting aiohttp-socks==0.8.4 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 3))
+  Downloading aiohttp_socks-0.8.4.tar.gz (8.5 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting aiorpcX==0.22.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 5))
+  Downloading aiorpcX-0.22.1.tar.gz (28 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting aiosignal==1.3.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 7))
+  Downloading aiosignal-1.3.1.tar.gz (19 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting async-timeout==4.0.2 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 9))
+  Downloading async-timeout-4.0.2.tar.gz (8.2 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting attrs==22.1.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 11))
+  Downloading attrs-22.1.0.tar.gz (201 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 201.3/201.3 kB 30.0 MB/s eta 0:00:00
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting bitstring==3.1.9 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 13))
+  Downloading bitstring-3.1.9.tar.gz (198 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 198.5/198.5 kB 31.8 MB/s eta 0:00:00
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting certifi==2023.11.17 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 15))
+  Downloading certifi-2023.11.17.tar.gz (163 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 163.6/163.6 kB 31.6 MB/s eta 0:00:00
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting charset-normalizer==2.1.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 17))
+  Downloading charset-normalizer-2.1.1.tar.gz (82 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 82.4/82.4 kB 17.8 MB/s eta 0:00:00
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting dnspython==2.2.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 19))
+  Downloading dnspython-2.2.1.tar.gz (281 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 281.3/281.3 kB 34.2 MB/s eta 0:00:00
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting frozenlist==1.3.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 21))
+  Downloading frozenlist-1.3.3.tar.gz (66 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 66.6/66.6 kB 14.4 MB/s eta 0:00:00
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting idna==3.4 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 23))
+  Downloading idna-3.4.tar.gz (183 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 183.1/183.1 kB 18.3 MB/s eta 0:00:00
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting jsonpatch==1.33 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 25))
+  Downloading jsonpatch-1.33.tar.gz (21 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting jsonpointer==2.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 27))
+  Downloading jsonpointer-2.3.tar.gz (9.3 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting multidict==6.0.2 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 29))
+  Downloading multidict-6.0.2.tar.gz (50 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 50.3/50.3 kB 9.0 MB/s eta 0:00:00
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: packaging==21.3 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 31)) (21.3)
+Requirement already satisfied: pip==24.0 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 33)) (24.0)
+Collecting protobuf==3.20.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 35))
+  Downloading protobuf-3.20.3.tar.gz (216 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 216.8/216.8 kB 43.1 MB/s eta 0:00:00
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Requirement already satisfied: pyparsing==3.0.9 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 37)) (3.0.9)
+Collecting python-socks==2.4.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 39))
+  Downloading python-socks-2.4.3.tar.gz (25 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting QDarkStyle==3.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 41))
+  Downloading QDarkStyle-3.1.tar.gz (698 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 698.6/698.6 kB 81.2 MB/s eta 0:00:00
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting qrcode==7.3.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 43))
+  Downloading qrcode-7.3.1.tar.gz (43 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 43.5/43.5 kB 6.1 MB/s eta 0:00:00
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting QtPy==2.3.0 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 45))
+  Downloading QtPy-2.3.0.tar.gz (53 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 54.0/54.0 kB 7.4 MB/s eta 0:00:00
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: setuptools==69.0.3 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 47)) (69.0.3)
+Requirement already satisfied: wheel==0.38.4 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 49)) (0.38.4)
+Collecting yarl==1.8.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements.txt (line 51))
+  Downloading yarl-1.8.1.tar.gz (172 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 172.3/172.3 kB 28.8 MB/s eta 0:00:00
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: aiohttp, aiohttp-socks, aiorpcX, aiosignal, async-timeout, attrs, bitstring, certifi, charset-normalizer, dnspython, frozenlist, idna, jsonpatch, jsonpointer, multidict, protobuf, python-socks, QDarkStyle, qrcode, QtPy, yarl
+  Building wheel for aiohttp (pyproject.toml): started
+  Building wheel for aiohttp (pyproject.toml): finished with status 'done'
+  Created wheel for aiohttp: filename=aiohttp-3.8.3-py3-none-any.whl size=183419 sha256=72831ec9e4f7ae2b6fc98d673c5026030f2168a74df0ff0ad1970114e09292ce
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/1c/33/64/414aac9e46a97818f8fa8d6787b59197e2cf9e1b7fc1fd8ecc
+  Building wheel for aiohttp-socks (pyproject.toml): started
+  Building wheel for aiohttp-socks (pyproject.toml): finished with status 'done'
+  Created wheel for aiohttp-socks: filename=aiohttp_socks-0.8.4-py3-none-any.whl size=9609 sha256=aaaa1c8e9a6733d00bf585bf5fb552fe16c5b80587eca16c848a9b1c09425044
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/4e/28/f3/fa2691a52fd0e751f4058b160c0b68f655badbf1d29cb0310b
+  Building wheel for aiorpcX (setup.py): started
+  Building wheel for aiorpcX (setup.py): finished with status 'done'
+  Created wheel for aiorpcX: filename=aiorpcX-0.22.1-py3-none-any.whl size=35420 sha256=d2f3d530326e2098990736a1abc14049b5b1664de35445326afc6aa5e193c525
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/18/9d/1a/d2c66001bd2abc9e83a2bf35310f495643e3590ac6a0330ddd
+  Building wheel for aiosignal (pyproject.toml): started
+  Building wheel for aiosignal (pyproject.toml): finished with status 'done'
+  Created wheel for aiosignal: filename=aiosignal-1.3.1-py3-none-any.whl size=7618 sha256=7f8f538f92f22dedab2edb238b07229cfd7a160f80060b1c95de18c76062931c
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/52/b6/98/9db9ecd54a156a085ca03dd0613859a4d9befcd50539d779dc
+  Building wheel for async-timeout (pyproject.toml): started
+  Building wheel for async-timeout (pyproject.toml): finished with status 'done'
+  Created wheel for async-timeout: filename=async_timeout-4.0.2-py3-none-any.whl size=5747 sha256=fc0797f801f678cb51e6c551ace1965792c1feee5a8b47845f51011ee4786b5f
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/64/78/a8/eef6ebf4a2cbeef8b1ee8249e3ff3ebee85457a74470a38b5f
+  Building wheel for attrs (pyproject.toml): started
+  Building wheel for attrs (pyproject.toml): finished with status 'done'
+  Created wheel for attrs: filename=attrs-22.1.0-py2.py3-none-any.whl size=58795 sha256=366ebe821ccbea2f279d46937dcc1049e9c2a3610530179bb7f603b198d6e026
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/e7/24/af/d46e96cd3701ceb4eeb0ccaabdacd1120b5229bf91800c2ac9
+  Building wheel for bitstring (setup.py): started
+  Building wheel for bitstring (setup.py): finished with status 'done'
+  Created wheel for bitstring: filename=bitstring-3.1.9-py3-none-any.whl size=38401 sha256=915f77f8b3d020953404e64f99fe800d01c2d069a56842432801059a62e02546
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/58/cf/dc/74d62e19ba804515b711b0cd237a6e099a2faa1f8ec3c22079
+  Building wheel for certifi (setup.py): started
+  Building wheel for certifi (setup.py): finished with status 'done'
+  Created wheel for certifi: filename=certifi-2023.11.17-py3-none-any.whl size=162528 sha256=312335274dae9f387099d2f8a643df109a9fef17eaac59cfa748509a4e0728c7
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/55/19/8d/c617ecbbf1c0781e12e4ce05c2d4096d755da21aff458699b7
+  Building wheel for charset-normalizer (setup.py): started
+  Building wheel for charset-normalizer (setup.py): finished with status 'done'
+  Created wheel for charset-normalizer: filename=charset_normalizer-2.1.1-py3-none-any.whl size=39748 sha256=354d737aa4dcfd7ef5ddabb7f458cd1a8c211b017f3d9b9456c01da7015c1bd4
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/16/79/a6/a975d4ecad1517df5aa003e35ee79e3aaa7b8ca8130acbeb72
+  Building wheel for dnspython (pyproject.toml): started
+  Building wheel for dnspython (pyproject.toml): finished with status 'done'
+  Created wheel for dnspython: filename=dnspython-2.2.1-py3-none-any.whl size=269094 sha256=28353d18f11029dc3d6ff8df7949710c3e443a735385136b50c4b58934bbc8af
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/a2/40/b2/6f31ad78f9e1d1cac7c787313ecf379fa90385f111653fe1eb
+  Building wheel for frozenlist (pyproject.toml): started
+  Building wheel for frozenlist (pyproject.toml): finished with status 'done'
+  Created wheel for frozenlist: filename=frozenlist-1.3.3-py3-none-any.whl size=9271 sha256=156ee0dc50512e27840fa37af9b41843d29a7c20cee819920aa38741c4b79741
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/e0/cd/dc/b58124c4e14c59f50b6bcf59072fde31e1622cadaa5118f282
+  Building wheel for idna (pyproject.toml): started
+  Building wheel for idna (pyproject.toml): finished with status 'done'
+  Created wheel for idna: filename=idna-3.4-py3-none-any.whl size=61539 sha256=6ed7c90fe45674c2924dff5d6cdaf4aa44ae598a4a6d7153e750d530ccfed99d
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/e6/99/18/c551adf9838e5519dbf1607f04e1fba8dff3ddbf7f0918cb9e
+  Building wheel for jsonpatch (setup.py): started
+  Building wheel for jsonpatch (setup.py): finished with status 'done'
+  Created wheel for jsonpatch: filename=jsonpatch-1.33-py2.py3-none-any.whl size=12882 sha256=523331eb8278cf9c79753894ca34aaf4665d2b7b1ef5a9589727ca8ba6e1aaa0
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/a8/be/f8/8ed731c4b08129b3396960a0288e00115c2d1ee458007c8aaf
+  Building wheel for jsonpointer (setup.py): started
+  Building wheel for jsonpointer (setup.py): finished with status 'done'
+  Created wheel for jsonpointer: filename=jsonpointer-2.3-py2.py3-none-any.whl size=7735 sha256=0ed34fbe01ff82cf1233b0a8f8d8abc0db4f6d5e37f79d2b37000399823d108e
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/8c/1e/2e/c8d4c74f050e5cd01bd13d489bef7e61763bba034e4ad45093
+  Building wheel for multidict (pyproject.toml): started
+  Building wheel for multidict (pyproject.toml): finished with status 'done'
+  Created wheel for multidict: filename=multidict-6.0.2-py3-none-any.whl size=9674 sha256=7e6c038599cebbc24a154ad9f8e72c3705d993224ea5e5bfd341c71edebca379
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/d5/3b/9b/128c0e12444b89e7e2deb9f604f8ceaccf2704f723d4314601
+  Building wheel for protobuf (setup.py): started
+  Building wheel for protobuf (setup.py): finished with status 'done'
+  Created wheel for protobuf: filename=protobuf-3.20.3-py2.py3-none-any.whl size=162133 sha256=fe1e90bfda0a36bc150a6af58bf1905806bae592703e201cdcc07f728792b00e
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/fc/2d/75/8a2f2988232dcb16a81794549e4efb1b4dae7974ca10653480
+  Building wheel for python-socks (pyproject.toml): started
+  Building wheel for python-socks (pyproject.toml): finished with status 'done'
+  Created wheel for python-socks: filename=python_socks-2.4.3-py3-none-any.whl size=52433 sha256=9c88bad401dda6d4df0af6eea5170d72b0bc605cd664ab368425a0f5871b83f8
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/32/cf/0c/afcfecd03c4ad3fa5ca6cbc7570ea1d7303fce3768850faf69
+  Building wheel for QDarkStyle (setup.py): started
+  Building wheel for QDarkStyle (setup.py): finished with status 'done'
+  Created wheel for QDarkStyle: filename=QDarkStyle-3.1-py2.py3-none-any.whl size=870167 sha256=ae09d800ba8db212598daca7b68a25daff7494e7596b2a68b58bcd1854889b37
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/5d/53/ab/37da52c14da456c9193a5f69b763909db4038395c3801697e0
+  Building wheel for qrcode (setup.py): started
+  Building wheel for qrcode (setup.py): finished with status 'done'
+  Created wheel for qrcode: filename=qrcode-7.3.1-py3-none-any.whl size=40386 sha256=599c9fbe86c8aedf8332933b2974078bc1bce03800037797741dc4399e5eaae4
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/23/13/8b/59ae3d8bf84ad9a4ce3b3f5a50932989bdc6264b361e1ba048
+  Building wheel for QtPy (pyproject.toml): started
+  Building wheel for QtPy (pyproject.toml): finished with status 'done'
+  Created wheel for QtPy: filename=QtPy-2.3.0-py3-none-any.whl size=83600 sha256=bf25b67e40f779660b9661460729a599034821b2a2b4b4445709fd79ffd6baee
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/b2/8b/df/ef5e1647cfe04554a554ea132655e908025814e68c4310b945
+  Building wheel for yarl (pyproject.toml): started
+  Building wheel for yarl (pyproject.toml): finished with status 'done'
+  Created wheel for yarl: filename=yarl-1.8.1-py3-none-any.whl size=24086 sha256=406d19facd312ea81251c7bfc1a584a19717747bd1bda1c1809f8e84c21e5f51
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/4a/2b/19/fe4428e7c5e7b4bfec189c84744288e0833298ac9723a896c5
+Successfully built aiohttp aiohttp-socks aiorpcX aiosignal async-timeout attrs bitstring certifi charset-normalizer dnspython frozenlist idna jsonpatch jsonpointer multidict protobuf python-socks QDarkStyle qrcode QtPy yarl
+Installing collected packages: QDarkStyle, python-socks, bitstring, aiohttp-socks, yarl, QtPy, qrcode, protobuf, multidict, jsonpointer, jsonpatch, idna, frozenlist, dnspython, charset-normalizer, certifi, attrs, async-timeout, aiosignal, aiorpcX, aiohttp
+Successfully installed QDarkStyle-3.1 QtPy-2.3.0 aiohttp-3.8.3 aiohttp-socks-0.8.4 aiorpcX-0.22.1 aiosignal-1.3.1 async-timeout-4.0.2 attrs-22.1.0 bitstring-3.1.9 certifi-2023.11.17 charset-normalizer-2.1.1 dnspython-2.2.1 frozenlist-1.3.3 idna-3.4 jsonpatch-1.33 jsonpointer-2.3 multidict-6.0.2 protobuf-3.20.3 python-socks-2.4.3 qrcode-7.3.1 yarl-1.8.1
+
+[notice] A new release of pip is available: 24.0 -> 25.2
+[notice] To update, run: /opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/bin/python3.12 -m pip install --upgrade pip
+Collecting cffi==1.15.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 1))
+  Downloading cffi-1.15.1.tar.gz (508 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 508.5/508.5 kB 48.0 MB/s eta 0:00:00
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting cryptography==38.0.3 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 66))
+  Downloading cryptography-38.0.3-cp36-abi3-manylinux_2_28_x86_64.whl (4.2 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.2/4.2 MB 17.3 MB/s eta 0:00:00
+Requirement already satisfied: pip==24.0 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 93)) (24.0)
+Collecting pycparser==2.21 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 96))
+  Downloading pycparser-2.21.tar.gz (170 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 170.9/170.9 kB 26.5 MB/s eta 0:00:00
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting PyQt5==5.15.9 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 99))
+  Downloading PyQt5-5.15.9-cp37-abi3-manylinux_2_17_x86_64.whl (8.4 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8.4/8.4 MB 106.9 MB/s eta 0:00:00
+Collecting PyQt5-Qt5==5.15.2 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 105))
+  Downloading PyQt5_Qt5-5.15.2-py3-none-manylinux2014_x86_64.whl (59.9 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 59.9/59.9 MB 67.3 MB/s eta 0:00:00
+Collecting PyQt5-sip==12.12.1 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 110))
+  Downloading PyQt5_sip-12.12.1.tar.gz (122 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 122.9/122.9 kB 23.8 MB/s eta 0:00:00
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting scrypt==0.9.4 (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 132))
+  Downloading scrypt-0.9.4.tar.gz (84 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 84.5/84.5 kB 18.3 MB/s eta 0:00:00
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: setuptools==69.0.3 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 152)) (69.0.3)
+Requirement already satisfied: wheel==0.38.4 in ./build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages (from -r /opt/electrum/contrib/build-linux/appimage/../../../contrib/deterministic-build/requirements-binaries.txt (line 155)) (0.38.4)
+Building wheels for collected packages: cffi, pycparser, PyQt5-sip, scrypt
+  Building wheel for cffi (setup.py): started
+  Building wheel for cffi (setup.py): finished with status 'done'
+  Created wheel for cffi: filename=cffi-1.15.1-cp312-cp312-linux_x86_64.whl size=449961 sha256=7c25e853e8b7c4ac8c32ee14390554e2a392431cfcfa6f78624e6530052848f8
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/3a/2a/71/6b7440057c755c3f53076056b834d2d9aad2531db1ed555be4
+  Building wheel for pycparser (setup.py): started
+  Building wheel for pycparser (setup.py): finished with status 'done'
+  Created wheel for pycparser: filename=pycparser-2.21-py2.py3-none-any.whl size=118719 sha256=c3e1db7829bccf8479576a32599b19185aa2e19d2470dcb5eb1629b0b30f5a59
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/a7/87/dd/b205800ee8f03e5fb4b8f5742c10bb31cd67b2cc52f2c3c142
+  Building wheel for PyQt5-sip (pyproject.toml): started
+  Building wheel for PyQt5-sip (pyproject.toml): finished with status 'done'
+  Created wheel for PyQt5-sip: filename=PyQt5_sip-12.12.1-cp312-cp312-linux_x86_64.whl size=380885 sha256=5ec14b1f414fc47a547ef6df3d2e96ac125ca4b4ca3994b062b95efbfac5c7cd
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/cf/e0/e9/5ebcc125b511ca943859fb9dc85aa3e2a633396f19cea12e6c
+  Building wheel for scrypt (pyproject.toml): started
+  Building wheel for scrypt (pyproject.toml): finished with status 'done'
+  Created wheel for scrypt: filename=scrypt-0.9.4-cp312-cp312-linux_x86_64.whl size=105808 sha256=475cc7fd00ca6bd429b50ac7deba6853c606c21d00a4596d3c4e46e3bf0567e6
+  Stored in directory: /opt/electrum/contrib/build-linux/appimage/.cache/pip_cache/wheels/91/52/3c/16a3cab7562516e9c8b2e9b643ce2d9dd94363327c6f179fa4
+Successfully built cffi pycparser PyQt5-sip scrypt
+Installing collected packages: scrypt, PyQt5-Qt5, cffi, PyQt5-sip, PyQt5, pycparser, cryptography
+Successfully installed PyQt5-5.15.9 PyQt5-Qt5-5.15.2 PyQt5-sip-12.12.1 cffi-1.15.1 cryptography-38.0.3 pycparser-2.21 scrypt-0.9.4
+
+[notice] A new release of pip is available: 24.0 -> 25.2
+[notice] To update, run: /opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/bin/python3.12 -m pip install --upgrade pip
+Skipping hardware wallet dependencies due to Python 3.12 compatibility issues
+Processing /opt/electrum
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'error'
+  error: subprocess-exited-with-error
+  
+  × Preparing metadata (pyproject.toml) did not run successfully.
+  │ exit code: 1
+  ╰─> [54 lines of output]
+      /opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages/setuptools/config/_apply_pyprojecttoml.py:75: _MissingDynamic: `readme` defined outside of `pyproject.toml` is ignored.
+      !!
+      
+              ********************************************************************************
+              The following seems to be defined outside of `pyproject.toml`:
+      
+              `readme = 'Lightweight Goldcoin Wallet'`
+      
+              According to the spec (see the link below), however, setuptools CANNOT
+              consider this value unless `readme` is listed as `dynamic`.
+      
+              https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
+      
+              To prevent this problem, you can list `readme` under `dynamic` or alternatively
+              remove the `[project]` table from your file and rely entirely on other means of
+              configuration.
+              ********************************************************************************
+      
+      !!
+        _handle_missing_dynamic(dist, project_table)
+      /opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages/setuptools/config/_apply_pyprojecttoml.py:82: SetuptoolsWarning: `install_requires` overwritten in `pyproject.toml` (dependencies)
+        corresp(dist, value, root_dir)
+      Traceback (most recent call last):
+        File "/opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 353, in <module>
+          main()
+        File "/opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 335, in main
+          json_out['return_val'] = hook(**hook_input['kwargs'])
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "/opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 149, in prepare_metadata_for_build_wheel
+          return hook(metadata_directory, config_settings)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "/opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages/setuptools/build_meta.py", line 366, in prepare_metadata_for_build_wheel
+          self.run_setup()
+        File "/opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages/setuptools/build_meta.py", line 311, in run_setup
+          exec(code, locals())
+        File "<string>", line 57, in <module>
+        File "/opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages/setuptools/__init__.py", line 103, in setup
+          return distutils.core.setup(**attrs)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "/opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages/setuptools/_distutils/core.py", line 159, in setup
+          dist.parse_config_files()
+        File "/opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages/setuptools/dist.py", line 627, in parse_config_files
+          pyprojecttoml.apply_configuration(self, filename, ignore_option_errors)
+        File "/opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages/setuptools/config/pyprojecttoml.py", line 67, in apply_configuration
+          return _apply(dist, config, filepath)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "/opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages/setuptools/config/_apply_pyprojecttoml.py", line 56, in apply
+          _apply_project_table(dist, config, root_dir)
+        File "/opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages/setuptools/config/_apply_pyprojecttoml.py", line 82, in _apply_project_table
+          corresp(dist, value, root_dir)
+        File "/opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/lib/python3.12/site-packages/setuptools/config/_apply_pyprojecttoml.py", line 163, in _long_description
+          file = val.get("file") or []
+                 ^^^^^^^
+      AttributeError: 'NoneType' object has no attribute 'get'
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+error: metadata-generation-failed
+
+× Encountered error while generating package metadata.
+╰─> See above for output.
+
+note: This is an issue with the package mentioned above, not pip.
+hint: See above for details.
+
+[notice] A new release of pip is available: 24.0 -> 25.2
+[notice] To update, run: /opt/electrum/contrib/build-linux/appimage/build/appimage/electrum.AppDir/usr/bin/python3.12 -m pip install --upgrade pip

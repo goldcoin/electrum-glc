@@ -1,0 +1,1307 @@
+/usr/lib/python3/dist-packages/setuptools/config/_apply_pyprojecttoml.py:73: _WouldIgnoreField: `readme` defined outside of `pyproject.toml` would be ignored.
+!!
+
+        ********************************************************************************
+        ##########################################################################
+        # configuration would be ignored/result in error due to `pyproject.toml` #
+        ##########################################################################
+
+        The following seems to be defined outside of `pyproject.toml`:
+
+        `readme = 'Lightweight Goldcoin Wallet'`
+
+        According to the spec (see the link below), however, setuptools CANNOT
+        consider this value unless `readme` is listed as `dynamic`.
+
+        https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
+
+        For the time being, `setuptools` will still consider the given value (as a
+        **transitional** measure), but please note that future releases of setuptools will
+        follow strictly the standard.
+
+        To prevent this warning, you can list `readme` under `dynamic` or alternatively
+        remove the `[project]` table from your file and rely entirely on other means of
+        configuration.
+
+        This deprecation is overdue, please update your project and remove deprecated
+        calls to avoid build errors in the future.
+        ********************************************************************************
+
+!!
+  _handle_missing_dynamic(dist, project_table)
+/usr/lib/python3/dist-packages/setuptools/config/_apply_pyprojecttoml.py:80: SetuptoolsWarning: `install_requires` overwritten in `pyproject.toml` (dependencies)
+  corresp(dist, value, root_dir)
+running sdist
+running egg_info
+writing Electrum_GLC.egg-info/PKG-INFO
+writing dependency_links to Electrum_GLC.egg-info/dependency_links.txt
+writing entry points to Electrum_GLC.egg-info/entry_points.txt
+writing requirements to Electrum_GLC.egg-info/requires.txt
+writing top-level names to Electrum_GLC.egg-info/top_level.txt
+reading manifest file 'Electrum_GLC.egg-info/SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+warning: no files found matching '*.py' under directory 'packages'
+warning: no files found matching 'cacert.pem' under directory 'packages'
+warning: no previously-included files found matching 'electrum/*.so'
+warning: no previously-included files found matching 'electrum/*.so.0'
+warning: no previously-included files found matching 'electrum/*.dylib'
+warning: no previously-included files matching '__pycache__' found anywhere in distribution
+warning: no previously-included files matching '*.py.orig' found anywhere in distribution
+warning: no previously-included files matching '*.py.rej' found anywhere in distribution
+adding license file 'LICENCE'
+adding license file 'AUTHORS'
+writing manifest file 'Electrum_GLC.egg-info/SOURCES.txt'
+running check
+creating Electrum-GLC-4.5.0
+creating Electrum-GLC-4.5.0/Electrum_GLC.egg-info
+creating Electrum-GLC-4.5.0/contrib
+creating Electrum-GLC-4.5.0/contrib/deterministic-build
+creating Electrum-GLC-4.5.0/contrib/requirements
+creating Electrum-GLC-4.5.0/contrib/udev
+creating Electrum-GLC-4.5.0/electrum
+creating Electrum-GLC-4.5.0/electrum/_vendor
+creating Electrum-GLC-4.5.0/electrum/_vendor/distutils
+creating Electrum-GLC-4.5.0/electrum/gui
+creating Electrum-GLC-4.5.0/electrum/gui/common_qt
+creating Electrum-GLC-4.5.0/electrum/gui/icons
+creating Electrum-GLC-4.5.0/electrum/gui/qml
+creating Electrum-GLC-4.5.0/electrum/gui/qml/android_res
+creating Electrum-GLC-4.5.0/electrum/gui/qml/android_res/layout
+creating Electrum-GLC-4.5.0/electrum/gui/qml/components
+creating Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+creating Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+creating Electrum-GLC-4.5.0/electrum/gui/qml/fonts
+creating Electrum-GLC-4.5.0/electrum/gui/qml/java_classes
+creating Electrum-GLC-4.5.0/electrum/gui/qml/java_classes/org
+creating Electrum-GLC-4.5.0/electrum/gui/qml/java_classes/org/electrum
+creating Electrum-GLC-4.5.0/electrum/gui/qml/java_classes/org/electrum/qr
+creating Electrum-GLC-4.5.0/electrum/gui/qt
+creating Electrum-GLC-4.5.0/electrum/gui/qt/qrreader
+creating Electrum-GLC-4.5.0/electrum/gui/qt/qrreader/qtmultimedia
+creating Electrum-GLC-4.5.0/electrum/gui/qt/wizard
+creating Electrum-GLC-4.5.0/electrum/lnwire
+creating Electrum-GLC-4.5.0/electrum/locale
+creating Electrum-GLC-4.5.0/electrum/locale/ar_SA
+creating Electrum-GLC-4.5.0/electrum/locale/ar_SA/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/az_AZ
+creating Electrum-GLC-4.5.0/electrum/locale/az_AZ/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/be_BY
+creating Electrum-GLC-4.5.0/electrum/locale/be_BY/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/bg_BG
+creating Electrum-GLC-4.5.0/electrum/locale/bg_BG/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/bn_BD
+creating Electrum-GLC-4.5.0/electrum/locale/bn_BD/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/cs_CZ
+creating Electrum-GLC-4.5.0/electrum/locale/cs_CZ/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/da_DK
+creating Electrum-GLC-4.5.0/electrum/locale/da_DK/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/de_DE
+creating Electrum-GLC-4.5.0/electrum/locale/de_DE/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/el_GR
+creating Electrum-GLC-4.5.0/electrum/locale/el_GR/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/eo_UY
+creating Electrum-GLC-4.5.0/electrum/locale/eo_UY/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/es_ES
+creating Electrum-GLC-4.5.0/electrum/locale/es_ES/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/fa_IR
+creating Electrum-GLC-4.5.0/electrum/locale/fa_IR/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/fr_FR
+creating Electrum-GLC-4.5.0/electrum/locale/fr_FR/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/he_IL
+creating Electrum-GLC-4.5.0/electrum/locale/he_IL/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/hu_HU
+creating Electrum-GLC-4.5.0/electrum/locale/hu_HU/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/hy_AM
+creating Electrum-GLC-4.5.0/electrum/locale/hy_AM/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/id_ID
+creating Electrum-GLC-4.5.0/electrum/locale/id_ID/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/it_IT
+creating Electrum-GLC-4.5.0/electrum/locale/it_IT/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/ja_JP
+creating Electrum-GLC-4.5.0/electrum/locale/ja_JP/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/ko_KR
+creating Electrum-GLC-4.5.0/electrum/locale/ko_KR/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/ky_KG
+creating Electrum-GLC-4.5.0/electrum/locale/ky_KG/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/lv_LV
+creating Electrum-GLC-4.5.0/electrum/locale/lv_LV/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/nb_NO
+creating Electrum-GLC-4.5.0/electrum/locale/nb_NO/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/nl_NL
+creating Electrum-GLC-4.5.0/electrum/locale/nl_NL/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/pl_PL
+creating Electrum-GLC-4.5.0/electrum/locale/pl_PL/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/pt_BR
+creating Electrum-GLC-4.5.0/electrum/locale/pt_BR/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/pt_PT
+creating Electrum-GLC-4.5.0/electrum/locale/pt_PT/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/ro_RO
+creating Electrum-GLC-4.5.0/electrum/locale/ro_RO/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/ru_RU
+creating Electrum-GLC-4.5.0/electrum/locale/ru_RU/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/si_LK
+creating Electrum-GLC-4.5.0/electrum/locale/si_LK/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/sk_SK
+creating Electrum-GLC-4.5.0/electrum/locale/sk_SK/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/sl_SI
+creating Electrum-GLC-4.5.0/electrum/locale/sl_SI/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/sr_CS
+creating Electrum-GLC-4.5.0/electrum/locale/sr_CS/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/sv_SE
+creating Electrum-GLC-4.5.0/electrum/locale/sv_SE/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/ta_IN
+creating Electrum-GLC-4.5.0/electrum/locale/ta_IN/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/th_TH
+creating Electrum-GLC-4.5.0/electrum/locale/th_TH/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/tr_TR
+creating Electrum-GLC-4.5.0/electrum/locale/tr_TR/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/uk_UA
+creating Electrum-GLC-4.5.0/electrum/locale/uk_UA/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/vi_VN
+creating Electrum-GLC-4.5.0/electrum/locale/vi_VN/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/zh_CN
+creating Electrum-GLC-4.5.0/electrum/locale/zh_CN/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/locale/zh_TW
+creating Electrum-GLC-4.5.0/electrum/locale/zh_TW/LC_MESSAGES
+creating Electrum-GLC-4.5.0/electrum/plugins
+creating Electrum-GLC-4.5.0/electrum/plugins/audio_modem
+creating Electrum-GLC-4.5.0/electrum/plugins/bitbox02
+creating Electrum-GLC-4.5.0/electrum/plugins/coldcard
+creating Electrum-GLC-4.5.0/electrum/plugins/cosigner_pool
+creating Electrum-GLC-4.5.0/electrum/plugins/digitalbitbox
+creating Electrum-GLC-4.5.0/electrum/plugins/hw_wallet
+creating Electrum-GLC-4.5.0/electrum/plugins/jade
+creating Electrum-GLC-4.5.0/electrum/plugins/jade/jadepy
+creating Electrum-GLC-4.5.0/electrum/plugins/keepkey
+creating Electrum-GLC-4.5.0/electrum/plugins/labels
+creating Electrum-GLC-4.5.0/electrum/plugins/ledger
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader
+creating Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images
+creating Electrum-GLC-4.5.0/electrum/plugins/revealer
+creating Electrum-GLC-4.5.0/electrum/plugins/safe_t
+creating Electrum-GLC-4.5.0/electrum/plugins/swapserver
+creating Electrum-GLC-4.5.0/electrum/plugins/trezor
+creating Electrum-GLC-4.5.0/electrum/plugins/trustedcoin
+creating Electrum-GLC-4.5.0/electrum/plugins/trustedcoin/qml
+creating Electrum-GLC-4.5.0/electrum/plugins/virtualkeyboard
+creating Electrum-GLC-4.5.0/electrum/qrreader
+creating Electrum-GLC-4.5.0/electrum/scripts
+creating Electrum-GLC-4.5.0/electrum/utils
+creating Electrum-GLC-4.5.0/electrum/wordlist
+copying files to Electrum-GLC-4.5.0...
+copying AUTHORS -> Electrum-GLC-4.5.0
+copying LICENCE -> Electrum-GLC-4.5.0
+copying MANIFEST.in -> Electrum-GLC-4.5.0
+copying README.md -> Electrum-GLC-4.5.0
+copying RELEASE-NOTES -> Electrum-GLC-4.5.0
+copying electrum.desktop -> Electrum-GLC-4.5.0
+copying fix_imports.py -> Electrum-GLC-4.5.0
+copying fix_po_files.py -> Electrum-GLC-4.5.0
+copying fix_val_none.py -> Electrum-GLC-4.5.0
+copying org.electrum.electrum.metainfo.xml -> Electrum-GLC-4.5.0
+copying pyproject.toml -> Electrum-GLC-4.5.0
+copying run_electrum -> Electrum-GLC-4.5.0
+copying setup.cfg -> Electrum-GLC-4.5.0
+copying setup.py -> Electrum-GLC-4.5.0
+copying test_checkpoints.py -> Electrum-GLC-4.5.0
+copying test_migration.py -> Electrum-GLC-4.5.0
+copying Electrum_GLC.egg-info/PKG-INFO -> Electrum-GLC-4.5.0/Electrum_GLC.egg-info
+copying Electrum_GLC.egg-info/SOURCES.txt -> Electrum-GLC-4.5.0/Electrum_GLC.egg-info
+copying Electrum_GLC.egg-info/dependency_links.txt -> Electrum-GLC-4.5.0/Electrum_GLC.egg-info
+copying Electrum_GLC.egg-info/entry_points.txt -> Electrum-GLC-4.5.0/Electrum_GLC.egg-info
+copying Electrum_GLC.egg-info/requires.txt -> Electrum-GLC-4.5.0/Electrum_GLC.egg-info
+copying Electrum_GLC.egg-info/top_level.txt -> Electrum-GLC-4.5.0/Electrum_GLC.egg-info
+copying contrib/build_locale.sh -> Electrum-GLC-4.5.0/contrib
+copying contrib/build_tools_util.sh -> Electrum-GLC-4.5.0/contrib
+copying contrib/freeze_containers_distro.sh -> Electrum-GLC-4.5.0/contrib
+copying contrib/freeze_packages.sh -> Electrum-GLC-4.5.0/contrib
+copying contrib/generate_payreqpb2.sh -> Electrum-GLC-4.5.0/contrib
+copying contrib/make_libsecp256k1.sh -> Electrum-GLC-4.5.0/contrib
+copying contrib/make_libusb.sh -> Electrum-GLC-4.5.0/contrib
+copying contrib/make_packages.sh -> Electrum-GLC-4.5.0/contrib
+copying contrib/make_zbar.sh -> Electrum-GLC-4.5.0/contrib
+copying contrib/release.sh -> Electrum-GLC-4.5.0/contrib
+copying contrib/release_www.sh -> Electrum-GLC-4.5.0/contrib
+copying contrib/trigger_deploy.sh -> Electrum-GLC-4.5.0/contrib
+copying contrib/upload.sh -> Electrum-GLC-4.5.0/contrib
+copying contrib/deterministic-build/requirements-binaries-mac.txt -> Electrum-GLC-4.5.0/contrib/deterministic-build
+copying contrib/deterministic-build/requirements-binaries.txt -> Electrum-GLC-4.5.0/contrib/deterministic-build
+copying contrib/deterministic-build/requirements-build-android.txt -> Electrum-GLC-4.5.0/contrib/deterministic-build
+copying contrib/deterministic-build/requirements-build-appimage.txt -> Electrum-GLC-4.5.0/contrib/deterministic-build
+copying contrib/deterministic-build/requirements-build-base.txt -> Electrum-GLC-4.5.0/contrib/deterministic-build
+copying contrib/deterministic-build/requirements-build-mac.txt -> Electrum-GLC-4.5.0/contrib/deterministic-build
+copying contrib/deterministic-build/requirements-build-wine.txt -> Electrum-GLC-4.5.0/contrib/deterministic-build
+copying contrib/deterministic-build/requirements-hw.txt -> Electrum-GLC-4.5.0/contrib/deterministic-build
+copying contrib/deterministic-build/requirements.txt -> Electrum-GLC-4.5.0/contrib/deterministic-build
+copying contrib/requirements/requirements-binaries-mac.txt -> Electrum-GLC-4.5.0/contrib/requirements
+copying contrib/requirements/requirements-binaries.txt -> Electrum-GLC-4.5.0/contrib/requirements
+copying contrib/requirements/requirements-build-android.txt -> Electrum-GLC-4.5.0/contrib/requirements
+copying contrib/requirements/requirements-build-appimage.txt -> Electrum-GLC-4.5.0/contrib/requirements
+copying contrib/requirements/requirements-build-base.txt -> Electrum-GLC-4.5.0/contrib/requirements
+copying contrib/requirements/requirements-build-mac.txt -> Electrum-GLC-4.5.0/contrib/requirements
+copying contrib/requirements/requirements-build-wine.txt -> Electrum-GLC-4.5.0/contrib/requirements
+copying contrib/requirements/requirements-ci.txt -> Electrum-GLC-4.5.0/contrib/requirements
+copying contrib/requirements/requirements-dev.txt -> Electrum-GLC-4.5.0/contrib/requirements
+copying contrib/requirements/requirements-hw.txt -> Electrum-GLC-4.5.0/contrib/requirements
+copying contrib/requirements/requirements.txt -> Electrum-GLC-4.5.0/contrib/requirements
+copying contrib/udev/20-hw1.rules -> Electrum-GLC-4.5.0/contrib/udev
+copying contrib/udev/51-coinkite.rules -> Electrum-GLC-4.5.0/contrib/udev
+copying contrib/udev/51-hid-digitalbitbox.rules -> Electrum-GLC-4.5.0/contrib/udev
+copying contrib/udev/51-safe-t.rules -> Electrum-GLC-4.5.0/contrib/udev
+copying contrib/udev/51-trezor.rules -> Electrum-GLC-4.5.0/contrib/udev
+copying contrib/udev/51-usb-keepkey.rules -> Electrum-GLC-4.5.0/contrib/udev
+copying contrib/udev/52-hid-digitalbitbox.rules -> Electrum-GLC-4.5.0/contrib/udev
+copying contrib/udev/53-hid-bitbox02.rules -> Electrum-GLC-4.5.0/contrib/udev
+copying contrib/udev/54-hid-bitbox02.rules -> Electrum-GLC-4.5.0/contrib/udev
+copying contrib/udev/55-usb-jade.rules -> Electrum-GLC-4.5.0/contrib/udev
+copying contrib/udev/README.md -> Electrum-GLC-4.5.0/contrib/udev
+copying electrum/__init__.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/address_synchronizer.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/base_crash_reporter.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/bip21.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/bip32.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/bip39_recovery.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/bip39_wallet_formats.json -> Electrum-GLC-4.5.0/electrum
+copying electrum/bitcoin.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/blockchain.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/channel_db.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/checkpoints.json -> Electrum-GLC-4.5.0/electrum
+copying electrum/checkpoints_test.json -> Electrum-GLC-4.5.0/electrum
+copying electrum/checkpoints_testnet.json -> Electrum-GLC-4.5.0/electrum
+copying electrum/coinchooser.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/commands.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/constants.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/contacts.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/crypto.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/currencies.json -> Electrum-GLC-4.5.0/electrum
+copying electrum/daemon.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/descriptor.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/dns_hacks.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/dnssec.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/ecc.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/ecc_fast.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/electrum -> Electrum-GLC-4.5.0/electrum
+copying electrum/exchange_rate.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/i18n.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/interface.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/invoices.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/json_db.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/keystore.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/lnaddr.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/lnchannel.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/lnhtlc.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/lnmsg.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/lnonion.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/lnpeer.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/lnrater.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/lnrouter.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/lnsweep.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/lntransport.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/lnurl.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/lnutil.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/lnverifier.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/lnwatcher.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/lnworker.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/logging.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/mnemonic.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/mpp_split.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/network.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/old_mnemonic.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/payment_identifier.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/paymentrequest.proto -> Electrum-GLC-4.5.0/electrum
+copying electrum/paymentrequest.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/paymentrequest_pb2.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/pem.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/plot.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/plugin.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/qrscanner.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/ripemd.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/rsakey.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/scrypt.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/segwit_addr.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/servers.json -> Electrum-GLC-4.5.0/electrum
+copying electrum/servers_regtest.json -> Electrum-GLC-4.5.0/electrum
+copying electrum/servers_signet.json -> Electrum-GLC-4.5.0/electrum
+copying electrum/servers_testnet.json -> Electrum-GLC-4.5.0/electrum
+copying electrum/simple_config.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/slip39.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/sql_db.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/storage.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/submarine_swaps.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/synchronizer.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/trampoline.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/transaction.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/util.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/verifier.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/version.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/wallet.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/wallet_db.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/wizard.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/x509.py -> Electrum-GLC-4.5.0/electrum
+copying electrum/_vendor/__init__.py -> Electrum-GLC-4.5.0/electrum/_vendor
+copying electrum/_vendor/distutils/LICENSE -> Electrum-GLC-4.5.0/electrum/_vendor/distutils
+copying electrum/_vendor/distutils/__init__.py -> Electrum-GLC-4.5.0/electrum/_vendor/distutils
+copying electrum/_vendor/distutils/version.py -> Electrum-GLC-4.5.0/electrum/_vendor/distutils
+copying electrum/gui/__init__.py -> Electrum-GLC-4.5.0/electrum/gui
+copying electrum/gui/default_lang.py -> Electrum-GLC-4.5.0/electrum/gui
+copying electrum/gui/messages.py -> Electrum-GLC-4.5.0/electrum/gui
+copying electrum/gui/stdio.py -> Electrum-GLC-4.5.0/electrum/gui
+copying electrum/gui/text.py -> Electrum-GLC-4.5.0/electrum/gui
+copying electrum/gui/common_qt/__init__.py -> Electrum-GLC-4.5.0/electrum/gui/common_qt
+copying electrum/gui/common_qt/plugins.py -> Electrum-GLC-4.5.0/electrum/gui/common_qt
+copying electrum/gui/icons/Electrum_512.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/Electrum_square_512.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/add.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/android_electrum_icon_background.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/android_electrum_icon_foreground.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/android_electrum_icon_legacy.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/bitbox02.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/bitbox02_unpaired.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/bug.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/camera_dark.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/camera_white.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/chevron-right.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/clock1.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/clock2.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/clock3.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/clock4.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/clock5.pdn -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/clock5.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/closebutton.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/cloud_no.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/cloud_yes.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/coldcard.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/coldcard.svg -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/coldcard_unpaired.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/coldcard_unpaired.svg -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/confirmed.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/confirmed.svg -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/confirmed_bw.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/copy.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/copy_bw.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/delete.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/digitalbitbox.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/digitalbitbox_unpaired.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/electrum.icns -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/electrum.ico -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/electrum.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/electrum_dark_icon.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/electrum_darkblue.svg -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/electrum_launcher.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/electrum_light_icon.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/electrum_lightblue.svg -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/electrum_presplash.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/electrumb.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/expired.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/eye1.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/file.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/freeze.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/globe.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/goldcoin.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/hamburger.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/hd.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/hd_white.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/info.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/jade.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/jade_unpaired.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/kangaroo.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/keepkey.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/keepkey_unpaired.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/key.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/ledger.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/ledger_unpaired.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/lightning.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/lightning_disconnected.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/link.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/lock.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/lock.svg -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/mail_icon.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/menu_vertical.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/menu_vertical_white.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/microphone.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/network.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/offline_tx.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/paste.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/pen.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/picture_in_picture.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/preferences.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/preferences.svg -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/qrcode.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/qrcode_white.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/question.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/revealer.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/revealer_c.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/rocket.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/safe-t.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/safe-t_unpaired.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/save.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/script.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/script_white.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/seal.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/seed.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/share.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/speaker.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/spinner.gif -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/status_connected.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/status_connected.svg -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/status_connected_fork.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/status_connected_proxy.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/status_connected_proxy.svg -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/status_connected_proxy_fork.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/status_disconnected.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/status_disconnected.svg -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/status_lagging.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/status_lagging.svg -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/status_lagging_fork.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/status_waiting.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/status_waiting.svg -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/tab_addresses.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/tab_coins.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/tab_console.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/tab_contacts.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/tab_history.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/tab_receive.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/tab_send.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/tor_logo.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/trezor.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/trezor_unpaired.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/trustedcoin-status-disabled.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/trustedcoin-status.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/trustedcoin-wizard.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/unconfirmed.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/unlock.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/unlock.svg -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/unpaid.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/update.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/wallet.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/warning.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/icons/zoom.png -> Electrum-GLC-4.5.0/electrum/gui/icons
+copying electrum/gui/qml/__init__.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/auth.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qeaddressdetails.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qeaddresslistmodel.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qeapp.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qebip39recovery.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qebitcoin.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qechanneldetails.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qechannellistmodel.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qechannelopener.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qeconfig.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qedaemon.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qefx.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qeinvoice.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qeinvoicelistmodel.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qelnpaymentdetails.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qemodelfilter.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qenetwork.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qeqr.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qeqrscanner.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qerequestdetails.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qeserverlistmodel.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qeswaphelper.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qetransactionlistmodel.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qetxdetails.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qetxfinalizer.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qetypes.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qewallet.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/qewizard.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/util.py -> Electrum-GLC-4.5.0/electrum/gui/qml
+copying electrum/gui/qml/android_res/layout/scanner_layout.xml -> Electrum-GLC-4.5.0/electrum/gui/qml/android_res/layout
+copying electrum/gui/qml/components/About.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/AddressDetails.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/Addresses.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/BIP39RecoveryDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/BalanceDetails.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/ChannelDetails.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/ChannelOpenProgressDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/Channels.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/CloseChannelDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/ConfirmTxDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/Constants.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/CpfpBumpFeeDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/ExceptionDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/ExportTxDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/GenericShareDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/History.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/ImportAddressesKeysDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/ImportChannelBackupDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/InvoiceDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/Invoices.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/LightningPaymentDetails.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/LnurlPayRequestDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/LoadingWalletDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/MessageDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/NetworkOverview.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/NewWalletWizard.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/NotificationPopup.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/OpenChannelDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/OpenWalletDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/OtpDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/PasswordDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/Pin.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/Preferences.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/ProxyConfigDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/RbfBumpFeeDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/RbfCancelDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/ReceiveDetailsDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/ReceiveDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/ReceiveRequests.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/ScanDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/SendDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/ServerConfigDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/ServerConnectWizard.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/SignVerifyMessageDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/SwapDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/TxDetails.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/WalletDetails.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/WalletMainView.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/WalletSummary.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/Wallets.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/main.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components
+copying electrum/gui/qml/components/controls/AddressDelegate.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/BalanceSummary.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/BtcField.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/ButtonContainer.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/ChannelBar.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/ChannelDelegate.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/CoinDelegate.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/ElCheckBox.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/ElComboBox.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/ElDialog.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/ElListView.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/ElRadioButton.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/ElTextArea.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/FeeMethodComboBox.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/FiatField.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/FlatButton.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/FormattedAmount.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/Heading.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/HistoryItemDelegate.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/InfoTextArea.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/InvoiceDelegate.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/LightningNetworkStatusIndicator.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/OnchainNetworkStatusIndicator.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/PaneInsetBackground.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/PasswordField.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/PasswordStrengthIndicator.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/Piechart.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/PrefsHeading.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/ProxyConfig.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/QRImage.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/QRScan.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/RequestExpiryComboBox.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/SeedKeyboard.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/SeedKeyboardKey.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/SeedTextArea.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/ServerConfig.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/ServerDelegate.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/Tag.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/TextHighlightPane.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/Toaster.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/ToggleLabel.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/TxInput.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/controls/TxOutput.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/controls
+copying electrum/gui/qml/components/wizard/WCAutoConnect.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WCConfirmSeed.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WCCosignerKeystore.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WCCreateSeed.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WCHaveMasterKey.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WCHaveSeed.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WCImport.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WCKeystoreType.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WCMultisig.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WCProxyAsk.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WCProxyConfig.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WCScriptAndDerivation.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WCServerConfig.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WCShowMasterPubkey.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WCWalletName.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WCWalletPassword.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WCWalletType.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/Wizard.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/components/wizard/WizardComponent.qml -> Electrum-GLC-4.5.0/electrum/gui/qml/components/wizard
+copying electrum/gui/qml/fonts/PTMono-Bold.ttf -> Electrum-GLC-4.5.0/electrum/gui/qml/fonts
+copying electrum/gui/qml/fonts/PTMono-Regular.ttf -> Electrum-GLC-4.5.0/electrum/gui/qml/fonts
+copying electrum/gui/qml/fonts/PTMono.LICENSE -> Electrum-GLC-4.5.0/electrum/gui/qml/fonts
+copying electrum/gui/qml/java_classes/org/electrum/qr/SimpleScannerActivity.java -> Electrum-GLC-4.5.0/electrum/gui/qml/java_classes/org/electrum/qr
+copying electrum/gui/qt/__init__.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/address_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/address_list.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/amountedit.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/balance_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/bip39_recovery_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/channel_details.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/channels_list.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/completion_text_edit.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/confirm_tx_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/console.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/contact_list.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/custom_model.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/exception_window.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/fee_slider.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/history_list.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/invoice_list.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/lightning_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/lightning_tx_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/locktimeedit.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/main_window.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/my_treeview.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/network_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/new_channel_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/password_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/paytoedit.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/qrcodewidget.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/qrtextedit.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/qrwindow.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/qt_compat.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/rate_limiter.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/rbf_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/rebalance_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/receive_tab.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/request_list.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/seed_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/send_tab.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/settings_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/stylesheet_patcher.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/swap_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/transaction_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/update_checker.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/util.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/utxo_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/utxo_list.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/wallet_info_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/watchtower_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt
+copying electrum/gui/qt/qrreader/__init__.py -> Electrum-GLC-4.5.0/electrum/gui/qt/qrreader
+copying electrum/gui/qt/qrreader/qtmultimedia/__init__.py -> Electrum-GLC-4.5.0/electrum/gui/qt/qrreader/qtmultimedia
+copying electrum/gui/qt/qrreader/qtmultimedia/camera_dialog.py -> Electrum-GLC-4.5.0/electrum/gui/qt/qrreader/qtmultimedia
+copying electrum/gui/qt/qrreader/qtmultimedia/crop_blur_effect.py -> Electrum-GLC-4.5.0/electrum/gui/qt/qrreader/qtmultimedia
+copying electrum/gui/qt/qrreader/qtmultimedia/validator.py -> Electrum-GLC-4.5.0/electrum/gui/qt/qrreader/qtmultimedia
+copying electrum/gui/qt/qrreader/qtmultimedia/video_overlay.py -> Electrum-GLC-4.5.0/electrum/gui/qt/qrreader/qtmultimedia
+copying electrum/gui/qt/qrreader/qtmultimedia/video_surface.py -> Electrum-GLC-4.5.0/electrum/gui/qt/qrreader/qtmultimedia
+copying electrum/gui/qt/qrreader/qtmultimedia/video_widget.py -> Electrum-GLC-4.5.0/electrum/gui/qt/qrreader/qtmultimedia
+copying electrum/gui/qt/wizard/__init__.py -> Electrum-GLC-4.5.0/electrum/gui/qt/wizard
+copying electrum/gui/qt/wizard/server_connect.py -> Electrum-GLC-4.5.0/electrum/gui/qt/wizard
+copying electrum/gui/qt/wizard/wallet.py -> Electrum-GLC-4.5.0/electrum/gui/qt/wizard
+copying electrum/gui/qt/wizard/wizard.py -> Electrum-GLC-4.5.0/electrum/gui/qt/wizard
+copying electrum/lnwire/README.md -> Electrum-GLC-4.5.0/electrum/lnwire
+copying electrum/lnwire/onion_wire.csv -> Electrum-GLC-4.5.0/electrum/lnwire
+copying electrum/lnwire/peer_wire.csv -> Electrum-GLC-4.5.0/electrum/lnwire
+copying electrum/locale/ar_SA/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/ar_SA/LC_MESSAGES
+copying electrum/locale/az_AZ/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/az_AZ/LC_MESSAGES
+copying electrum/locale/be_BY/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/be_BY/LC_MESSAGES
+copying electrum/locale/bg_BG/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/bg_BG/LC_MESSAGES
+copying electrum/locale/bn_BD/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/bn_BD/LC_MESSAGES
+copying electrum/locale/cs_CZ/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/cs_CZ/LC_MESSAGES
+copying electrum/locale/da_DK/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/da_DK/LC_MESSAGES
+copying electrum/locale/de_DE/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/de_DE/LC_MESSAGES
+copying electrum/locale/el_GR/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/el_GR/LC_MESSAGES
+copying electrum/locale/eo_UY/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/eo_UY/LC_MESSAGES
+copying electrum/locale/es_ES/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/es_ES/LC_MESSAGES
+copying electrum/locale/fa_IR/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/fa_IR/LC_MESSAGES
+copying electrum/locale/fr_FR/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/fr_FR/LC_MESSAGES
+copying electrum/locale/he_IL/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/he_IL/LC_MESSAGES
+copying electrum/locale/hu_HU/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/hu_HU/LC_MESSAGES
+copying electrum/locale/hy_AM/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/hy_AM/LC_MESSAGES
+copying electrum/locale/id_ID/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/id_ID/LC_MESSAGES
+copying electrum/locale/it_IT/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/it_IT/LC_MESSAGES
+copying electrum/locale/ja_JP/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/ja_JP/LC_MESSAGES
+copying electrum/locale/ko_KR/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/ko_KR/LC_MESSAGES
+copying electrum/locale/ky_KG/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/ky_KG/LC_MESSAGES
+copying electrum/locale/lv_LV/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/lv_LV/LC_MESSAGES
+copying electrum/locale/nb_NO/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/nb_NO/LC_MESSAGES
+copying electrum/locale/nl_NL/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/nl_NL/LC_MESSAGES
+copying electrum/locale/pl_PL/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/pl_PL/LC_MESSAGES
+copying electrum/locale/pt_BR/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/pt_BR/LC_MESSAGES
+copying electrum/locale/pt_PT/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/pt_PT/LC_MESSAGES
+copying electrum/locale/ro_RO/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/ro_RO/LC_MESSAGES
+copying electrum/locale/ru_RU/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/ru_RU/LC_MESSAGES
+copying electrum/locale/si_LK/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/si_LK/LC_MESSAGES
+copying electrum/locale/sk_SK/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/sk_SK/LC_MESSAGES
+copying electrum/locale/sl_SI/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/sl_SI/LC_MESSAGES
+copying electrum/locale/sr_CS/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/sr_CS/LC_MESSAGES
+copying electrum/locale/sv_SE/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/sv_SE/LC_MESSAGES
+copying electrum/locale/ta_IN/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/ta_IN/LC_MESSAGES
+copying electrum/locale/th_TH/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/th_TH/LC_MESSAGES
+copying electrum/locale/tr_TR/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/tr_TR/LC_MESSAGES
+copying electrum/locale/uk_UA/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/uk_UA/LC_MESSAGES
+copying electrum/locale/vi_VN/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/vi_VN/LC_MESSAGES
+copying electrum/locale/zh_CN/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/zh_CN/LC_MESSAGES
+copying electrum/locale/zh_TW/LC_MESSAGES/electrum.mo -> Electrum-GLC-4.5.0/electrum/locale/zh_TW/LC_MESSAGES
+copying electrum/plugins/README -> Electrum-GLC-4.5.0/electrum/plugins
+copying electrum/plugins/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins
+copying electrum/plugins/audio_modem/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/audio_modem
+copying electrum/plugins/audio_modem/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/audio_modem
+copying electrum/plugins/bitbox02/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/bitbox02
+copying electrum/plugins/bitbox02/bitbox02.py -> Electrum-GLC-4.5.0/electrum/plugins/bitbox02
+copying electrum/plugins/bitbox02/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/bitbox02
+copying electrum/plugins/coldcard/README.md -> Electrum-GLC-4.5.0/electrum/plugins/coldcard
+copying electrum/plugins/coldcard/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/coldcard
+copying electrum/plugins/coldcard/cmdline.py -> Electrum-GLC-4.5.0/electrum/plugins/coldcard
+copying electrum/plugins/coldcard/coldcard.py -> Electrum-GLC-4.5.0/electrum/plugins/coldcard
+copying electrum/plugins/coldcard/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/coldcard
+copying electrum/plugins/cosigner_pool/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/cosigner_pool
+copying electrum/plugins/cosigner_pool/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/cosigner_pool
+copying electrum/plugins/digitalbitbox/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/digitalbitbox
+copying electrum/plugins/digitalbitbox/cmdline.py -> Electrum-GLC-4.5.0/electrum/plugins/digitalbitbox
+copying electrum/plugins/digitalbitbox/digitalbitbox.py -> Electrum-GLC-4.5.0/electrum/plugins/digitalbitbox
+copying electrum/plugins/digitalbitbox/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/digitalbitbox
+copying electrum/plugins/hw_wallet/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/hw_wallet
+copying electrum/plugins/hw_wallet/cmdline.py -> Electrum-GLC-4.5.0/electrum/plugins/hw_wallet
+copying electrum/plugins/hw_wallet/plugin.py -> Electrum-GLC-4.5.0/electrum/plugins/hw_wallet
+copying electrum/plugins/hw_wallet/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/hw_wallet
+copying electrum/plugins/jade/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/jade
+copying electrum/plugins/jade/cmdline.py -> Electrum-GLC-4.5.0/electrum/plugins/jade
+copying electrum/plugins/jade/jade.py -> Electrum-GLC-4.5.0/electrum/plugins/jade
+copying electrum/plugins/jade/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/jade
+copying electrum/plugins/jade/jadepy/README.md -> Electrum-GLC-4.5.0/electrum/plugins/jade/jadepy
+copying electrum/plugins/jade/jadepy/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/jade/jadepy
+copying electrum/plugins/jade/jadepy/jade.py -> Electrum-GLC-4.5.0/electrum/plugins/jade/jadepy
+copying electrum/plugins/jade/jadepy/jade_error.py -> Electrum-GLC-4.5.0/electrum/plugins/jade/jadepy
+copying electrum/plugins/jade/jadepy/jade_serial.py -> Electrum-GLC-4.5.0/electrum/plugins/jade/jadepy
+copying electrum/plugins/jade/jadepy/jade_tcp.py -> Electrum-GLC-4.5.0/electrum/plugins/jade/jadepy
+copying electrum/plugins/keepkey/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/keepkey
+copying electrum/plugins/keepkey/client.py -> Electrum-GLC-4.5.0/electrum/plugins/keepkey
+copying electrum/plugins/keepkey/clientbase.py -> Electrum-GLC-4.5.0/electrum/plugins/keepkey
+copying electrum/plugins/keepkey/cmdline.py -> Electrum-GLC-4.5.0/electrum/plugins/keepkey
+copying electrum/plugins/keepkey/keepkey.py -> Electrum-GLC-4.5.0/electrum/plugins/keepkey
+copying electrum/plugins/keepkey/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/keepkey
+copying electrum/plugins/labels/Labels.qml -> Electrum-GLC-4.5.0/electrum/plugins/labels
+copying electrum/plugins/labels/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/labels
+copying electrum/plugins/labels/cmdline.py -> Electrum-GLC-4.5.0/electrum/plugins/labels
+copying electrum/plugins/labels/labels.py -> Electrum-GLC-4.5.0/electrum/plugins/labels
+copying electrum/plugins/labels/qml.py -> Electrum-GLC-4.5.0/electrum/plugins/labels
+copying electrum/plugins/labels/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/labels
+copying electrum/plugins/ledger/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/ledger
+copying electrum/plugins/ledger/auth2fa.py -> Electrum-GLC-4.5.0/electrum/plugins/ledger
+copying electrum/plugins/ledger/cmdline.py -> Electrum-GLC-4.5.0/electrum/plugins/ledger
+copying electrum/plugins/ledger/ledger.py -> Electrum-GLC-4.5.0/electrum/plugins/ledger
+copying electrum/plugins/ledger/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/ledger
+copying electrum/plugins/payserver/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/payserver
+copying electrum/plugins/payserver/cmdline.py -> Electrum-GLC-4.5.0/electrum/plugins/payserver
+copying electrum/plugins/payserver/payserver.py -> Electrum-GLC-4.5.0/electrum/plugins/payserver
+copying electrum/plugins/payserver/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/payserver
+copying electrum/plugins/payserver/www/.editorconfig -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www
+copying electrum/plugins/payserver/www/.gitignore -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www
+copying electrum/plugins/payserver/www/LICENCE -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www
+copying electrum/plugins/payserver/www/README.md -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www
+copying electrum/plugins/payserver/www/create_invoice.html -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www
+copying electrum/plugins/payserver/www/index.html -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www
+copying electrum/plugins/payserver/www/pay -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www
+copying electrum/plugins/payserver/www/vendor/jquery-3.4.1.min.js -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor
+copying electrum/plugins/payserver/www/vendor/jquery-ui.min.js -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor
+copying electrum/plugins/payserver/www/vendor/qrcode.js -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/AUTHORS.txt -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/LICENSE.txt -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/jquery-ui.structure.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/jquery-ui.structure.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/jquery-ui.theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/jquery-ui.theme.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/images/ui-icons_444444_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/images/ui-icons_555555_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/images/ui-icons_777620_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/images/ui-icons_777777_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/images/ui-icons_cc0000_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base/images/ui-icons_444444_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base/images/ui-icons_555555_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base/images/ui-icons_777620_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base/images/ui-icons_777777_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base/images/ui-icons_cc0000_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/base/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images/ui-bg_diagonals-thick_8_333333_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images/ui-bg_glass_40_111111_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images/ui-bg_glass_55_1c1c1c_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images/ui-bg_highlight-hard_100_f9f9f9_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images/ui-bg_highlight-hard_40_aaaaaa_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images/ui-bg_highlight-soft_50_aaaaaa_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images/ui-bg_inset-hard_45_cd0a0a_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images/ui-bg_inset-hard_55_ffeb80_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images/ui-icons_222222_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images/ui-icons_4ca300_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images/ui-icons_bbbbbb_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images/ui-icons_ededed_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images/ui-icons_ffcf29_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/black-tie/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images/ui-bg_diagonals-thick_75_f3d8d8_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images/ui-bg_dots-small_65_a6a6a6_2x2.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images/ui-bg_glass_55_fbf8ee_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images/ui-bg_highlight-hard_100_eeeeee_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images/ui-bg_highlight-hard_100_f6f6f6_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images/ui-bg_highlight-soft_15_cc0000_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images/ui-icons_004276_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images/ui-icons_cc0000_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/blitzer/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images/ui-bg_diagonals-thick_90_eeeeee_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images/ui-bg_glass_100_e4f1fb_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images/ui-bg_glass_50_3baae3_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images/ui-bg_glass_80_d7ebf9_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images/ui-bg_highlight-hard_100_f2f5f7_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images/ui-bg_highlight-hard_70_000000_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images/ui-bg_highlight-soft_100_deedf7_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images/ui-bg_highlight-soft_25_ffef8f_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images/ui-icons_2694e8_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images/ui-icons_2e83ff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images/ui-icons_3d80b3_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images/ui-icons_72a7cf_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/cupertino/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images/ui-bg_glass_40_ffc73d_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images/ui-bg_highlight-hard_20_0972a5_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images/ui-bg_highlight-soft_33_003147_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images/ui-bg_highlight-soft_35_222222_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images/ui-bg_highlight-soft_44_444444_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images/ui-bg_highlight-soft_80_eeeeee_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images/ui-bg_loop_25_000000_21x21.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images/ui-icons_222222_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images/ui-icons_4b8e0b_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images/ui-icons_a83300_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images/ui-icons_cccccc_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dark-hive/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images/ui-bg_diagonals-thick_15_0b3e6f_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images/ui-bg_dots-medium_30_0b58a2_4x4.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images/ui-bg_dots-small_20_333333_2x2.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images/ui-bg_dots-small_30_a32d00_2x2.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images/ui-bg_dots-small_40_00498f_2x2.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images/ui-bg_gloss-wave_20_111111_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images/ui-icons_00498f_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images/ui-icons_98d2fb_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images/ui-icons_9ccdfc_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/dot-luv/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images/ui-bg_gloss-wave_30_3d3644_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images/ui-bg_highlight-soft_100_dcd9de_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images/ui-bg_highlight-soft_100_eae6ea_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images/ui-bg_highlight-soft_25_30273a_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images/ui-bg_highlight-soft_45_5f5964_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images/ui-icons_454545_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images/ui-icons_734d99_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images/ui-icons_8d78a5_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images/ui-icons_a8a3ae_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images/ui-icons_ebccce_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/eggplant/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images/ui-bg_diagonals-small_25_c5ddfc_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images/ui-bg_diagonals-thick_20_e69700_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images/ui-bg_diagonals-thick_22_1484e6_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images/ui-bg_diagonals-thick_26_2293f7_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images/ui-bg_highlight-soft_100_f9f9f9_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images/ui-bg_inset-hard_100_eeeeee_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images/ui-icons_0a82eb_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images/ui-icons_0b54d5_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images/ui-icons_5fa5e3_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images/ui-icons_fcdd4a_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/excite-bike/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images/ui-bg_glass_65_ffffff_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images/ui-bg_highlight-soft_100_f6f6f6_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images/ui-bg_highlight-soft_25_0073ea_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images/ui-bg_highlight-soft_50_dddddd_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images/ui-icons_0073ea_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images/ui-icons_454545_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images/ui-icons_666666_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images/ui-icons_ff0084_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/flick/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images/ui-bg_diagonals-small_40_db4865_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images/ui-bg_diagonals-small_50_93c3cd_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images/ui-bg_diagonals-small_50_ff3853_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images/ui-bg_diagonals-small_75_ccd232_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images/ui-bg_dots-medium_80_ffff38_4x4.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images/ui-bg_dots-small_35_35414f_2x2.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images/ui-bg_white-lines_85_f7f7ba_40x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images/ui-icons_454545_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images/ui-icons_88a206_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images/ui-icons_c02669_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images/ui-icons_e1e463_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images/ui-icons_ffeb33_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/hot-sneaks/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images/ui-bg_glass_100_f5f0e5_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images/ui-bg_glass_25_cb842e_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images/ui-bg_glass_70_ede4d4_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images/ui-bg_highlight-hard_100_f4f0ec_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images/ui-bg_highlight-hard_65_fee4bd_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images/ui-bg_highlight-hard_75_f5f5b5_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images/ui-bg_inset-soft_100_f4f0ec_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images/ui-icons_c47a23_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images/ui-icons_cb672b_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images/ui-icons_f08000_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images/ui-icons_f35f07_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images/ui-icons_ff7519_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/humanity/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images/ui-bg_diagonals-small_0_aaaaaa_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images/ui-bg_diagonals-thick_15_444444_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images/ui-bg_diagonals-thick_95_ffdc2e_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images/ui-bg_glass_55_fbf5d0_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images/ui-bg_highlight-hard_30_285c00_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images/ui-bg_highlight-soft_33_3a8104_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images/ui-bg_highlight-soft_50_4eb305_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images/ui-bg_highlight-soft_60_4ca20b_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images/ui-bg_inset-soft_10_285c00_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images/ui-icons_4eb305_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images/ui-icons_72b42d_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images/ui-icons_cd0a0a_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/le-frog/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images/ui-bg_glass_15_5f391b_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images/ui-bg_gloss-wave_20_1c160d_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images/ui-bg_gloss-wave_25_453326_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images/ui-bg_gloss-wave_30_44372c_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images/ui-bg_highlight-soft_20_201913_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images/ui-bg_highlight-soft_20_619226_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images/ui-bg_inset-soft_10_201913_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images/ui-icons_222222_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images/ui-icons_9bcc60_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images/ui-icons_add978_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images/ui-icons_e3ddc9_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images/ui-icons_f1fd86_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/mint-choc/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images/ui-bg_glass_100_f8f8f8_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images/ui-bg_glass_35_dddddd_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images/ui-bg_glass_60_eeeeee_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images/ui-bg_inset-hard_75_999999_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images/ui-bg_inset-soft_50_c9c9c9_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images/ui-icons_3383bb_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images/ui-icons_454545_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images/ui-icons_70b2e1_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images/ui-icons_999999_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images/ui-icons_fbc856_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/overcast/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images/ui-bg_diagonal-maze_20_6e4f1c_10x10.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images/ui-bg_diagonal-maze_40_000000_10x10.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images/ui-bg_fine-grain_10_eceadf_60x60.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images/ui-bg_fine-grain_10_f8f7f6_60x60.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images/ui-bg_fine-grain_15_eceadf_60x60.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images/ui-bg_fine-grain_15_f7f3de_60x60.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images/ui-bg_fine-grain_15_ffffff_60x60.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images/ui-bg_fine-grain_65_654b24_60x60.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images/ui-bg_fine-grain_68_b83400_60x60.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images/ui-icons_222222_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images/ui-icons_3572ac_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images/ui-icons_8c291d_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images/ui-icons_b83400_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images/ui-icons_fbdb93_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/pepper-grinder/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images/ui-bg_glass_75_d0e5f5_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images/ui-bg_glass_85_dfeffc_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images/ui-bg_glass_95_fef1ec_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images/ui-bg_gloss-wave_55_5c9ccc_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images/ui-bg_inset-hard_100_f5f8f9_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images/ui-bg_inset-hard_100_fcfdfd_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images/ui-icons_217bc0_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images/ui-icons_2e83ff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images/ui-icons_469bdd_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images/ui-icons_6da8d5_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images/ui-icons_cd0a0a_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images/ui-icons_d8e7f3_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images/ui-icons_f9bd01_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/redmond/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images/ui-bg_glass_55_fbf9ee_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images/ui-bg_glass_65_ffffff_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images/ui-bg_glass_75_dadada_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images/ui-bg_glass_75_e6e6e6_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images/ui-bg_glass_95_fef1ec_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images/ui-bg_highlight-soft_75_cccccc_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images/ui-icons_222222_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images/ui-icons_2e83ff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images/ui-icons_454545_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images/ui-icons_888888_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images/ui-icons_cd0a0a_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/smoothness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images/ui-bg_glass_55_fcf0ba_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images/ui-bg_gloss-wave_100_ece8da_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images/ui-bg_highlight-hard_100_f5f3e5_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images/ui-bg_highlight-hard_100_fafaf4_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images/ui-bg_highlight-hard_15_459e00_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images/ui-bg_highlight-hard_95_cccccc_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images/ui-bg_highlight-soft_25_67b021_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images/ui-bg_highlight-soft_95_ffedad_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images/ui-bg_inset-soft_15_2b2922_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images/ui-icons_808080_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images/ui-icons_847e71_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images/ui-icons_8DC262_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images/ui-icons_cd0a0a_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images/ui-icons_eeeeee_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/south-street/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images/ui-bg_glass_45_0078ae_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images/ui-bg_glass_55_f8da4e_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images/ui-bg_glass_75_79c9ec_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images/ui-bg_gloss-wave_45_e14f1c_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images/ui-bg_gloss-wave_50_6eac2c_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images/ui-bg_gloss-wave_75_2191c0_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images/ui-bg_inset-hard_100_fcfdfd_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images/ui-icons_0078ae_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images/ui-icons_056b93_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images/ui-icons_d8e7f3_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images/ui-icons_e0fdff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images/ui-icons_f5e175_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images/ui-icons_f7a50d_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images/ui-icons_fcd113_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/start/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images/ui-bg_diagonals-medium_20_d34d17_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images/ui-bg_gloss-wave_45_817865_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images/ui-bg_gloss-wave_60_fece2f_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images/ui-bg_gloss-wave_70_ffdd57_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images/ui-bg_gloss-wave_90_fff9e5_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images/ui-bg_highlight-soft_100_feeebd_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images/ui-bg_inset-soft_30_ffffff_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images/ui-icons_3d3d3d_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images/ui-icons_bd7b00_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images/ui-icons_d19405_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images/ui-icons_eb990f_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images/ui-icons_ed9f26_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images/ui-icons_fadc7a_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images/ui-icons_ffe180_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/sunny/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images/ui-bg_diamond_10_4f4221_10x8.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images/ui-bg_diamond_20_372806_10x8.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images/ui-bg_diamond_25_675423_10x8.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images/ui-bg_diamond_25_d5ac5d_10x8.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images/ui-bg_diamond_8_261803_10x8.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images/ui-bg_diamond_8_443113_10x8.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images/ui-bg_highlight-hard_65_fee4bd_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images/ui-icons_070603_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images/ui-icons_e8e2b5_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images/ui-icons_e9cd86_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images/ui-icons_efec9f_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images/ui-icons_f2ec64_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images/ui-icons_f9f2bd_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images/ui-icons_ff7519_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/swanky-purse/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images/ui-bg_diagonals-small_50_262626_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images/ui-bg_glass_40_0a0a0a_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images/ui-bg_glass_55_f1fbe5_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images/ui-bg_glass_60_000000_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images/ui-bg_gloss-wave_55_000000_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images/ui-bg_gloss-wave_85_9fda58_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images/ui-bg_gloss-wave_95_f6ecd5_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images/ui-icons_000000_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images/ui-icons_1f1f1f_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images/ui-icons_9fda58_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images/ui-icons_b8ec79_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images/ui-icons_cd0a0a_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/trontastic/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images/ui-bg_glass_20_555555_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images/ui-bg_glass_40_0078a3_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images/ui-bg_glass_40_ffc73d_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images/ui-bg_gloss-wave_25_333333_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images/ui-bg_highlight-soft_80_eeeeee_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images/ui-bg_inset-soft_25_000000_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images/ui-bg_inset-soft_30_f58400_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images/ui-icons_222222_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images/ui-icons_4b8e0b_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images/ui-icons_a83300_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images/ui-icons_cccccc_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-darkness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images/ui-bg_diagonals-thick_18_b81900_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images/ui-bg_diagonals-thick_20_666666_40x40.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images/ui-bg_glass_100_f6f6f6_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images/ui-bg_glass_100_fdf5ce_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images/ui-bg_glass_65_ffffff_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images/ui-bg_gloss-wave_35_f6a828_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images/ui-bg_highlight-soft_100_eeeeee_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images/ui-bg_highlight-soft_75_ffe45c_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images/ui-icons_222222_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images/ui-icons_228ef1_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images/ui-icons_ef8c08_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images/ui-icons_ffd27a_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images/ui-icons_ffffff_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/ui-lightness/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/jquery-ui.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/jquery-ui.min.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/theme.css -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images/ui-bg_glass_95_fef1ec_1x400.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images/ui-bg_gloss-wave_16_121212_500x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images/ui-bg_highlight-hard_15_888888_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images/ui-bg_highlight-hard_55_555555_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images/ui-bg_highlight-soft_35_adadad_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images/ui-bg_highlight-soft_60_dddddd_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images/ui-bg_inset-soft_15_121212_1x100.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images/ui-icons_666666_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images/ui-icons_aaaaaa_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images/ui-icons_bbbbbb_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images/ui-icons_c98000_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images/ui-icons_cccccc_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images/ui-icons_cd0a0a_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images
+copying electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images/ui-icons_f29a00_256x240.png -> Electrum-GLC-4.5.0/electrum/plugins/payserver/www/vendor/jquery-ui-themes-1.12.1/themes/vader/images
+copying electrum/plugins/revealer/DejaVuSansMono-Bold.ttf -> Electrum-GLC-4.5.0/electrum/plugins/revealer
+copying electrum/plugins/revealer/LICENSE_DEJAVU.txt -> Electrum-GLC-4.5.0/electrum/plugins/revealer
+copying electrum/plugins/revealer/SIL Open Font License.txt -> Electrum-GLC-4.5.0/electrum/plugins/revealer
+copying electrum/plugins/revealer/SourceSansPro-Bold.otf -> Electrum-GLC-4.5.0/electrum/plugins/revealer
+copying electrum/plugins/revealer/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/revealer
+copying electrum/plugins/revealer/hmac_drbg.py -> Electrum-GLC-4.5.0/electrum/plugins/revealer
+copying electrum/plugins/revealer/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/revealer
+copying electrum/plugins/revealer/revealer.py -> Electrum-GLC-4.5.0/electrum/plugins/revealer
+copying electrum/plugins/safe_t/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/safe_t
+copying electrum/plugins/safe_t/client.py -> Electrum-GLC-4.5.0/electrum/plugins/safe_t
+copying electrum/plugins/safe_t/clientbase.py -> Electrum-GLC-4.5.0/electrum/plugins/safe_t
+copying electrum/plugins/safe_t/cmdline.py -> Electrum-GLC-4.5.0/electrum/plugins/safe_t
+copying electrum/plugins/safe_t/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/safe_t
+copying electrum/plugins/safe_t/safe_t.py -> Electrum-GLC-4.5.0/electrum/plugins/safe_t
+copying electrum/plugins/safe_t/transport.py -> Electrum-GLC-4.5.0/electrum/plugins/safe_t
+copying electrum/plugins/swapserver/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/swapserver
+copying electrum/plugins/swapserver/cmdline.py -> Electrum-GLC-4.5.0/electrum/plugins/swapserver
+copying electrum/plugins/swapserver/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/swapserver
+copying electrum/plugins/swapserver/server.py -> Electrum-GLC-4.5.0/electrum/plugins/swapserver
+copying electrum/plugins/swapserver/swapserver.py -> Electrum-GLC-4.5.0/electrum/plugins/swapserver
+copying electrum/plugins/trezor/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/trezor
+copying electrum/plugins/trezor/clientbase.py -> Electrum-GLC-4.5.0/electrum/plugins/trezor
+copying electrum/plugins/trezor/cmdline.py -> Electrum-GLC-4.5.0/electrum/plugins/trezor
+copying electrum/plugins/trezor/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/trezor
+copying electrum/plugins/trezor/trezor.py -> Electrum-GLC-4.5.0/electrum/plugins/trezor
+copying electrum/plugins/trustedcoin/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/trustedcoin
+copying electrum/plugins/trustedcoin/cmdline.py -> Electrum-GLC-4.5.0/electrum/plugins/trustedcoin
+copying electrum/plugins/trustedcoin/common_qt.py -> Electrum-GLC-4.5.0/electrum/plugins/trustedcoin
+copying electrum/plugins/trustedcoin/qml.py -> Electrum-GLC-4.5.0/electrum/plugins/trustedcoin
+copying electrum/plugins/trustedcoin/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/trustedcoin
+copying electrum/plugins/trustedcoin/trustedcoin.py -> Electrum-GLC-4.5.0/electrum/plugins/trustedcoin
+copying electrum/plugins/trustedcoin/qml/ChooseSeed.qml -> Electrum-GLC-4.5.0/electrum/plugins/trustedcoin/qml
+copying electrum/plugins/trustedcoin/qml/Disclaimer.qml -> Electrum-GLC-4.5.0/electrum/plugins/trustedcoin/qml
+copying electrum/plugins/trustedcoin/qml/KeepDisable.qml -> Electrum-GLC-4.5.0/electrum/plugins/trustedcoin/qml
+copying electrum/plugins/trustedcoin/qml/ShowConfirmOTP.qml -> Electrum-GLC-4.5.0/electrum/plugins/trustedcoin/qml
+copying electrum/plugins/trustedcoin/qml/Terms.qml -> Electrum-GLC-4.5.0/electrum/plugins/trustedcoin/qml
+copying electrum/plugins/virtualkeyboard/__init__.py -> Electrum-GLC-4.5.0/electrum/plugins/virtualkeyboard
+copying electrum/plugins/virtualkeyboard/qt.py -> Electrum-GLC-4.5.0/electrum/plugins/virtualkeyboard
+copying electrum/qrreader/__init__.py -> Electrum-GLC-4.5.0/electrum/qrreader
+copying electrum/qrreader/abstract_base.py -> Electrum-GLC-4.5.0/electrum/qrreader
+copying electrum/qrreader/zbar.py -> Electrum-GLC-4.5.0/electrum/qrreader
+copying electrum/scripts/bip39_recovery.py -> Electrum-GLC-4.5.0/electrum/scripts
+copying electrum/scripts/bip70.py -> Electrum-GLC-4.5.0/electrum/scripts
+copying electrum/scripts/block_headers.py -> Electrum-GLC-4.5.0/electrum/scripts
+copying electrum/scripts/bruteforce_pw.py -> Electrum-GLC-4.5.0/electrum/scripts
+copying electrum/scripts/estimate_fee.py -> Electrum-GLC-4.5.0/electrum/scripts
+copying electrum/scripts/get_history.py -> Electrum-GLC-4.5.0/electrum/scripts
+copying electrum/scripts/ln_features.py -> Electrum-GLC-4.5.0/electrum/scripts
+copying electrum/scripts/peers.py -> Electrum-GLC-4.5.0/electrum/scripts
+copying electrum/scripts/quick_start.py -> Electrum-GLC-4.5.0/electrum/scripts
+copying electrum/scripts/servers.py -> Electrum-GLC-4.5.0/electrum/scripts
+copying electrum/scripts/txbroadcast.py -> Electrum-GLC-4.5.0/electrum/scripts
+copying electrum/scripts/txradar.py -> Electrum-GLC-4.5.0/electrum/scripts
+copying electrum/scripts/update_default_servers.py -> Electrum-GLC-4.5.0/electrum/scripts
+copying electrum/scripts/watch_address.py -> Electrum-GLC-4.5.0/electrum/scripts
+copying electrum/utils/__init__.py -> Electrum-GLC-4.5.0/electrum/utils
+copying electrum/utils/stacktracer.py -> Electrum-GLC-4.5.0/electrum/utils
+copying electrum/wordlist/chinese_simplified.txt -> Electrum-GLC-4.5.0/electrum/wordlist
+copying electrum/wordlist/english.txt -> Electrum-GLC-4.5.0/electrum/wordlist
+copying electrum/wordlist/japanese.txt -> Electrum-GLC-4.5.0/electrum/wordlist
+copying electrum/wordlist/portuguese.txt -> Electrum-GLC-4.5.0/electrum/wordlist
+copying electrum/wordlist/slip39.txt -> Electrum-GLC-4.5.0/electrum/wordlist
+copying electrum/wordlist/spanish.txt -> Electrum-GLC-4.5.0/electrum/wordlist
+Writing Electrum-GLC-4.5.0/setup.cfg
+creating dist
+Creating tar archive
+removing 'Electrum-GLC-4.5.0' (and everything under it)

@@ -4,7 +4,7 @@
 Licence: MIT Licence
 Author: Thomas Voegtlin
 GLC Port Maintainers: Goldcoin Developers
-Language: Python (>= 3.12)
+Language: Python (>= 3.11)
 Homepage: https://www.goldcoinproject.org/
 ```
 ## Getting started
@@ -25,7 +25,7 @@ $ python3 -m pip install --user ".[gui,crypto]"
 
 If you want to use the Qt interface, install the Qt dependencies:
 ```
-$ sudo apt-get install python3-pyqt5
+$ sudo apt-get install python3-pyqt5  # For PyQt5 GUI
 ```
 
 For elliptic curve operations, [libsecp256k1](https://github.com/bitcoin-core/secp256k1) is a required dependency:
@@ -106,6 +106,22 @@ $ pytest electrum/tests/test_bitcoin.py -v
 
 ## Creating Binaries
 
+### Deterministic Builds (Recommended)
+
+For reproducible builds across all platforms using Docker:
+
+```bash
+$ ./build-all-deterministic.sh
+```
+
+This script builds deterministic binaries for:
+- Windows (.exe installer)
+- Linux (AppImage) 
+- Android (APK)
+- macOS (requires macOS host)
+
+### Individual Platform Builds
+
 - [Linux (tarball)](contrib/build-linux/sdist/README.md)
 - [Linux (AppImage)](contrib/build-linux/appimage/README.md)
 - [macOS](contrib/osx/README.md)
@@ -117,5 +133,5 @@ $ pytest electrum/tests/test_bitcoin.py -v
 
 Any help testing the software, reporting or fixing bugs, reviewing pull requests and recent changes, writing tests, or helping with outstanding issues is very welcome. Implementing new features, or improving/refactoring the codebase, is of course also welcome, but to avoid wasted effort, especially for larger changes, we encourage discussing these on the issue tracker or IRC first.
 
-Besides [GitHub](https://github.com/spesmilo/electrum), most communication about Electrum development happens on IRC, in the
+Besides [GitHub](https://github.com/goldcoin/electrum-glc), most communication about Electrum development happens on IRC, in the
 `#electrum` channel on Libera Chat. The easiest way to participate on IRC is with the web client, [web.libera.chat](https://web.libera.chat/#electrum).
