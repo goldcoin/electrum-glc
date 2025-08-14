@@ -660,6 +660,37 @@ def xor_bytes(a: bytes, b: bytes) -> bytes:
     return (int.from_bytes(a[:size], "big") ^ int.from_bytes(b[:size], "big")).to_bytes(size, "big")
 
 
+def migrate_data_directory():
+    """Migrate from old ElectrumGLC to new Electrum-GLC directory via rename.
+    Returns the directory path to use.
+    """
+    old_dir = os.path.join(os.environ["APPDATA"], "ElectrumGLC")
+    new_dir = os.path.join(os.environ["APPDATA"], "Electrum-GLC")
+    
+    # Check if migration needed (old exists but new doesn't)
+    if os.path.exists(old_dir) and not os.path.exists(new_dir):
+        try:
+            # Simple rename operation
+            os.rename(old_dir, new_dir)
+            print(f"Info: Migrated wallet data from {old_dir} to {new_dir}")
+            return new_dir
+        except OSError as e:
+            # If rename fails (permissions, cross-device, etc.), use old directory
+            print(f"Warning: Could not migrate data directory: {e}")
+            print(f"Info: Continuing with old directory: {old_dir}")
+            return old_dir
+    
+    # Return appropriate directory based on what exists
+    if os.path.exists(new_dir):
+        return new_dir
+    elif os.path.exists(old_dir):
+        # This case handles if rename failed on a previous run
+        return old_dir
+    else:
+        # Fresh installation - use new naming
+        return new_dir
+
+
 def user_dir():
     if "ELECTRUMDIR" in os.environ:
         return os.environ["ELECTRUMDIR"]
@@ -668,9 +699,19 @@ def user_dir():
     elif os.name == "posix":
         return os.path.join(os.environ["HOME"], ".electrum-glc")
     elif "APPDATA" in os.environ:
-        return os.path.join(os.environ["APPDATA"], "Electrum-GLC")
+        # Handle Windows migration from old to new directory name
+        return migrate_data_directory()
     elif "LOCALAPPDATA" in os.environ:
-        return os.path.join(os.environ["LOCALAPPDATA"], "Electrum-GLC")
+        # Fallback for Windows Store apps - also check for migration
+        old_dir = os.path.join(os.environ["LOCALAPPDATA"], "ElectrumGLC")
+        new_dir = os.path.join(os.environ["LOCALAPPDATA"], "Electrum-GLC")
+        if os.path.exists(old_dir) and not os.path.exists(new_dir):
+            try:
+                os.rename(old_dir, new_dir)
+                return new_dir
+            except OSError:
+                return old_dir
+        return new_dir if os.path.exists(new_dir) else new_dir if not os.path.exists(old_dir) else old_dir
     else:
         # raise Exception("No home directory found in environment variables.")
         return
