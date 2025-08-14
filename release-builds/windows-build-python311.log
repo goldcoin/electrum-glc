@@ -1,0 +1,333 @@
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+💬 [0;34mINFO:[0m  Clearing /home/shasta/git/electrum-glc/contrib/build-wine/../../contrib/build-wine/dist...
+💬 [0;34mINFO:[0m  building docker image.
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.58kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:bullseye@sha256:43ef0c6c3585d5b406caa7a0f232ff5a19c1402aeb415f68bcd1cf9d10180af8
+#2 DONE 0.6s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 74B done
+#3 DONE 0.0s
+
+#4 [ 1/13] FROM docker.io/library/debian:bullseye@sha256:43ef0c6c3585d5b406caa7a0f232ff5a19c1402aeb415f68bcd1cf9d10180af8
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 72B done
+#5 DONE 0.0s
+
+#6 [10/13] WORKDIR /home/user/wspace
+#6 CACHED
+
+#7 [ 2/13] RUN apt update -qq > /dev/null && apt install -qq --yes --no-install-recommends     ca-certificates
+#7 CACHED
+
+#8 [ 4/13] COPY apt.preferences /etc/apt/preferences.d/snapshot
+#8 CACHED
+
+#9 [ 5/13] RUN dpkg --add-architecture i386 &&     apt-get update -q &&     apt-get install -qy --allow-downgrades         wget         gnupg2         dirmngr         python3-software-properties         software-properties-common         git         p7zip-full         make         mingw-w64         mingw-w64-tools         autotools-dev         autoconf         autopoint         libtool         gettext         sudo         nsis         &&     rm -rf /var/lib/apt/lists/* &&     apt-get autoremove -y &&     apt-get clean
+#9 CACHED
+
+#10 [11/13] RUN chown --recursive user /home/user/wspace
+#10 CACHED
+
+#11 [ 6/13] RUN wget -nc https://dl.winehq.org/wine-builds/Release.key &&         echo "c51bcb8cc4a12abfbd7c7660eaf90f49674d15e222c262f27e6c96429111b822 Release.key" | sha256sum -c - &&         apt-key add Release.key &&         rm Release.key &&     wget -nc https://dl.winehq.org/wine-builds/winehq.key &&         echo "d965d646defe94b3dfba6d5b4406900ac6c81065428bf9d9303ad7a72ee8d1b8 winehq.key" | sha256sum -c - &&         apt-key add winehq.key &&         rm winehq.key &&     apt-add-repository https://dl.winehq.org/wine-builds/debian/ &&     apt-get update -q &&     apt-get install -qy --allow-downgrades         wine-stable-amd64:amd64=8.0.1~bullseye-1         wine-stable-i386:i386=8.0.1~bullseye-1         wine-stable:amd64=8.0.1~bullseye-1         winehq-stable:amd64=8.0.1~bullseye-1         libvkd3d1:amd64=1.3~bullseye-1         libvkd3d1:i386=1.3~bullseye-1         &&     rm -rf /var/lib/apt/lists/* &&     apt-get autoremove -y &&     apt-get clean
+#11 CACHED
+
+#12 [ 8/13] RUN usermod -append --groups sudo user
+#12 CACHED
+
+#13 [12/13] RUN chown user /opt
+#13 CACHED
+
+#14 [ 3/13] COPY apt.sources.list /etc/apt/sources.list
+#14 CACHED
+
+#15 [ 7/13] RUN useradd --uid 1001 --create-home --shell /bin/bash user
+#15 CACHED
+
+#16 [ 9/13] RUN echo "%sudo ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+#16 CACHED
+
+#17 [13/13] RUN mkdir --parents "/opt/wine64/drive_c/electrum"
+#17 CACHED
+
+#18 exporting to image
+#18 exporting layers done
+#18 writing image sha256:f49dac6c7da8e4eb8c5c975255b46817f9951717d876295220b7d12a2026ec1f done
+#18 naming to docker.io/library/electrum-glc-wine-builder-shasta done
+#18 DONE 0.0s
+💬 [0;34mINFO:[0m  not doing fresh clone.
+💬 [0;34mINFO:[0m  building binary...
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+💬 [0;34mINFO:[0m  Clearing /opt/wine64/drive_c/electrum/contrib/build-wine/build and /opt/wine64/drive_c/electrum/contrib/build-wine/dist...
+💬 [0;34mINFO:[0m  libsecp256k1 already built, skipping
+💬 [0;34mINFO:[0m  libzbar already built, skipping
+💬 [0;34mINFO:[0m  libusb already built, skipping
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+💬 [0;34mINFO:[0m  Booting wine.
+wine: configuration in L"/opt/wine64" has been updated.
+💬 [0;34mINFO:[0m  Installing Python.
+gpg: directory '/home/user/.gnupg' created
+gpg: keybox '/home/user/.gnupg/keyring-electrum-build-python-dev.gpg' created
+gpg: key FC624643487034E5: 5 signatures not checked due to missing keys
+gpg: /home/user/.gnupg/trustdb.gpg: trustdb created
+gpg: key FC624643487034E5: public key "Steve Dower (Python Release Signing) <steve.dower@microsoft.com>" imported
+gpg: Total number processed: 1
+gpg:               imported: 1
+gpg: no ultimately trusted keys found
+Installing core...
+Installing dev...
+wine: Unhandled stack overflow at address 6AB2FF5F (thread 015c), starting debugger...
+Installing exe...
+Installing lib...
+Installing pip...
+Installing tools...
+💬 [0;34mINFO:[0m  Intentionally breaking legacy easy_install.
+💬 [0;34mINFO:[0m  Installing build dependencies.
+Collecting flit-core==3.8.0 (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-base.txt (line 1))
+  Using cached flit_core-3.8.0-py3-none-any.whl (62 kB)
+Collecting packaging==21.3 (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-base.txt (line 4))
+  Using cached packaging-21.3-py3-none-any.whl (40 kB)
+Requirement already satisfied: pip==24.0 in c:\python3\lib\site-packages (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-base.txt (line 7)) (24.0)
+Collecting poetry-core==1.3.2 (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-base.txt (line 10))
+  Using cached poetry_core-1.3.2-py3-none-any.whl (531 kB)
+Collecting pyparsing==3.0.9 (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-base.txt (line 13))
+  Using cached pyparsing-3.0.9-py3-none-any.whl (98 kB)
+Collecting setuptools==69.0.3 (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-base.txt (line 16))
+  Using cached setuptools-69.0.3-py3-none-any.whl (819 kB)
+Collecting setuptools-scm==7.0.5 (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-base.txt (line 19))
+  Using cached setuptools_scm-7.0.5-py3-none-any.whl (42 kB)
+Collecting tomli==2.0.1 (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-base.txt (line 22))
+  Using cached tomli-2.0.1-py3-none-any.whl (12 kB)
+Collecting typing-extensions==4.4.0 (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-base.txt (line 25))
+  Using cached typing_extensions-4.4.0-py3-none-any.whl (26 kB)
+Collecting wheel==0.38.4 (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-base.txt (line 28))
+  Using cached wheel-0.38.4-py3-none-any.whl (36 kB)
+Installing collected packages: wheel, typing-extensions, tomli, setuptools-scm, setuptools, pyparsing, poetry-core, packaging, flit-core
+  Attempting uninstall: setuptools
+    Found existing installation: setuptools 65.5.0
+    Uninstalling setuptools-65.5.0:
+      Successfully uninstalled setuptools-65.5.0
+Successfully installed flit-core-3.8.0 packaging-21.3 poetry-core-1.3.2 pyparsing-3.0.9 setuptools-69.0.3 setuptools-scm-7.0.5 tomli-2.0.1 typing-extensions-4.4.0 wheel-0.38.4
+
+[notice] A new release of pip is available: 24.0 -> 25.2
+[notice] To update, run: c:\python3\python.exe -m pip install --upgrade pip
+WARNING: The following features are always enabled: no-binary-enable-wheel-cache.
+Collecting altgraph==0.17.3 (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-wine.txt (line 1))
+  Using cached altgraph-0.17.3-py2.py3-none-any.whl
+Collecting future==0.18.3 (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-wine.txt (line 3))
+  Using cached future-0.18.3-py3-none-any.whl
+Collecting pefile==2022.5.30 (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-wine.txt (line 5))
+  Using cached pefile-2022.5.30-py3-none-any.whl
+Collecting pip==22.3.1 (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-wine.txt (line 7))
+  Using cached pip-22.3.1-py3-none-any.whl
+Collecting pyinstaller-hooks-contrib==2022.13 (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-wine.txt (line 9))
+  Using cached pyinstaller_hooks_contrib-2022.13-py2.py3-none-any.whl
+Collecting pywin32-ctypes==0.2.0 (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-wine.txt (line 11))
+  Using cached pywin32_ctypes-0.2.0-py2.py3-none-any.whl
+Collecting setuptools==65.5.1 (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-wine.txt (line 13))
+  Using cached setuptools-65.5.1-py3-none-any.whl
+Requirement already satisfied: wheel==0.38.4 in c:\python3\lib\site-packages (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements-build-wine.txt (line 15)) (0.38.4)
+Installing collected packages: pywin32-ctypes, altgraph, setuptools, pyinstaller-hooks-contrib, pip, pefile, future
+  Attempting uninstall: setuptools
+    Found existing installation: setuptools 69.0.3
+    Uninstalling setuptools-69.0.3:
+      Successfully uninstalled setuptools-69.0.3
+  Attempting uninstall: pip
+    Found existing installation: pip 24.0
+    Uninstalling pip-24.0:
+      Successfully uninstalled pip-24.0
+Successfully installed altgraph-0.17.3 future-0.18.3 pefile-2022.5.30 pip-22.3.1 pyinstaller-hooks-contrib-2022.13 pywin32-ctypes-0.2.0 setuptools-65.5.1
+
+[notice] A new release of pip is available: 22.3.1 -> 25.2
+[notice] To update, run: c:\python3\python.exe -m pip install --upgrade pip
+💬 [0;34mINFO:[0m  Building PyInstaller.
+💬 [0;34mINFO:[0m  pyinstaller already built, skipping
+💬 [0;34mINFO:[0m  Installing PyInstaller.
+Processing c:\electrum\contrib\build-wine\.cache\win64\build\pyinstaller
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: pyinstaller
+  Building wheel for pyinstaller (pyproject.toml): started
+  Building wheel for pyinstaller (pyproject.toml): finished with status 'done'
+  Created wheel for pyinstaller: filename=pyinstaller-6.6.0-py3-none-any.whl size=1429630 sha256=39d14a4cf40add61ac70a9d438bb00057819752af9201115f79484ea37dae383
+  Stored in directory: C:\users\user\Temp\pip-ephem-wheel-cache-2uz82gu6\wheels\1a\f6\e0\0ab9af30d20f399da3cc9538875356ec420a50252dea3ce20d
+Successfully built pyinstaller
+Installing collected packages: pyinstaller
+Successfully installed pyinstaller-6.6.0
+
+[notice] A new release of pip available: 22.3.1 -> 25.2
+[notice] To update, run: c:\python3\python.exe -m pip install --upgrade pip
+💬 [0;34mINFO:[0m  Wine is configured.
+💬 [0;34mINFO:[0m  Resetting modification time in C:\Python...
+/opt/wine64/drive_c/python3 /opt/wine64/drive_c/electrum/contrib/build-wine
+/opt/wine64/drive_c/electrum/contrib/build-wine
+total 7696
+drwxr-xr-x  2 user user    4096 Nov 11  2000 DLLs
+-rw-r--r--  1 user user   36874 Nov 11  2000 LICENSE.txt
+drwxr-xr-x 34 user user    4096 Nov 11  2000 Lib
+-rw-r--r--  1 user user 1563659 Nov 11  2000 NEWS.txt
+drwxr-xr-x  2 user user    4096 Nov 11  2000 Scripts
+drwxr-xr-x  5 user user    4096 Nov 11  2000 Tools
+-rwxr-xr-x  1 user user  103192 Nov 11  2000 python.exe
+-rw-r--r--  1 user user   67352 Nov 11  2000 python3.dll
+-rw-r--r--  1 user user 5800216 Nov 11  2000 python311.dll
+-rwxr-xr-x  1 user user  101656 Nov 11  2000 pythonw.exe
+-rw-r--r--  1 user user  119192 Nov 11  2000 vcruntime140.dll
+-rw-r--r--  1 user user   49528 Nov 11  2000 vcruntime140_1.dll
+💬 [0;34mINFO:[0m  Found 16 CPUs, which we might use for building.
+/opt/wine64/drive_c/electrum /opt/wine64/drive_c/electrum/contrib/build-wine
+💬 [0;34mINFO:[0m  Last commit: v4.4.6b-26-g076f9235a-dirty
+es_ES/electrum.po:2015: 'msgid' and 'msgstr' entries do not both end with '\n'
+es_ES/electrum.po:8385: 'msgid' and 'msgstr' entries do not both end with '\n'
+msgfmt: found 2 fatal errors
+id_ID/electrum.po:1096: 'msgid' and 'msgstr' entries do not both end with '\n'
+msgfmt: found 1 fatal error
+th_TH/electrum.po:1140: 'msgid' and 'msgstr' entries do not both end with '\n'
+msgfmt: found 1 fatal error
+uk_UA/electrum.po:497: 'msgid' and 'msgstr' entries do not both begin with '\n'
+uk_UA/electrum.po:9951: 'msgid' and 'msgstr' entries do not both begin with '\n'
+msgfmt: found 2 fatal errors
+zh_CN/electrum.po:9468: 'msgid' and 'msgstr' entries do not both end with '\n'
+msgfmt: found 1 fatal error
+/opt/wine64/drive_c/electrum/contrib/build-wine
+💬 [0;34mINFO:[0m  Installing requirements...
+Collecting aiohttp==3.8.3
+  Using cached aiohttp-3.8.3.tar.gz (7.3 MB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting aiohttp-socks==0.8.4
+  Using cached aiohttp_socks-0.8.4.tar.gz (8.5 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting aiorpcX==0.22.1
+  Using cached aiorpcX-0.22.1.tar.gz (28 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting aiosignal==1.3.1
+  Using cached aiosignal-1.3.1.tar.gz (19 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting async-timeout==4.0.2
+  Using cached async-timeout-4.0.2.tar.gz (8.2 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting attrs==22.1.0
+  Using cached attrs-22.1.0.tar.gz (201 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting bitstring==3.1.9
+  Using cached bitstring-3.1.9.tar.gz (198 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting certifi==2023.11.17
+  Using cached certifi-2023.11.17.tar.gz (163 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting charset-normalizer==2.1.1
+  Using cached charset-normalizer-2.1.1.tar.gz (82 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting dnspython==2.2.1
+  Using cached dnspython-2.2.1.tar.gz (281 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting frozenlist==1.3.3
+  Using cached frozenlist-1.3.3.tar.gz (66 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting idna==3.4
+  Using cached idna-3.4.tar.gz (183 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting jsonpatch==1.33
+  Using cached jsonpatch-1.33.tar.gz (21 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting jsonpointer==2.3
+  Using cached jsonpointer-2.3.tar.gz (9.3 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting multidict==6.0.2
+  Using cached multidict-6.0.2.tar.gz (50 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: packaging==21.3 in c:\python3\lib\site-packages (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements.txt (line 31)) (21.3)
+Collecting pip==24.0
+  Using cached pip-24.0.tar.gz (2.1 MB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting protobuf==3.20.3
+  Using cached protobuf-3.20.3.tar.gz (216 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Requirement already satisfied: pyparsing==3.0.9 in c:\python3\lib\site-packages (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements.txt (line 37)) (3.0.9)
+Collecting python-socks==2.4.3
+  Using cached python-socks-2.4.3.tar.gz (25 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting QDarkStyle==3.1
+  Using cached QDarkStyle-3.1.tar.gz (698 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting qrcode==7.3.1
+  Using cached qrcode-7.3.1.tar.gz (43 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting QtPy==2.3.0
+  Using cached QtPy-2.3.0.tar.gz (53 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting setuptools==69.0.3
+  Using cached setuptools-69.0.3.tar.gz (2.2 MB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: wheel==0.38.4 in c:\python3\lib\site-packages (from -r /opt/wine64/drive_c/electrum/contrib/build-wine/../deterministic-build/requirements.txt (line 49)) (0.38.4)
+Collecting yarl==1.8.1
+  Using cached yarl-1.8.1.tar.gz (172 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: aiohttp, aiohttp-socks, aiosignal, async-timeout, attrs, dnspython, frozenlist, idna, multidict, pip, python-socks, QtPy, yarl, setuptools
+  Building wheel for aiohttp (pyproject.toml): started
+  Building wheel for aiohttp (pyproject.toml): finished with status 'done'
+  Created wheel for aiohttp: filename=aiohttp-3.8.3-py3-none-any.whl size=183450 sha256=d7aacdc45a55da41b923f5320c41ed8de46b043001a1886a2dac4143eedcf36b
+  Stored in directory: c:\electrum\contrib\build-wine\.cache\win64\wine_pip_cache\wheels\24\fa\2e\7103b10b9d417e619e1d2fa753597ecfcd6d9b787f90d29035
+  Building wheel for aiohttp-socks (pyproject.toml): started
+  Building wheel for aiohttp-socks (pyproject.toml): finished with status 'done'
+  Created wheel for aiohttp-socks: filename=aiohttp_socks-0.8.4-py3-none-any.whl size=9632 sha256=02eb9a96def4918fe3e4dd568ad402c66e1815e6771abc59ec2308c42a105305
+  Stored in directory: c:\electrum\contrib\build-wine\.cache\win64\wine_pip_cache\wheels\e7\57\21\9f5a90291b90c8d40efd0fb573a9646c7af5d954b49bbb74fc
+  Building wheel for aiosignal (pyproject.toml): started
+  Building wheel for aiosignal (pyproject.toml): finished with status 'done'
+  Created wheel for aiosignal: filename=aiosignal-1.3.1-py3-none-any.whl size=7644 sha256=806abe735e99bba3350ca137fdcc4a470b35a806567fec7b8758f3e919a22ae6
+  Stored in directory: c:\electrum\contrib\build-wine\.cache\win64\wine_pip_cache\wheels\7f\e2\3b\407fec11ad747fe8cd4a053896064006488e264b1e1f3ce069
+  Building wheel for async-timeout (pyproject.toml): started
+  Building wheel for async-timeout (pyproject.toml): finished with status 'done'
+  Created wheel for async-timeout: filename=async_timeout-4.0.2-py3-none-any.whl size=5777 sha256=4841120767a2ef5d80ca41eeeed95ab8f88ba596d19ebf886c8102989e8a60b9
+  Stored in directory: c:\electrum\contrib\build-wine\.cache\win64\wine_pip_cache\wheels\99\54\0a\ae5da23ee7a4066871984770f8af6787969a28ada28e319d45
+  Building wheel for attrs (pyproject.toml): started
+  Building wheel for attrs (pyproject.toml): finished with status 'done'
+  Created wheel for attrs: filename=attrs-22.1.0-py2.py3-none-any.whl size=58831 sha256=915c15422c05fca98f0fb1c4ee1b783863b44a79ca9dcd437ea77d95e196b83b
+  Stored in directory: c:\electrum\contrib\build-wine\.cache\win64\wine_pip_cache\wheels\52\f5\fd\dd0f52386577cc894c8451aa9739da7d005a7700dece901db1
+  Building wheel for dnspython (pyproject.toml): started
+  Building wheel for dnspython (pyproject.toml): finished with status 'done'
+  Created wheel for dnspython: filename=dnspython-2.2.1-py3-none-any.whl size=269095 sha256=c1511934d3ac8735d04adc08674bc37881fe3f326e830ae86a4c376edac68564
+  Stored in directory: c:\electrum\contrib\build-wine\.cache\win64\wine_pip_cache\wheels\c2\43\4e\b6cc9ceba6464c21fbd57a7fff9e469d73dda0cb34a39bb5e6
+  Building wheel for frozenlist (pyproject.toml): started
+  Building wheel for frozenlist (pyproject.toml): finished with status 'done'
+  Created wheel for frozenlist: filename=frozenlist-1.3.3-py3-none-any.whl size=9297 sha256=421cf794197ad442183dc677ae448c329508caf5195d08406a2f113667db2fae
+  Stored in directory: c:\electrum\contrib\build-wine\.cache\win64\wine_pip_cache\wheels\bf\05\d2\a42b2df6034c36fab67ec21a2447798b1f956cfd61c07c3bad
+  Building wheel for idna (pyproject.toml): started
+  Building wheel for idna (pyproject.toml): finished with status 'done'
+  Created wheel for idna: filename=idna-3.4-py3-none-any.whl size=61539 sha256=b31366a64c460aa574adbd4e9ba82bf09a227ab140aca0376a52eebe65ea3857
+  Stored in directory: c:\electrum\contrib\build-wine\.cache\win64\wine_pip_cache\wheels\73\14\5f\87e450624ca0598cd1347aaac250ba069435fdc821c99b0e3b
+  Building wheel for multidict (pyproject.toml): started
+  Building wheel for multidict (pyproject.toml): finished with status 'done'
+  Created wheel for multidict: filename=multidict-6.0.2-py3-none-any.whl size=9706 sha256=9bab51febc7a0da43f3048f66bb5386c6956a26f85736d994b8d844a25a34932
+  Stored in directory: c:\electrum\contrib\build-wine\.cache\win64\wine_pip_cache\wheels\bb\18\4e\b073a52aef8b5c6f46950894ee61b705f922cbc5ee1331771c
+  Building wheel for pip (pyproject.toml): started
