@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "Electrum-GLC"
 dynamic = ["version"]
 description = "Lightweight Goldcoin Wallet"
+readme = "README.md"
 authors = [{name = "Thomas Voegtlin", email = "thomasv@electrum.org"}]
 license = {text = "MIT"}
 requires-python = ">=3.11"
